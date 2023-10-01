@@ -1,0 +1,84 @@
+import Stone from './stone.js'
+
+/**
+ * Mono stone class
+ */
+export default class StoneMono extends Stone {
+
+  /**
+   * Constructor
+   */
+  constructor(board, theme, context) {
+
+    //Parent constructor
+    super(board, theme, context)
+
+    //Don't draw shadows
+    this.shadow = false
+  }
+
+  /**
+   * Draw mono stones
+   */
+  draw() {
+
+    //Check can draw
+    if (!this.canDraw()) {
+      return
+    }
+
+    //Get data
+    const {board, theme, context, alpha, x, y} = this
+
+    //Get coordinates and stone radius
+    const absX = board.getAbsX(x)
+    const absY = board.getAbsY(y)
+    const radius = this.getRadius()
+    const color = this.getColor()
+
+    //Get theme variables
+    const cellSize = board.getCellSize()
+    const lineWidth = theme.get('stone.mono.lineWidth', cellSize) || 1
+    const fillStyle = theme.get('stone.mono.color', color)
+    const strokeStyle = theme.get('stone.mono.lineColor', color)
+    const canvasTranslate = theme.canvasTranslate()
+
+    //Translate canvas
+    context.translate(canvasTranslate, canvasTranslate)
+
+    //Apply transparency?
+    if (alpha && alpha < 1) {
+      context.globalAlpha = alpha
+    }
+
+    //Configure context
+    context.fillStyle = fillStyle
+
+    //Draw stone
+    context.beginPath()
+    context.arc(
+      absX,
+      absY,
+      Math.max(0, radius - lineWidth),
+      0,
+      2 * Math.PI,
+      true,
+    )
+    context.fill()
+
+    //Configure context
+    context.lineWidth = lineWidth
+    context.strokeStyle = strokeStyle
+
+    //Draw outline
+    context.stroke()
+
+    //Undo transparency?
+    if (alpha && alpha < 1) {
+      context.globalAlpha = 1
+    }
+
+    //Undo translation
+    context.translate(-canvasTranslate, -canvasTranslate)
+  }
+}
