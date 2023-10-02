@@ -1,6 +1,7 @@
 import BoardLayerFactory from './board-layer-factory.js'
 import Theme from './theme.js'
 import {defaultConfig, boardLayerTypes} from '../constants/board.js'
+import {pixelRatio, createCanvasContext} from '../helpers/canvas.js'
 
 /**
  * This class represents the Go board. It is a placeholder for all the various
@@ -41,6 +42,10 @@ export default class Board {
     this.drawMarginVer = 0
     this.gridDrawWidth = 0
     this.gridDrawHeight = 0
+
+    //Last draw width/height
+    this.lastDrawWidth = 0
+    this.lastDrawHeight = 0
 
     //Layer order
     this.layerOrder = [
@@ -94,13 +99,6 @@ export default class Board {
   reset() {
     this.removeAll()
     this.init()
-  }
-
-  /**
-   * Link the board to a HTML element
-   */
-  linkElement(element) {
-    this.element = element
   }
 
   /**
@@ -168,10 +166,15 @@ export default class Board {
 
     //Process config
     this.toggleCoordinates(config.showCoordinates)
-    this.swapColors(config.swapColors)
+    this.toggleSwapColors(config.swapColors)
     this.setCutoff(config.cutoff)
     this.setSection(config.section)
     this.setSize(config.width, config.height)
+
+    //Make static
+    if (config.isStatic) {
+      this.makeStatic()
+    }
   }
 
   /**
@@ -291,12 +294,15 @@ export default class Board {
       //Set size in layers
       this.layers.forEach(layer => layer.setSize(width, height))
 
-      //Broadcast event (no call to resized, as that is handled in the directive)
-      //TODO $rootScope.$broadcast('ngGo.board.resize', this, width, height)
-    }
+      //Determine draw size
+      if (!this.determineDrawSize()) {
 
-    //Return self for chaining
-    return this
+        //If the draw size didn't change, resized() won't be called, and so we
+        //must call it manually. This may seem a bit "off", but it's the best
+        //way to prevent redundant redraws.
+        this.resized() //TODO verify
+      }
+    }
   }
 
   /**
@@ -335,7 +341,7 @@ export default class Board {
   /**
    * Swap colors on the board
    */
-  swapColors(swapColors) {
+  toggleSwapColors(swapColors) {
 
     //Set
     if (typeof swapColors !== 'undefined') {
@@ -352,8 +358,8 @@ export default class Board {
 
     //For a dynamic board, only these layers
     else {
-      this.redraw('stones')
-      this.redraw('markup')
+      this.redraw(boardLayerTypes.STONES)
+      this.redraw(boardLayerTypes.MARKUP)
     }
   }
 
@@ -447,12 +453,12 @@ export default class Board {
 
     //Remove markup if path changed
     if (pathChanged) {
-      this.removeAll('markup')
+      this.removeAll(boardLayerTypes.MARKUP)
     }
 
     //Set new stones and markup grids
-    this.setAll('stones', position.stones)
-    this.setAll('markup', position.markup)
+    this.setAll(boardLayerTypes.STONES, position.stones)
+    this.setAll(boardLayerTypes.MARKUP, position.markup)
   }
 
   /*****************************************************************************
@@ -684,6 +690,149 @@ export default class Board {
     return (
       gridX >= this.grid.xLeft && gridY >= this.grid.yTop &&
       gridX <= this.grid.xRight && gridY <= this.grid.yBot
+    )
+  }
+
+  /**************************************************************************
+   * DOM helpers
+   ***/
+
+  /**
+   * Build board into DOM
+   */
+  build(element) {
+
+    //Link element
+    this.linkElement(element)
+
+    //Determine initial draw size
+    this.determineDrawSize()
+
+    //Add resize handler on window
+    window.on('resize', () => {
+      this.determineDrawSize()
+    })
+
+    //Static board
+    if (this.isStatic) {
+
+      //Add static class on element
+      element.classList.add('static')
+
+      //Create single canvas and link to all relevant layers
+      const context = createCanvasContext(element, 'static')
+      for (const type of this.layerOrder) {
+        const layer = this.layers.get(type)
+        layer.setContext(context)
+      }
+    }
+
+    //Dynamic board
+    else {
+
+      //Create individual layer contexts
+      for (const type of this.layerOrder) {
+        const context = createCanvasContext(element, type)
+        const layer = this.layers.get(type)
+        layer.setContext(context)
+      }
+    }
+  }
+
+  /**
+   * Link the board to a HTML element
+   */
+  linkElement(element) {
+
+    //Set
+    this.element = element
+    this.playerElement = null
+    this.sizingElement = element
+
+    //Set player element
+    if (element.parentElement.tagName.match(/^player$/i)) {
+      this.playerElement = element.parentElement
+      this.sizingElement = element.parentElement.parentElement //TODO verify this
+    }
+  }
+
+  /**
+   * Determine draw size
+   */
+  determineDrawSize() {
+
+    //Get data
+    const {width, height, lastDrawWidth, lastDrawHeight, sizingElement} = this
+
+    //Initialise available width/height
+    let availableWidth = sizingElement.clientWidth
+    let availableHeight = sizingElement.clientHeight
+
+    //Init vars
+    let drawWidth, drawHeight, cellSize
+
+    //Stretch available height to width if zero
+    if (availableHeight === 0 && availableWidth > 0) {
+      availableHeight = availableWidth
+    }
+
+    //Grid size known?
+    if (width && height) {
+
+      //Determine smallest cell size
+      cellSize = Math.min(availableWidth / width, availableHeight / height)
+
+      //Set draw size
+      drawWidth = Math.floor(cellSize * width)
+      drawHeight = Math.floor(cellSize * height)
+    }
+
+    //Otherwise, use the lesser of the available width/height
+    else {
+      drawWidth = drawHeight = Math.min(availableWidth, availableHeight)
+    }
+
+    //Propagate
+    if (lastDrawWidth !== drawWidth || lastDrawHeight !== drawHeight) {
+      this.lastDrawWidth = drawWidth
+      this.lastDrawHeight = drawHeight
+      this.propagateDrawSize(drawWidth, drawHeight)
+      return true
+    }
+
+    //No change
+    return false
+  }
+
+  /**
+   * Propagate draw size
+   */
+  propagateDrawSize(width, height) {
+
+    //Get element
+    const {element} = this
+    if (!element) {
+      return
+    }
+
+    //First set the new dimensions on the canvas elements
+    const canvases = element.getElementsByTagName('canvas')
+    for (const canvas of canvases) {
+      canvas.width = width * pixelRatio
+      canvas.height = height * pixelRatio
+    }
+
+    //In player element? Set dimensions on element
+    const {parentElement} = element.parentElement
+    if (parentElement.tagName.match(/^player$/i)) {
+      element.style.width = `${width}px`
+      element.style.height = `${height}px`
+    }
+
+    //Next set the draw size on the board itself
+    this.setDrawSize(
+      width * pixelRatio,
+      height * pixelRatio,
     )
   }
 }

@@ -1,5 +1,4 @@
 import Grid from './grid.js'
-import {createCanvasContext} from '../helpers/canvas.js'
 
 /**
  * This class represents a layer on the board and is the base class
@@ -205,18 +204,5 @@ export default class BoardLayer {
 
     //Ok to draw
     return true
-  }
-
-  /**
-   * Create canvas context for this layer
-   */
-  createContext(element) {
-
-    //Get type
-    const {type} = this
-    const context = createCanvasContext(element, type)
-
-    //Set context
-    this.setContext(context)
   }
 }

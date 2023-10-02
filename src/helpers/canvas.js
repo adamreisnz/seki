@@ -1,5 +1,10 @@
 
 /**
+ * Pixel ratio
+ */
+export const pixelRatio = window.devicePixelRatio || 1
+
+/**
  * Create canvas element and context for given element
  */
 export function createCanvasContext(element, className) {
@@ -7,7 +12,6 @@ export function createCanvasContext(element, className) {
   //Create canvas element and get context
   const canvas = document.createElement('canvas')
   const context = canvas.getContext('2d')
-  const pixelRatio = window.devicePixelRatio || 1
 
   //Scale context depending on pixel ratio
   if (pixelRatio > 1) {

@@ -50,4 +50,5 @@ export const defaultConfig = {
   //Flags
   showCoordinates: false,
   swapColors: false,
+  isStatic: false,
 }
