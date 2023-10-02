@@ -12,15 +12,15 @@ export default class StoneSlateShell extends Stone {
   /**
    * Draw slate and shell stones
    */
-  draw() {
+  draw(context) {
 
     //Check can draw
-    if (!this.canDraw()) {
+    if (!context || !this.canDraw(context)) {
       return
     }
 
     //Get data
-    const {board, theme, context, alpha, x, y} = this
+    const {board, theme, alpha, x, y} = this
 
     //Get coordinates and stone radius
     const absX = board.getAbsX(x)

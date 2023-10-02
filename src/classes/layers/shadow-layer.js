@@ -1,9 +1,22 @@
-import BoardLayer from './board-layer.js'
+import BoardLayer from '../board-layer.js'
+import {boardLayerTypes} from '../../constants/board.js'
 
 /**
  * Shadow layer
  */
 export default class ShadowLayer extends BoardLayer {
+
+  /**
+   * Constructor
+   */
+  constructor(board, theme) {
+
+    //Parent constructor
+    super(board, theme)
+
+    //Set type
+    this.type = boardLayerTypes.SHADOW
+  }
 
   /**
    * Add a stone shadow object

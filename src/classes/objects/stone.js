@@ -1,4 +1,4 @@
-import BoardObject from './board-object.js'
+import BoardObject from '../board-object.js'
 
 /**
  * This class is used for drawing stones on the board

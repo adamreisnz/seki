@@ -1,5 +1,5 @@
-import BoardLayer from './board-layer.js'
-import Coordinates from './coordinates.js'
+import BoardLayer from '../board-layer.js'
+import {boardLayerTypes} from '../../constants/board.js'
 
 /**
  * This class represents the grid layer of the board, and it is
@@ -10,23 +10,16 @@ export default class GridLayer extends BoardLayer {
   /**
    * Constructor
    */
-  constructor(board, theme, context) {
+  constructor(board, theme) {
 
     //Parent constructor
-    super(board, theme, context)
+    super(board, theme)
 
-    //Instantiate coordinates class
-    this.coordinates = new Coordinates(board, theme, context)
+    //Set type
+    this.type = boardLayerTypes.GRID
   }
 
-  /**
-   * Show or hide the coordinates.
-   */
-  setCoordinates(showCoordinates) {
-    this.coordinates.toggle(showCoordinates)
-  }
-
-  /*****************************************************************************
+  /**************************************************************************
    * Object handling
    ***/
 
@@ -40,7 +33,7 @@ export default class GridLayer extends BoardLayer {
   /**
    * Set all has nothing to set
    */
-  setAll(/*grid*/) {
+  setAll() {
     return
   }
 
@@ -56,34 +49,6 @@ export default class GridLayer extends BoardLayer {
    ***/
 
   /**
-   * Helper for drawing starpoints
-   */
-  drawStarPoint(gridX, gridY, starRadius, starColor) {
-
-    //Get board and context
-    const {board, context} = this
-    const {grid} = board
-
-    //Don't draw if it falls outsize of the board grid
-    if (gridX < grid.xLeft || gridX > grid.xRight) {
-      return
-    }
-    if (gridY < grid.yTop || gridY > grid.yBot) {
-      return
-    }
-
-    //Get absolute coordinates and star point radius
-    const x = board.getAbsX(gridX)
-    const y = board.getAbsY(gridY)
-
-    //Draw star point
-    context.beginPath()
-    context.fillStyle = starColor
-    context.arc(x, y, starRadius, 0, 2 * Math.PI, true)
-    context.fill()
-  }
-
-  /**
    * Draw method
    */
   draw() {
@@ -94,7 +59,7 @@ export default class GridLayer extends BoardLayer {
     }
 
     //Get data
-    const {board, theme, context, coordinates} = this
+    const {board, theme, context} = this
     const {width, height, drawMarginHor, drawMarginVer} = board
 
     //Determine top x and y margin
@@ -149,9 +114,34 @@ export default class GridLayer extends BoardLayer {
 
     //Undo translation
     context.translate(-canvasTranslate, -canvasTranslate)
+  }
 
-    //Draw coordinates
-    coordinates.draw()
+  /**
+   * Helper for drawing starpoints
+   */
+  drawStarPoint(gridX, gridY, starRadius, starColor) {
+
+    //Get board and context
+    const {board, context} = this
+    const {grid} = board
+
+    //Don't draw if it falls outsize of the board grid
+    if (gridX < grid.xLeft || gridX > grid.xRight) {
+      return
+    }
+    if (gridY < grid.yTop || gridY > grid.yBot) {
+      return
+    }
+
+    //Get absolute coordinates and star point radius
+    const x = board.getAbsX(gridX)
+    const y = board.getAbsY(gridY)
+
+    //Draw star point
+    context.beginPath()
+    context.fillStyle = starColor
+    context.arc(x, y, starRadius, 0, 2 * Math.PI, true)
+    context.fill()
   }
 
   /**
@@ -163,20 +153,20 @@ export default class GridLayer extends BoardLayer {
     const {board, theme, context} = this
 
     //Get absolute coordinates and stone radius
-    const x = board.getAbsX(gridX)
-    const y = board.getAbsY(gridY)
-    const s = board.getCellSize()
-    const r = theme.get('stone.radius', s)
+    const absX = board.getAbsX(gridX)
+    const absY = board.getAbsY(gridY)
+    const cellSize = board.getCellSize()
+    const radius = theme.get('stone.radius', cellSize)
 
     //Get theme properties
-    const lineWidth = theme.get('grid.lineWidth', s)
+    const lineWidth = theme.get('grid.lineWidth', cellSize)
     const canvasTranslate = theme.canvasTranslate(lineWidth)
 
     //Translate canvas
     context.translate(canvasTranslate, canvasTranslate)
 
     //Clear rectangle
-    context.clearRect(x - r, y - r, 2 * r, 2 * r)
+    context.clearRect(absX - radius, absY - radius, 2 * radius, 2 * radius)
 
     //Undo translation
     context.translate(-canvasTranslate, -canvasTranslate)
@@ -191,24 +181,24 @@ export default class GridLayer extends BoardLayer {
     const {board, theme, context} = this
 
     //Get absolute coordinates and stone radius
-    const x = board.getAbsX(gridX)
-    const y = board.getAbsY(gridY)
-    const s = board.getCellSize()
-    const r = theme.get('stone.radius', s)
+    const absX = board.getAbsX(gridX)
+    const absY = board.getAbsY(gridY)
+    const cellSize = board.getCellSize()
+    const radius = theme.get('stone.radius', cellSize)
 
     //Get theme properties
-    const lineWidth = theme.get('grid.lineWidth', s)
+    const lineWidth = theme.get('grid.lineWidth', cellSize)
     const strokeStyle = theme.get('grid.lineColor')
-    const starRadius = theme.get('grid.star.radius', s)
+    const starRadius = theme.get('grid.star.radius', cellSize)
     const starColor = theme.get('grid.star.color')
     const canvasTranslate = theme.canvasTranslate(lineWidth)
     const starPoints = theme.get('grid.star.points', board.width, board.height)
 
     //Determine draw coordinates
-    const x1 = (gridX === 0) ? x : x - r
-    const x2 = (gridX === board.width - 1) ? x : x + r
-    const y1 = (gridY === 0) ? y : y - r
-    const y2 = (gridY === board.height - 1) ? y : y + r
+    const x1 = (gridX === 0) ? absX : absX - radius
+    const x2 = (gridX === board.width - 1) ? absX : absX + radius
+    const y1 = (gridY === 0) ? absY : absY - radius
+    const y2 = (gridY === board.height - 1) ? absY : absY + radius
 
     //Translate canvas
     context.translate(canvasTranslate, canvasTranslate)
@@ -219,14 +209,14 @@ export default class GridLayer extends BoardLayer {
     context.strokeStyle = strokeStyle
 
     //Patch up grid lines
-    context.moveTo(x1, y)
-    context.lineTo(x2, y)
-    context.moveTo(x, y1)
-    context.lineTo(x, y2)
+    context.moveTo(x1, absY)
+    context.lineTo(x2, absY)
+    context.moveTo(absX, y1)
+    context.lineTo(absX, y2)
     context.stroke()
 
     //Check if we need to draw a star point here
-    for (let i in starPoints) {
+    for (const i in starPoints) {
       if (starPoints[i].x === gridX && starPoints[i].y === gridY) {
         this.drawStarPoint(gridX, gridY, starRadius, starColor)
       }

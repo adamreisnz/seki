@@ -1,5 +1,6 @@
-import BoardLayer from './board-layer.js'
+import BoardLayer from '../board-layer.js'
 import {stoneColors} from '../../constants/index.js'
+import {boardLayerTypes} from '../../constants/board.js'
 
 /**
  * Stones layer
@@ -9,10 +10,13 @@ export default class StonesLayer extends BoardLayer {
   /**
    * Constructor
    */
-  constructor(board, theme, context) {
+  constructor(board, theme) {
 
     //Call parent constructor
-    super(board, theme, context)
+    super(board, theme)
+
+    //Set type
+    this.type = boardLayerTypes.STONES
 
     //Set empty value for grid
     this.grid.whenEmpty(stoneColors.EMPTY)

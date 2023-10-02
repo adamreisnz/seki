@@ -1,28 +1,53 @@
-import BoardObject from './board-object.js'
-import {coordinateGenerators} from '../../helpers/coordinates.js'
+import BoardLayer from '../board-layer.js'
+import {coordinateGenerators} from '../../helpers/index.js'
 
 /**
- * This class is used for drawing board coordinates
+ * This class represents the grid layer of the board, and it is
+ * responsible for drawing gridlines, starpoints and coordinates
  */
-export default class Coordinates extends BoardObject {
+export default class CoordinatesLayer extends BoardLayer {
+
+  /**************************************************************************
+   * Object handling
+   ***/
 
   /**
-   * Constructor
+   * Get all has nothing to return
    */
-  constructor(board, theme, context) {
-
-    //Parent constructor
-    super(board, theme, context)
-
-    //Whether we should draw coordinates
-    this.shouldDraw = false
+  getAll() {
+    return null
   }
 
   /**
-   * Show or hide the coordinates.
+   * Set all has nothing to set
    */
-  toggle(shouldDraw) {
-    this.shouldDraw = shouldDraw
+  setAll() {
+    return
+  }
+
+  /**
+   * Remove all has nothing to remove
+   */
+  removeAll() {
+    return
+  }
+
+  /**************************************************************************
+   * Drawing
+   ***/
+
+  /**
+   * Check if we can or should draw coordinates
+   */
+  canDraw() {
+
+    //Parent method
+    if (!super.canDraw()) {
+      return false
+    }
+
+    //Check flag
+    return this.board.showCoordinates
   }
 
   /**
@@ -30,8 +55,8 @@ export default class Coordinates extends BoardObject {
    */
   draw() {
 
-    //Check if should/can draw
-    if (!this.shouldDraw || !this.canDraw()) {
+    //Check if we can draw
+    if (!this.canDraw()) {
       return
     }
 
@@ -96,6 +121,10 @@ export default class Coordinates extends BoardObject {
       context.fillText(ch, x, yb)
     }
   }
+
+  /**************************************************************************
+   * Helpers
+   ***/
 
   /**
    * Get index for coordinate

@@ -1,5 +1,5 @@
-import Grid from '../grid.js'
-import BoardObject from './board-object.js'
+import Grid from './grid.js'
+import {createCanvasContext} from '../helpers/canvas.js'
 
 /**
  * This class represents a layer on the board and is the base class
@@ -7,18 +7,53 @@ import BoardObject from './board-object.js'
  * coordinates and is responsible for drawing itself as well as its objects
  * onto the canvas.
  */
-export default class BoardLayer extends BoardObject {
+export default class BoardLayer {
 
   /**
    * Constructor
    */
-  constructor(board, theme, context) {
+  constructor(board, theme) {
 
-    //Parent constructor
-    super(board, theme, context)
+    //Set board and t heme
+    this.setBoard(board)
+    this.setTheme(theme)
 
-    //Initialize grid for board objects
+    //Create grid
+    this.createGrid()
+  }
+
+  /**
+   * Set the board
+   */
+  setBoard(board) {
+    this.board = board
+  }
+
+  /**
+   * Set the theme
+   */
+  setTheme(theme) {
+    this.theme = theme
+  }
+
+  /**
+   * Create grid
+   */
+  createGrid() {
     this.grid = new Grid()
+  }
+
+  /**
+   * Create canvas context for this layer
+   */
+  createContext(element) {
+
+    //Get type
+    const {type} = this
+    const context = createCanvasContext(element, type)
+
+    //Set context
+    this.setContext(context)
   }
 
   /*****************************************************************************
@@ -96,14 +131,44 @@ export default class BoardLayer extends BoardObject {
    ***/
 
   /**
+   * Draw
+   */
+  draw() {
+
+    //Check if can draw
+    if (!this.canDraw()) {
+      return
+    }
+  }
+
+  /**
    * Clear layer (this method doesn't clear objects, as the canvas wipe clears the entire canvas)
    */
   clear() {
-    if (this.context) {
-      this.context.clearRect(
-        0, 0, this.context.canvas.clientWidth, this.context.canvas.clientHeight,
-      )
+
+    //Check if can draw
+    if (!this.canDraw()) {
+      return
     }
+
+    //Get context
+    const {context} = this
+
+    //Clear rectangle
+    context.clearRect(
+      0,
+      0,
+      context.canvas.clientWidth,
+      context.canvas.clientHeight,
+    )
+  }
+
+  /**
+   * Redraw
+   */
+  redraw() {
+    this.clear()
+    this.draw()
   }
 
   /**
@@ -126,5 +191,22 @@ export default class BoardLayer extends BoardObject {
   redrawCell(x, y) {
     this.clearCell(x, y)
     this.drawCell(x, y)
+  }
+
+  /**
+   * Check if we can draw
+   */
+  canDraw() {
+
+    //Get board and context
+    const {board, context} = this
+
+    //Can only draw when we have dimensions and context
+    if (!context || board.drawWidth === 0 || board.drawheight === 0) {
+      return false
+    }
+
+    //Ok to draw
+    return true
   }
 }

@@ -1,7 +1,7 @@
-import StoneSlateShell from './stone-slate-shell.js'
-import StoneGlass from './stone-glass.js'
-import StoneMono from './stone-mono.js'
-import {stoneStyles} from '../../constants/stone.js'
+import StoneSlateShell from './objects/stone-slate-shell.js'
+import StoneGlass from './objects/stone-glass.js'
+import StoneMono from './objects/stone-mono.js'
+import {stoneStyles} from '../constants/stone.js'
 
 /**
  * Stone factory class

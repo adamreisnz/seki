@@ -1,0 +1,50 @@
+
+/**
+ * Get path in an object
+ */
+export function get(obj, path, defaultValue = undefined) {
+
+  //No path given
+  if (path === null || path === undefined) {
+    throw new Error(`Invalid path given for lookup: ${path}`)
+  }
+
+  //Split path in object keys to traverse
+  const keys = path.split('.')
+  for (let i = 0; i < keys.length && obj !== undefined; i++) {
+    const key = keys[i]
+    obj = (obj !== null) ? obj[key] : undefined
+  }
+
+  //Return default value if undefined
+  if (obj === undefined) {
+    return defaultValue
+  }
+
+  //Return reference
+  return obj
+}
+
+/**
+ * Set a value in an object by path
+ */
+export function set(obj, path, value) {
+
+  //No path given
+  if (path === null || path === undefined) {
+    throw new Error(`Invalid path given for set: ${path}`)
+  }
+
+  //Split path in object keys to traverse
+  const keys = path.split('.')
+  for (let i = 0; i < keys.length; i++) {
+    if ((i + 1) === keys.length) {
+      obj[keys[i]] = value
+      break
+    }
+    if (typeof obj[keys[i]] === 'undefined') {
+      obj[keys[i]] = {}
+    }
+    obj = obj[keys[i]]
+  }
+}
