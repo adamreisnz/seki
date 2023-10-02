@@ -7,9 +7,8 @@ export default class GridObject {
   /**
    * Constructor
    */
-  constructor(board, layer) {
+  constructor(board) {
     this.board = board
-    this.layer = layer
   }
 
   /**

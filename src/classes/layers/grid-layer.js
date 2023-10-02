@@ -19,34 +19,12 @@ export default class GridLayer extends BoardLayer {
     this.type = boardLayerTypes.GRID
   }
 
-  /**************************************************************************
-   * Object handling
-   ***/
-
   /**
-   * Get all has nothing to return
+   * Unneeded methods
    */
-  getAll() {
-    return null
-  }
-
-  /**
-   * Set all has nothing to set
-   */
-  setAll() {
-    return
-  }
-
-  /**
-   * Remove all has nothing to remove
-   */
-  removeAll() {
-    return
-  }
-
-  /*****************************************************************************
-   * Drawing
-   ***/
+  getAll() {}
+  setAll() {}
+  removeAll() {}
 
   /**
    * Draw method

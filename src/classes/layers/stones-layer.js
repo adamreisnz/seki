@@ -21,29 +21,29 @@ export default class StonesLayer extends BoardLayer {
   /**
    * Set all stones at once
    */
-  setAll(grid) {
+  // setAll(grid) {
 
-    //TODO: Why is this going over changes one by one as opposed to just cloning the grid?
+  //   //TODO: Why is this going over changes one by one as opposed to just cloning the grid?
 
-    //Get changes compared to current grid
-    const changes = this.grid.compare(grid)
+  //   //Get changes compared to current grid
+  //   const changes = this.grid.compare(grid)
 
-    //Clear removed stones
-    for (const entry of changes.remove) {
-      const {x, y} = entry
-      this.remove(x, y)
-    }
+  //   //Clear removed stones
+  //   for (const entry of changes.remove) {
+  //     const {x, y} = entry
+  //     this.remove(x, y)
+  //   }
 
-    //Draw added stones
-    for (const entry of changes.add) {
-      const {x, y, value: stone} = entry
-      this.add(x, y, stone)
-    }
+  //   //Draw added stones
+  //   for (const entry of changes.add) {
+  //     const {x, y, value: stone} = entry
+  //     this.add(x, y, stone)
+  //   }
 
-    //Redraw layer
-    //TODO: why redraw needed right after setAll()
-    this.redraw()
-  }
+  //   //Redraw layer
+  //   //TODO: why redraw needed right after setAll()
+  //   this.redraw()
+  // }
 
   /**
    * Add a single stone

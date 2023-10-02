@@ -19,46 +19,12 @@ export default class ShadowLayer extends BoardLayer {
   }
 
   /**
-   * Add a stone shadow object
+   * Remove a single stone shadow object
    */
-  add(stone) {
+  remove(gridX, gridY) {
 
-    //Get stone details
-    const {shadow, alpha, color, x, y} = stone
-
-    //Don't add if no shadow
-    if (shadow === false || (typeof alpha !== 'undefined' && alpha < 1)) {
-      return
-    }
-
-    //Get data
-    const {grid} = this
-
-    //Already have an object here?
-    if (grid.has(x, y)) {
-      return
-    }
-
-    //Add to grid
-    grid.set(x, y, color)
-
-    //Draw it
-    stone.draw()
-  }
-
-  /**
-   * Remove a stone
-   */
-  remove(stone) {
-
-    //Get data
-    const {x, y} = stone
-    const {grid} = this
-
-    //Remove from grid
-    grid.unset(x, y)
-
-    //Redraw whole layer
+    //Remove from grid and redraw the whole layer
+    this.grid.delete(gridX, gridY)
     this.redraw()
   }
 
@@ -67,13 +33,13 @@ export default class ShadowLayer extends BoardLayer {
    */
   draw() {
 
-    //Check if can draw
-    if (!this.canDraw()) {
+    //Get data
+    const {board, theme, context} = this
+
+    //No context
+    if (!context) {
       return
     }
-
-    //Get data
-    const {board, theme, context, grid} = this
 
     //Get shadowsize from theme
     const cellSize = board.getCellSize()
@@ -82,13 +48,8 @@ export default class ShadowLayer extends BoardLayer {
     //Apply shadow transformation
     context.setTransform(1, 0, 0, 1, shadowSize, shadowSize)
 
-    //Get all stones as objects
-    const stones = grid.all('color')
-
-    //Draw them
-    for (const stone of stones) {
-      stone.draw()
-    }
+    //Call parent method
+    super.draw()
   }
 
   /**
@@ -102,7 +63,6 @@ export default class ShadowLayer extends BoardLayer {
     }
 
     //Don't draw shadows on a static board
-    const {board} = this
-    return !board.isStatic
+    return !this.board.isStatic
   }
 }

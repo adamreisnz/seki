@@ -72,12 +72,14 @@ export default {
 
     //Mini stones
     mini: {
+      shadow: false,
       scale: 0.5,
       alpha: 1,
     },
 
     //Faded stones
     faded: {
+      shadow: false,
       scale: 1,
       alpha: function(stoneColor) {
         if (stoneColor === stoneColors.BLACK) {

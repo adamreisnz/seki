@@ -7,34 +7,12 @@ import {coordinateGenerators} from '../../helpers/index.js'
  */
 export default class CoordinatesLayer extends BoardLayer {
 
-  /**************************************************************************
-   * Object handling
-   ***/
-
   /**
-   * Get all has nothing to return
+   * Unneeded methods
    */
-  getAll() {
-    return null
-  }
-
-  /**
-   * Set all has nothing to set
-   */
-  setAll() {
-    return
-  }
-
-  /**
-   * Remove all has nothing to remove
-   */
-  removeAll() {
-    return
-  }
-
-  /**************************************************************************
-   * Drawing
-   ***/
+  getAll() {}
+  setAll() {}
+  removeAll() {}
 
   /**
    * Check if we can or should draw coordinates

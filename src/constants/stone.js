@@ -19,3 +19,11 @@ export const stoneStyles = {
   GLASS: 'glass',
   MONO: 'mono',
 }
+
+/**
+ * Stone modifier types
+ */
+export const stoneModifierTypes = {
+  FADED: 'faded',
+  MINI: 'mini',
+}
