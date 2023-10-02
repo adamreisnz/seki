@@ -12,19 +12,14 @@ export default class StoneSlateShell extends Stone {
   /**
    * Draw slate and shell stones
    */
-  draw(context) {
-
-    //Check can draw
-    if (!context || !this.canDraw(context)) {
-      return
-    }
+  draw(context, gridX, gridY) {
 
     //Get data
-    const {board, theme, alpha, x, y} = this
+    const {board, theme, alpha} = this
 
     //Get coordinates and stone radius
-    const absX = board.getAbsX(x)
-    const absY = board.getAbsY(y)
+    const absX = board.getAbsX(gridX)
+    const absY = board.getAbsY(gridY)
     const radius = this.getRadius()
     const color = this.getColor()
 
@@ -53,11 +48,11 @@ export default class StoneSlateShell extends Stone {
 
       //Get random shell type
       const len = shellTypes.length
-      const type = seed % (len + x * board.width + y) % len
+      const type = seed % (len + gridX * board.width + gridY) % len
       const style = shellTypes[type]
 
       //Determine random angle
-      const z = board.width * board.height + x * board.width + y
+      const z = board.width * board.height + gridX * board.width + gridY
       const angle = (2 / z) * (seed % z)
 
       //Draw shell pattern

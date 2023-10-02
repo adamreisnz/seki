@@ -1,24 +1,22 @@
-import BoardObject from '../board-object.js'
+import GridObject from '../grid-object.js'
 
 /**
  * This class is used for drawing stones on the board
  */
-export default class Stone extends BoardObject {
+export default class Stone extends GridObject {
 
   /**
    * Constructor
    */
-  constructor(board, theme, context) {
+  constructor(board, layer) {
 
     //Parent constructor
-    super(board, theme, context)
+    super(board, layer)
 
     //Instantiate properties
-    this.x = 0
-    this.y = 0
     this.scale = 1
     this.alpha = 1
-    this.shadow = theme.get('stone.shadow')
+    this.shadow = this.theme.get('stone.shadow')
   }
 
   /**
@@ -26,16 +24,11 @@ export default class Stone extends BoardObject {
    */
   drawShadow() {
 
-    //Can draw?
-    if (!this.canDraw()) {
-      return
-    }
-
     //Get data
     const {board, shadow} = this
 
     //Add shadow
-    if (!board.static && shadow) {
+    if (shadow) {
       board.layers.shadow.add(this)
     }
   }
@@ -49,7 +42,7 @@ export default class Stone extends BoardObject {
     const {board, shadow} = this
 
     //Remove shadow
-    if (!board.static && shadow) {
+    if (shadow) {
       board.layers.shadow.remove(this)
     }
   }

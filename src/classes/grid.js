@@ -1,29 +1,21 @@
-import {toObject} from '../helpers/grid.js'
 import GridChanges from './grid-changes.js'
 
 /**
  * This class represents a board grid of a given size. It acts as a
- * container for values (e.g. stone colors, markup types) for the layer classes,
+ * container for values (e.g. stone colors, markup types) for board layers,
  * as well as a container for stone color values for the game position class.
- * It has built in validation of coordinates.
  */
 export default class Grid {
 
   /**
    * Constructor
    */
-  constructor(width, height, emptyValue) {
+  constructor(width, height) {
 
-    //Initialize size and grid array
+    //Initialize size and underlying grid map
     this.width = 0
     this.height = 0
-    this.grid = []
-    this.emptyValue = null
-
-    //Set empty value if given
-    if (typeof emptyValue !== 'undefined') {
-      this.emptyValue = emptyValue
-    }
+    this.map = new Map()
 
     //Size given? Set it
     if (width || height) {
@@ -35,51 +27,54 @@ export default class Grid {
    * Set a value
    */
   set(x, y, value) {
-    if (this.isOnGrid(x, y)) {
-      this.grid[x][y] = value
+    if (!this.isOnGrid(x, y)) {
+      return
     }
+    const key = this.getMapKey(x, y)
+    this.map.set(key, value)
   }
 
   /**
-   * Unset a value
+   * Get a value
    */
-  unset(x, y) {
-    if (this.isOnGrid(x, y)) {
-      this.grid[x][y] = this.emptyValue
+  get(x, y) {
+    if (!this.isOnGrid(x, y)) {
+      return null
     }
+    return this.getMapValue(x, y)
+  }
+
+  /**
+   * Delete a value
+   */
+  delete(x, y) {
+    if (!this.isOnGrid(x, y)) {
+      return
+    }
+    const key = this.getMapKey(x, y)
+    this.map.delete(key)
   }
 
   /**
    * Check if we have a non null value on the coordinates
    */
   has(x, y) {
-    return (this.isOnGrid(x, y) && this.grid[x][y] !== this.emptyValue)
+    if (!this.isOnGrid(x, y)) {
+      return false
+    }
+    const key = this.getMapKey(x, y)
+    return this.map.has(key)
   }
 
   /**
    * Check if we have a specific value on the coordinates
    */
-  is(x, y, value) {
-    return (this.isOnGrid(x, y) && this.grid[x][y] === value)
-  }
-
-  /**
-   * Get a value, or an object with coordinates and the value in the given value key
-   */
-  get(x, y, valueKey) {
-
-    //Validate
-    if (!this.isOnGrid(x, y) || this.grid[x][y] === this.emptyValue) {
-      return this.emptyValue
+  is(x, y, check) {
+    if (!this.isOnGrid(x, y)) {
+      return false
     }
-
-    //Return as is?
-    if (!valueKey) {
-      return this.grid[x][y]
-    }
-
-    //Return as object
-    return toObject(this.grid, x, y, valueKey)
+    const value = this.getMapValue(x, y)
+    return (value === check)
   }
 
   /*****************************************************************************
@@ -90,23 +85,15 @@ export default class Grid {
    * Get all items in the grid. If you specify a value key, a list of objects
    * with coordinates and the value in the given value key will be returned.
    */
-  getAll(valueKey) {
+  getAll() {
 
-    //Just get the grid?
-    if (!valueKey) {
-      return this.grid
-    }
-
-    //Initialize objects list
+    //Initialize objects
     const objects = []
 
-    //Loop coordinates
-    for (let x = 0; x < this.width; x++) {
-      for (let y = 0; y < this.height; y++) {
-        if (this.grid[x][y] !== this.emptyValue) {
-          objects.push(toObject(this.grid, x, y, valueKey))
-        }
-      }
+    //Loop map
+    for (const [key, value] of this.map) {
+      const {x, y} = this.getCoords(key)
+      objects.push({x, y, value})
     }
 
     //Return objects list
@@ -117,76 +104,54 @@ export default class Grid {
    * Check if there is anything
    */
   isEmpty() {
-    for (let x = 0; x < this.width; x++) {
-      for (let y = 0; y < this.height; y++) {
-        if (this.grid[x][y] !== this.emptyValue) {
-          return false
-        }
-      }
-    }
-    return true
+    return (this.map.size === 0)
   }
 
   /**
-   * Populate the whole grid with a given value
+   * Clear the grid
    */
-  populate(value) {
-    for (let x = 0; x < this.width; x++) {
-      for (let y = 0; y < this.height; y++) {
-        this.grid[x][y] = value
-      }
-    }
+  clear() {
+    this.map.clear()
   }
 
   /**
-   * Empty the grid
-   */
-  empty() {
-    for (let x = 0; x < this.width; x++) {
-      for (let y = 0; y < this.height; y++) {
-        this.grid[x][y] = this.emptyValue
-      }
-    }
-  }
-
-  /**
-   * Clone ourselves
+   * Clone grid
    */
   clone() {
 
-    //Create new instance
-    const clone = new Grid()
+    //Get data
+    const {width, height, map} = this
 
-    //Manually set vars for maximum efficiency
-    clone.grid = structuredClone(this.grid)
-    clone.emptyValue = this.emptyValue
-    clone.width = this.width
-    clone.height = this.height
+    //Create new instance and copy grid map
+    const clone = new Grid(width, height)
+    clone.map = new Map(map)
 
     //Return
     return clone
   }
-
-  /*****************************************************************************
-   * Comparison
-   ***/
 
   /**
    * Checks if a given grid is the same as the current grid
    */
   isSameAs(grid) {
 
+    //Get data
+    const {width, height, map} = this
+
     //Must have the same size
-    if (this.width !== grid.width || this.height !== grid.height) {
+    if (width !== grid.width || height !== grid.height) {
       return false
     }
 
-    //Loop all coordinates
-    for (let x = 0; x < this.width; x++) {
-      for (let y = 0; y < this.height; y++) {
-        if (this.grid[x][y] !== grid[x][y]) {
-          return false
-        }
+    //Must have the same amount of entries
+    if (map.size !== grid.map.size) {
+      return false
+    }
+
+    //Each entry should be the same
+    for (const [key, value] of map) {
+      if (grid.map.get(key) !== value) {
+        return false
       }
     }
 
@@ -197,40 +162,40 @@ export default class Grid {
   /**
    * Compares this position with another position and return change object
    */
-  compare(newGrid, valueKey) {
+  compare(newGrid) {
 
-    //Initialize board grid changes object
-    const changes = new GridChanges()
+    //Get data
+    const {width, height, map} = this
 
     //Must have the same size
-    if (this.width !== newGrid.width || this.height !== newGrid.height) {
-      console.warn('Trying to compare grids of a different size')
-      return changes
+    if (width !== newGrid.width || height !== newGrid.height) {
+      throw new Error('Trying to compare grids of a different size')
     }
 
-    //Loop all coordinates
-    for (let x = 0; x < this.width; x++) {
-      for (let y = 0; y < this.height; y++) {
+    //Initialize grid changes instance
+    const changes = new GridChanges()
 
-        //Something to add?
-        if (
-          newGrid.grid[x][y] !== this.emptyValue &&
-          newGrid.grid[x][y] !== this.grid[x][y]
-        ) {
-          changes.add.push(toObject(newGrid.grid, x, y, valueKey))
-        }
+    //Go over each entry in the existing grid
+    for (const [key, value] of map) {
 
-        //Something to remove?
-        if (
-          this.grid[x][y] !== this.emptyValue &&
-          newGrid.grid[x][y] !== this.grid[x][y]
-        ) {
-          changes.remove.push(toObject(this.grid, x, y, valueKey))
-        }
+      //Something to remove?
+      if (!newGrid.map.has(key)) {
+        const {x, y} = this.getCoords(key)
+        changes.remove.push({x, y, value})
       }
     }
 
-    //Return changes grid
+    //Go over each entry in the new grid
+    for (const [key, value] of newGrid.map) {
+
+      //Something to add?
+      if (!map.has(key)) {
+        const {x, y} = this.getCoords(key)
+        changes.add.push({x, y, value})
+      }
+    }
+
+    //Return changes
     return changes
   }
 
@@ -242,14 +207,8 @@ export default class Grid {
    * Helper to validate coordinates (first param can be an object)
    */
   isOnGrid(x, y) {
-    return (x >= 0 && y >= 0 && x < this.width && y < this.height)
-  }
-
-  /**
-   * Helper to set the empty value
-   */
-  whenEmpty(emptyValue) {
-    this.emptyValue = emptyValue
+    const {width, height} = this
+    return (x >= 0 && y >= 0 && x < width && y < height)
   }
 
   /**
@@ -257,28 +216,42 @@ export default class Grid {
    */
   setSize(width, height) {
 
-    //Check what's given
-    width = width || height || 0
-    height = height || width || 0
-
     //Set
-    this.width = parseInt(width)
-    this.height = parseInt(height)
+    this.width = parseInt(width || 0)
+    this.height = parseInt(height || width || 0)
 
-    //Create grid array
-    this.grid = []
-    for (let x = 0; x < this.width; x++) {
-      this.grid[x] = []
-      for (let y = 0; y < this.height; y++) {
-        this.grid[x][y] = this.emptyValue
-      }
-    }
+    //Clear map
+    this.map.clear()
   }
 
   /**
    * Get the grid size object
    */
   getSize() {
-    return {width: this.width, height: this.height}
+    const {width, height} = this
+    return {width, height}
+  }
+
+  /**
+   * Get grid key for a given coordinate
+   */
+  getMapKey(x, y) {
+    return `${x},${y}`
+  }
+
+  /**
+   * Get grid value for a given coordinate
+   */
+  getMapValue(x, y) {
+    const key = this.getMapKey(x, y)
+    return this.grid.get(key)
+  }
+
+  /**
+   * Get coordinates based on map key
+   */
+  getCoords(mapKey) {
+    const [x, y] = mapKey.split(',')
+    return {x, y}
   }
 }

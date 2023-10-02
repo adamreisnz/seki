@@ -9,10 +9,10 @@ export default class ShadowLayer extends BoardLayer {
   /**
    * Constructor
    */
-  constructor(board, theme) {
+  constructor(board) {
 
     //Parent constructor
-    super(board, theme)
+    super(board)
 
     //Set type
     this.type = boardLayerTypes.SHADOW
@@ -89,5 +89,20 @@ export default class ShadowLayer extends BoardLayer {
     for (const stone of stones) {
       stone.draw()
     }
+  }
+
+  /**
+   * Can draw checker
+   */
+  canDraw() {
+
+    //Parent method
+    if (!super.canDraw()) {
+      return false
+    }
+
+    //Don't draw shadows on a static board
+    const {board} = this
+    return !board.isStatic
   }
 }

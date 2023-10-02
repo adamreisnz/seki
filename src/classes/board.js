@@ -62,20 +62,16 @@ export default class Board {
     for (const layerType of this.layerOrder) {
       this.layers.set(
         layerType,
-        BoardLayerFactory.create(layerType, board, theme),
+        BoardLayerFactory.create(layerType, board),
       )
     }
-
-    //Static board flag
-    this.static = false
 
     //Get margin from theme
     this.margin = theme.get('board.margin')
 
-    //Color swapping
+    //Flags
+    this.isStatic = false
     this.swapColors = false
-
-    //Turn off coordinates
     this.showCoordinates = false
 
     //Initialize grid size
@@ -119,7 +115,7 @@ export default class Board {
    * (one canvas layer, only grid, coordinates, stones and markup)
    */
   makeStatic() {
-    this.static = true
+    this.isStatic = true
     this.layerOrder = [
       boardLayerTypes.GRID,
       boardLayerTypes.COORDINATES,
@@ -336,7 +332,7 @@ export default class Board {
     }
 
     //For static board, redraw the whole thing
-    if (this.static) {
+    if (this.isStatic) {
       this.redraw()
     }
 
@@ -505,35 +501,35 @@ export default class Board {
    ***/
 
   /**
-   * Clear the whole board
+   * Erase the whole board
    */
-  clear(layerType) {
+  erase(layerType) {
 
     //Just clearing one layer?
     if (layerType) {
 
       //If the board is static we can't do this
-      if (this.static) {
+      if (this.isStatic) {
         return
       }
 
       //Find layer
       const layer = this.layers.get(layerType)
       if (layer) {
-        layer.clear()
+        layer.erase()
       }
       return
     }
 
     //Static? Clearing stones is enough
-    if (this.static) {
+    if (this.isStatic) {
       const stonesLayer = this.layers.get(boardLayerTypes.STONES)
-      stonesLayer.clear()
+      stonesLayer.erase()
       return
     }
 
     //Clear all layers
-    this.layers.forEach(layer => layer.clear())
+    this.layers.forEach(layer => layer.erase())
   }
 
   /**
@@ -550,7 +546,7 @@ export default class Board {
     if (layerType) {
 
       //Static board
-      if (this.static) {
+      if (this.isStatic) {
         return
       }
 
@@ -562,8 +558,8 @@ export default class Board {
       return
     }
 
-    //Clear the board first
-    this.clear()
+    //Erase the board first
+    this.erase()
 
     //Now draw all layers again in the correct order
     for (const layerType of this.layerOrder) {

@@ -10,10 +10,10 @@ export default class GridLayer extends BoardLayer {
   /**
    * Constructor
    */
-  constructor(board, theme) {
+  constructor(board) {
 
     //Parent constructor
-    super(board, theme)
+    super(board)
 
     //Set type
     this.type = boardLayerTypes.GRID

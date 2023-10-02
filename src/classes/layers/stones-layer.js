@@ -1,5 +1,4 @@
 import BoardLayer from '../board-layer.js'
-import {stoneColors} from '../../constants/index.js'
 import {boardLayerTypes} from '../../constants/board.js'
 
 /**
@@ -10,16 +9,13 @@ export default class StonesLayer extends BoardLayer {
   /**
    * Constructor
    */
-  constructor(board, theme) {
+  constructor(board) {
 
     //Call parent constructor
-    super(board, theme)
+    super(board)
 
     //Set type
     this.type = boardLayerTypes.STONES
-
-    //Set empty value for grid
-    this.grid.whenEmpty(stoneColors.EMPTY)
   }
 
   /**
@@ -27,86 +23,49 @@ export default class StonesLayer extends BoardLayer {
    */
   setAll(grid) {
 
+    //TODO: Why is this going over changes one by one as opposed to just cloning the grid?
+
     //Get changes compared to current grid
-    const {remove, add} = this.grid.compare(grid, 'color')
+    const changes = this.grid.compare(grid)
 
     //Clear removed stones
-    for (const stone of remove) {
-      stone.clear()
+    for (const entry of changes.remove) {
+      const {x, y} = entry
+      this.remove(x, y)
     }
 
     //Draw added stones
-    for (const stone of add) {
-      stone.draw()
+    for (const entry of changes.add) {
+      const {x, y, value: stone} = entry
+      this.add(x, y, stone)
     }
 
-    //Set new grid
-    this.grid = grid.clone()
-  }
-
-  /*****************************************************************************
-   * Drawing
-   ***/
-
-  /**
-   * Draw layer
-   */
-  draw() {
-
-    //Can't draw
-    if (!this.canDraw()) {
-      return
-    }
-
-    //Get all stones on the grid
-    const stones = this.grid.getAll('color')
-
-    //Draw them
-    for (const stone of stones) {
-      stone.draw()
-    }
+    //Redraw layer
+    //TODO: why redraw needed right after setAll()
+    this.redraw()
   }
 
   /**
-   * Redraw layer
+   * Add a single stone
    */
-  redraw() {
+  add(x, y, stone) {
 
-    //Clear shadows layer
-    this.board.removeAll('shadow')
+    //Add to stones layer
+    super.add(x, y, stone)
 
-    //Redraw ourselves
-    this.clear()
-    this.draw()
+    //Also add to shadows layer
+    this.board.add(boardLayerTypes.SHADOW, x, y, stone)
   }
 
   /**
-   * Draw cell
+   * Remove a single stone
    */
-  drawCell(x, y) {
+  remove(x, y) {
 
-    //Get grid
-    const {grid} = this
+    //Remove from stones layer
+    super.remove(x, y)
 
-    //Draw if on grid
-    if (grid.has(x, y)) {
-      const stone = grid.get(x, y, 'color')
-      stone.draw()
-    }
-  }
-
-  /**
-   * Clear cell
-   */
-  clearCell(x, y) {
-
-    //Get grid
-    const {grid} = this
-
-    //Clear if on grid
-    if (grid.has(x, y)) {
-      const stone = grid.get(x, y, 'color')
-      stone.clear()
-    }
+    //Also remove from shadows layer
+    this.board.remove(boardLayerTypes.SHADOW, x, y)
   }
 }

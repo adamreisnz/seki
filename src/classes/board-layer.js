@@ -12,48 +12,19 @@ export default class BoardLayer {
   /**
    * Constructor
    */
-  constructor(board, theme) {
-
-    //Set board and t heme
-    this.setBoard(board)
-    this.setTheme(theme)
-
-    //Create grid
-    this.createGrid()
-  }
-
-  /**
-   * Set the board
-   */
-  setBoard(board) {
+  constructor(board) {
     this.board = board
-  }
-
-  /**
-   * Set the theme
-   */
-  setTheme(theme) {
-    this.theme = theme
-  }
-
-  /**
-   * Create grid
-   */
-  createGrid() {
     this.grid = new Grid()
   }
 
   /**
-   * Create canvas context for this layer
+   * Virtual accessor for theme
    */
-  createContext(element) {
-
-    //Get type
-    const {type} = this
-    const context = createCanvasContext(element, type)
-
-    //Set context
-    this.setContext(context)
+  get theme() {
+    if (!this.board) {
+      return null
+    }
+    return this.board.theme
   }
 
   /*****************************************************************************
@@ -65,11 +36,11 @@ export default class BoardLayer {
    */
   setSize(width, height) {
 
-    //Note: since this method is usually only called upon a global board resize,
+    //NOTE: since this method is usually only called upon a global board resize,
     //which also triggers the redraw method for layers, the layer is not cleared
     //here, as it will happen anyway during the redraw cycle.
 
-    //Set it in the grid (removing all objects in the process)
+    //Set grid size (removes all objects in the process)
     this.grid.setSize(width, height)
   }
 
@@ -77,7 +48,7 @@ export default class BoardLayer {
    * Get all items
    */
   getAll() {
-    return this.grid.clone()
+    return this.grid.clone() //TODO need clone?
   }
 
   /**
@@ -88,18 +59,18 @@ export default class BoardLayer {
   }
 
   /**
-   * Remove all (clear layer and empty grid)
+   * Remove all (erase layer and clear grid)
    */
   removeAll() {
-    this.clear()
-    this.grid.empty()
+    this.erase()
+    this.grid.clear()
   }
 
   /**
    * Add a single item
    */
   add(x, y, value) {
-    this.clearCell(x, y)
+    this.eraseCell(x, y)
     this.grid.set(x, y, value)
     this.drawCell(x, y)
   }
@@ -108,8 +79,8 @@ export default class BoardLayer {
    * Remove a single item
    */
   remove(x, y) {
-    this.clearCell(x, y)
-    this.grid.unset(x, y)
+    this.eraseCell(x, y)
+    this.grid.delete(x, y)
   }
 
   /**
@@ -135,16 +106,26 @@ export default class BoardLayer {
    */
   draw() {
 
-    //Check if can draw
+    //Can't draw
     if (!this.canDraw()) {
       return
+    }
+
+    //Get all entries on the grid
+    const entries = this.grid.getAll()
+    const {context} = this
+
+    //Draw them
+    for (const entry of entries) {
+      const {x, y, value: object} = entry
+      object.draw(context, x, y)
     }
   }
 
   /**
-   * Clear layer (this method doesn't clear objects, as the canvas wipe clears the entire canvas)
+   * Erase whole layer
    */
-  clear() {
+  erase() {
 
     //Check if can draw
     if (!this.canDraw()) {
@@ -167,30 +148,46 @@ export default class BoardLayer {
    * Redraw
    */
   redraw() {
-    this.clear()
+    this.erase()
     this.draw()
   }
 
   /**
    * Draw cell
    */
-  drawCell(/*x, y*/) {
-    //Drawing method to be implemented in specific layer class
+  drawCell(x, y) {
+
+    //Get object
+    const object = this.grid.get(x, y)
+    const {context} = this
+
+    //Draw it
+    if (object) {
+      object.draw(context, x, y)
+    }
   }
 
   /**
-   * Clear cell
+   * Erase cell
    */
-  clearCell(/*x, y*/) {
-    //Clearing method to be implemented in specific layer class
+  eraseCell(x, y) {
+
+    //Get object
+    const object = this.grid.get(x, y)
+    const {context} = this
+
+    //Erase it
+    if (object) {
+      object.erase(context, x, y)
+    }
   }
 
   /**
    * Redraw cell
    */
-  redrawCell(x, y) {
-    this.clearCell(x, y)
-    this.drawCell(x, y)
+  redrawCell(...args) {
+    this.eraseCell(...args)
+    this.drawCell(...args)
   }
 
   /**
@@ -208,5 +205,18 @@ export default class BoardLayer {
 
     //Ok to draw
     return true
+  }
+
+  /**
+   * Create canvas context for this layer
+   */
+  createContext(element) {
+
+    //Get type
+    const {type} = this
+    const context = createCanvasContext(element, type)
+
+    //Set context
+    this.setContext(context)
   }
 }

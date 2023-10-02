@@ -9,19 +9,14 @@ export default class StoneGlass extends Stone {
   /**
    * Draw glass stones
    */
-  draw() {
-
-    //Check can draw
-    if (!this.canDraw()) {
-      return
-    }
+  draw(context, gridX, gridY) {
 
     //Get data
-    const {board, theme, context, alpha, x, y} = this
+    const {board, theme, alpha} = this
 
     //Get coordinates and stone radius
-    const absX = board.getAbsX(x)
-    const absY = board.getAbsY(y)
+    const absX = board.getAbsX(gridX)
+    const absY = board.getAbsY(gridY)
     const radius = this.getRadius()
     const color = this.getColor()
 
