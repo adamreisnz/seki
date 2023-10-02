@@ -3,11 +3,8 @@
  * Stone colors
  */
 export const stoneColors = {
-  E:      0,
-  EMPTY:  0,
-  B:      1,
-  BLACK:  1,
-  W:     -1,
+  EMPTY: 0,
+  BLACK: 1,
   WHITE: -1,
 }
 

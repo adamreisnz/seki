@@ -12,8 +12,18 @@ export default class BoardLayer {
    * Constructor
    */
   constructor(board) {
+
+    //Init
     this.board = board
     this.grid = new Grid()
+    this.context = undefined
+  }
+
+  /**
+   * Set context
+   */
+  setContext(context) {
+    this.context = context
   }
 
   /**

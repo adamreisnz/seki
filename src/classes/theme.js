@@ -17,7 +17,7 @@ export default class Theme {
 
     //Set theme config
     if (config) {
-      this.setThemeConfig(config)
+      this.setConfig(config)
     }
     else {
       this.resetToDefaults()
@@ -27,7 +27,7 @@ export default class Theme {
   /**
    * Change the theme
    */
-  setThemeConfig(config) {
+  setConfig(config) {
     this.config = merge.all([defaultTheme, config || {}])
   }
 

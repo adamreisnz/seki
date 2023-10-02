@@ -1,0 +1,57 @@
+
+/* General */
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+  font-family: "Open Sans", Helvetica, sans-serif;
+}
+html, body {
+  height: 100%;
+}
+button {
+  font-family: "Open Sans", Helvetica, sans-serif;
+  font-size: 0.7rem;
+  padding: 0.2rem;
+  margin-right: 0.2rem;
+}
+h2 {
+  clear: both;
+  margin: 1rem 0;
+}
+p {
+  margin-bottom: 1rem;
+}
+
+/* Demo layout */
+.main {
+  display: flex;
+  padding: 1rem;
+  height: 100%;
+}
+.goban {
+  flex: 0 0 75%;
+  height: 100%;
+}
+.goban-info {
+  flex: 0 0 25%;
+  padding-left: 1rem;
+  height: 100%;
+}
+.boards {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+/* Board tweaks */
+.seki-board {
+  background: url('board.jpg');
+  box-shadow: 0 0 15px rgba(60, 30, 20, 0.3);
+}
+.seki-board-static {
+  flex: 0 0 150px;
+  height: 150px;
+  width: 150px;
+  margin-right: 10px;
+  margin-bottom: 10px;
+}

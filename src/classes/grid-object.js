@@ -24,19 +24,19 @@ export default class GridObject {
   /**
    * Draw
    */
-  draw(/*context, gridX, gridY*/) {}
+  draw(/*context, x, y*/) {}
 
   /**
    * Erase
    */
-  erase(context, gridX, gridY) {
+  erase(context, x, y) {
 
     //Get data
     const {board, theme} = this
 
     //Get coordinates and stone radius
-    const absX = board.getAbsX(gridX)
-    const absY = board.getAbsY(gridY)
+    const absX = board.getAbsX(x)
+    const absY = board.getAbsY(y)
     const cellSize = board.getCellSize()
     const radius = theme.get('stone.radius', cellSize)
 

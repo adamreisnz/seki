@@ -8,7 +8,7 @@ export default class StoneShadow extends Stone {
   /**
    * Draw stone shadow
    */
-  draw(context, gridX, gridY) {
+  draw(context, x, y) {
 
     //Get data
     const {alpha, shadow} = this
@@ -22,8 +22,8 @@ export default class StoneShadow extends Stone {
     const {board, theme} = this
 
     //Get coordinates and stone radius
-    const absX = board.getAbsX(gridX)
-    const absY = board.getAbsY(gridY)
+    const absX = board.getAbsX(x)
+    const absY = board.getAbsY(y)
     const radius = this.getRadius()
 
     //Get theme properties

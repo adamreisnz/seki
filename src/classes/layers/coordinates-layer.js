@@ -1,5 +1,5 @@
 import BoardLayer from '../board-layer.js'
-import {coordinateGenerators} from '../../helpers/index.js'
+import {coordinateGenerators} from '../../helpers/coordinates.js'
 
 /**
  * This class represents the grid layer of the board, and it is

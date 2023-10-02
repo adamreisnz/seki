@@ -1,5 +1,5 @@
 import Stone from './stone.js'
-import {stoneColors} from '../../constants/index.js'
+import {stoneColors} from '../../constants/stone.js'
 
 /**
  * Glass stone class
@@ -9,14 +9,14 @@ export default class StoneGlass extends Stone {
   /**
    * Draw glass stones
    */
-  draw(context, gridX, gridY) {
+  draw(context, x, y) {
 
     //Get data
     const {board, theme, alpha} = this
 
     //Get coordinates and stone radius
-    const absX = board.getAbsX(gridX)
-    const absY = board.getAbsY(gridY)
+    const absX = board.getAbsX(x)
+    const absY = board.getAbsY(y)
     const radius = this.getRadius()
     const color = this.getColor()
 

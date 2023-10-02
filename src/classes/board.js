@@ -1,7 +1,13 @@
 import BoardLayerFactory from './board-layer-factory.js'
 import Theme from './theme.js'
-import {defaultConfig, boardLayerTypes} from '../constants/board.js'
-import {pixelRatio, createCanvasContext} from '../helpers/canvas.js'
+import {
+  defaultConfig,
+  boardLayerTypes,
+} from '../constants/board.js'
+import {
+  pixelRatio,
+  createCanvasContext,
+} from '../helpers/canvas.js'
 
 /**
  * This class represents the Go board. It is a placeholder for all the various
@@ -17,8 +23,9 @@ export default class Board {
    */
   constructor(config) {
 
-    //Init board
+    //Initialize properties and setup board
     this.init()
+    this.setup()
 
     //Set config
     if (config) {
@@ -27,12 +34,24 @@ export default class Board {
   }
 
   /**
-   * Initialize board
+   * Initialize properties
    */
   init() {
 
-    //Default theme
+    //Instantiate services
     this.theme = new Theme()
+    this.layers = new Map()
+
+    //Instantiate properties
+    this.layerOrder = [
+      boardLayerTypes.GRID,
+      boardLayerTypes.COORDINATES,
+      boardLayerTypes.SHADOW,
+      boardLayerTypes.STONES,
+      boardLayerTypes.SCORE,
+      boardLayerTypes.MARKUP,
+      boardLayerTypes.HOVER,
+    ]
 
     //Initialize board draw dimensions in pixels
     this.cellSize = 0
@@ -47,28 +66,10 @@ export default class Board {
     this.lastDrawWidth = 0
     this.lastDrawHeight = 0
 
-    //Layer order
-    this.layerOrder = [
-      boardLayerTypes.GRID,
-      boardLayerTypes.COORDINATES,
-      boardLayerTypes.SHADOW,
-      boardLayerTypes.STONES,
-      boardLayerTypes.SCORE,
-      boardLayerTypes.MARKUP,
-      boardLayerTypes.HOVER,
-    ]
-
-    //Create layers
-    this.layers = new Map()
-    for (const type of this.layerOrder) {
-      this.createLayer(type)
-    }
-
     //Get margin from theme
-    this.margin = this.theme.get('board.margin')
+    this.margin = 0
 
     //Flags
-    this.isStatic = false
     this.swapColors = false
     this.showCoordinates = false
 
@@ -94,25 +95,29 @@ export default class Board {
   }
 
   /**
+   * Setup board
+   */
+  setup() {
+
+    //Get margin from theme
+    this.margin = this.theme.get('board.margin')
+
+    //Clear layers
+    this.layers.clear()
+
+    //Create layers
+    for (const type of this.layerOrder) {
+      this.createLayer(type)
+    }
+  }
+
+  /**
    * Reset board
    */
   reset() {
     this.removeAll()
     this.init()
-  }
-
-  /**
-   * Make this board static
-   * (one canvas layer, only grid, coordinates, stones and markup)
-   */
-  makeStatic() {
-    this.isStatic = true
-    this.layerOrder = [
-      boardLayerTypes.GRID,
-      boardLayerTypes.COORDINATES,
-      boardLayerTypes.STONES,
-      boardLayerTypes.MARKUP,
-    ]
+    this.setup()
   }
 
   /**************************************************************************
@@ -170,18 +175,13 @@ export default class Board {
     this.setCutoff(config.cutoff)
     this.setSection(config.section)
     this.setSize(config.width, config.height)
-
-    //Make static
-    if (config.isStatic) {
-      this.makeStatic()
-    }
   }
 
   /**
-   * Set theme
+   * Set theme config
    */
-  setTheme(theme) {
-    this.theme = theme
+  setThemeConfig(themeConfig) {
+    this.theme.setConfig(themeConfig)
   }
 
   /**
@@ -351,16 +351,8 @@ export default class Board {
       this.swapColors = !this.swapColors
     }
 
-    //For static board, redraw the whole thing
-    if (this.isStatic) {
-      this.redraw()
-    }
-
-    //For a dynamic board, only these layers
-    else {
-      this.redraw(boardLayerTypes.STONES)
-      this.redraw(boardLayerTypes.MARKUP)
-    }
+    //Redraw as needed
+    this.redrawAfterColorSwap()
   }
 
   /*****************************************************************************
@@ -468,19 +460,12 @@ export default class Board {
   /**
    * Get the board state (list of objects per layer)
    */
-  getState(layerType) {
+  getState() {
 
-    //Only specific layer?
-    if (layerType) {
-      const layer = this.layers.get(layerType)
-      if (layer) {
-        return layer.getAll()
-      }
-      return null
-    }
-
-    //All layers
+    //Initialize
     const state = {}
+
+    //Get state of each layer
     this.layers.forEach((layer, type) => {
       const grid = layer.getAll()
       if (grid && !grid.isEmpty()) {
@@ -493,26 +478,35 @@ export default class Board {
   }
 
   /**
+   * Get state of a specific layer
+   */
+  getLayerState(type) {
+    const layer = this.layers.get(type)
+    if (layer) {
+      return layer.getAll()
+    }
+  }
+
+  /**
    * Restore the board state from given state object
    */
-  restoreState(state, layerType) {
-
-    //Only specific layer?
-    if (layerType) {
-      const layer = this.layers.get(layerType)
-      if (layer) {
-        layer.setAll(state)
-      }
-      return
-    }
-
-    //All layers
+  restoreState(state) {
     this.layers.forEach((layer, type) => {
       layer.removeAll()
-      if (state[layer]) {
+      if (state[type]) {
         layer.setAll(state[type])
       }
     })
+  }
+
+  /**
+   * Restore state of single layer
+   */
+  restoreLayerState(type, state) {
+    const layer = this.layers.get(type)
+    if (layer) {
+      layer.setAll(state)
+    }
   }
 
   /*****************************************************************************
@@ -522,58 +516,28 @@ export default class Board {
   /**
    * Erase the whole board
    */
-  erase(layerType) {
-
-    //Just clearing one layer?
-    if (layerType) {
-
-      //If the board is static we can't do this
-      if (this.isStatic) {
-        return
-      }
-
-      //Find layer
-      const layer = this.layers.get(layerType)
-      if (layer) {
-        layer.erase()
-      }
-      return
-    }
-
-    //Static? Clearing stones is enough
-    if (this.isStatic) {
-      const stonesLayer = this.layers.get(boardLayerTypes.STONES)
-      stonesLayer.erase()
-      return
-    }
-
-    //Clear all layers
-    this.layers.forEach(layer => layer.erase())
+  erase() {
+    this.layers
+      .forEach(layer => layer.erase())
   }
 
   /**
-   * Redraw everything or just a single layer
+   * Erase a specific layer
    */
-  redraw(layerType) {
-
-    //The board can only be redrawn when there is a grid size and a draw size
-    if (!this.width || !this.height || !this.drawWidth || !this.drawHeight) {
-      return
+  eraseLayer(type) {
+    const layer = this.layers.get(type)
+    if (layer) {
+      layer.erase()
     }
+  }
 
-    //Just redrawing one layer?
-    if (layerType) {
+  /**
+   * Redraw the whole board
+   */
+  redraw() {
 
-      //Static board
-      if (this.isStatic) {
-        return
-      }
-
-      //Find layer
-      const layer = this.layers.get(layerType)
-      if (layer) {
-        layer.redraw()
-      }
+    //Check if can draw
+    if (!this.canDraw()) {
       return
     }
 
@@ -581,10 +545,35 @@ export default class Board {
     this.erase()
 
     //Now draw all layers again in the correct order
-    for (const layerType of this.layerOrder) {
-      const layer = this.layers.get(layerType)
-      layer.draw()
+    this.layers
+      .forEach(layer => layer.draw())
+  }
+
+  /**
+   * Redraw layer
+   */
+  redrawLayer(type) {
+    const layer = this.layers.get(type)
+    if (layer) {
+      layer.redraw()
     }
+  }
+
+  /**
+   * Redraw after a color swap
+   */
+  redrawAfterColorSwap() {
+    this.redrawLayer(boardLayerTypes.STONES)
+    this.redrawLayer(boardLayerTypes.MARKUP)
+    this.redrawLayer(boardLayerTypes.SCORE)
+  }
+
+  /**
+   * Can draw check
+   */
+  canDraw() {
+    const {width, height, drawWidth, drawHeight} = this
+    return (width && height && drawWidth && drawHeight)
   }
 
   /*****************************************************************************
@@ -654,17 +643,17 @@ export default class Board {
   /**
    * Convert grid coordinate to pixel coordinate
    */
-  getAbsX(gridX) {
+  getAbsX(x) {
     let offset = this.cutoff.left ? 0.5 : 0
-    return this.drawMarginHor + Math.round((gridX + offset) * this.cellSize)
+    return this.drawMarginHor + Math.round((x + offset) * this.cellSize)
   }
 
   /**
    * Convert grid coordinate to pixel coordinate
    */
-  getAbsY(gridY) {
+  getAbsY(y) {
     let offset = this.cutoff.top ? 0.5 : 0
-    return this.drawMarginVer + Math.round((gridY + offset) * this.cellSize)
+    return this.drawMarginVer + Math.round((y + offset) * this.cellSize)
   }
 
   /**
@@ -686,10 +675,10 @@ export default class Board {
   /**
    * Check if given grid coordinates are on board
    */
-  isOnBoard(gridX, gridY) {
+  isOnBoard(x, y) {
     return (
-      gridX >= this.grid.xLeft && gridY >= this.grid.yTop &&
-      gridX <= this.grid.xRight && gridY <= this.grid.yBot
+      x >= this.grid.xLeft && y >= this.grid.yTop &&
+      x <= this.grid.xRight && y <= this.grid.yBot
     )
   }
 
@@ -698,45 +687,73 @@ export default class Board {
    ***/
 
   /**
-   * Build board into DOM
+   * Render board onto element
    */
-  build(element) {
+  render(element) {
 
-    //Link element
+    //Already rendered
+    if (this.element) {
+      throw new Error(`Board has already been rendered!`)
+    }
+
+    //Link element and apply classes
     this.linkElement(element)
+    this.applyClasses(element)
 
-    //Determine initial draw size
+    //Determine initial draw size and render layers
     this.determineDrawSize()
+    this.renderLayers(element)
 
     //Add resize handler on window
-    window.on('resize', () => {
-      this.determineDrawSize()
-    })
+    this.addResizeListener()
+  }
 
-    //Static board
-    if (this.isStatic) {
+  /**
+   * Add resize listener
+   */
+  addResizeListener() {
 
-      //Add static class on element
-      element.classList.add('static')
-
-      //Create single canvas and link to all relevant layers
-      const context = createCanvasContext(element, 'static')
-      for (const type of this.layerOrder) {
-        const layer = this.layers.get(type)
-        layer.setContext(context)
+    //Create listener
+    let throttled = false
+    let timeout = null
+    this.resizeListener = () => {
+      if (!throttled) {
+        this.determineDrawSize()
       }
+      clearTimeout(timeout)
+      throttled = true
+      timeout = setTimeout(() => {
+        throttled = false
+      }, 250)
     }
 
-    //Dynamic board
-    else {
+    //Apply
+    window.addEventListener('resize', this.resizeListener)
+  }
 
-      //Create individual layer contexts
-      for (const type of this.layerOrder) {
-        const context = createCanvasContext(element, type)
-        const layer = this.layers.get(type)
+  /**
+   * Remove resize listener
+   */
+  removeResizeListener() {
+    window.removeEventListener('resize', this.resizeListener)
+  }
+
+  /**
+   * Apply element classes
+   */
+  applyClasses(element) {
+    element.classList.add('seki-board')
+  }
+
+  /**
+   * Render layers
+   */
+  renderLayers(element) {
+    this.layers
+      .forEach(layer => {
+        const context = createCanvasContext(element, layer.type)
         layer.setContext(context)
-      }
-    }
+      })
   }
 
   /**
@@ -750,9 +767,9 @@ export default class Board {
     this.sizingElement = element
 
     //Set player element
-    if (element.parentElement.tagName.match(/^player$/i)) {
+    if (element.parentElement.classList.contains('seki-player')) {
       this.playerElement = element.parentElement
-      this.sizingElement = element.parentElement.parentElement //TODO verify this
+      this.sizingElement = element.parentElement.parentElement
     }
   }
 
@@ -810,7 +827,7 @@ export default class Board {
   propagateDrawSize(width, height) {
 
     //Get element
-    const {element} = this
+    const {element, playerElement} = this
     if (!element) {
       return
     }
@@ -823,8 +840,7 @@ export default class Board {
     }
 
     //In player element? Set dimensions on element
-    const {parentElement} = element.parentElement
-    if (parentElement.tagName.match(/^player$/i)) {
+    if (playerElement) {
       element.style.width = `${width}px`
       element.style.height = `${height}px`
     }

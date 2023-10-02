@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Seki - Player demo</title>
+  <meta charset="utf-8">
+  <meta name="author" content="Adam Reis">
+  <link rel="stylesheet" type="text/css" media="screen" href="assets/demo.css">
+</head>
+<body lang="en">
+<div class="main">
+  <div class="goban">
+    <div id="player" mode="replay">
+      <div id="board" coordinates="true"></div>
+    </div>
+  </div>
+  <div class="goban-info">
+
+  </div>
+</div>
+
+<script type="module">
+  import Board from '../src/classes/board.js'
+  const board = new Board()
+  const boardElement = document.getElementById('board')
+  board.render(boardElement)
+</script>
+</body>
+</html>

@@ -20,14 +20,14 @@ export default class StoneMono extends Stone {
   /**
    * Draw mono stones
    */
-  draw(context, gridX, gridY) {
+  draw(context, x, y) {
 
     //Get data
     const {board, theme, alpha} = this
 
     //Get coordinates and stone radius
-    const absX = board.getAbsX(gridX)
-    const absY = board.getAbsY(gridY)
+    const absX = board.getAbsX(x)
+    const absY = board.getAbsY(y)
     const radius = this.getRadius()
     const color = this.getColor()
 

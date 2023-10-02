@@ -97,42 +97,42 @@ export default class GridLayer extends BoardLayer {
   /**
    * Helper for drawing starpoints
    */
-  drawStarPoint(gridX, gridY, starRadius, starColor) {
+  drawStarPoint(x, y, starRadius, starColor) {
 
     //Get board and context
     const {board, context} = this
     const {grid} = board
 
     //Don't draw if it falls outsize of the board grid
-    if (gridX < grid.xLeft || gridX > grid.xRight) {
+    if (x < grid.xLeft || x > grid.xRight) {
       return
     }
-    if (gridY < grid.yTop || gridY > grid.yBot) {
+    if (y < grid.yTop || y > grid.yBot) {
       return
     }
 
     //Get absolute coordinates and star point radius
-    const x = board.getAbsX(gridX)
-    const y = board.getAbsY(gridY)
+    const absX = board.getAbsX(x)
+    const absY = board.getAbsY(y)
 
     //Draw star point
     context.beginPath()
     context.fillStyle = starColor
-    context.arc(x, y, starRadius, 0, 2 * Math.PI, true)
+    context.arc(absX, absY, starRadius, 0, 2 * Math.PI, true)
     context.fill()
   }
 
   /**
    * Clear a square cell area on the grid
    */
-  clearCell(gridX, gridY) {
+  clearCell(x, y) {
 
     //Get board and context
     const {board, theme, context} = this
 
     //Get absolute coordinates and stone radius
-    const absX = board.getAbsX(gridX)
-    const absY = board.getAbsY(gridY)
+    const absX = board.getAbsX(x)
+    const absY = board.getAbsY(y)
     const cellSize = board.getCellSize()
     const radius = theme.get('stone.radius', cellSize)
 
@@ -153,14 +153,14 @@ export default class GridLayer extends BoardLayer {
   /**
    * Redraw a square cell area on the grid
    */
-  redrawCell(gridX, gridY) {
+  redrawCell(x, y) {
 
     //Get board and context
     const {board, theme, context} = this
 
     //Get absolute coordinates and stone radius
-    const absX = board.getAbsX(gridX)
-    const absY = board.getAbsY(gridY)
+    const absX = board.getAbsX(x)
+    const absY = board.getAbsY(y)
     const cellSize = board.getCellSize()
     const radius = theme.get('stone.radius', cellSize)
 
@@ -173,10 +173,10 @@ export default class GridLayer extends BoardLayer {
     const starPoints = theme.get('grid.star.points', board.width, board.height)
 
     //Determine draw coordinates
-    const x1 = (gridX === 0) ? absX : absX - radius
-    const x2 = (gridX === board.width - 1) ? absX : absX + radius
-    const y1 = (gridY === 0) ? absY : absY - radius
-    const y2 = (gridY === board.height - 1) ? absY : absY + radius
+    const x1 = (x === 0) ? absX : absX - radius
+    const x2 = (x === board.width - 1) ? absX : absX + radius
+    const y1 = (y === 0) ? absY : absY - radius
+    const y2 = (y === board.height - 1) ? absY : absY + radius
 
     //Translate canvas
     context.translate(canvasTranslate, canvasTranslate)
@@ -195,8 +195,8 @@ export default class GridLayer extends BoardLayer {
 
     //Check if we need to draw a star point here
     for (const i in starPoints) {
-      if (starPoints[i].x === gridX && starPoints[i].y === gridY) {
-        this.drawStarPoint(gridX, gridY, starRadius, starColor)
+      if (starPoints[i].x === x && starPoints[i].y === y) {
+        this.drawStarPoint(x, y, starRadius, starColor)
       }
     }
 

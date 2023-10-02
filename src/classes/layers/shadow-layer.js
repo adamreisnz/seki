@@ -21,10 +21,10 @@ export default class ShadowLayer extends BoardLayer {
   /**
    * Remove a single stone shadow object
    */
-  remove(gridX, gridY) {
+  remove(x, y) {
 
     //Remove from grid and redraw the whole layer
-    this.grid.delete(gridX, gridY)
+    this.grid.delete(x, y)
     this.redraw()
   }
 
@@ -50,19 +50,5 @@ export default class ShadowLayer extends BoardLayer {
 
     //Call parent method
     super.draw()
-  }
-
-  /**
-   * Can draw checker
-   */
-  canDraw() {
-
-    //Parent method
-    if (!super.canDraw()) {
-      return false
-    }
-
-    //Don't draw shadows on a static board
-    return !this.board.isStatic
   }
 }

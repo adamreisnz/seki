@@ -9,22 +9,9 @@ import {stoneStyles} from '../constants/stone.js'
 export default class StoneFactory {
 
   /**
-   * Construct stone factory
-   */
-  constructor(theme) {
-
-    //Get style
-    const style = theme.get('stone.style')
-    const CustomClass = theme.get('stone.class')
-
-    //Set class
-    this.StoneClass = CustomClass || this.getClass(style)
-  }
-
-  /**
    * Get stone class to use
    */
-  getClass(style) {
+  static getClass(style) {
     switch (style) {
       case stoneStyles.GLASS:
         return StoneGlass
@@ -39,8 +26,19 @@ export default class StoneFactory {
   /**
    * Create stone
    */
-  create(...args) {
-    const {StoneClass} = this
+  static create(theme, ...args) {
+
+    //Get style
+    const style = theme.get('stone.style')
+    const CustomClass = theme.get('stone.class')
+
+    //Has custom class
+    if (CustomClass) {
+      return new CustomClass(...args)
+    }
+
+    //Get stone class
+    const StoneClass = this.getClass(style)
     return new StoneClass(...args)
   }
 }

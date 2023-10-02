@@ -2,7 +2,6 @@
   "name": "@reis/seki",
   "description": "SEKI: A modern javascript based Go board renderer and player, that is simple to use, extensible, compact and intuitive.",
   "version": "1.0.0",
-  "type": "module",
   "homepage": "https://github.com/adamreisnz/seki#readme",
   "author": {
     "name": "Adam Reis",
@@ -31,11 +30,22 @@
     "sgf",
     "gib"
   ],
+  "browserslist": "> 0.5%, last 2 versions, not dead",
   "engines": {
     "node": ">=18"
   },
-  "main": "index.js",
+  "source": "src/index.js",
+  "module": "dist/seki.js",
+  "browser": "dist/seki-browser.js",
+  "targets": {
+    "browser": {
+      "includeNodeModules": true
+    }
+  },
   "scripts": {
+    "watch": "parcel watch",
+    "build": "parcel build",
+    "demo": "parcel serve demo/index.html --open",
     "postversion": "git push && npm publish"
   },
   "dependencies": {
