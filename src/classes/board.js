@@ -62,7 +62,7 @@ export default class Board {
     this.gridDrawWidth = 0
     this.gridDrawHeight = 0
 
-    //Last draw width/height
+    //Last draw width/height values for change tracking
     this.lastDrawWidth = 0
     this.lastDrawHeight = 0
 
@@ -131,6 +131,26 @@ export default class Board {
     return this.swapColors ? -1 : 1
   }
 
+  /**
+   * Board's x & y coordinates
+   */
+  get xLeft() {
+    const {section} = this
+    return 0 + section.left
+  }
+  get xRight() {
+    const {width, section} = this
+    return width - 1 - section.right
+  }
+  get yTop() {
+    const {section} = this
+    return 0 + section.top
+  }
+  get yBottom() {
+    const {height, section} = this
+    return height - 1 - section.bottom
+  }
+
   /**************************************************************************
    * Layer handling
    ***/
@@ -197,7 +217,7 @@ export default class Board {
     //Set margin if changed
     if (this.margin !== margin) {
       this.margin = margin
-      this.resized()
+      this.computeAndRedraw()
     }
 
     //Return self for chaining
@@ -225,13 +245,10 @@ export default class Board {
       }
     }
 
-    //Trigger resized if there were changes
+    //Trigger redraw if there were changes
     if (changes) {
-      this.resized()
+      this.computeAndRedraw()
     }
-
-    //Return self for chaining
-    return this
   }
 
   /**
@@ -241,7 +258,7 @@ export default class Board {
 
     //Nothing given?
     if (!section || typeof section !== 'object') {
-      return this
+      return
     }
 
     //Expand on default
@@ -259,19 +276,16 @@ export default class Board {
       this.section.left === section.left &&
       this.section.right === section.right
     ) {
-      return this
+      return
     }
 
     //Set section and call resized handler
     this.section = section
-    this.resized()
-
-    //Return self for chaining
-    return this
+    this.computeAndRedraw()
   }
 
   /**
-   * Set board size. This will clear the board objects.
+   * Set board (grid) size. This will clear the board objects.
    */
   setSize(width, height) {
 
@@ -284,36 +298,44 @@ export default class Board {
       return
     }
 
-    //Changing?
-    if (width !== this.width || height !== this.height) {
+    //No change
+    if (width === this.width && height === this.height) {
+      return
+    }
 
-      //Remember size
-      this.width = width
-      this.height = height
+    //Remember size
+    this.width = width
+    this.height = height
 
-      //Set size in layers
-      this.layers.forEach(layer => layer.setSize(width, height))
+    //Set size in each layer
+    this.layers.forEach(layer => layer.setGridSize(width, height))
 
-      //Determine draw size
-      if (!this.determineDrawSize()) {
+    //Recalculate draw size
+    const hasChanged = this.recalculateDrawSize()
 
-        //If the draw size didn't change, resized() won't be called, and so we
-        //must call it manually. This may seem a bit "off", but it's the best
-        //way to prevent redundant redraws.
-        this.resized() //TODO verify
-      }
+    //If the draw size didn't change, manually call compute and redraw
+    //on account of the board grid size change
+    if (!hasChanged) {
+      this.computeAndRedraw()
     }
   }
 
   /**
    * Set new draw size
    */
-  setDrawSize(width, height) {
-    if (width !== this.drawWidth || height !== this.drawHeight) {
-      this.drawWidth = width
-      this.drawHeight = height
-      this.resized()
+  setDrawSize(drawWidth, drawHeight) {
+
+    //No change
+    if (drawWidth === this.drawWidth && drawHeight === this.drawHeight) {
+      return
     }
+
+    //Set
+    this.drawWidth = drawWidth
+    this.drawHeight = drawHeight
+
+    //Redraw
+    this.computeAndRedraw()
   }
 
   /**
@@ -581,53 +603,56 @@ export default class Board {
    ***/
 
   /**
+   * Compute draw parameters and redraw board
    * Called after a board size change, draw size change, section change or margin change
    */
-  resized() {
+  computeAndRedraw() {
 
-    //Determine the new grid
-    this.grid = {
-      xLeft: 0 + this.section.left,
-      xRight: this.width - 1 - this.section.right,
-      yTop: 0 + this.section.top,
-      yBot: this.height - 1 - this.section.bottom,
-    }
-
-    //Only redraw when there is sensible data
-    if (!this.width || !this.height || !this.drawWidth || !this.drawHeight) {
+    //If we can't redraw, then this doesn't make sense either
+    if (!this.canDraw()) {
       return
     }
 
-    //Determine number of cells horizontall and vertically
-    //The margin is a factor of the cell size, so let's add it to the number of cells
-    let noCellsHor = this.width + this.margin
-    let noCellsVer = this.height + this.margin
+    //Get data
+    const {
+      width, height,
+      drawWidth, drawHeight,
+      margin, cutoff,
+    } = this
 
-    //Are we cutting off parts of the grid? Add half a cell of draw size
-    for (let side in this.cutoff) {
-      if (this.cutoff[side]) {
-        if (side === 'top' || side === 'bottom') {
-          noCellsVer += 0.5
-        }
-        else {
-          noCellsHor += 0.5
-        }
-      }
-    }
+    //Add half a cell of draw size if we're cutting of parts of the grid
+    const cutoffHor = [cutoff.left, cutoff.right]
+      .map(side => side ? 0.5 : 0)
+      .reduce((value, total) => value + total, 0)
+    const cutoffVer = [cutoff.top, cutoff.bottom]
+      .map(side => side ? 0.5 : 0)
+      .reduce((value, total) => value + total, 0)
+
+    //Determine number of cells horizontally and vertically
+    //The margin is a factor of the cell size, so let's add it to the number of cells
+    const numCellsHor = width + margin + cutoffHor
+    const numCellsVer = height + margin + cutoffVer
 
     //Determine cell size now
-    this.cellSize = Math.floor(Math.min(
-      this.drawWidth / noCellsHor,
-      this.drawHeight / noCellsVer,
+    const cellSize = Math.floor(Math.min(
+      drawWidth / numCellsHor,
+      drawHeight / numCellsVer,
     ))
 
     //Determine actual grid draw size (taking off the margin again)
-    this.gridDrawWidth = this.cellSize * (noCellsHor - this.margin - 1)
-    this.gridDrawHeight = this.cellSize * (noCellsVer - this.margin - 1)
+    const gridDrawWidth = cellSize * (numCellsHor - margin - 1)
+    const gridDrawHeight = cellSize * (numCellsVer - margin - 1)
 
     //Determine draw margins
-    this.drawMarginHor = Math.floor((this.drawWidth - this.gridDrawWidth) / 2)
-    this.drawMarginVer = Math.floor((this.drawHeight - this.gridDrawHeight) / 2)
+    const drawMarginHor = Math.floor((drawWidth - gridDrawWidth) / 2)
+    const drawMarginVer = Math.floor((drawHeight - gridDrawHeight) / 2)
+
+    //Set values
+    this.cellSize = cellSize
+    this.gridDrawWidth = gridDrawWidth
+    this.gridDrawHeight = gridDrawHeight
+    this.drawMarginHor = drawMarginHor
+    this.drawMarginVer = drawMarginVer
 
     //Redraw
     this.redraw()
@@ -676,9 +701,10 @@ export default class Board {
    * Check if given grid coordinates are on board
    */
   isOnBoard(x, y) {
+    const {xLeft, xRight, yTop, yBottom} = this
     return (
-      x >= this.grid.xLeft && y >= this.grid.yTop &&
-      x <= this.grid.xRight && y <= this.grid.yBot
+      x >= xLeft && y >= yTop &&
+      x <= xRight && y <= yBottom
     )
   }
 
@@ -700,8 +726,8 @@ export default class Board {
     this.linkElement(element)
     this.applyClasses(element)
 
-    //Determine initial draw size and render layers
-    this.determineDrawSize()
+    //Calculate initial draw size and render layers
+    this.recalculateDrawSize()
     this.renderLayers(element)
 
     //Add resize handler on window
@@ -718,7 +744,7 @@ export default class Board {
     let timeout = null
     this.resizeListener = () => {
       if (!throttled) {
-        this.determineDrawSize()
+        this.recalculateDrawSize()
       }
       clearTimeout(timeout)
       throttled = true
@@ -749,9 +775,17 @@ export default class Board {
    * Render layers
    */
   renderLayers(element) {
+
+    //Get draw width/height
+    const {drawWidth, drawHeight} = this
+
+    //Create for each layer
     this.layers
       .forEach(layer => {
-        const context = createCanvasContext(element, layer.type)
+        const className = `seki-board-layer-${layer.type}`
+        const context = createCanvasContext(
+          element, drawWidth, drawHeight, className,
+        )
         layer.setContext(context)
       })
   }
@@ -760,71 +794,99 @@ export default class Board {
    * Link the board to a HTML element
    */
   linkElement(element) {
-
-    //Set
     this.element = element
-    this.playerElement = null
     this.sizingElement = element
-
-    //Set player element
-    if (element.parentElement.classList.contains('seki-player')) {
-      this.playerElement = element.parentElement
-      this.sizingElement = element.parentElement.parentElement
-    }
   }
 
   /**
-   * Determine draw size
+   * Link player
    */
-  determineDrawSize() {
+  linkPlayer(playerElement) {
+    this.playerElement = playerElement
+    this.sizingElement = playerElement.parentElement
+  }
+
+  /**
+   * Recalculate draw size
+   */
+  recalculateDrawSize() {
 
     //Get data
-    const {width, height, lastDrawWidth, lastDrawHeight, sizingElement} = this
+    const {lastDrawWidth, lastDrawHeight} = this
+    const {drawWidth, drawHeight} = this.getDrawSize()
+    const hasChanged = (
+      lastDrawWidth !== drawWidth ||
+      lastDrawHeight !== drawHeight
+    )
 
-    //Initialise available width/height
-    let availableWidth = sizingElement.clientWidth
-    let availableHeight = sizingElement.clientHeight
-
-    //Init vars
-    let drawWidth, drawHeight, cellSize
-
-    //Stretch available height to width if zero
-    if (availableHeight === 0 && availableWidth > 0) {
-      availableHeight = availableWidth
+    //Propagate if it has changed
+    if (hasChanged) {
+      this.propagateDrawSize(drawWidth, drawHeight)
     }
+
+    //Return changed flag
+    return hasChanged
+  }
+
+  /**
+   * Get available width and height
+   */
+  getAvailableSize() {
+
+    //Get data
+    const {sizingElement} = this
+    const {clientWidth, clientHeight} = sizingElement
+
+    //Get available size
+    const availableWidth = clientWidth
+    const availableHeight = clientHeight || clientWidth
+
+    //Return
+    return {availableWidth, availableHeight}
+  }
+
+  /**
+   * Determine draw width and height
+   */
+  getDrawSize() {
+
+    //Get data
+    const {width, height} = this
+    const {availableWidth, availableHeight} = this.getAvailableSize()
 
     //Grid size known?
     if (width && height) {
 
       //Determine smallest cell size
-      cellSize = Math.min(availableWidth / width, availableHeight / height)
+      const cellSize = Math.min(
+        availableWidth / width,
+        availableHeight / height,
+      )
 
       //Set draw size
-      drawWidth = Math.floor(cellSize * width)
-      drawHeight = Math.floor(cellSize * height)
+      const drawWidth = Math.floor(cellSize * width)
+      const drawHeight = Math.floor(cellSize * height)
+
+      //Return
+      return {drawWidth, drawHeight}
     }
 
-    //Otherwise, use the lesser of the available width/height
-    else {
-      drawWidth = drawHeight = Math.min(availableWidth, availableHeight)
-    }
+    //Use the lesser of available width/height
+    const drawWidth = Math.min(availableWidth, availableHeight)
+    const drawHeight = drawWidth
 
-    //Propagate
-    if (lastDrawWidth !== drawWidth || lastDrawHeight !== drawHeight) {
-      this.lastDrawWidth = drawWidth
-      this.lastDrawHeight = drawHeight
-      this.propagateDrawSize(drawWidth, drawHeight)
-      return true
-    }
-
-    //No change
-    return false
+    //Return
+    return {drawWidth, drawHeight}
   }
 
   /**
    * Propagate draw size
    */
   propagateDrawSize(width, height) {
+
+    //Store last draw width/height (unmodified by pixel ratio)
+    this.lastDrawWidth = width
+    this.lastDrawHeight = height
 
     //Get element
     const {element, playerElement} = this

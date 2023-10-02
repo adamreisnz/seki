@@ -43,7 +43,7 @@ export default class BoardLayer {
   /**
    * Set grid size
    */
-  setSize(width, height) {
+  setGridSize(width, height) {
 
     //NOTE: since this method is usually only called upon a global board resize,
     //which also triggers the redraw method for layers, the layer is not cleared

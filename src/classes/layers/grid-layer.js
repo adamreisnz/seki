@@ -67,14 +67,14 @@ export default class GridLayer extends BoardLayer {
     let i, x, y
 
     //Draw vertical lines
-    for (i = board.grid.xLeft; i <= board.grid.xRight; i++) {
+    for (i = board.xLeft; i <= board.xRight; i++) {
       x = board.getAbsX(i)
       context.moveTo(x, ty)
       context.lineTo(x, ty + board.gridDrawHeight)
     }
 
     //Draw horizontal lines
-    for (i = board.grid.yTop; i <= board.grid.yBot; i++) {
+    for (i = board.yTop; i <= board.yBottom; i++) {
       y = board.getAbsY(i)
       context.moveTo(tx, y)
       context.lineTo(tx + board.gridDrawWidth, y)
@@ -101,13 +101,9 @@ export default class GridLayer extends BoardLayer {
 
     //Get board and context
     const {board, context} = this
-    const {grid} = board
 
     //Don't draw if it falls outsize of the board grid
-    if (x < grid.xLeft || x > grid.xRight) {
-      return
-    }
-    if (y < grid.yTop || y > grid.yBot) {
+    if (!board.isOnBoard(x, y)) {
       return
     }
 

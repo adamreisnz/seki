@@ -1,4 +1,5 @@
 import BoardLayer from '../board-layer.js'
+import {boardLayerTypes} from '../../constants/board.js'
 import {coordinateGenerators} from '../../helpers/coordinates.js'
 
 /**
@@ -6,6 +7,18 @@ import {coordinateGenerators} from '../../helpers/coordinates.js'
  * responsible for drawing gridlines, starpoints and coordinates
  */
 export default class CoordinatesLayer extends BoardLayer {
+
+  /**
+   * Constructor
+   */
+  constructor(board) {
+
+    //Parent constructor
+    super(board)
+
+    //Set type
+    this.type = boardLayerTypes.COORDINATES
+  }
 
   /**
    * Unneeded methods

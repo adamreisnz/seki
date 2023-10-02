@@ -65,8 +65,16 @@ export default class StaticBoard extends Board {
    */
   renderLayers(element) {
 
-    //Create single canvas and link to all relevant layers
-    const context = createCanvasContext(element, 'static')
+    //Get draw width/height
+    const {drawWidth, drawHeight} = this
+
+    //Create single canvas
+    const className = `seki-board-layer-static`
+    const context = createCanvasContext(
+      element, drawWidth, drawHeight, className,
+    )
+
+    //Link to all layers
     this.layers.forEach(layer => layer.setContext(context))
   }
 
