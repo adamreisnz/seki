@@ -42,8 +42,7 @@ export default class Board {
     this.gridDrawWidth = 0
     this.gridDrawHeight = 0
 
-    //Layer map and order
-    this.layers = new Map()
+    //Layer order
     this.layerOrder = [
       boardLayerTypes.GRID,
       boardLayerTypes.COORDINATES,
@@ -54,20 +53,14 @@ export default class Board {
       boardLayerTypes.HOVER,
     ]
 
-    //Get vars
-    const board = this
-    const {theme} = this
-
-    //Initialize layers
-    for (const layerType of this.layerOrder) {
-      this.layers.set(
-        layerType,
-        BoardLayerFactory.create(layerType, board),
-      )
+    //Create layers
+    this.layers = new Map()
+    for (const type of this.layerOrder) {
+      this.createLayer(type)
     }
 
     //Get margin from theme
-    this.margin = theme.get('board.margin')
+    this.margin = this.theme.get('board.margin')
 
     //Flags
     this.isStatic = false
@@ -133,6 +126,27 @@ export default class Board {
    */
   get colorMultiplier() {
     return this.swapColors ? -1 : 1
+  }
+
+  /**************************************************************************
+   * Layer handling
+   ***/
+
+  /**
+   * Create layer of given type
+   */
+  createLayer(type) {
+    this.layers.set(
+      type,
+      BoardLayerFactory.create(type, this),
+    )
+  }
+
+  /**
+   * Get layer of given type
+   */
+  getLayer(type) {
+    return this.layers.get(type)
   }
 
   /*****************************************************************************
@@ -350,8 +364,8 @@ export default class Board {
   /**
    * Add an object to a board layer
    */
-  add(layerType, x, y, value) {
-    const layer = this.layers.get(layerType)
+  add(type, x, y, value) {
+    const layer = this.getLayer(type)
     if (layer) {
       layer.add(x, y, value)
     }
@@ -360,8 +374,8 @@ export default class Board {
   /**
    * Remove an object from a board layer
    */
-  remove(layerType, x, y) {
-    const layer = this.layers.get(layerType)
+  remove(type, x, y) {
+    const layer = this.getLayer(type)
     if (layer) {
       layer.remove(x, y)
     }
@@ -370,8 +384,8 @@ export default class Board {
   /**
    * Get something from a board layer
    */
-  get(layerType, x, y) {
-    const layer = this.layers.get(layerType)
+  get(type, x, y) {
+    const layer = this.getLayer(type)
     if (layer) {
       return layer.get(x, y)
     }
@@ -381,8 +395,8 @@ export default class Board {
   /**
    * Check if we have something at given coordinates for a given layer
    */
-  has(layerType, x, y) {
-    const layer = this.layers.get(layerType)
+  has(type, x, y) {
+    const layer = this.getLayer(type)
     if (layer) {
       return layer.has(x, y)
     }
@@ -392,8 +406,8 @@ export default class Board {
   /**
    * Set all objects (grid) for a given layer
    */
-  setAll(layerType, grid) {
-    const layer = this.layers.get(layerType)
+  setAll(type, grid) {
+    const layer = this.getLayer(type)
     if (layer) {
       layer.setAll(grid)
     }
@@ -402,20 +416,19 @@ export default class Board {
   /**
    * Remove all objects from the board, optionally for a given layer
    */
-  removeAll(layerType) {
+  removeAll(type) {
 
     //Specific layer type
-    if (layerType) {
-      const layer = this.layers.get(layerType)
+    if (type) {
+      const layer = this.getLayer(type)
       if (layer) {
         layer.removeAll()
       }
+      return
     }
 
     //All layers
-    else {
-      this.layers.forEach(layer => layer.removeAll())
-    }
+    this.layers.forEach(layer => layer.removeAll())
   }
 
   /*****************************************************************************

@@ -29,7 +29,25 @@ export default class GridObject {
   /**
    * Erase
    */
-  erase(/*context, gridX, gridY*/) {}
+  erase(context, gridX, gridY) {
+
+    //Get data
+    const {board, theme} = this
+
+    //Get coordinates and stone radius
+    const absX = board.getAbsX(gridX)
+    const absY = board.getAbsY(gridY)
+    const cellSize = board.getCellSize()
+    const radius = theme.get('stone.radius', cellSize)
+
+    //Clear rectangle the size of the stone radius
+    context.clearRect(
+      absX - radius,
+      absY - radius,
+      2 * radius,
+      2 * radius,
+    )
+  }
 
   /**
    * Redraw

@@ -152,8 +152,8 @@ export default {
       scale: 0.75,
     },
 
-    //Last
-    last: {
+    //Last move indicator
+    lastMove: {
       scale: 0.7,
     },
 

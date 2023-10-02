@@ -64,7 +64,7 @@ export default class StoneGlass extends Stone {
     context.arc(absX, absY, Math.max(0, radius - 0.5), 0, 2 * Math.PI, true)
     context.fill()
 
-    //Undo transparency?
+    //Reset transparency
     if (alpha && alpha < 1) {
       context.globalAlpha = 1
     }
