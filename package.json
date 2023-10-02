@@ -1,0 +1,47 @@
+{
+  "name": "@reis/seki",
+  "description": "SEKI: A modern javascript based Go board renderer and player, that is simple to use, extensible, compact and intuitive.",
+  "version": "1.0.0",
+  "type": "module",
+  "homepage": "https://github.com/adamreisnz/seki#readme",
+  "author": {
+    "name": "Adam Reis",
+    "email": "adam@reis.nz"
+  },
+  "contributors": [],
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/adamreisnz/seki.git"
+  },
+  "bugs": {
+    "url": "https://github.com/adamreisnz/seki/issues"
+  },
+  "keywords": [
+    "seki",
+    "go",
+    "goban",
+    "weiqi",
+    "baduk",
+    "board",
+    "player",
+    "sgf",
+    "gib"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "main": "index.js",
+  "scripts": {
+    "postversion": "git push && npm publish"
+  },
+  "dependencies": {
+    "deepmerge": "^4.3.1"
+  },
+  "devDependencies": {
+    "parcel": "^2.9.3"
+  }
+}
