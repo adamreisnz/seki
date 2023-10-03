@@ -21,9 +21,18 @@
 
 <script type="module">
   import Board from '../src/classes/board.js'
-  const board = new Board()
+  import Player from '../src/classes/player.js'
+  const board = new Board({
+    width: 19,
+    height: 19,
+    showCoordinates: true,
+  })
+  const player = new Player()
   const boardElement = document.getElementById('board')
-  board.render(boardElement)
+  const playerElement = document.getElementById('player')
+  board.bootstrap(boardElement)
+  player.bootstrap(playerElement)
+  board.redraw()
 </script>
 </body>
 </html>

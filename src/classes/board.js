@@ -1,7 +1,8 @@
 import BoardLayerFactory from './board-layer-factory.js'
+import EventHandler from './event-handler.js'
 import Theme from './theme.js'
 import {
-  defaultConfig,
+  defaultBoardConfig,
   boardLayerTypes,
 } from '../constants/board.js'
 import {
@@ -187,7 +188,7 @@ export default class Board {
     }
 
     //Extend from default config
-    config = Object.assign({}, defaultConfig, config)
+    config = Object.assign({}, defaultBoardConfig, config)
 
     //Process config
     this.toggleCoordinates(config.showCoordinates)
@@ -560,6 +561,7 @@ export default class Board {
 
     //Check if can draw
     if (!this.canDraw()) {
+      console.log('Cannot draw')
       return
     }
 
@@ -709,17 +711,17 @@ export default class Board {
   }
 
   /**************************************************************************
-   * DOM helpers
+   * Bootstrapping
    ***/
 
   /**
-   * Render board onto element
+   * Bootstrap board onto element
    */
-  render(element) {
+  bootstrap(element) {
 
-    //Already rendered
+    //Already bootstrapped
     if (this.element) {
-      throw new Error(`Board has already been rendered!`)
+      throw new Error(`Board has already been bootstrapped!`)
     }
 
     //Link element and apply classes
@@ -730,38 +732,22 @@ export default class Board {
     this.recalculateDrawSize()
     this.renderLayers(element)
 
-    //Add resize handler on window
-    this.addResizeListener()
+    //Setup window listeners
+    this.setupWindowListeners()
   }
 
   /**
-   * Add resize listener
+   * Setup window listeners
    */
-  addResizeListener() {
+  setupWindowListeners() {
 
-    //Create listener
-    let throttled = false
-    let timeout = null
-    this.resizeListener = () => {
-      if (!throttled) {
-        this.recalculateDrawSize()
-      }
-      clearTimeout(timeout)
-      throttled = true
-      timeout = setTimeout(() => {
-        throttled = false
-      }, 250)
-    }
+    //Instantiate handler
+    this.windowEventHandler = new EventHandler(window)
 
-    //Apply
-    window.addEventListener('resize', this.resizeListener)
-  }
-
-  /**
-   * Remove resize listener
-   */
-  removeResizeListener() {
-    window.removeEventListener('resize', this.resizeListener)
+    //Register throttled listener
+    this.windowEventHandler.on('resize', () => {
+      this.recalculateDrawSize()
+    }, 250)
   }
 
   /**
@@ -835,9 +821,14 @@ export default class Board {
 
     //Get data
     const {sizingElement} = this
-    const {clientWidth, clientHeight} = sizingElement
+
+    //No sizing element
+    if (!sizingElement) {
+      return {availableWidth: 0, availableHeight: 0}
+    }
 
     //Get available size
+    const {clientWidth, clientHeight} = sizingElement
     const availableWidth = clientWidth
     const availableHeight = clientHeight || clientWidth
 

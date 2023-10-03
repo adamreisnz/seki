@@ -45,8 +45,7 @@ p {
 
 /* Board tweaks */
 .seki-board {
-  /* background: url('board.jpg');
-  box-shadow: 0 0 15px rgba(60, 30, 20, 0.3); */
+  box-shadow: 0 0 15px rgba(60, 30, 20, 0.3);
 }
 .seki-board-static {
   flex: 0 0 150px;
