@@ -19,4 +19,5 @@ export const gameTypes = {
 export const stoneColors = {
   BLACK: 'black',
   WHITE: 'white',
+  EMPTY: 'empty',
 }

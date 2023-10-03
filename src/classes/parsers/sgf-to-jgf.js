@@ -76,28 +76,34 @@ const parsingMap = {
 export const propertyMap = {
 
   //Record properties
-  AP: 'record.application',
   CA: 'record.charset',
-  CP: 'record.copyright',
-  SO: 'record.source',
+  AP: 'record.generator',
   US: 'record.transcriber',
-  AN: 'record.annotator',
 
-  //Game properties
+  //Source properties
+  SO: 'source.name',
+  CP: 'source.copyright',
+
+  //Game information
   GM: 'game.type',
   GN: 'game.name',
-  KM: 'game.komi',
-  HA: 'game.handicap',
   RE: 'game.result',
-  RU: 'game.rules',
-  TM: 'game.time.main',
-  OT: 'game.time.overtime',
   DT: 'game.dates',
-  PC: 'game.location',
-  EV: 'game.event',
-  RO: 'game.round',
   ON: 'game.opening',
-  GC: 'game.comment',
+  AN: 'game.annotator',
+  GC: 'game.description',
+
+  //Event information
+  EV: 'event.name',
+  PC: 'event.location',
+  RO: 'event.round',
+
+  //Rules
+  RU: 'rules.ruleSet',
+  KM: 'rules.komi',
+  HA: 'rules.handicap',
+  TM: 'rules.mainTime',
+  OT: 'rules.overTime',
 
   //Player info properties
   PB: 'name',
@@ -119,12 +125,12 @@ export const propertyMap = {
 }
 
 /**
- * This is a parser to convert SGF to JGF
+ * Parser to convert SGF to JGF
  */
 export default class SgfToJgf {
 
   /**
-   * Parse SGF string into a JGF object or string
+   * Parse SGF string into a JGF object
    */
   parse(sgf) {
 

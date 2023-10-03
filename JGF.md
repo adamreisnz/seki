@@ -1,0 +1,373 @@
+# JGF specification
+
+````javascript
+JGF = {
+
+  //Game record information
+  record: {
+
+    //JGF version
+    version: 1,
+
+    //Character set of the file
+    charset: "UTF-8",
+
+    //The application that was used to generate the game record file
+    generator: "Seki v1.0.0",
+
+    //The person (or program) who created the game record file
+    transcriber: "Adam Reis"
+  },
+
+  //Source of the game record
+  source: {
+
+    //The name of the source
+		name: "Go magazine",
+
+    //The URL of the source, if applicable
+    url: "https://gomagazine.example.org/kifu/123",
+
+		//Any copyright notice
+		copyright: "Copyright 2014",
+  },
+
+	//Game information
+	game: {
+
+		//The type of game
+		type: "go",
+
+		//The game name
+		name: "Lee Sedol beats Lee Chang-Ho",
+
+		//The game result, using the following format:
+		//
+		//  W+4.5 (white wins by 4.5 points)
+		//  B+R (black wins by resignation)
+		//  W+T (white wins by time)
+		//  B+F (black wins by forfeit)
+		//  0 (draw / jigo)
+		//  ? (unknown result)
+		//  <empty string> (no result or suspended play)
+		//
+		result: "W+4.5",
+
+		//Dates this game was played on
+		//Each date is in YYYY-MM-DD format, but MM or DD can be ommitted if not known
+		dates: ["2011-04-22", "2011-04-23"],
+
+		//Opening used
+		opening: "Low chinese",
+
+		//The annotator/commentator of the game
+		annotator: "An Younggil",
+
+		//General game description
+		description: "This is a general description about this game"
+	},
+
+  //Players involved
+  players: [
+
+    //For maximum flexibility, this is an array with player objects. This allows
+    //for more than 2 players, and for colors other than black and white.
+    {
+      //Player color (full color name in english, all lowercase)
+      color: "black",
+
+      //Player name
+      name: "Lee Chang-Ho",
+
+      //Player rank at time of the game, e.g. 15k, 4d, 2p
+      rank: "9p",
+
+      //Player team, if any
+      team: "",
+
+      //Player country, if any
+      country: "South Korea",
+
+      //Whether the player is a professional player
+      pro: true,
+
+      //Whether the player was an AI engine
+      ai: false
+    },
+    {
+      color: "white",
+      name: "Lee Sedol",
+      rank: "9p",
+      country: "South Korea",
+      pro: true
+    }
+  ],
+
+  //Event information
+  event: {
+
+    //The name of the event this game was played fo
+		name: "3rd Fujitsu cup",
+
+    //Where the event was held
+		location: "Seoul",
+
+		//The round of the event
+		round: "Semi finals",
+  },
+
+  //Game rules
+  rules: {
+
+    //The rule set used
+		ruleSet: "Japanese",
+
+    //Komi used (can be negative)
+		komi: 6.5,
+
+		//Handicap used
+		//The amount of handicap specified does not imply any particular
+		//way of handicap stone placement.
+		handicap: 0,
+
+		//Type of time control
+    timeControl: "Byo-yomi",
+
+    //Main time (in seconds)
+    mainTime: 7200,
+
+    //Overtime per move (in seconds)
+    overTime: 60
+  },
+
+	//Board properties
+	board: {
+
+    //Board size (if square)
+    size: 19,
+
+		//The board size can also specified by width and height separately, to
+		//allow support for non-square boards
+		width: 19,
+		height: 19,
+
+		//Cut-off part of the grid (for displaying problems)
+		cutOff: [
+      "right",
+      "bottom"
+    ],
+	},
+
+  //Meta data for any other information to be saved with the record
+  meta: {
+    foo: "Bar",
+  },
+
+	//Moves tree
+	tree: [
+
+		//First (root) node may contain comments, board setup or just a blank board.
+		//It cannot contain moves.
+		{
+
+			//Flag to indicate this is the root node
+			root: true,
+
+			//Comments are placed in an array and each comment can either be
+			//a simple string, or an object if more information is present.
+			comments: [
+
+				//Simple comments
+				"These are comments shown at the start of the game.",
+				"Every separate comment has it's own entry.",
+
+				//More detailed comments
+				{
+					//Commentator name
+					name: "C. Ommentator",
+
+					//Comment timestamp
+					timestamp: "2023-12-08 14:30",
+
+					//The actual comment
+					comment: "This is my comment"
+				}
+			]
+		},
+
+		//Second node and onwards contain moves, setup instructions or variations.
+		//Moves are indicated by the color of the player whose turn it was and the
+		//move coordinates. Move coordinates are an array with the X and Y coordinate.
+		{
+			move: {
+        color: "black",
+        x: 2,
+        y: 3,
+      }
+		},
+
+		//Pass moves are indicated with a "pass" flag
+		{
+      move: {
+        color: "white",
+        pass: true,
+      }
+		},
+
+		//A move node may contain other annotation as well, like comments or markup
+		{
+			move: {
+        color: "black",
+        x: 2,
+        y: 4,
+      },
+			comments: [
+        "Move comment",
+        "Another comment"
+      ]
+		},
+
+		//A node can be named using the name property
+		{
+			name: "Node name",
+      move: {
+        color: "white",
+        x: 15,
+        y: 15,
+      }
+		},
+
+		//Markup can be added to any node
+		{
+      move: {
+        color: "black",
+        x: 3,
+        y: 15,
+      },
+
+			//Markup is contained in its own array container
+			markup: [
+
+        //Default types are "circle", "triangle", "square", "mark", "label" and "selected".
+				//However, any other type can be specified in order to store custom markup types.
+        {
+          x: 4,
+          y: 3,
+          type: "triangle"
+        },
+
+        //Label markup gets a third entry in the array with the label contents.
+        {
+          x: 15,
+          y: 15,
+          type: "label",
+          text: "A"
+        },
+        {
+          x: 3,
+          y: 15,
+          type: "label",
+          text: "B"
+        }
+      ],
+		},
+
+		//Setup instructions always get their own node and cannot be combined with moves.
+		{
+			//Setup positions are indicated per color,
+			setup: [
+        {
+          color: "black",
+          x: 4,
+          y: 16,
+        },
+        {
+          color: "black",
+          x: 2,
+          y: 15,
+        },
+        {
+          color: "white",
+          x: 9,
+          y: 9,
+        },
+
+        //Instructions to clear a grid spot are indicated with the "empty" color
+        {
+          color: "empty",
+          x: 3,
+          y: 15,
+        }
+			],
+
+			//The player turn can be specified in setup nodes as well.
+			turn: "white"
+		},
+
+		//When scoring a position, a scoring node is used
+		{
+
+			//Scoring instructions indicate black and white territory.
+			//These points must be unique and can overlap existing stones.
+			//For japanese scoring, existing (living) stone positions can be
+			//excluded. For chinese scoring, they can be included.
+			score: {
+				black: [ [0,0], [0,1], [1,1], ... ],
+				white: [ [6,2], [6,3], [7,2], ... ],
+			}
+		},
+
+		//For problems, a node with the correct solution can be marked as follows
+		{
+			solution: true,
+      move: {
+        color: "white",
+        x: 15,
+        y: 6,
+      },
+		},
+
+		//Variations are contained in a variations node
+    {
+      variations: [
+        //Each variation's nodes are contained in a child moves container.
+        //Variation nodes themselves adhere to the same specifications.
+        [
+          {
+            name: "Variation 1",
+            move: {
+              color: "black",
+              x: 3,
+              y: 15,
+            },
+          },
+          {
+            move: {
+              color: "white",
+              x: 3,
+              y: 16,
+            },
+          }
+        ],
+        [
+          {
+            name: "Variation 2",
+            move: {
+              color: "black",
+              x: 3,
+              y: 16,
+            },
+          },
+          {
+            move: {
+              color: "white",
+              x: 3,
+              y: 15,
+            },
+          }
+        ]
+      ]
+    },
+	]
+};
+````
