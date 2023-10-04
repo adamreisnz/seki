@@ -1,3 +1,4 @@
+import Convert from '../convert.js'
 import Game from '../game.js'
 import GameNode from '../game-node.js'
 import {copy, set} from '../../helpers/object.js'
@@ -8,14 +9,14 @@ import {
 } from '../../constants/jgf.js'
 
 /**
- * Parse JGF data into a seki game object
+ * Convert JGF data into a seki game object
  */
-export default class ParseJgf {
+export default class ConvertFromJgf extends Convert {
 
   /**
    * Convert JGF object into a Seki consumable format
    */
-  parse(jgf) {
+  convert(jgf) {
 
     //Initialize
     const game = new Game()

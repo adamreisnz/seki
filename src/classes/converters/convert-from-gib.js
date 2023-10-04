@@ -1,3 +1,4 @@
+import Convert from '../convert.js'
 import Game from '../game.js'
 import GameNode from '../game-node.js'
 import {stoneColors} from '../../constants/stone.js'
@@ -18,12 +19,12 @@ const regexResultOther = /GAMERESULT=(white|black)\s[a-z\s]+(resignation|time)/g
  * NOTE: Since the Gib format is not public,
  * the accuracy of this parser is not guaranteed
  */
-export default class ParseGib {
+export default class ConvertFromGib extends Convert {
 
   /**
-   * Parse GIB data into a game object
+   * Convert GIB data into a game object
    */
-  parse(gib) {
+  convert(gib) {
 
     //Initialize
     const game = new Game()

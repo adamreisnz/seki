@@ -1,6 +1,8 @@
+import {stoneColors} from './stone.js'
 
 //Setup types
 export const setupTypes = {
-  STONE: 'stone',
   EMPTY: 'empty',
+  BLACK: stoneColors.BLACK,
+  WHITE: stoneColors.WHITE,
 }

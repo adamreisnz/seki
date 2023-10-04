@@ -1,18 +1,26 @@
+import Convert from '../convert.js'
 import Game from '../game.js'
 import GameNode from '../game-node.js'
 import {gameTypes} from '../../constants/game.js'
 import {stoneColors} from '../../constants/stone.js'
 import {markupTypes} from '../../constants/markup.js'
 import {setupTypes} from '../../constants/setup.js'
+import {
+  charCodeA,
+  sgfStoneColors,
+  sgfGameInfoMap,
+  sgfPlayerInfoMap,
+  sgfGameTypes,
+  sgfMarkupTypes,
+} from '../../constants/sgf.js'
 
 //Regexes
 const regexSequence = /\(|\)|(;(\s*[A-Z]+\s*((\[\])|(\[(.|\s)*?([^\\]\])))+)*)/g
 const regexNode = /[A-Z]+\s*((\[\])|(\[(.|\s)*?([^\\]\])))+/g
 const regexProperty = /[A-Z]+/
 const regexValues = /(\[\])|(\[(.|\s)*?([^\\]\]))/g
-
-//A char
-const aChar = String('a').charCodeAt(0)
+const regexBlackPlayer = /PB|BT|BR/i
+const regexWhitePlayer = /PW|WT|WR/i
 
 //These properties need a node object
 // const needsNode = [
@@ -21,11 +29,6 @@ const aChar = String('a').charCodeAt(0)
 //   'LB', 'CR', 'SQ', 'TR',
 //   'MA', 'SL', 'TW', 'TB',
 // ]
-
-//These properties represent the black player
-const blackPlayerKeys = [
-  'PB', 'BT', 'BR',
-]
 
 //Property to parser map
 const parsingMap = {
@@ -82,55 +85,14 @@ const parsingMap = {
 }
 
 /**
- * Game info map (these don't have a dedicated parser)
+ * Convert SGF file data into a seki game object
  */
-export const infoMap = {
-
-  //Record properties
-  CA: 'record.charset',
-  US: 'record.transcriber',
-
-  //Source properties
-  SO: 'source.name',
-  CP: 'source.copyright',
-
-  //Game information
-  GN: 'game.name',
-  RE: 'game.result',
-  ON: 'game.opening',
-  AN: 'game.annotator',
-  GC: 'game.description',
-
-  //Event information
-  EV: 'event.name',
-  PC: 'event.location',
-  RO: 'event.round',
-
-  //Rules
-  RU: 'rules.ruleSet',
-  TM: 'rules.mainTime',
-  OT: 'rules.overTime',
-}
-
-//Player info map
-const playerInfoMap = {
-  PB: 'name',
-  PW: 'name',
-  BT: 'team',
-  WT: 'team',
-  BR: 'rank',
-  WR: 'rank',
-}
-
-/**
- * Parser to convert SGF
- */
-export default class ParseSgf {
+export default class ConvertFromSgf extends Convert {
 
   /**
-   * Parse SGF string into a seki game object
+   * Convert SGF string into a seki game object
    */
-  parse(sgf) {
+  convert(sgf) {
 
     //Initialize
     const game = new Game()
@@ -231,10 +193,10 @@ export default class ParseSgf {
         continue
       }
 
-      //Plain info element?
-      else if (infoMap[key]) {
+      //Plain info value?
+      else if (sgfGameInfoMap[key]) {
         const value = this.getSimpleValue(values)
-        game.setInfo(infoMap[key], value)
+        game.setInfo(sgfGameInfoMap[key], value)
         continue
       }
 
@@ -273,8 +235,8 @@ export default class ParseSgf {
    * Game type parser function
    */
   parseGameType(game, node, key, values) {
-    const type = values[0]
-    game.game.type = this.convertGameType(type)
+    const type = this.getMappedValue(values[0], sgfGameTypes, true)
+    game.setInfo('game.type', type || gameTypes.GO)
   }
 
   /**
@@ -330,7 +292,7 @@ export default class ParseSgf {
 
     //Add values
     for (const value of values) {
-      const type = color ? setupTypes.STONE : setupTypes.EMPTY
+      const type = color || setupTypes.EMPTY
       const obj = {type, color}
       this.appendCoordinates(value, obj)
       setup.push(obj)
@@ -406,7 +368,11 @@ export default class ParseSgf {
 
     //Initialize markup container
     const markup = node.markup || []
-    const type = this.convertMarkupType(key)
+    const type = this.getMappedValue(key, sgfMarkupTypes, true)
+    if (!type) {
+      console.warn(`Encountered unknown markup type: ${key}`)
+      return
+    }
 
     //Add values
     for (const value of values) {
@@ -443,15 +409,8 @@ export default class ParseSgf {
    * Dates parser function
    */
   parseDates(game, node, key, values) {
-
-    //Get dates
     const dates = values[0].split(',')
-    if (dates.length > 1) {
-      game.setInfo('game.dates', dates)
-    }
-    else {
-      game.setInfo('game.date', dates[0])
-    }
+    game.setInfo('game.dates', dates)
   }
 
   /**
@@ -516,8 +475,8 @@ export default class ParseSgf {
     const players = game.getInfo('players', [])
 
     //Determine player color
-    const color = this.determinePlayerColor(key)
-    const infoKey = playerInfoMap[key]
+    const color = this.convertPlayerColor(key)
+    const infoKey = sgfPlayerInfoMap[key]
 
     //Check if player of this color already exists
     const existing = players.find(player => player.color === color)
@@ -545,75 +504,28 @@ export default class ParseSgf {
    * Helper to convert SGF coordinates to x/y and append to an object
    */
   appendCoordinates(coords, obj = {}) {
-    obj.x = coords.charCodeAt(0) - aChar
-    obj.y = coords.charCodeAt(1) - aChar
+    obj.x = coords.charCodeAt(0) - charCodeA
+    obj.y = coords.charCodeAt(1) - charCodeA
     return obj
   }
 
   /**
-   * Determine player color
+   * Convert player color from key
    */
-  determinePlayerColor(key) {
-    return blackPlayerKeys.includes(key) ?
-      stoneColors.BLACK :
-      stoneColors.WHITE
+  convertPlayerColor(key) {
+    if (key.match(regexBlackPlayer)) {
+      return stoneColors.BLACK
+    }
+    else if (key.match(regexWhitePlayer)) {
+      return stoneColors.WHITE
+    }
   }
 
   /**
    * Convert a string color value to a numeric color value
    */
   convertColor(color) {
-    if (color === 'B') {
-      return stoneColors.BLACK
-    }
-    else if (color === 'W') {
-      return stoneColors.WHITE
-    }
-  }
-
-  /**
-   * Convert SGF game type
-   */
-  convertGameType(type) {
-    switch (type) {
-      case 1:
-        return gameTypes.GO
-      case 2:
-        return gameTypes.OTHELLO
-      case 3:
-        return gameTypes.CHESS
-      case 4:
-        return gameTypes.RENJU
-      case 6:
-        return gameTypes.BACKGAMMON
-      case 7:
-        return gameTypes.CHINESE_CHESS
-      case 8:
-        return gameTypes.SHOGI
-      default:
-        return gameTypes.UNKNOWN
-    }
-  }
-
-  /**
-   * Convert SGF markup type
-   */
-  convertMarkupType(type) {
-    switch (type) {
-      case 'CR':
-        return markupTypes.CIRCLE
-      case 'SQ':
-        return markupTypes.SQUARE
-      case 'TR':
-        return markupTypes.TRIANGLE
-      case 'SL':
-        return markupTypes.SELECT
-      case 'LB':
-        return markupTypes.LABEL
-      case 'MA':
-      default:
-        return markupTypes.MARK
-    }
+    return this.getMappedValue(color, sgfStoneColors, true)
   }
 
   /**

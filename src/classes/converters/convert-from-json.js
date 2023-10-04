@@ -1,17 +1,17 @@
-import ParseJgf from './parse-jgf.js'
+import ConvertFromJgf from './convert-from-jgf.js'
 
 /**
- * Parse JGF data in JSON into a seki game object
+ * Convert JGF data in JSON into a seki game object
  */
-export default class ParseJson extends ParseJgf {
+export default class ConvertFromJson extends ConvertFromJgf {
 
   /**
    * Convert JGF object into a Seki consumable format
    */
-  parse(json) {
+  convert(json) {
     try {
       const jgf = JSON.parse(json)
-      return super.parse(jgf)
+      return super.convert(jgf)
     }
     catch (error) {
       throw new Error(`Unable to parse JSON: ${error.message}`)

@@ -289,24 +289,24 @@ export default {
 
     //Vertical coordinates style
     vertical: {
-      font: 'Arial',
+      font: 'Helvetica',
       style: 'numbers',
       inverse: true,
       size: function() {
         return function(ch, cellSize) {
-          return Math.floor((cellSize * 0.3) + 1) + 'px'
+          return Math.floor((cellSize * 0.3) + 3) + 'px'
         }
       },
     },
 
     //Horizontal coordinates style
     horizontal: {
-      font: 'Arial',
+      font: 'Helvetica',
       style: 'letters',
       inverse: false,
       size: function() {
         return function(ch, cellSize) {
-          return Math.floor((cellSize * 0.3) + 1) + 'px'
+          return Math.floor((cellSize * 0.3) + 3) + 'px'
         }
       },
     },

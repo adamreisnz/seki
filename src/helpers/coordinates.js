@@ -8,8 +8,8 @@ const kanjiCoordinates = [
 ]
 
 //Character codes
-const aChar = 'A'.charCodeAt(0)
-const aCharLc = 'a'.charCodeAt(0)
+const aChar = 65
+const aCharLc = 97
 
 //Kanji coordinates generator
 export function kanji(i) {

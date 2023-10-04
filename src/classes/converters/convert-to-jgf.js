@@ -1,4 +1,5 @@
-import KifuFactory from '../kifu-factory.js'
+import Convert from '../convert.js'
+import Game from '../game.js'
 import {copy, set} from '../../helpers/object.js'
 import {
   jgfPaths,
@@ -9,17 +10,22 @@ import {
 /**
  * Converter to JGF
  */
-export default class ConvertToJgf {
+export default class ConvertToJgf extends Convert {
 
   /**
    * Convert Seki game object to JGF
    */
   convert(game) {
 
-    //Initialize
-    const jgf = KifuFactory.blankJgf()
+    //Not a game instance
+    if (!(game instanceof Game)) {
+      throw new Error('Not a game instance')
+    }
 
-    //Copy over relevant paths
+    //Initialize JGF object
+    const jgf = {}
+
+    //Copy over relevant game info
     for (const path of jgfPaths) {
       set(jgf, path, copy(game.getInfo(path)))
     }
@@ -27,11 +33,21 @@ export default class ConvertToJgf {
     //Create tree
     jgf.tree = []
 
-    //Add root node
+    //Add root node and append generator data
     this.addNodeToContainer(game.root, jgf.tree)
+    this.appendGenerator(jgf)
 
     //Return JGF
     return jgf
+  }
+
+  /**
+   * Append generator data
+   */
+  appendGenerator(jgf) {
+    jgf.record = jgf.record || {}
+    jgf.record.generator = this.getGeneratorSignature()
+    jgf.record.charset = 'UTF-8'
   }
 
   /**

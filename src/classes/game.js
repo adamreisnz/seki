@@ -2,16 +2,16 @@ import merge from 'deepmerge'
 import GamePath from './game-path.js'
 import GameNode from './game-node.js'
 import GamePosition from './game-position.js'
-import ParseJgf from './parsers/parse-jgf.js'
-import ParseJson from './parsers/parse-json.js'
-import ParseSgf from './parsers/parse-sgf.js'
-import ParseGib from './parsers/parse-gib.js'
-import ConvertToJgf from './parsers/convert-to-jgf.js'
-import ConvertToJson from './parsers/convert-to-json.js'
-import ConvertToSgf from './parsers/convert-to-sgf.js'
+import ConvertFromJgf from './converters/convert-from-jgf.js'
+import ConvertFromJson from './converters/convert-from-json.js'
+import ConvertFromSgf from './converters/convert-from-sgf.js'
+import ConvertFromGib from './converters/convert-from-gib.js'
+import ConvertToJgf from './converters/convert-to-jgf.js'
+import ConvertToJson from './converters/convert-to-json.js'
+import ConvertToSgf from './converters/convert-to-sgf.js'
 import {set, get} from '../helpers/object.js'
 import {stoneColors} from '../constants/stone.js'
-import {kifuFormats} from '../constants/kifu.js'
+import {kifuFormats} from '../constants/app.js'
 import {
   defaultGameInfo,
   checkRepeatTypes,
@@ -1299,11 +1299,11 @@ export default class Game {
    */
   static fromJson(json) {
 
-    //Create parser
-    const parser = new ParseJson()
-    const game = parser.parse(json)
+    //Create convertr
+    const convertr = new ConvertFromJson()
+    const game = convertr.convert(json)
     if (!game) {
-      throw new Error(`Unable to parse JSON JGF data`)
+      throw new Error(`Unable to parse JSON data`)
     }
 
     //Return game
@@ -1315,9 +1315,9 @@ export default class Game {
    */
   static fromJgf(jgf) {
 
-    //Create parser
-    const parser = new ParseJgf()
-    const game = parser.parse(jgf)
+    //Create convertr
+    const convertr = new ConvertFromJgf()
+    const game = convertr.convert(jgf)
     if (!game) {
       throw new Error(`Unable to parse JGF data`)
     }
@@ -1331,9 +1331,9 @@ export default class Game {
    */
   static fromSgf(sgf) {
 
-    //Create parser
-    const parser = new ParseSgf()
-    const game = parser.parse(sgf)
+    //Create converter
+    const converter = new ConvertFromSgf()
+    const game = converter.convert(sgf)
     if (!game) {
       throw new Error(`Unable to parse SGF data`)
     }
@@ -1347,9 +1347,9 @@ export default class Game {
    */
   static fromGib(gib) {
 
-    //Create parser
-    const parser = new ParseGib()
-    const game = parser.parse(gib)
+    //Create converter
+    const converter = new ConvertFromGib()
+    const game = converter.convert(gib)
     if (!game) {
       throw new Error(`Unable to parse GIB data`)
     }
@@ -1358,6 +1358,9 @@ export default class Game {
     return game
   }
 
+  /**
+   * Detect format
+   */
   static detectFormat(data) {
 
     //No data, can't do much

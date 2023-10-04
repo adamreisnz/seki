@@ -280,23 +280,20 @@ JGF = {
 
 		//Setup instructions always get their own node and cannot be combined with moves.
 		{
-			//Setup positions are indicated per color,
+			//Setup positions are indicated with color as type
 			setup: [
         {
-          type: "stone",
-          color: "black",
+          type: "black",
           x: 4,
           y: 16,
         },
-
-        //The "stone" setup type is implied and can be omitted
         {
-          color: "black",
+          type: "black",
           x: 2,
           y: 15,
         },
         {
-          color: "white",
+          type: "white",
           x: 9,
           y: 9,
         },
@@ -324,13 +321,20 @@ JGF = {
         {
           color: "black",
           coordinates: [
-
+            {x: 0, y: 0},
+            {x: 0, y: 1},
+            {x: 1, y: 1},
           ],
-        }
+        },
+        {
+          color: "white",
+          coordinates: [
+            {x: 6, y: 2},
+            {x: 6, y: 3},
+            {x: 7, y: 2},
+          ],
+        },
       ],
-				black: [ [0,0], [0,1], [1,1], ... ],
-				white: [ [6,2], [6,3], [7,2], ... ],
-			}
 		},
 
 		//For problems, a node with the correct solution can be marked as follows

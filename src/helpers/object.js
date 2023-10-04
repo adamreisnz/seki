@@ -8,6 +8,17 @@ export function copy(obj, path) {
 }
 
 /**
+ * Flip object keys to values and vice versa
+ */
+export function flip(obj) {
+  return Object
+    .fromEntries(Object
+      .entries(obj)
+      .map(([key, value]) => [value, key]),
+    )
+}
+
+/**
  * Get path in an object
  */
 export function get(obj, path, defaultValue = undefined) {
