@@ -21,28 +21,28 @@ const copyNodeKeys = [
 ]
 
 /**
- * Parser to convert JGF to Seki format
+ * Parser to output JGF
  */
-export default class SekiToJgf {
+export default class OutputJgf {
 
   /**
-   * Convert Seki game object into JGF
+   * Convert Seki game object to JGF
    */
-  convert(seki) {
+  parse(game) {
 
     //Initialize
     const jgf = {}
 
     //Copy over relevant keys
     for (const key of copyKeys) {
-      jgf[key] = JSON.parse(JSON.stringify(seki[key]))
+      jgf[key] = JSON.parse(JSON.stringify(game[key]))
     }
 
     //Create tree
     jgf.tree = []
 
     //Add root node
-    this.addNodeToContainer(seki.root, jgf.tree)
+    this.addNodeToContainer(game.root, jgf.tree)
 
     //Return JGF
     return jgf
@@ -70,7 +70,7 @@ export default class SekiToJgf {
     }
 
     //Convert node and add to container
-    const jgfNode = this.convertNodeToJgf(node)
+    const jgfNode = this.parseNode(node)
     container.push(jgfNode)
 
     //Process next child
@@ -79,21 +79,10 @@ export default class SekiToJgf {
     }
   }
 
-  /**************************************************************************
-   * Conversion helpers
-   ***/
-
-  /**
-   * Check if a node is a variations node
-   */
-  isVariationNode(node) {
-    return (node && node.children.length > 1)
-  }
-
   /**
    * Convert node to JGF format
    */
-  convertNodeToJgf(node) {
+  parseNode(node) {
 
     //Create JGF node
     const jgfNode = {}
@@ -105,32 +94,32 @@ export default class SekiToJgf {
 
     //Move
     if (node.move) {
-      jgfNode.move = this.convertNodeObjectToJgf(node.move)
+      jgfNode.move = this.parseNodeObject(node.move)
     }
 
     //Turn indicataor
     if (node.turn) {
-      jgfNode.turn = this.convertColorToJgf(node.turn)
+      jgfNode.turn = this.convertColor(node.turn)
     }
 
     //Setup instructions
     if (Array.isArray(node.setup)) {
-      jgfNode.setup = node.setup.map(this.convertNodeObjectToJgf)
+      jgfNode.setup = node.setup.map(this.parseNodeObject)
     }
 
     //Markup
     if (Array.isArray(node.markup)) {
-      jgfNode.markup = node.markup.map(this.convertNodeObjectToJgf)
+      jgfNode.markup = node.markup.map(this.parseNodeObject)
     }
   }
 
   /**
    * Convert node object to JGF format
    */
-  convertNodeObjectToJgf(move) {
+  parseNodeObject(move) {
 
     //Determine color
-    const color = this.convertColorToJgf(move.color)
+    const color = this.convertColor(move.color)
     if (typeof color === 'undefined') {
       return
     }
@@ -141,9 +130,20 @@ export default class SekiToJgf {
   }
 
   /**
+   * Check if a node is a variations node
+   */
+  isVariationNode(node) {
+    return (node && node.children.length > 1)
+  }
+
+  /**************************************************************************
+   * Conversion helpers
+   ***/
+
+  /**
    * Convert a numeric color value (color constant) to a string
    */
-  convertColorToJgf(color) {
+  convertColor(color) {
     if (color === stoneColors.BLACK) {
       return stoneColorsJgf.BLACK
     }

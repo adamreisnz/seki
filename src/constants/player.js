@@ -63,4 +63,7 @@ export const defaultPlayerConfig = {
   variationMarkup: true,
   variationChildren: true,
   variationSiblings: false,
+
+  //Show solution paths
+  solutionPaths: false,
 }

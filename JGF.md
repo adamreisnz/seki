@@ -53,9 +53,15 @@ JGF = {
 		//
 		result: "W+4.5",
 
-		//Dates this game was played on
-		//Each date is in YYYY-MM-DD format, but MM or DD can be ommitted if not known
-		dates: ["2011-04-22", "2011-04-23"],
+    //Date this game was played on in ISO format
+    //Month and/or day can be ommitted if not known
+    date: "2023-06-12",
+
+		//If more than one date, can specify an array of dates
+		dates: [
+      "2011-04-22",
+      "2011-04-23"
+    ],
 
 		//Opening used
 		opening: "Low chinese",
@@ -311,7 +317,14 @@ JGF = {
 			//These points must be unique and can overlap existing stones.
 			//For japanese scoring, existing (living) stone positions can be
 			//excluded. For chinese scoring, they can be included.
-			score: {
+			score: [
+        {
+          color: "black",
+          coordinates: [
+
+          ],
+        }
+      ],
 				black: [ [0,0], [0,1], [1,1], ... ],
 				white: [ [6,2], [6,3], [7,2], ... ],
 			}

@@ -1,4 +1,5 @@
-import {stoneColors, gameTypes} from './jgf.js'
+import {stoneColors} from './jgf.js'
+import {gameTypes} from './game.js'
 import {appName, appVersion} from './app.js'
 
 /**
@@ -6,7 +7,7 @@ import {appName, appVersion} from './app.js'
  */
 export const blankJgf = {
   record: {
-    application: `${appName} v${appVersion}`,
+    generator: `${appName} v${appVersion}`,
     version: 1,
     charset: 'UTF-8',
   },
@@ -24,8 +25,7 @@ export const blankJgf = {
     ],
   },
   board: {
-    width: 19,
-    height: 19,
+    size: 19,
   },
   tree: [],
 }

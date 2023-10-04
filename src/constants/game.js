@@ -1,6 +1,20 @@
 import {stoneColors} from '../constants/stone.js'
 
 /**
+ * Game types
+ */
+export const gameTypes = {
+  GO: 'go',
+  OTHELLO: 'othello',
+  CHESS: 'chess',
+  RENJU: 'renju',
+  BACKGAMMON: 'backgammon',
+  CHINESE_CHESS: 'chinese_chess',
+  SHOGI: 'shogi',
+  UNKNOWN: 'unknown',
+}
+
+/**
  * Possible score states
  */
 export const scoreState = {
