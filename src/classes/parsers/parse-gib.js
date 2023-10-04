@@ -134,11 +134,13 @@ export default class ParseGib {
    */
   parsePlayer(game, match) {
 
-    //Initialize players container
-    const players = game.getInfo('players', [])
-
     //Determine player color
     const color = this.determinePlayerColor(match[1])
+
+    //Get players container (filter out if existing player found)
+    const players = game
+      .getInfo('players', [])
+      .filter(player => player.color !== color)
 
     //Create player object
     const player = {

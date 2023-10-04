@@ -1,14 +1,24 @@
+import merge from 'deepmerge'
 import GamePath from './game-path.js'
 import GameNode from './game-node.js'
 import GamePosition from './game-position.js'
-import KifuParser from './kifu-parser.js'
-import KifuFactory from './kifu-factory.js'
+import ParseJgf from './parsers/parse-jgf.js'
+import ParseJson from './parsers/parse-json.js'
+import ParseSgf from './parsers/parse-sgf.js'
+import ParseGib from './parsers/parse-gib.js'
+import ConvertToJgf from './parsers/convert-to-jgf.js'
+import ConvertToJson from './parsers/convert-to-json.js'
+import ConvertToSgf from './parsers/convert-to-sgf.js'
 import {set, get} from '../helpers/object.js'
-import {defaultGameConfig, checkRepeatTypes} from '../constants/game.js'
 import {stoneColors} from '../constants/stone.js'
+import {kifuFormats} from '../constants/kifu.js'
+import {
+  defaultGameInfo,
+  checkRepeatTypes,
+} from '../constants/game.js'
 
 /**
- * Game :: This class represents a game record or a game that is being played/edited. The class
+ * This class represents a game record or a game that is being played/edited. The class
  * traverses the move tree nodes and keeps track of the changes between the previous and new game
  * positions. These changes can then be fed to the board, to add or remove stones and markup.
  * The class also keeps a stack of all board positions in memory and can validate moves to make
@@ -19,12 +29,7 @@ export default class Game {
   /**
    * Constructor
    */
-  constructor(data, config) {
-
-    //Set config
-    if (config) {
-      this.setConfig(config)
-    }
+  constructor(data) {
 
     //Load data
     if (data) {
@@ -41,7 +46,7 @@ export default class Game {
   init() {
 
     //Info properties
-    this.info = {}
+    this.info = merge.all([defaultGameInfo, {}])
 
     //The rood node and pointer to the current node
     this.root = null
@@ -56,13 +61,10 @@ export default class Game {
     //Positions history stack
     this.history = []
 
-    //Config
-    this.defaultSize = 0
-    this.defaultKomi = 0
-    this.defaultHandicap = 0
+    //Settings
+    this.allowSuicide = false
     this.rememberPath = true
     this.checkRepeat = checkRepeatTypes.KO
-    this.allowSuicide = false
   }
 
   /**
@@ -100,35 +102,6 @@ export default class Game {
   }
 
   /**
-   * Check if we managed to load a valid game record
-   */
-  isLoaded() {
-    return this.root !== null
-  }
-
-  /**************************************************************************
-   * Virtuals
-   ***/
-
-  /**
-   * Getter returns the last position from the stack
-   */
-  get position() {
-    return this.history[this.history.length - 1]
-  }
-
-  /**
-   * Setter adds a new position to the stack
-   */
-  set position(newPosition) {
-    this.history[this.history.length] = newPosition
-  }
-
-  /*****************************************************************************
-   * Game cloning and conversion
-   ***/
-
-  /**
    * Clone this game
    */
   clone() {
@@ -146,156 +119,29 @@ export default class Game {
     return clone
   }
 
+  /**************************************************************************
+   * Virtuals
+   ***/
+
   /**
-   * Load from an unknown data source
+   * Check if we managed to load a valid game record
    */
-  fromData(data) {
-
-    //No data, can't do much
-    if (!data) {
-      throw new Error(`No data`)
-    }
-
-    //String given, could be stringified JGF, an SGF or GIB file
-    if (typeof data === 'string') {
-      let c = data.charAt(0)
-      if (c === '(') {
-        return this.fromSgf(data)
-      }
-      else if (c === '{' || c === '[') {
-        return this.fromJS(data)
-      }
-      else if (c === '\\') {
-        return this.fromGib(data)
-      }
-      else {
-        throw new Error(`Unknown data`)
-      }
-    }
-
-    //Object given? Probably a JGF object
-    else if (typeof data === 'object') {
-      this.fromJS(data)
-    }
-
-    //Something else?
-    else {
-      throw new Error(`Unknown data`)
-    }
+  get isLoaded() {
+    return this.root !== null
   }
 
   /**
-   * Load from GIB data
+   * Getter returns the last position from the stack
    */
-  fromGib(gib) {
-
-    //Use the kifu parser
-    const jgf = KifuParser.gibToJgf(gib)
-    if (!jgf) {
-      throw new Error(`Unable to parse GIB data`)
-    }
-
-    //Now load JGF
-    this.fromJgf(jgf)
+  get position() {
+    return this.history[this.history.length - 1]
   }
 
   /**
-   * Load from SGF data
+   * Setter adds a new position to the stack
    */
-  fromSgf(sgf) {
-
-    //Use the kifu parser
-    const jgf = KifuParser.sgfToJgf(sgf)
-    if (!jgf) {
-      throw new Error(`Unable to parse SGF data`)
-    }
-
-    //Now load JGF
-    this.fromJgf(jgf)
-  }
-
-  /**
-   * From JSON
-   */
-  fromJSON(json) {
-
-    //Use the kifu parser
-    const jgf = KifuParser.jsonToJgf(json)
-    if (!jgf) {
-      throw new Error(`Unable to parse JSON data`)
-    }
-
-    //Now load JGF
-    this.fromJgf(jgf)
-  }
-
-  /**
-   * Load from JGF
-   */
-  fromJgf(jgf) {
-
-    //Copy all properties except moves tree
-    Object
-      .keys(jgf)
-      .filter(key => key !== 'tree')
-      .forEach(key => this.info[key] = JSON.parse(JSON.stringify(jgf[key])))
-
-    //Validate info
-    this.validateInfo()
-
-    //Create root node
-    this.root = new GameNode()
-
-    //Tree given? Load all the moves
-    if (jgf.tree) {
-      this.root.fromJS(jgf.tree)
-    }
-
-    //Remember JGF
-    this.jgf = jgf
-  }
-
-  /**
-   * Convert to SGF
-   */
-  toSgf() {
-    const jgf = this.toJgf()
-    return KifuParser.jgf2sgf(jgf)
-  }
-
-  /**
-   * Convert to JGF (optionally stringified)
-   */
-  toJgf(stringify) {
-
-    //Initialize JGF and get properties
-    const jgf = KifuFactory.blankJgf()
-    const props = Object.getOwnPropertyNames(this)
-
-    //Copy properties
-    for (const prop of props) {
-
-      //Skip root
-      if (prop === 'root') {
-        continue
-      }
-
-      //Already present on JGF object? Extend
-      if (jgf[prop]) {
-        jgf[prop] = Object.assign(jgf[prop], this[prop])
-      }
-
-      //Otherwise copy
-      else {
-        jgf[prop] = JSON.parse(JSON.stringify(this[prop]))
-      }
-    }
-
-    //Build tree
-    jgf.tree = this.root.toJgf()
-
-    //Return
-    return stringify ? JSON.parse(jgf) : jgf
+  set position(newPosition) {
+    this.history[this.history.length] = newPosition
   }
 
   /**************************************************************************
@@ -753,23 +599,6 @@ export default class Game {
   }
 
   /**
-   * Add markup
-   */
-  addMarkup(x, y, markup) {
-
-    //No markup instructions container in this node?
-    if (typeof this.node.markup === 'undefined') {
-      this.node.markup = []
-    }
-
-    //Add markup to game position
-    this.position.markup.set(x, y, markup)
-
-    //Add markup instructions to node
-    this.node.markup.push(this.position.markup.get(x, y, 'type'))
-  }
-
-  /**
    * Remove a stone
    */
   removeStone(x, y) {
@@ -791,6 +620,40 @@ export default class Game {
   }
 
   /**
+   * Get stone on coordinates
+   */
+  getStone(x, y) {
+    return this.position.stones.get(x, y)
+  }
+
+  /**
+   * Check if there is a stone at the given coordinates for the current position
+   */
+  hasStone(x, y, color) {
+    if (typeof color !== 'undefined') {
+      return this.position.stones.is(x, y, color)
+    }
+    return this.position.stones.has(x, y)
+  }
+
+  /**
+   * Add markup
+   */
+  addMarkup(x, y, markup) {
+
+    //No markup instructions container in this node?
+    if (typeof this.node.markup === 'undefined') {
+      this.node.markup = []
+    }
+
+    //Add markup to game position
+    this.position.markup.set(x, y, markup)
+
+    //Add markup instructions to node
+    this.node.markup.push(this.position.markup.get(x, y, 'type'))
+  }
+
+  /**
    * Remove markup
    */
   removeMarkup(x, y) {
@@ -808,13 +671,10 @@ export default class Game {
   }
 
   /**
-   * Check if there is a stone at the given coordinates for the current position
+   * Get markup on coordinates
    */
-  hasStone(x, y, color) {
-    if (typeof color !== 'undefined') {
-      return this.position.stones.is(x, y, color)
-    }
-    return this.position.stones.has(x, y)
+  getMarkup(x, y) {
+    return this.position.markup.get(x, y)
   }
 
   /**
@@ -825,20 +685,6 @@ export default class Game {
       return this.position.markup.is(x, y, type)
     }
     return this.position.markup.has(x, y)
-  }
-
-  /**
-   * Get stone on coordinates
-   */
-  getStone(x, y) {
-    return this.position.stones.get(x, y)
-  }
-
-  /**
-   * Get markup on coordinates
-   */
-  getMarkup(x, y) {
-    return this.position.markup.get(x, y)
   }
 
   /*****************************************************************************
@@ -1192,46 +1038,10 @@ export default class Game {
    ***/
 
   /**
-   * Set config instructions in bulk
+   * Set allow suicide
    */
-  setConfig(config) {
-
-    //Validate
-    if (!config || typeof config !== 'object') {
-      return
-    }
-
-    //Extend from default config
-    config = Object.assign({}, defaultGameConfig, config)
-
-    //Process config
-    this.setDefaultSize(config.defaultSize)
-    this.setDefaultKomi(config.defaultKomi)
-    this.setDefaultHandicap(config.defaultHandicap)
-    this.setRememberPath(config.rememberPath)
-    this.setCheckRepeat(config.checkRepeat)
-    this.setAllowSuicide(config.allowSuicide)
-  }
-
-  /**
-   * Set default size
-   */
-  setDefaultSize(size) {
-    this.defaultSize = size
-  }
-
-  /**
-   * Set default komi
-   */
-  setDefaultKomi(komi) {
-    this.defaultKomi = komi
-  }
-
-  /**
-   * Set default handicap
-   */
-  setDefaultHandicap(handicap) {
-    this.defaultHandicap = handicap
+  setAllowSuicide(allowSuicide) {
+    this.allowSuicide = allowSuicide
   }
 
   /**
@@ -1246,47 +1056,6 @@ export default class Game {
    */
   setCheckRepeat(checkRepeat) {
     this.checkRepeat = checkRepeat
-  }
-
-  /**
-   * Set allow suicide
-   */
-  setAllowSuicide(allowSuicide) {
-    this.allowSuicide = allowSuicide
-  }
-
-  /*****************************************************************************
-     * General helpers
-     ***/
-
-  /**
-   * Validate the info we have to make sure the properties exist
-   */
-  validateInfo() {
-
-    //Set board info if not set
-    if (!this.info.board) {
-      this.info.board = {}
-    }
-
-    //Set game info if not set
-    if (!this.info.game) {
-      this.info.game = {}
-    }
-
-    //Set defaults
-    if (typeof this.info.board.width === 'undefined') {
-      this.info.board.width = this.config.defaultSize
-    }
-    if (typeof this.info.board.height === 'undefined') {
-      this.info.board.height = this.config.defaultSize
-    }
-    if (typeof this.info.game.komi === 'undefined') {
-      this.info.game.komi = this.config.defaultKomi
-    }
-    if (typeof this.info.game.handicap === 'undefined') {
-      this.info.game.handicap = this.config.defaultHandicap
-    }
   }
 
   /*****************************************************************************
@@ -1491,5 +1260,155 @@ export default class Game {
 
     //Push the new position into the history now
     this.pushPosition(newPosition)
+  }
+
+  /**************************************************************************
+   * Conversion helpers to convert this game into different formats
+   ***/
+
+  /**
+   * Convert to JGF
+   */
+  toJgf() {
+    const converter = new ConvertToJgf()
+    return converter.convert(this)
+  }
+
+  /**
+   * Convert to JGF JSON
+   */
+  toJson() {
+    const converter = new ConvertToJson()
+    return converter.convert(this)
+  }
+
+  /**
+   * Convert to SGF
+   */
+  toSgf() {
+    const converter = new ConvertToSgf()
+    return converter.convert(this)
+  }
+
+  /**************************************************************************
+   * Static helpers to create game instances from different formats
+   ***/
+
+  /**
+   * Load from SGF data
+   */
+  static fromJson(json) {
+
+    //Create parser
+    const parser = new ParseJson()
+    const game = parser.parse(json)
+    if (!game) {
+      throw new Error(`Unable to parse JSON JGF data`)
+    }
+
+    //Return game
+    return game
+  }
+
+  /**
+   * Load from JGF data
+   */
+  static fromJgf(jgf) {
+
+    //Create parser
+    const parser = new ParseJgf()
+    const game = parser.parse(jgf)
+    if (!game) {
+      throw new Error(`Unable to parse JGF data`)
+    }
+
+    //Return game
+    return game
+  }
+
+  /**
+   * Load from SGF data
+   */
+  static fromSgf(sgf) {
+
+    //Create parser
+    const parser = new ParseSgf()
+    const game = parser.parse(sgf)
+    if (!game) {
+      throw new Error(`Unable to parse SGF data`)
+    }
+
+    //Return game
+    return game
+  }
+
+  /**
+   * Load from GIB data
+   */
+  static fromGib(gib) {
+
+    //Create parser
+    const parser = new ParseGib()
+    const game = parser.parse(gib)
+    if (!game) {
+      throw new Error(`Unable to parse GIB data`)
+    }
+
+    //Return game
+    return game
+  }
+
+  static detectFormat(data) {
+
+    //No data, can't do much
+    if (!data) {
+      throw new Error(`No data`)
+    }
+
+    //Object given? Probably a JGF object
+    if (typeof data === 'object') {
+      return kifuFormats.JGF
+    }
+
+    //String given, could be stringified JGF, an SGF or GIB file
+    if (typeof data === 'string') {
+      const c = data.charAt(0)
+      if (c === '(') {
+        return kifuFormats.SGF
+      }
+      else if (c === '{' || c === '[') {
+        return kifuFormats.JSON
+      }
+      else if (c === '\\') {
+        return kifuFormats.GIB
+      }
+    }
+
+    //Unknown
+    throw new Error(`Unknown data format`)
+  }
+
+  /**
+   * Load from an unknown/generic data source
+   * This will try to auto detect the data format
+   */
+  static fromData(data) {
+
+    //Detect format
+    const format = this.detectFormat(data)
+
+    //Use appropriate parser
+    switch (format) {
+      case kifuFormats.JGF:
+        return this.fromJgf(data)
+      case kifuFormats.SGF:
+        return this.fromSgf(data)
+      case kifuFormats.JSON:
+        return this.fromJson(data)
+      case kifuFormats.GIB:
+        return this.fromGib(data)
+      default:
+        throw new Error(`Unknown data format`)
+    }
   }
 }

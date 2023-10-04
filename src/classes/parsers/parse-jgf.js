@@ -1,9 +1,10 @@
 import Game from '../game.js'
 import GameNode from '../game-node.js'
+import {copy, set} from '../../helpers/object.js'
 import {
-  jgfKeys,
-  jgfNodeKeys,
-  jgfNodeObjectKeys,
+  jgfPaths,
+  jgfNodePaths,
+  jgfNodeObjectPaths,
 } from '../../constants/jgf.js'
 
 /**
@@ -19,9 +20,9 @@ export default class ParseJgf {
     //Initialize
     const game = new Game()
 
-    //Copy over relevant keys
-    for (const key of jgfKeys) {
-      game[key] = JSON.parse(JSON.stringify(jgf[key]))
+    //Copy over relevant paths
+    for (const path of jgfPaths) {
+      game.setInfo(path, copy(jgf, path))
     }
 
     //Create root node
@@ -70,9 +71,9 @@ export default class ParseJgf {
     //Create new node
     const node = new GameNode()
 
-    //Copy over relevant node keys
-    for (const key of jgfNodeKeys) {
-      node[key] = jgfNode[key]
+    //Copy over relevant node paths
+    for (const path of jgfNodePaths) {
+      set(node, path, copy(jgfNode, path))
     }
 
     //Move
@@ -104,9 +105,9 @@ export default class ParseJgf {
     //Instantiate
     const obj = {}
 
-    //Copy over relevant node object keys
-    for (const key of jgfNodeObjectKeys) {
-      obj[key] = jgfNodeObject[key]
+    //Copy over relevant node object paths
+    for (const path of jgfNodeObjectPaths) {
+      set(obj, path, copy(jgfNodeObject, path))
     }
 
     //Return

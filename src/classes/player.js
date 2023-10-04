@@ -335,7 +335,7 @@ export default class Player extends EventTarget {
   reload() {
 
     //Must have game
-    if (!this.game || !this.game.isLoaded()) {
+    if (!this.game || !this.game.isLoaded) {
       return
     }
 
@@ -353,7 +353,7 @@ export default class Player extends EventTarget {
    * Save the current state
    */
   saveGameState() {
-    if (this.game && this.game.isLoaded()) {
+    if (this.game && this.game.isLoaded) {
       this.gameState = this.game.getState()
     }
   }
@@ -497,7 +497,7 @@ export default class Player extends EventTarget {
   processPosition() {
 
     //No game?
-    if (!this.game || !this.game.isLoaded()) {
+    if (!this.game || !this.game.isLoaded) {
       return
     }
 
@@ -535,7 +535,7 @@ export default class Player extends EventTarget {
   showMoveNumbers(fromMove, toMove) {
 
     //No game?
-    if (!this.game || !this.game.isLoaded()) {
+    if (!this.game || !this.game.isLoaded) {
       return
     }
 
@@ -616,7 +616,7 @@ export default class Player extends EventTarget {
     this.board = Board
 
     //If a game has been loaded already, parse config and update the board
-    if (this.game && this.game.isLoaded()) {
+    if (this.game && this.game.isLoaded) {
       this.board.removeAll()
       this.board.setConfig(this.game.getInfo('board'))
       this.processPosition()

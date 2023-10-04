@@ -1,5 +1,13 @@
 
 /**
+ * Copy a property at a given path from an object
+ */
+export function copy(obj, path) {
+  const value = get(obj, path)
+  return JSON.parse(JSON.stringify(value))
+}
+
+/**
  * Get path in an object
  */
 export function get(obj, path, defaultValue = undefined) {

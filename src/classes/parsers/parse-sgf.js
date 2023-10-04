@@ -521,16 +521,17 @@ export default class ParseSgf {
 
     //Check if player of this color already exists
     const existing = players.find(player => player.color === color)
+
+    //Exists
     if (existing) {
       existing[infoKey] = values[0]
-      return
     }
-
-    //Player of this color not found, add to array
-    players.push({
-      color,
-      [infoKey]: values[0],
-    })
+    else {
+      players.push({
+        color,
+        [infoKey]: values[0],
+      })
+    }
 
     //Set on game
     game.setInfo(game, 'players', players)

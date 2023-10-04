@@ -1,4 +1,5 @@
 import {blankJgf, blankSgf} from '../constants/kifu.js'
+import {appName, appVersion} from '../constants/app.js'
 
 /**
  * This is a class which can generate Kifu records of various types
@@ -36,5 +37,13 @@ export default class KifuFactory {
 
     //Return
     return blank
+  }
+
+  /**
+   * Sign a JGF kifu record with our app signature
+   */
+  static sign(jgf) {
+    jgf.record = jgf.record || {}
+    jgf.record.generator = `${appName} v${appVersion}`
   }
 }

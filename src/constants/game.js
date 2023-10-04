@@ -1,3 +1,6 @@
+import {stoneColors} from './stone.js'
+import {appName, appVersion} from './app.js'
+import {jgfVersion} from './jgf.js'
 
 /**
  * Game types
@@ -34,23 +37,32 @@ export const checkRepeatTypes = {
 }
 
 /**
- * Default game config
+ * Default game info
  */
-export const defaultGameConfig = {
-
-  //Default size of board
-  defaultSize: 0,
-
-  //Default komi and handicap
-  defaultKomi: 0,
-  defaultHandicap: 0,
-
-  //Remember last selected variation when traversing nodes
-  rememberPath: true,
-
-  //Check for repeating positions?
-  checkRepeat: checkRepeatTypes.KO,
-
-  //Allow suicide?
-  allowSuicide: false,
+export const defaultGameInfo = {
+  record: {
+    version: jgfVersion,
+    charset: 'UTF-8',
+    generator: `${appName} v${appVersion}`,
+  },
+  game: {
+    type: gameTypes.GO,
+  },
+  players: [
+    {
+      color: stoneColors.BLACK,
+      name: 'Black',
+    },
+    {
+      color: stoneColors.WHITE,
+      name: 'White',
+    },
+  ],
+  board: {
+    size: 19,
+  },
+  rules: {
+    komi: 0,
+    handicap: 0,
+  },
 }

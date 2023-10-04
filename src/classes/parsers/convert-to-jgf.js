@@ -1,25 +1,27 @@
+import KifuFactory from '../kifu-factory.js'
+import {copy, set} from '../../helpers/object.js'
 import {
-  jgfKeys,
-  jgfNodeKeys,
-  jgfNodeObjectKeys,
+  jgfPaths,
+  jgfNodePaths,
+  jgfNodeObjectPaths,
 } from '../../constants/jgf.js'
 
 /**
- * Parser to output JGF
+ * Converter to JGF
  */
-export default class OutputJgf {
+export default class ConvertToJgf {
 
   /**
    * Convert Seki game object to JGF
    */
-  parse(game) {
+  convert(game) {
 
     //Initialize
-    const jgf = {}
+    const jgf = KifuFactory.blankJgf()
 
-    //Copy over relevant keys
-    for (const key of jgfKeys) {
-      jgf[key] = JSON.parse(JSON.stringify(game[key]))
+    //Copy over relevant paths
+    for (const path of jgfPaths) {
+      set(jgf, path, copy(game.getInfo(path)))
     }
 
     //Create tree
@@ -71,9 +73,9 @@ export default class OutputJgf {
     //Create JGF node
     const jgfNode = {}
 
-    //Copy over relevant node keys
-    for (const key of jgfNodeKeys) {
-      jgfNode[key] = JSON.parse(JSON.stringify(node[key]))
+    //Copy over relevant node paths
+    for (const path of jgfNodePaths) {
+      set(jgfNode, path, copy(node, path))
     }
 
     //Move
@@ -105,9 +107,9 @@ export default class OutputJgf {
     //Instantiate
     const jgfNodeObject = {}
 
-    //Copy over relevant node object keys
-    for (const key of jgfNodeObjectKeys) {
-      jgfNodeObject[key] = obj[key]
+    //Copy over relevant node object paths
+    for (const path of jgfNodeObjectPaths) {
+      set(jgfNodeObject, path, copy(obj, path))
     }
 
     //Return

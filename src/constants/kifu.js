@@ -1,31 +1,46 @@
 import {stoneColors} from './jgf.js'
 import {gameTypes} from './game.js'
 import {appName, appVersion} from './app.js'
+import {jgfVersion} from './jgf.js'
+
+/**
+ * Kifu formats
+ */
+export const kifuFormats = {
+  JSON: 'json',
+  JGF: 'jgf',
+  SGF: 'sgf',
+  GIB: 'gib',
+}
 
 /**
  * Blank JGF
  */
 export const blankJgf = {
   record: {
-    generator: `${appName} v${appVersion}`,
-    version: 1,
+    version: jgfVersion,
     charset: 'UTF-8',
+    generator: `${appName} v${appVersion}`,
   },
   game: {
     type: gameTypes.GO,
-    players: [
-      {
-        color: stoneColors.BLACK,
-        name: 'Black',
-      },
-      {
-        color: stoneColors.WHITE,
-        name: 'White',
-      },
-    ],
   },
+  players: [
+    {
+      color: stoneColors.BLACK,
+      name: 'Black',
+    },
+    {
+      color: stoneColors.WHITE,
+      name: 'White',
+    },
+  ],
   board: {
     size: 19,
+  },
+  rules: {
+    komi: 0,
+    handicap: 0,
   },
   tree: [],
 }
