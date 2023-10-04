@@ -3,6 +3,7 @@ import GameNode from './game-node.js'
 import GamePosition from './game-position.js'
 import KifuParser from './kifu-parser.js'
 import KifuFactory from './kifu-factory.js'
+import {set, get} from '../helpers/object.js'
 import {defaultGameConfig, checkRepeatTypes} from '../constants/game.js'
 import {stoneColors} from '../constants/stone.js'
 
@@ -297,8 +298,78 @@ export default class Game {
     return stringify ? JSON.parse(jgf) : jgf
   }
 
+  /**************************************************************************
+   * Game information & rules getters/setters
+   ***/
+
+  /**
+   * Get a generic game info property
+   */
+  getInfo(path, defaultValue) {
+    return get(this.info, path, defaultValue)
+  }
+
+  /**
+   * Set a generic game info property
+   */
+  setInfo(path, value) {
+    set(this.info, path, value)
+  }
+
+  /**
+   * Get the game komi
+   */
+  getKomi() {
+    const {defaultKomi} = this.config
+    const komi = this.getInfo('rules.komi', defaultKomi)
+    return parseFloat(komi)
+  }
+
+  /**
+   * Set the game komi
+   */
+  setKomi(komi) {
+    this.setInfo('rules.komi', parseFloat(komi))
+  }
+
+  /**
+   * Get the game handicap
+   */
+  getHandicap() {
+    const handicap = this.getInfo('rules.handicap', 0)
+    return parseInt(handicap)
+  }
+
+  /**
+   * Set the game handicap
+   */
+  setHandicap(handicap) {
+    this.setInfo('rules.handicap', parseInt(handicap))
+  }
+
+  /**
+   * Get the game name
+   */
+  getName() {
+    return this.getInfo('game.name', '')
+  }
+
+  /**
+   * Set the game name
+   */
+  setName(name) {
+    this.setInfo('game.name', String(name).trim())
+  }
+
+  /**
+   * Get the game result
+   */
+  getResult() {
+    return this.getInfo('game.result', '')
+  }
+
   /*****************************************************************************
-   * Getters
+   * Node and position getters
    ***/
 
   /**
@@ -419,38 +490,6 @@ export default class Game {
   }
 
   /**
-   * Get the game komi
-   */
-  getKomi() {
-    let komi = this.get('game.komi', 0)
-    return parseFloat(komi)
-  }
-
-  /**
-   * Set the game komi
-   */
-  setKomi(komi) {
-    if (typeof komi === 'undefined') {
-      komi = this.config.defaultKomi
-    }
-    this.info.game.komi = parseFloat(komi)
-  }
-
-  /**
-   * Get the game name
-   */
-  getName() {
-    return this.get('game.name', '')
-  }
-
-  /**
-   * Get the game result
-   */
-  getResult() {
-    return this.get('game.result', '')
-  }
-
-  /**
    * Get the player turn for this position
    */
   getTurn() {
@@ -498,50 +537,6 @@ export default class Game {
 
     //Return
     return captures
-  }
-
-  /**
-   * Get an info property
-   */
-  get(property, defaultValue) {
-
-    //Must have a property
-    if (!property) {
-      return
-    }
-
-    //The item's property in the object is given by dot separated strings
-    if (typeof property === 'string') {
-      property = property.split('.')
-    }
-
-    //Initialize object we're getting info from
-    let obj = this.info
-    let key
-
-    //Loop the properties
-    for (let p = 0; p < property.length; p++) {
-
-      //Get actual key
-      key = property[p]
-
-      //Last key reached? Done, get value
-      if ((p + 1) === property.length) {
-        if (typeof obj[key] === 'undefined') {
-          return defaultValue
-        }
-        return obj[key]
-      }
-
-      //Must be object container
-      if (typeof obj[key] !== 'object') {
-        console.warn('Game info property', key, 'is not an object')
-        return defaultValue
-      }
-
-      //Move up in tree
-      obj = obj[key]
-    }
   }
 
   /*****************************************************************************

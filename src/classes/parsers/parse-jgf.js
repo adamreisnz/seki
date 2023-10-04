@@ -1,26 +1,10 @@
 import Game from '../game.js'
 import GameNode from '../game-node.js'
-import {stoneColors} from '../../constants/stone.js'
-import {stoneColors as stoneColorsJgf} from '../../constants/jgf.js'
-
-//Top level record keys to copy over
-const copyKeys = [
-  'record',
-  'source',
-  'game',
-  'players',
-  'event',
-  'rules',
-  'board',
-  'meta',
-]
-
-//Node keys to copy over
-const copyNodeKeys = [
-  'name',
-  'solution',
-  'comments',
-]
+import {
+  jgfKeys,
+  jgfNodeKeys,
+  jgfNodeObjectKeys,
+} from '../../constants/jgf.js'
 
 /**
  * Parse JGF data into a seki game object
@@ -36,7 +20,7 @@ export default class ParseJgf {
     const game = new Game()
 
     //Copy over relevant keys
-    for (const key of copyKeys) {
+    for (const key of jgfKeys) {
       game[key] = JSON.parse(JSON.stringify(jgf[key]))
     }
 
@@ -87,7 +71,7 @@ export default class ParseJgf {
     const node = new GameNode()
 
     //Copy over relevant node keys
-    for (const key of copyNodeKeys) {
+    for (const key of jgfNodeKeys) {
       node[key] = jgfNode[key]
     }
 
@@ -115,17 +99,18 @@ export default class ParseJgf {
   /**
    * Parse node object
    */
-  parseNodeObject(move) {
+  parseNodeObject(jgfNodeObject) {
 
-    //Determine color
-    const color = this.convertColor(move.color)
-    if (typeof color === 'undefined') {
-      return
+    //Instantiate
+    const obj = {}
+
+    //Copy over relevant node object keys
+    for (const key of jgfNodeObjectKeys) {
+      obj[key] = jgfNodeObject[key]
     }
 
-    //Get rest of node properties
-    const {x, y, pass, type, text} = move
-    return {color, x, y, pass, type, text}
+    //Return
+    return obj
   }
 
   /**
@@ -133,24 +118,5 @@ export default class ParseJgf {
    */
   isVariationNode(jgfNode) {
     return (jgfNode && jgfNode.variations)
-  }
-
-  /**************************************************************************
-   * Parsing helpers
-   ***/
-
-  /**
-   * Convert a string color value to a numeric color value
-   */
-  convertColor(color) {
-    if (color === stoneColorsJgf.BLACK) {
-      return stoneColors.BLACK
-    }
-    else if (color === stoneColorsJgf.WHITE) {
-      return stoneColors.WHITE
-    }
-    else if (color === stoneColorsJgf.EMPTY) {
-      return stoneColors.EMPTY
-    }
   }
 }

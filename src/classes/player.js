@@ -312,7 +312,7 @@ export default class Player extends EventTarget {
 
     //Parse configuration from JGF if allowed
     if (allowPlayerConfig || typeof allowPlayerConfig === 'undefined') {
-      this.parseConfig(this.game.get('settings'))
+      this.parseConfig(this.game.getInfo('settings'))
     }
 
     //Dispatch game loaded event
@@ -321,7 +321,7 @@ export default class Player extends EventTarget {
     //Board present?
     if (this.board) {
       this.board.removeAll()
-      this.board.parseConfig(this.game.get('board'))
+      this.board.parseConfig(this.game.getInfo('board'))
       this.processPosition()
     }
 
@@ -618,7 +618,7 @@ export default class Player extends EventTarget {
     //If a game has been loaded already, parse config and update the board
     if (this.game && this.game.isLoaded()) {
       this.board.removeAll()
-      this.board.setConfig(this.game.get('board'))
+      this.board.setConfig(this.game.getInfo('board'))
       this.processPosition()
     }
   }

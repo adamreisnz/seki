@@ -283,10 +283,13 @@ JGF = {
 			//Setup positions are indicated per color,
 			setup: [
         {
+          type: "stone",
           color: "black",
           x: 4,
           y: 16,
         },
+
+        //The "stone" setup type is implied and can be omitted
         {
           color: "black",
           x: 2,
@@ -298,9 +301,9 @@ JGF = {
           y: 9,
         },
 
-        //Instructions to clear a grid spot are indicated with the "empty" color
+        //Instructions to clear a grid spot are indicated with the "empty" type
         {
-          color: "empty",
+          type: "empty",
           x: 3,
           y: 15,
         }

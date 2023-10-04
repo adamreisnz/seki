@@ -1,5 +1,6 @@
 import GridObject from '../grid-object.js'
 import {stoneModifierTypes} from '../../constants/stone.js'
+import {swapColor} from '../../helpers/stone.js'
 
 /**
  * This class is used for drawing stones on the board
@@ -47,8 +48,11 @@ export default class Stone extends GridObject {
     //Get data
     const {board, color} = this
 
-    //Apply color multiplier
-    return color * board.colorMultiplier
+    //Swap if needed
+    if (board.swapColors) {
+      return swapColor(color)
+    }
+    return color
   }
 
   /**

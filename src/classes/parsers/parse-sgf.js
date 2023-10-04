@@ -3,7 +3,7 @@ import GameNode from '../game-node.js'
 import {gameTypes} from '../../constants/game.js'
 import {stoneColors} from '../../constants/stone.js'
 import {markupTypes} from '../../constants/markup.js'
-import {set, get} from '../../helpers/object.js'
+import {setupTypes} from '../../constants/setup.js'
 
 //Regexes
 const regexSequence = /\(|\)|(;(\s*[A-Z]+\s*((\[\])|(\[(.|\s)*?([^\\]\])))+)*)/g
@@ -233,7 +233,8 @@ export default class ParseSgf {
 
       //Plain info element?
       else if (infoMap[key]) {
-        this.setGameInfo(game, infoMap[key], values)
+        const value = this.getSimpleValue(values)
+        game.setInfo(infoMap[key], value)
         continue
       }
 
@@ -329,7 +330,8 @@ export default class ParseSgf {
 
     //Add values
     for (const value of values) {
-      const obj = {color}
+      const type = color ? setupTypes.STONE : setupTypes.EMPTY
+      const obj = {type, color}
       this.appendCoordinates(value, obj)
       setup.push(obj)
     }
@@ -429,11 +431,11 @@ export default class ParseSgf {
     //Add size property (can be width:height or just a single size)
     const [width, height] = values[0].split(':')
     if (width && height && width !== height) {
-      this.setGameInfo(game, 'board.width', parseInt(width))
-      this.setGameInfo(game, 'board.height', parseInt(height))
+      game.setInfo('board.width', parseInt(width))
+      game.setInfo('board.height', parseInt(height))
     }
     else {
-      this.setGameInfo(game, 'board.size', parseInt(width))
+      game.setInfo('board.size', parseInt(width))
     }
   }
 
@@ -445,10 +447,10 @@ export default class ParseSgf {
     //Get dates
     const dates = values[0].split(',')
     if (dates.length > 1) {
-      this.setGameInfo(game, 'game.dates', dates)
+      game.setInfo('game.dates', dates)
     }
     else {
-      this.setGameInfo(game, 'game.date', dates[0])
+      game.setInfo('game.date', dates[0])
     }
   }
 
@@ -456,16 +458,16 @@ export default class ParseSgf {
    * Komi parser function
    */
   parseKomi(game, node, key, values) {
-    const komi = parseFloat(values[0])
-    this.setGameInfo(game, 'rules.komi', komi)
+    const komi = values[0]
+    game.setInfo('rules.komi', komi)
   }
 
   /**
    * Handicap parser function
    */
   parseHandicap(game, node, key, values) {
-    const handicap = parseInt(values[0])
-    this.setGameInfo(game, 'rules.handicap', handicap)
+    const handicap = values[0]
+    game.setInfo('rules.handicap', handicap)
   }
 
   /**
@@ -502,7 +504,7 @@ export default class ParseSgf {
     }
 
     //Set in game info
-    this.setGameInfo(game, 'settings', settings)
+    game.setInfo('settings', settings)
   }
 
   /**
@@ -511,7 +513,7 @@ export default class ParseSgf {
   parsePlayer(game, node, key, values) {
 
     //Initialize players container
-    const players = this.getGameInfo(game, 'players', [])
+    const players = game.getInfo('players', [])
 
     //Determine player color
     const color = this.determinePlayerColor(key)
@@ -531,7 +533,7 @@ export default class ParseSgf {
     })
 
     //Set on game
-    this.setGameInfo(game, 'players', players)
+    game.setInfo(game, 'players', players)
   }
 
   /*****************************************************************************
@@ -614,23 +616,12 @@ export default class ParseSgf {
   }
 
   /**
-   * Get game info
+   * Get simple value if array of values given with one entry
    */
-  getGameInfo(game, path, defaultValue) {
-    return get(game.info, path, defaultValue)
-  }
-
-  /**
-   * Set info in the JGF tree at a certain position
-   */
-  setGameInfo(game, path, value) {
-
-    //If there is only one value, simplify array
-    if (Array.isArray(value) && value.length === 1) {
-      value = value[0]
+  getSimpleValue(values) {
+    if (Array.isArray(values) && values.length === 1) {
+      return values[0]
     }
-
-    //Set value
-    set(game.info, path, value)
+    return values
   }
 }

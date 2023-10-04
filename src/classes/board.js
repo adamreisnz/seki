@@ -126,13 +126,6 @@ export default class Board {
    ***/
 
   /**
-   * Color multiplier
-   */
-  get colorMultiplier() {
-    return this.swapColors ? -1 : 1
-  }
-
-  /**
    * Board's x & y coordinates
    */
   get xLeft() {

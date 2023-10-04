@@ -1,4 +1,3 @@
-import {stoneColors} from '../constants/stone.js'
 
 /**
  * Game types
@@ -18,12 +17,12 @@ export const gameTypes = {
  * Possible score states
  */
 export const scoreState = {
-  UNKNOWN: stoneColors.EMPTY,
-  BLACK_STONE: stoneColors.BLACK,
-  WHITE_STONE: stoneColors.WHITE,
-  BLACK_CANDIDATE: stoneColors.BLACK * 2,
-  WHITE_CANDIDATE: stoneColors.WHITE * 2,
-  NEUTRAL: stoneColors.BLACK * 3,
+  UNKNOWN: 0,
+  BLACK_STONE: 1,
+  WHITE_STONE: -1,
+  BLACK_CANDIDATE: 2,
+  WHITE_CANDIDATE: -2,
+  NEUTRAL: 3,
 }
 
 /**

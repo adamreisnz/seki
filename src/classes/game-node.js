@@ -12,16 +12,16 @@ export default class GameNode {
   /**
    * Constructor
    */
-  constructor(properties, parent) {
+  constructor(data, parent) {
 
     //Set parent and children
     this.parent = parent || null
     this.children = []
 
     //Save properties
-    if (properties) {
-      for (const key in properties) {
-        this[key] = properties[key]
+    if (data) {
+      for (const key in data) {
+        this[key] = data[key]
       }
     }
   }

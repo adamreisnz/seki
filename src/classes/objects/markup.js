@@ -1,5 +1,6 @@
 import GridObject from '../grid-object.js'
 import {boardLayerTypes} from '../../constants/board.js'
+import {swapColor} from '../../helpers/stone.js'
 
 /**
  * This class is used for drawing markup on the board
@@ -106,7 +107,10 @@ export default class Markup extends GridObject {
     //Check if there's a stone
     const entry = board.get(boardLayerTypes.STONES, x, y)
     if (entry) {
-      return entry.value.color * board.colorMultiplier
+      if (board.swapColors) {
+        return swapColor(entry.value.color)
+      }
+      return entry.value.color
     }
 
     //No stone

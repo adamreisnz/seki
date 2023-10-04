@@ -66,7 +66,7 @@ export default class GameScorer {
     this.determineScoreState()
 
     //Get komi and captures
-    const komi = game.get('game.komi')
+    const komi = game.getKomi()
     const numCaptures = game.getCaptureCount()
 
     //Reset score
