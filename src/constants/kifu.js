@@ -1,4 +1,4 @@
-import {stoneColors} from './jgf.js'
+import {stoneColors} from './stone.js'
 import {gameTypes} from './game.js'
 import {appName, appVersion} from './app.js'
 import {jgfVersion} from './jgf.js'

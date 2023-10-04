@@ -210,8 +210,8 @@ export default {
   grid: {
 
     //Line properties
-    lineColor: 'rgba(60,40,15,1)',
-    lineWidth: function(cellSize) {
+    lineColor: 'rgba(60,40,15,.9)',
+    lineWidth(cellSize) {
       if (cellSize > 60) {
         return 2
       }
@@ -226,8 +226,8 @@ export default {
     star: {
 
       //Color and radius
-      color: 'rgba(60,40,15,1)',
-      radius: function(cellSize) {
+      color: 'rgba(60,40,15,.9)',
+      radius(cellSize) {
         if (cellSize > 50) {
           return Math.floor((cellSize / 16) + 1)
         }
@@ -282,7 +282,7 @@ export default {
   coordinates: {
 
     //Color
-    color: 'rgba(101,69,37,0.5)',
+    color: 'rgba(101,69,37,0.8)',
 
     //Board margin factor when showing coordinates
     margin: 1.25,
