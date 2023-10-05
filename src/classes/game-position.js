@@ -64,14 +64,14 @@ export default class GamePosition {
   }
 
   /**
-   * Sets stone color at given coordinates.
+   * Sets stone color at given coordinates
    */
   setStone(x, y, color) {
     this.stones.set(x, y, color)
   }
 
   /**
-   * Sets markup type at given coordinates.
+   * Sets markup type at given coordinates
    */
   setMarkup(x, y, markup) {
     this.markup.set(x, y, markup)
@@ -312,9 +312,9 @@ export default class GamePosition {
   clone() {
 
     //Create a new position
-    let newPosition = new GamePosition()
+    const newPosition = new GamePosition()
 
-    //Set vars manually for maximum efficiency
+    //Set vars
     newPosition.turn = this.turn
     newPosition.width = this.width
     newPosition.height = this.height

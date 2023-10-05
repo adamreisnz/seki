@@ -215,6 +215,11 @@ export const jgf = {
           {move: {color: 'black', x: 8, y: 0}},
           {move: {color: 'white', x: 8, y: 8}},
           {move: {color: 'black', x: 8, y: 1}},
+          {move: {color: 'white', x: 8, y: 7}},
+          {move: {color: 'black', x: 8, y: 2}},
+          {move: {color: 'white', x: 8, y: 6}},
+          {move: {color: 'black', x: 8, y: 3}},
+          {move: {color: 'white', x: 8, y: 5}},
         ],
         // [
         //   {move: {B: 'gg'}, comments: ['Comment at second variation'], name: 'Second variation'},

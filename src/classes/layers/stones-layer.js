@@ -81,15 +81,11 @@ export default class StonesLayer extends BoardLayer {
     //Erase shadows layer
     this.board.eraseLayer(boardLayerTypes.SHADOW)
 
-    //Get actual stones grid
-    const stones = grid
-      .filter(stone => !stone.isEmpty)
-
     //Parent method
-    super.setAll(stones)
+    super.setAll(grid)
 
     //Create copy of grid with stone shadows
-    const shadows = stones
+    const shadows = grid
       .map(stone => this.createStoneShadow(stone))
 
     //Set on shadow grid

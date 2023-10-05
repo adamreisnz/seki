@@ -12,6 +12,7 @@ import ConvertToSgf from './converters/convert-to-sgf.js'
 import {set, get} from '../helpers/object.js'
 import {stoneColors} from '../constants/stone.js'
 import {kifuFormats} from '../constants/app.js'
+import {setupTypes} from '../constants/setup.js'
 import {
   defaultGameInfo,
   checkRepeatTypes,
@@ -1224,7 +1225,13 @@ export default class Game {
       for (const setup of this.node.setup) {
         const {type, coords} = setup
         for (const coord of coords) {
-          newPosition.stones.set(coord.x, coord.y, type)
+          const {x, y} = coord
+          if (type === setupTypes.EMPTY) {
+            newPosition.stones.delete(x, y)
+          }
+          else {
+            newPosition.stones.set(x, y, type)
+          }
         }
       }
     }
@@ -1234,8 +1241,8 @@ export default class Game {
       for (const markup of this.node.markup) {
         const {type, coords} = markup
         for (const coord of coords) {
-          const {text} = coord
-          newPosition.markup.set(coord.x, coord.y, {type, text})
+          const {x, y, text} = coord
+          newPosition.markup.set(x, y, {type, text})
         }
       }
     }

@@ -171,6 +171,21 @@ export default class Grid {
   }
 
   /**
+   * Iterate each item in the grid
+   */
+  forEach(fn) {
+
+    //Get grid
+    const {grid} = this
+
+    //Process each entry
+    for (const [key, value] of grid) {
+      const {x, y} = this.getCoords(key)
+      fn(value, x, y)
+    }
+  }
+
+  /**
    * Checks if a given grid is the same as the current grid
    */
   isSameAs(other) {
