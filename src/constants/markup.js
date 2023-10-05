@@ -16,4 +16,5 @@ export const markupTypes = {
   LAST_MOVE: 'lastMove',
   HAPPY: 'happy',
   SAD: 'sad',
+  EMPTY: 'empty',
 }

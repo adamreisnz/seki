@@ -316,7 +316,7 @@ JGF = {
           ],
         },
 
-        //Instructions to clear a grid spot are indicated with the "empty" type
+        //Instructions to empty a grid spot are indicated with the "empty" type
         {
           type: "empty",
           coords: [

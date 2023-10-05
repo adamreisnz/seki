@@ -15,7 +15,7 @@ export default class Grid {
     //Initialize size and underlying grid map
     this.width = 0
     this.height = 0
-    this.map = new Map()
+    this.grid = new Map()
 
     //Size given? Set it
     if (width || height) {
@@ -30,8 +30,8 @@ export default class Grid {
     if (!this.isOnGrid(x, y)) {
       return
     }
-    const key = this.getMapKey(x, y)
-    this.map.set(key, value)
+    const key = this.getGridMapKey(x, y)
+    this.grid.set(key, value)
   }
 
   /**
@@ -41,7 +41,7 @@ export default class Grid {
     if (!this.isOnGrid(x, y)) {
       return null
     }
-    return this.getMapValue(x, y)
+    return this.getGridMapValue(x, y)
   }
 
   /**
@@ -51,8 +51,8 @@ export default class Grid {
     if (!this.isOnGrid(x, y)) {
       return
     }
-    const key = this.getMapKey(x, y)
-    this.map.delete(key)
+    const key = this.getGridMapKey(x, y)
+    this.grid.delete(key)
   }
 
   /**
@@ -62,8 +62,8 @@ export default class Grid {
     if (!this.isOnGrid(x, y)) {
       return false
     }
-    const key = this.getMapKey(x, y)
-    return this.map.has(key)
+    const key = this.getGridMapKey(x, y)
+    return this.grid.has(key)
   }
 
   /**
@@ -73,7 +73,7 @@ export default class Grid {
     if (!this.isOnGrid(x, y)) {
       return false
     }
-    const value = this.getMapValue(x, y)
+    const value = this.getGridMapValue(x, y)
     return (value === check)
   }
 
@@ -91,7 +91,7 @@ export default class Grid {
     const objects = []
 
     //Loop map
-    for (const [key, value] of this.map) {
+    for (const [key, value] of this.grid) {
       const {x, y} = this.getCoords(key)
       objects.push({x, y, value})
     }
@@ -104,14 +104,14 @@ export default class Grid {
    * Check if there is anything
    */
   isEmpty() {
-    return (this.map.size === 0)
+    return (this.grid.size === 0)
   }
 
   /**
    * Clear the grid
    */
   clear() {
-    this.map.clear()
+    this.grid.clear()
   }
 
   /**
@@ -119,12 +119,12 @@ export default class Grid {
    */
   clone() {
 
-    //Get data
-    const {width, height, map} = this
-
-    //Create new instance and copy grid map
+    //Create new instance
+    const {width, height, grid} = this
     const clone = new Grid(width, height)
-    clone.map = new Map(map)
+
+    //Copy grid
+    clone.grid = new Map(grid)
 
     //Return
     return clone
@@ -135,17 +135,15 @@ export default class Grid {
    * on each entry. This is used to transform simple game position grids
    * into grids with Stone or Markup instances
    */
-  transform(fn) {
-
-    //Get data
-    const {width, height, map} = this
+  map(fn) {
 
     //Create new instance
+    const {width, height, grid} = this
     const clone = new Grid(width, height)
 
     //Process each entry
-    for (const [key, value] of map) {
-      clone.map.set(key, fn(value))
+    for (const [key, value] of grid) {
+      clone.grid.set(key, fn(value))
     }
 
     //Return cloned grid
@@ -153,26 +151,46 @@ export default class Grid {
   }
 
   /**
+   * Create a new grid, filtering out entries
+   */
+  filter(fn) {
+
+    //Create new instance
+    const {width, height, grid} = this
+    const clone = new Grid(width, height)
+
+    //Process each entry
+    for (const [key, value] of grid) {
+      if (fn(value)) {
+        clone.grid.set(key, value)
+      }
+    }
+
+    //Return clone
+    return clone
+  }
+
+  /**
    * Checks if a given grid is the same as the current grid
    */
-  isSameAs(grid) {
+  isSameAs(other) {
 
     //Get data
-    const {width, height, map} = this
+    const {width, height, grid} = this
 
     //Must have the same size
-    if (width !== grid.width || height !== grid.height) {
+    if (width !== other.width || height !== other.height) {
       return false
     }
 
     //Must have the same amount of entries
-    if (map.size !== grid.map.size) {
+    if (grid.size !== other.grid.size) {
       return false
     }
 
     //Each entry should be the same
-    for (const [key, value] of map) {
-      if (grid.map.get(key) !== value) {
+    for (const [key, value] of grid) {
+      if (other.grid.get(key) !== value) {
         return false
       }
     }
@@ -187,7 +205,7 @@ export default class Grid {
   compare(newGrid) {
 
     //Get data
-    const {width, height, map} = this
+    const {width, height, grid} = this
 
     //Must have the same size
     if (width !== newGrid.width || height !== newGrid.height) {
@@ -198,20 +216,20 @@ export default class Grid {
     const changes = new GridChanges()
 
     //Go over each entry in the existing grid
-    for (const [key, value] of map) {
+    for (const [key, value] of grid) {
 
       //Something to remove?
-      if (!newGrid.map.has(key)) {
+      if (!newGrid.grid.has(key)) {
         const {x, y} = this.getCoords(key)
         changes.remove.push({x, y, value})
       }
     }
 
     //Go over each entry in the new grid
-    for (const [key, value] of newGrid.map) {
+    for (const [key, value] of newGrid.grid) {
 
       //Something to add?
-      if (!map.has(key)) {
+      if (!grid.has(key)) {
         const {x, y} = this.getCoords(key)
         changes.add.push({x, y, value})
       }
@@ -242,8 +260,8 @@ export default class Grid {
     this.width = parseInt(width || 0)
     this.height = parseInt(height || width || 0)
 
-    //Clear map
-    this.map.clear()
+    //Clear grid
+    this.grid.clear()
   }
 
   /**
@@ -257,16 +275,16 @@ export default class Grid {
   /**
    * Get grid key for a given coordinate
    */
-  getMapKey(x, y) {
+  getGridMapKey(x, y) {
     return `${x},${y}`
   }
 
   /**
    * Get grid value for a given coordinate
    */
-  getMapValue(x, y) {
-    const key = this.getMapKey(x, y)
-    return this.map.get(key)
+  getGridMapValue(x, y) {
+    const key = this.getGridMapKey(x, y)
+    return this.grid.get(key)
   }
 
   /**

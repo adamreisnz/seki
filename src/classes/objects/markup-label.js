@@ -121,7 +121,7 @@ export default class MarkupLabel extends Markup {
     //Erase the label
     super.erase(context, x, y)
 
-    //If no stone on location, redraw the grid that we erased
+    //If no stone on location, redraw the grid cell that we erased
     if (!board.has(boardLayerTypes.STONES, x, y)) {
       board
         .getLayer(boardLayerTypes.GRID)

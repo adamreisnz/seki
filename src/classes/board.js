@@ -177,13 +177,8 @@ export default class Board {
    */
   setConfig(config) {
 
-    //Validate
-    if (!config || typeof config !== 'object') {
-      return
-    }
-
     //Extend from default config
-    config = Object.assign({}, defaultBoardConfig, config)
+    config = Object.assign({}, defaultBoardConfig, config || {})
 
     //Process config
     this.toggleCoordinates(config.showCoordinates)
@@ -378,6 +373,13 @@ export default class Board {
    ***/
 
   /**
+   * Has layer check
+   */
+  hasLayer(type) {
+    return this.layers.has(type)
+  }
+
+  /**
    * Add an object to a board layer
    */
   add(type, x, y, value) {
@@ -472,12 +474,12 @@ export default class Board {
 
     //Transform stones grid into actual stone instances of given style
     const stones = position.stones
-      .transform(color => StoneFactory
-        .create(style, this, {color}))
+      .map(color => StoneFactory
+        .create(style, color, this))
 
     //Do the same for markup
     const markup = position.markup
-      .transform(({type, text}) => MarkupFactory
+      .map(({type, text}) => MarkupFactory
         .create(type, this, {text}))
 
     //Set new stones and markup grids

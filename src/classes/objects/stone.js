@@ -10,12 +10,13 @@ export default class Stone extends GridObject {
   /**
    * Constructor
    */
-  constructor(board, data) {
+  constructor(board, color, data) {
 
     //Parent constructor
     super(board)
 
     //Instantiate properties
+    this.color = color
     this.scale = 1
     this.alpha = 1
     this.shadow = this.theme.get('stone.shadow')

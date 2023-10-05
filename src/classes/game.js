@@ -1042,14 +1042,17 @@ export default class Game {
    */
   nextNode(i) {
 
+    //Get data
+    const {children, rememberedPath} = this.node
+
     //Check if we have children
-    if (this.node.children.length === 0) {
+    if (children.length === 0) {
       return false
     }
 
     //Remembered the path we took earlier?
     if (i === undefined) {
-      i = this.node.rememberedPath
+      i = rememberedPath
     }
 
     //Determine which child node to process
@@ -1059,7 +1062,7 @@ export default class Game {
     }
 
     //Validate
-    if (i >= this.node.children.length || !this.node.children[i]) {
+    if (i >= children.length || !children[i]) {
       return false
     }
 
@@ -1067,7 +1070,7 @@ export default class Game {
     this.path.advance(i)
 
     //Set pointer of current node
-    this.node = this.node.children[i]
+    this.node = children[i]
     return true
   }
 

@@ -2,7 +2,9 @@ import StoneSlateShell from './objects/stone-slate-shell.js'
 import StoneGlass from './objects/stone-glass.js'
 import StoneMono from './objects/stone-mono.js'
 import StoneShadow from './objects/stone-shadow.js'
+import StoneEmpty from './objects/stone-empty.js'
 import {stoneStyles} from '../constants/stone.js'
+import {setupTypes} from '../constants/setup.js'
 
 /**
  * Stone factory class
@@ -27,9 +29,16 @@ export default class StoneFactory {
   /**
    * Create stone
    */
-  static create(style, ...args) {
+  static create(style, color, board, data, ...args) {
+
+    //Special class
+    if (color === setupTypes.EMPTY) {
+      return new StoneEmpty(board)
+    }
+
+    //Regular stones
     const StoneClass = this.getClass(style)
-    return new StoneClass(...args)
+    return new StoneClass(board, color, data, ...args)
   }
 
   /**

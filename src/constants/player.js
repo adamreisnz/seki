@@ -4,6 +4,7 @@ import {markupTypes} from './markup.js'
  * Player modes
  */
 export const playerModes = {
+  NONE: 'none',
   PLAY: 'play',
   REPLAY: 'replay',
   EDIT: 'edit',
@@ -19,6 +20,17 @@ export const playerTools = {
   SCORE: 'score',
   SETUP: 'setup',
   MARKUP: 'markup',
+}
+
+/**
+ * Player actions
+ */
+export const playerActions = {
+  PREV_POSITION: 'prevPosition',
+  NEXT_POSITION: 'nextPosition',
+  PREV_VARIATION: 'prevVariation',
+  NEXT_VARIATION: 'nextVariation',
+  CANCEL_ACTION: 'cancelAction',
 }
 
 /**
@@ -43,20 +55,52 @@ export const keyCodes = {
 }
 
 /**
+ * Mouse events
+ */
+export const mouseEvents = {
+  WHEEL_UP: 'wheelup',
+  WHEEL_DOWN: 'wheeldown',
+  WHEEL_LEFT: 'wheelleft',
+  WHEEL_RIGHT: 'wheelright',
+}
+
+/**
  * Default player configuration
  */
 export const defaultPlayerConfig = {
 
-  //Default mode/tool
+  //Available modes
+  availableModes: [
+    playerModes.NONE,
+    playerModes.PLAY,
+    playerModes.REPLAY,
+    playerModes.EDIT,
+    playerModes.SOLVE,
+  ],
+
+  //Initial mode and tool
   mode: playerModes.REPLAY,
   tool: playerTools.MOVE,
 
-  //Keys/scrollwheel navigation
-  arrowKeysNavigation: true,
-  scrollWheelNavigation: true,
+  //Key bindings
+  keyBindings: {
+    [keyCodes.LEFT]: playerActions.PREV_POSITION,
+    [keyCodes.RIGHT]: playerActions.NEXT_POSITION,
+    [keyCodes.UP]: playerActions.PREV_VARIATION,
+    [keyCodes.DOWN]: playerActions.NEXT_VARIATION,
+    [keyCodes.ESC]: playerActions.CANCEL_ACTION,
+  },
 
-  //Last move marker, leave empty for none
-  lastMoveMarker: markupTypes.LAST,
+  //Mouse bindings
+  mouseBindings: {
+    [mouseEvents.WHEEL_UP]: playerActions.PREV_POSITION,
+    [mouseEvents.WHEEL_DOWN]: playerActions.NEXT_POSITION,
+    [mouseEvents.WHEEL_LEFT]: playerActions.PREV_VARIATION,
+    [mouseEvents.WHEEL_RIGHT]: playerActions.NEXT_VARIATION,
+  },
+
+  //Last move markup type, leave empty for none
+  lastMoveMarkupType: markupTypes.LAST,
 
   //Indicate variations with markup on the board, and show
   //successor node variations or current node variations

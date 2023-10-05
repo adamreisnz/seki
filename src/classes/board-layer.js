@@ -1,4 +1,5 @@
 import Grid from './grid.js'
+import {pixelRatio} from '../helpers/canvas.js'
 
 /**
  * This class represents a layer on the board and is the base class
@@ -149,8 +150,8 @@ export default class BoardLayer {
     context.clearRect(
       0,
       0,
-      context.canvas.clientWidth,
-      context.canvas.clientHeight,
+      context.canvas.clientWidth * pixelRatio,
+      context.canvas.clientHeight * pixelRatio,
     )
   }
 

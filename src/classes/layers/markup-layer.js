@@ -17,4 +17,18 @@ export default class MarkupLayer extends BoardLayer {
     //Set type
     this.type = boardLayerTypes.MARKUP
   }
+
+  /**
+   * Remove all (erase layer and clear grid)
+   */
+  removeAll() {
+
+    //Parent method
+    super.removeAll()
+
+    //Redraw grid layer to fill in erased gaps
+    this.board
+      .getLayer(boardLayerTypes.GRID)
+      .redraw()
+  }
 }

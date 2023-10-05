@@ -2,9 +2,15 @@ import Board from './board.js'
 import Game from './game.js'
 import GameScorer from './game-scorer.js'
 import EventHandler from './event-handler.js'
-import {playerTools, defaultPlayerConfig} from '../constants/player.js'
+import MarkupFactory from './markup-factory.js'
+import PlayerModeFactory from './player-mode-factory.js'
 import {boardLayerTypes} from '../constants/board.js'
 import {markupTypes} from '../constants/markup.js'
+import {
+  playerTools,
+  playerModes,
+  defaultPlayerConfig,
+} from '../constants/player.js'
 
 /**
  * This class brings the board to life and allows a user to interact with it.
@@ -44,16 +50,23 @@ export default class Player extends EventTarget {
     //Reset path
     this.path = null
 
-    //Player mode and active tool
-    this.mode = ''
-    this.tool = ''
+    //Enabled modes and mode handlers container
+    this.availableModes = []
+    this.modeHandlers = {}
 
-    //Arrow keys / scroll wheel navigation
-    this.arrowKeysNavigation = false
-    this.scrollWheelNavigation = false
+    //Available tools
+    this.availableTools = []
+
+    //Player mode and active tool
+    this.mode = undefined
+    this.tool = undefined
+
+    //Key and mouse bindings
+    this.keyBindings = {}
+    this.mouseBindings = {}
 
     //Last move marker
-    this.lastMoveMarker = ''
+    this.lastMoveMarkupType = undefined
 
     //Variation markup
     this.variationMarkup = false
@@ -61,8 +74,8 @@ export default class Player extends EventTarget {
     this.variationSiblings = false
 
     //Restricted nodes
-    this.restrictNodeStart = null
-    this.restrictNodeEnd = null
+    this.restrictedStartNode = null
+    this.restrictedEndNode = null
   }
 
   /*****************************************************************************
@@ -74,60 +87,46 @@ export default class Player extends EventTarget {
    */
   setConfig(config) {
 
-    //Validate
-    if (!config || typeof config !== 'object') {
-      return
-    }
-
     //Extend from default config
-    config = Object.assign({}, defaultPlayerConfig, config)
+    config = Object.assign({}, defaultPlayerConfig, config || {})
 
     //Process settings
-    this.switchMode(config.mode)
-    this.switchTool(config.tool)
-    this.setArrowKeysNavigation(config.arrowKeysNavigation)
-    this.setScrollWheelNavigation(config.scrollWheelNavigation)
-    this.setLastMoveMarker(config.lastMoveMarker)
+    this.setAvailableModes(config.availableModes)
+    this.setLastMoveMarkupType(config.lastMoveMarkupType)
+    this.setKeyBindings(config.keyBindings)
+    this.setMouseBindings(config.mouseBindings)
     this.setVariationMarkup(
       config.variationMarkup,
       config.variationChildren,
       config.variationSiblings,
     )
 
-    //Let the modes set their own config
-    for (const mode of this.modes) {
-      mode.setConfig(config)
-    }
-  }
-
-  /**
-   * Set arrow keys navigation
-   */
-  setArrowKeysNavigation(arrowKeys) {
-    if (arrowKeys !== this.arrowKeysNavigation) {
-      this.arrowKeysNavigation = arrowKeys
-      this.triggerEvent('settingChange', 'arrowKeysNavigation')
-    }
-  }
-
-  /**
-   * Set scroll wheel navigation
-   */
-  setScrollWheelNavigation(scrollWheel) {
-    if (scrollWheel !== this.scrollWheelNavigation) {
-      this.scrollWheelNavigation = scrollWheel
-      this.triggerEvent('settingChange', 'scrollWheelNavigation')
-    }
+    //Switch to the configured mode and tool
+    this.switchMode(config.mode)
+    this.switchTool(config.tool)
   }
 
   /**
    * Set the last move marker
    */
-  setLastMoveMarker(lastMoveMarker) {
-    if (lastMoveMarker !== this.lastMoveMarker) {
-      this.lastMoveMarker = lastMoveMarker
-      this.triggerEvent('settingChange', 'lastMoveMarker')
+  setLastMoveMarkupType(lastMoveMarkupType) {
+    if (lastMoveMarkupType !== this.lastMoveMarkupType) {
+      this.lastMoveMarkupType = lastMoveMarkupType
     }
+  }
+
+  /**
+   * Set key bindings
+   */
+  setKeyBindings(keyBindings) {
+    this.keyBindings = keyBindings
+  }
+
+  /**
+   * Set mouse bindings
+   */
+  setMouseBindings(mouseBindings) {
+    this.mouseBindings = mouseBindings
   }
 
   /**
@@ -164,7 +163,7 @@ export default class Player extends EventTarget {
 
     //Did anything change?
     if (change) {
-      this.triggerEvent('settingChange', 'variationMarkup')
+      this.triggerEvent('setting', 'variationMarkup')
     }
   }
 
@@ -173,103 +172,166 @@ export default class Player extends EventTarget {
    ***/
 
   /**
-   * Register a player mode
+   * Set available modes
    */
-  registerMode(mode, PlayerMode) {
+  setAvailableModes(availableModes) {
 
-    //Register the mode and let it parse the configuration
-    this.modes[mode] = PlayerMode
-
-    //Parse config if we have a handler
-    if (this.modes[mode].setConfig) {
-      this.modes[mode].setConfig.call(this, this.config)
+    //Ensure array
+    if (!Array.isArray(availableModes)) {
+      availableModes = availableModes ? [availableModes] : []
     }
 
-    //Force switch the mode now, if it matches the initial mode
-    if (this.mode === mode) {
-      this.switchMode(this.mode, true)
-      this.switchTool(this.tool, true)
+    //Ensure the none mode is included
+    if (!availableModes.includes(playerModes.NONE)) {
+      availableModes.push(playerModes.NONE)
     }
+
+    //Reset mode handlers
+    this.modeHandlers = {}
+
+    //Instantiate handlers for each enabled mode
+    for (const mode of availableModes) {
+      this.modeHandlers[mode] = PlayerModeFactory.create(mode, this)
+    }
+
+    //Trigger event
+    this.triggerEvent('setting', 'availableModes')
   }
 
   /**
    * Set available tools
+   *
+   * NOTE: This is usually set by the mode handler, and not directly
+   * configured on the player itself
    */
-  setTools(tools) {
-    this.tools = tools || [playerTools.NONE]
-  }
+  setAvailableTools(tools) {
 
-  /**
-   * Check if we have a player mode
-   */
-  hasMode(mode) {
-    return this.modes[mode] ? true : false
-  }
-
-  /**
-   * Check if we have a player tool
-   */
-  hasTool(tool) {
-    return (this.tools.indexOf(tool) !== -1)
-  }
-
-  /**
-   * Switch player mode
-   */
-  switchMode(mode, force) {
-
-    //No change?
-    if (!force && (!mode || this.mode === mode)) {
-      return false
+    //Ensure array
+    if (!Array.isArray(tools)) {
+      tools = tools ? [tools] : []
     }
 
-    //Broadcast mode exit
-    if (this.mode) {
-      this.triggerEvent('modeExit', this.mode)
+    //Must include NONE tool
+    if (!tools.includes(playerTools.NONE)) {
+      tools.push(playerTools.NONE)
     }
 
-    //Set mode, reset tools and active tool
+    //Set available tools and trigger event
+    this.availableTools = tools
+    this.triggerEvent('setting', 'availableTools')
+
+    //Reset active tool if invalid
+    if (tools.includes(this.tool)) {
+      this.switchTool(tools[0])
+    }
+  }
+
+  /**
+   * Check if a specific player mode is available
+   */
+  isModeAvailable(mode) {
+    return this.availableModes.includes(mode)
+  }
+
+  /**
+   * Check if we have a player tool available
+   */
+  isToolAvailable(tool) {
+    return this.availableTools.includes(tool)
+  }
+
+  /**
+   * Check if a specific player mode is active
+   */
+  isModeActive(mode) {
+    return (this.mode === mode)
+  }
+
+  /**
+   * Check if a specific player tool is active
+   */
+  isToolActive(tool) {
+    return (this.tool === tool)
+  }
+
+  /**
+   * Get mode handler for a given mode
+   */
+  getModeHandler(mode) {
+    const {modeHandlers} = this
+    return modeHandlers[mode]
+  }
+
+  /**
+   * Get current mode handler
+   */
+  getCurrentModeHandler() {
+    const {mode} = this
+    return this.getModeHandler(mode)
+  }
+
+  /**
+   * Switch the active player mode
+   */
+  switchMode(mode) {
+
+    //Already active
+    if (this.isModeActive(mode)) {
+      return
+    }
+
+    //Deactivate current mode
+    const currentHandler = this.getCurrentModeHandler()
+    if (currentHandler) {
+      currentHandler.deactivate()
+    }
+
+    //Activate new mode
+    const newHandler = this.getModeHandler(mode)
+    if (newHandler) {
+      newHandler.activate()
+    }
+
+    //Set mode
     this.mode = mode
-    this.tools = []
-    this.tool = playerTools.NONE
-
-    //Broadcast mode entry
-    this.triggerEvent('modeEnter', this.mode)
+    this.triggerEvent('mode', mode)
     return true
   }
 
   /**
-   * Switch player tool
+   * Switch the active player tool
    */
-  switchTool(tool, force) {
+  switchTool(tool) {
 
-    //No change?
-    if (!force && (!tool || this.tool === tool)) {
+    //Validate
+    if (!this.isToolAvailable(tool)) {
       return false
     }
 
-    //Validate tool switch (only when there is a mode)
-    if (this.mode && this.modes[this.mode] && this.tools.indexOf(tool) === -1) {
-      return false
-    }
-
-    //Change tool
+    //Set tool
     this.tool = tool
-    this.triggerEvent('toolSwitch', this.tool)
+    this.triggerEvent('tool', tool)
     return true
   }
+
+  /**************************************************************************
+   * State handling
+   ***/
 
   /**
    * Save the full player state
    */
   saveState() {
 
+    //Get data
+    const {mode, tool, restrictedStartNode, restrictedEndNode} = this
+
     //Save player state
     this.playerState = {
-      mode: this.mode,
-      tool: this.tool,
-      restrictNodeStart: this.restrictNodeStart,
-      restrictNodeEnd: this.restrictNodeEnd,
+      mode,
+      tool,
+      restrictedStartNode,
+      restrictedEndNode,
     }
 
     //Save game state
@@ -286,11 +348,14 @@ export default class Player extends EventTarget {
       return
     }
 
+    //Get data
+    const {mode, tool, restrictedStartNode, restrictedEndNode} = this.playerState
+
     //Restore
-    this.switchMode(this.playerState.mode)
-    this.switchTool(this.playerState.tool)
-    this.restrictNodeStart = this.playerState.restrictNodeStart
-    this.restrictNodeEnd = this.playerState.restrictNodeEnd
+    this.switchMode(mode)
+    this.switchTool(tool)
+    this.restrictedStartNode = restrictedStartNode
+    this.restrictedEndNode = restrictedEndNode
 
     //Restore game state
     this.restoreGameState()
@@ -315,8 +380,8 @@ export default class Player extends EventTarget {
       this.setConfig(config)
     }
 
-    //Dispatch game loaded event
-    this.triggerEvent('gameLoaded', this.game)
+    //Dispatch game event
+    this.triggerEvent('game', this.game)
 
     //Go to first move
     this.game.first()
@@ -367,109 +432,191 @@ export default class Player extends EventTarget {
    * Go to the next position
    */
   next(i) {
-    if (this.game && this.game.node !== this.restrictNodeEnd) {
-      this.game.next(i)
-      this.processPosition()
+
+    //Must have game
+    if (!this.game || !this.game.isLoaded) {
+      return
     }
+
+    //At restricted end node
+    if (this.isAtRestrictedEndNode()) {
+      return
+    }
+
+    //Go to next position
+    this.game.next(i)
+    this.processPosition()
   }
 
   /**
    * Go back to the previous position
    */
   previous() {
-    if (this.game && this.game.node !== this.restrictNodeStart) {
-      this.game.previous()
-      this.processPosition()
+
+    //Must have game
+    if (!this.game || !this.game.isLoaded) {
+      return
     }
+
+    //At restricted start node
+    if (this.isAtRestrictedStartNode()) {
+      return
+    }
+
+    //Go to previous position
+    this.game.previous()
+    this.processPosition()
   }
 
   /**
    * Go to the last position
    */
   last() {
-    if (this.game) {
-      this.game.last()
-      this.processPosition()
+
+    //Must have game
+    if (!this.game || !this.game.isLoaded) {
+      return
     }
+
+    //Go to last position
+    this.game.last()
+    this.processPosition()
   }
 
   /**
    * Go to the first position
    */
   first() {
-    if (this.game) {
-      this.game.first()
-      this.processPosition()
+
+    //Must have game
+    if (!this.game || !this.game.isLoaded) {
+      return
     }
+
+    //Go to first position
+    this.game.first()
+    this.processPosition()
   }
 
   /**
    * Go to a specific move number, tree path or named node
    */
   goto(target) {
-    if (this.game && target) {
-      this.game.goto(target)
-      this.processPosition()
+
+    //Must have game and target
+    if (!this.game || !this.game.isLoaded || !target) {
+      return
     }
+
+    //Go to target
+    this.game.goto(target)
+    this.processPosition()
   }
 
   /**
    * Go to the previous fork
    */
   previousFork() {
-    if (this.game) {
-      this.game.previousFork()
-      this.processPosition()
+
+    //Must have game
+    if (!this.game || !this.game.isLoaded) {
+      return
     }
+
+    //Go to previous fork
+    this.game.previousFork()
+    this.processPosition()
   }
 
   /**
    * Go to the next fork
    */
   nextFork() {
-    if (this.game) {
-      this.game.nextFork()
-      this.processPosition()
+
+    //Must have game
+    if (!this.game || !this.game.isLoaded) {
+      return
     }
+
+    //Go to next fork
+    this.game.nextFork()
+    this.processPosition()
   }
 
   /**
    * Go to the next position with a comment
    */
   nextComment() {
-    if (this.game && this.game.node !== this.restrictNodeEnd) {
-      this.game.nextComment()
-      this.processPosition()
+
+    //Must have game
+    if (!this.game || !this.game.isLoaded) {
+      return
     }
+
+    //At restricted end node
+    if (this.isAtRestrictedEndNode()) {
+      return
+    }
+
+    //Go to next commented position
+    this.game.nextComment()
+    this.processPosition()
   }
 
   /**
    * Go back to the previous position with a comment
    */
   previousComment() {
-    if (this.game && this.game.node !== this.restrictNodeStart) {
-      this.game.previousComment()
-      this.processPosition()
+
+    //Must have game
+    if (!this.game || !this.game.isLoaded) {
+      return
+    }
+
+    //At restricted start node
+    if (this.isAtRestrictedStartNode()) {
+      return
+    }
+
+    //Go to previous commented position
+    this.game.previousComment()
+    this.processPosition()
+  }
+
+  /**
+   * Set the current node as restricted start node
+   */
+  setRestrictedStartNode() {
+    const {game} = this
+    if (game && game.isLoaded && game.node) {
+      this.restrictedStartNode = game.node
     }
   }
 
   /**
-   * Restrict navigation to the current node
+   * Set the current node as restricted end node
    */
-  restrictNode(end) {
+  setRestrictedEndNode() {
+    const {game} = this
+    if (game && game.isLoaded && game.node) {
+      this.restrictedEndNode = game.node
+    }
+  }
 
-    //Must have game and node
-    if (!this.game || !this.game.node) {
-      return
-    }
+  /**
+   * Is restricted start node
+   */
+  isAtRestrictedStartNode() {
+    const {game, restrictedStartNode} = this
+    return (game && restrictedStartNode && game.node === restrictedStartNode)
+  }
 
-    //Restrict to current node
-    if (end) {
-      this.restrictNodeEnd = this.game.node
-    }
-    else {
-      this.restrictNodeStart = this.game.node
-    }
+  /**
+   * Is restricted end node
+   */
+  isAtRestrictedEndNode() {
+    const {game, restrictedEndNode} = this
+    return (game && restrictedEndNode && game.node === restrictedEndNode)
   }
 
   /**
@@ -610,7 +757,7 @@ export default class Player extends EventTarget {
   updateBoard(node, position, pathChanged) {
 
     //Get data
-    const {board, lastMoveMarker} = this
+    const {board, lastMoveMarkupType} = this
     if (!board) {
       return
     }
@@ -619,9 +766,10 @@ export default class Player extends EventTarget {
     board.updatePosition(position, pathChanged)
 
     //Mark last move
-    if (lastMoveMarker && node.move && !node.move.pass) {
+    if (lastMoveMarkupType && node.move && !node.move.pass) {
       const {x, y} = node.move
-      board.add(boardLayerTypes.MARKUP, x, y, lastMoveMarker)
+      const marker = MarkupFactory.create(lastMoveMarkupType)
+      board.add(boardLayerTypes.MARKUP, x, y, marker)
     }
   }
 
@@ -711,7 +859,7 @@ export default class Player extends EventTarget {
     //Setup listeners
     for (const type of eventTypes) {
       this.documentEventHandler.on(type, (event) => {
-        this.triggerEvent(type, {originalEvent: event})
+        this.triggerEvent(type, {nativeEvent: event})
       })
     }
   }
@@ -738,41 +886,37 @@ export default class Player extends EventTarget {
     //Setup listeners
     for (const type of eventTypes) {
       this.elementEventHandler.on(type, (event) => {
-        this.triggerEvent(type, {originalEvent: event})
+        this.triggerEvent(type, {nativeEvent: event})
       })
     }
+  }
+
+  /**
+   * Get action for given key code
+   */
+  getActionForKeyCode(keyCode) {
+    return this.keyBindings[keyCode]
+  }
+
+  /**
+   * Get action for given mouse event
+   */
+  getActionForMouseEvent(mouseEvent) {
+    return this.mouseBindings[mouseEvent]
   }
 
   /**
    * Bind event listener to player
    */
   on(type, listener) {
+    this.addEventListener(type, listener)
+  }
 
-    //Must have valid listener
-    if (typeof listener !== 'function') {
-      throw new Error(`Invalid listener provided: ${listener}`)
-    }
-
-    //Array of event types
-    const types = type.split(' ')
-
-    //Apply
-    for (const type of types) {
-      this.addEventListener(`seki.${type}`, (event) => {
-
-        //Dragging? Prevent click events from firing
-        if (this.preventClickEvent && type === 'click') {
-          this.preventClickEvent = false
-          return
-        }
-        else if (type === 'mousedrag') {
-          this.preventClickEvent = true
-        }
-
-        //Call listener
-        listener(event)
-      })
-    }
+  /**
+   * Remove event listener from player
+   */
+  off(type, listener) {
+    this.removeEventListener(type, listener)
   }
 
   /**
@@ -791,7 +935,7 @@ export default class Player extends EventTarget {
     }
 
     //Create new event
-    const event = new CustomEvent(`seki.${type}`, {detail})
+    const event = new CustomEvent(type, {detail})
 
     //Dispatch
     this.dispatchEvent(event)
@@ -804,7 +948,7 @@ export default class Player extends EventTarget {
 
     //Get board
     const {board} = this
-    const {originalEvent: mouseEvent} = detail
+    const {nativeEvent: mouseEvent} = detail
 
     //Can only do this with a board and mouse event
     if (!board || !mouseEvent) {
