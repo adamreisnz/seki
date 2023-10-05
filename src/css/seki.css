@@ -1,28 +1,36 @@
 .seki-player {
-  display: inline;
+  width: 100%;
+  height: 100%;
+}
+.seki-board-container {
+  position: relative;
+  display: flex;
+  height: 100%;
+  flex: 1 0 auto;
+  align-items: center;
+  justify-content: center;
 }
 .seki-board {
-  display: block;
+  /* aspect-ratio: 1 / 1; */
+  position: absolute;
+  left: 0;
+  top: 0;
+  /* display: block; */
+  /* width: 100%;
+  height: 100%; */
+  box-sizing: content-box;
+  box-shadow: 0 0 15px rgba(60, 30, 20, 0.3);
+  border: 4px solid rgba(156, 118, 60, 0.7);
+  background: url('board.jpg');
+  background-size: repeat;
+}
+.seki-board-canvas-container {
   position: relative;
   width: 100%;
   height: 100%;
-
-
   canvas {
     position: absolute;
     max-width: 100%;
     max-height: 100%;
   }
 }
-.seki-board-layer-grid {
-  z-index: 10;
-  background: url('board.jpg');
-  background-size: repeat;
-  box-shadow: 0 0 15px rgba(60, 30, 20, 0.3);
-}
-.seki-board-layer-coordinates { z-index: 20; }
-.seki-board-layer-shadow { z-index: 30; }
-.seki-board-layer-stones { z-index: 40; }
-.seki-board-layer-score { z-index: 50; }
-.seki-board-layer-markup { z-index: 60; }
-.seki-board-layer-hover { z-index: 70; }

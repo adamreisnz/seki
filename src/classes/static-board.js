@@ -4,7 +4,7 @@ import {
 } from '../constants/board.js'
 import {
   createCanvasContext,
-} from '../helpers/canvas.js'
+} from '../helpers/dom.js'
 
 /**
  * This class represents a static Go board, used for just rendering and
@@ -53,37 +53,38 @@ export default class StaticBoard extends Board {
   }
 
   /**
-   * Apply element classes
+   * Setup elements
    */
-  applyClasses(element) {
-    super.applyClasses(element)
-    element.classList.add('seki-board-static')
+  setupElements(container) {
+
+    //Parent setup
+    super.setupElements(container)
+
+    //Add static class
+    const {board} = this.elements
+    board.classList.add('seki-board-static')
   }
 
   /**
-   * Render layers
+   * Create layer contexts
    */
-  renderLayers(element) {
+  createLayerContexts() {
 
-    //Get draw width/height
-    const {drawWidth, drawHeight} = this
+    //Get data
+    const {elements, layers} = this
+    const {canvasContainer} = elements
 
     //Create single canvas
-    const className = `seki-board-layer-static`
     const context = createCanvasContext(
-      element, drawWidth, drawHeight, className,
+      canvasContainer, `seki-board-layer-static`,
     )
 
     //Link to all layers
-    this.layers.forEach(layer => layer.setContext(context))
-  }
+    layers.forEach(layer => layer.setContext(context))
 
-  /**
-   * Link the board to a HTML element
-   */
-  linkElement(element) {
-    this.element = element
-    this.playerElement = null
-    this.sizingElement = element
+    //Store canvases as elements array
+    elements.canvasses = Array.from(
+      canvasContainer.getElementsByTagName('canvas'),
+    )
   }
 }

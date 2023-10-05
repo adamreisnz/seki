@@ -1,16 +1,19 @@
 import BoardLayerFactory from './board-layer-factory.js'
 import StoneFactory from './stone-factory.js'
 import MarkupFactory from './markup-factory.js'
-import EventHandler from './event-handler.js'
 import Theme from './theme.js'
 import {
   defaultBoardConfig,
   boardLayerTypes,
 } from '../constants/board.js'
 import {
+  throttle,
+} from '../helpers/util.js'
+import {
   pixelRatio,
+  createElement,
   createCanvasContext,
-} from '../helpers/canvas.js'
+} from '../helpers/dom.js'
 
 /**
  * This class represents the Go board. It is a placeholder for all the various
@@ -126,6 +129,16 @@ export default class Board {
   /**************************************************************************
    * Virtual getters
    ***/
+
+  /**
+   * Whether we have been bootstrapped (e.g. elements linked)
+   */
+  get isBootstrapped() {
+    return (
+      this.elements &&
+      this.elements.container
+    )
+  }
 
   /**
    * Board's x & y coordinates
@@ -301,14 +314,8 @@ export default class Board {
     //Set size in each layer
     this.layers.forEach(layer => layer.setGridSize(width, height))
 
-    //Recalculate draw size
-    const hasChanged = this.recalculateDrawSize()
-
-    //If the draw size didn't change, manually call compute and redraw
-    //on account of the board grid size change
-    if (!hasChanged) {
-      this.computeAndRedraw()
-    }
+    //Compute and redraw
+    this.computeAndRedraw()
   }
 
   /**
@@ -727,83 +734,80 @@ export default class Board {
   /**
    * Bootstrap board onto element
    */
-  bootstrap(element, playerElement) {
+  bootstrap(container) {
+    this.setupElements(container)
+    this.createLayerContexts()
+    this.setupResizeObserver()
+  }
 
-    //Already bootstrapped
-    if (this.element) {
-      throw new Error(`Board has already been bootstrapped!`)
+  /**
+   * Setup board elements
+   */
+  setupElements(container) {
+
+    //Reset elements container
+    this.elements = {}
+
+    //Add container class
+    container.classList.add('seki-board-container')
+
+    //Create board element
+    const board = createElement(
+      container, `seki-board`,
+    )
+
+    //Create canvas container element within board
+    const canvasContainer = createElement(
+      board, `seki-board-canvas-container`,
+    )
+
+    //Set element references
+    this.elements = {
+      container,
+      board,
+      canvasContainer,
     }
+  }
 
-    //Link element and apply classes
-    this.linkElement(element, playerElement)
-    this.applyClasses()
+  /**
+   * Create layer contexts
+   */
+  createLayerContexts() {
 
-    //Calculate initial draw size and render layers
-    this.recalculateDrawSize()
-    this.renderLayers()
+    //Get data
+    const {elements, layers} = this
+    const {canvasContainer} = elements
 
-    //Setup window listeners
-    this.setupWindowListeners()
+    //Create for each layer
+    layers.forEach(layer => {
+      const context = createCanvasContext(
+        canvasContainer, `seki-board-layer-${layer.type}`,
+      )
+      layer.setContext(context)
+    })
 
-    //Redraw
-    this.redraw()
+    //Store canvases as elements array
+    elements.canvasses = Array.from(
+      canvasContainer.getElementsByTagName('canvas'),
+    )
   }
 
   /**
    * Setup window listeners
    */
-  setupWindowListeners() {
+  setupResizeObserver() {
 
-    //Instantiate handler
-    this.windowEventHandler = new EventHandler(window)
-
-    //Register throttled listener
-    this.windowEventHandler.on('resize', () => {
+    //Create throttled resize handler
+    const fn = throttle(() => {
       this.recalculateDrawSize()
-    }, 250)
-  }
+    }, 100)
 
-  /**
-   * Apply element classes
-   */
-  applyClasses() {
-    if (this.element) {
-      this.element.classList.add('seki-board')
-    }
-  }
+    //Create observer
+    const resizeObserver = new ResizeObserver(fn)
+    const {container} = this.elements
 
-  /**
-   * Render layers
-   */
-  renderLayers() {
-
-    //Get draw width/height
-    const {element, drawWidth, drawHeight} = this
-    if (!element) {
-      throw new Error(`Cannot render layers without linked element`)
-    }
-
-    //Create for each layer
-    this.layers
-      .forEach(layer => {
-        const className = `seki-board-layer-${layer.type}`
-        const context = createCanvasContext(
-          element, drawWidth, drawHeight, className,
-        )
-        layer.setContext(context)
-      })
-  }
-
-  /**
-   * Link the board to a HTML element
-   */
-  linkElement(element, playerElement) {
-
-    //Set elements
-    this.element = element
-    this.playerElement = playerElement
-    this.sizingElement = playerElement ? playerElement.parentElement :
-      element
+    //Observe the canvas container
+    resizeObserver.observe(container)
   }
 
   /**
@@ -823,31 +827,21 @@ export default class Board {
     if (hasChanged) {
       this.propagateDrawSize(drawWidth, drawHeight)
     }
-
-    //Return changed flag
-    return hasChanged
   }
 
   /**
-   * Get available width and height
+   * Get available width and height within parent container
    */
   getAvailableSize() {
 
     //Get data
-    const {sizingElement} = this
+    const {container} = this.elements
 
-    //No sizing element
-    if (!sizingElement) {
-      return {availableWidth: 0, availableHeight: 0}
+    //Return size of canvas container
+    return {
+      availableWidth: container.clientWidth,
+      availableHeight: container.clientHeight,
     }
-
-    //Get available size
-    const {clientWidth, clientHeight} = sizingElement
-    const availableWidth = clientWidth
-    const availableHeight = clientHeight || clientWidth
-
-    //Return
-    return {availableWidth, availableHeight}
   }
 
   /**
@@ -893,26 +887,27 @@ export default class Board {
     this.lastDrawWidth = width
     this.lastDrawHeight = height
 
-    //Get element
-    const {element, playerElement} = this
-    if (!element) {
+    //Not bootstrapped yet
+    if (!this.isBootstrapped) {
       return
     }
 
-    //First set the new dimensions on the canvas elements
-    const canvases = element.getElementsByTagName('canvas')
-    for (const canvas of canvases) {
-      canvas.width = width * pixelRatio
-      canvas.height = height * pixelRatio
-    }
+    //Get elements
+    const {board, canvasses} = this.elements
 
-    //In player element? Set dimensions on element
-    if (playerElement) {
-      element.style.width = `${width}px`
-      element.style.height = `${height}px`
-    }
+    //Set the new dimension on the main board element
+    board.style.width = `${width}px`
+    board.style.height = `${height}px`
 
-    //Next set the draw size on the board itself
+    //Set the new dimensions on the canvas elements
+    canvasses
+      .forEach(canvas => {
+        canvas.width = width * pixelRatio
+        canvas.height = height * pixelRatio
+      })
+
+    //Now set the draw size on the board itself
+    //This will trigger a compute and redraw
     this.setDrawSize(
       width * pixelRatio,
       height * pixelRatio,
