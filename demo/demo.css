@@ -8,7 +8,7 @@
 }
 html, body {
   height: 100%;
-  background: #333;
+  /* background: #333; */
 }
 button {
   font-family: Helvetica, sans-serif;
@@ -34,6 +34,10 @@ p {
 }
 
 /* Board tweaks */
+.seki-board {
+  /* background: url('../src/css/rough-wood.jpg');
+  background-size: 80%; */
+}
 .seki-board-static {
   flex: 0 0 150px;
   height: 150px;
