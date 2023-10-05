@@ -484,8 +484,8 @@ export default class Game {
       throw new Error(`Position is repeating: ${x}, ${y}, ${color}`)
     }
 
-    //Set proper turn
-    newPosition.setTurn(-color)
+    //Switch turn
+    newPosition.switchTurn()
 
     //Move is valid
     return newPosition
@@ -707,7 +707,7 @@ export default class Game {
 
     //Initialize new position and switch the turn
     let newPosition = this.position.clone()
-    newPosition.setTurn(-color)
+    newPosition.switchTurn()
 
     //Push new position
     this.pushPosition(newPosition)

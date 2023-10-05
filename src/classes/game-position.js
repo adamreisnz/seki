@@ -1,5 +1,6 @@
 import Grid from './grid.js'
 import {stoneColors} from '../constants/stone.js'
+import {swapColor} from '../helpers/stone.js'
 
 /**
  * This class represents a single game position. It keeps track of the stones
@@ -99,9 +100,10 @@ export default class GamePosition {
 
     //If no group color was given, use what's on the position
     groupColor = groupColor || color
+    const enemyColor = swapColor(groupColor)
 
     //Already tested, or enemy stone? Not giving any liberties
-    if (tested.get(x, y) === true || color === -groupColor) {
+    if (tested.get(x, y) === true || color === enemyColor) {
       return false
     }
 
@@ -141,20 +143,23 @@ export default class GamePosition {
       return false
     }
 
+    //Get enemy color
+    const enemyColor = swapColor(friendlyColor)
+
     //Flag to see if we captured stuff
     let captured = false
 
     //Check adjacent positions now, capturing stones in the process if possible
-    if (this.canCapture(x, y - 1, -friendlyColor, true)) {
+    if (this.canCapture(x, y - 1, enemyColor, true)) {
       captured = true
     }
-    if (this.canCapture(x, y + 1, -friendlyColor, true)) {
+    if (this.canCapture(x, y + 1, enemyColor, true)) {
       captured = true
     }
-    if (this.canCapture(x - 1, y, -friendlyColor, true)) {
+    if (this.canCapture(x - 1, y, enemyColor, true)) {
       captured = true
     }
-    if (this.canCapture(x + 1, y, -friendlyColor, true)) {
+    if (this.canCapture(x + 1, y, enemyColor, true)) {
       captured = true
     }
 
@@ -245,8 +250,6 @@ export default class GamePosition {
 
     //Get color
     const color = this.stones.get(x, y)
-
-    //Empty?
     if (!color) {
       return
     }
@@ -271,10 +274,11 @@ export default class GamePosition {
   }
 
   /**
-   * Get the capture count for a color (= the number of captures of the opposing color)
+   * Get the capture count for a color (= the number of captures of the enemy color)
    */
   getCaptureCount(color) {
-    return this.captures[-color].length
+    const otherColor = swapColor(color)
+    return this.captures[otherColor].length
   }
 
   /*****************************************************************************
@@ -299,7 +303,7 @@ export default class GamePosition {
    * Switch the player turn on this position
    */
   switchTurn() {
-    this.turn = -this.turn
+    this.turn = swapColor(this.turn)
   }
 
   /*****************************************************************************
@@ -313,13 +317,14 @@ export default class GamePosition {
 
     //Create a new position
     const newPosition = new GamePosition()
+    const {turn, width, height, stones} = this
 
     //Set vars
-    newPosition.turn = this.turn
-    newPosition.width = this.width
-    newPosition.height = this.height
-    newPosition.stones = this.stones.clone()
-    newPosition.markup = new Grid(this.width, this.height)
+    newPosition.turn = turn
+    newPosition.width = width
+    newPosition.height = height
+    newPosition.stones = stones.clone()
+    newPosition.markup = new Grid(width, height)
 
     //Return
     return newPosition
@@ -330,15 +335,15 @@ export default class GamePosition {
    */
   isSameAs(newPosition) {
 
+    //Get data
+    const {stones, width, height} = this
+
     //Must have the same size
-    if (
-      this.width !== newPosition.width ||
-      this.height !== newPosition.height
-    ) {
+    if (width !== newPosition.width || height !== newPosition.height) {
       return false
     }
 
     //Compare the grids
-    return this.stones.isSameAs(newPosition.stones)
+    return stones.isSameAs(newPosition.stones)
   }
 }
