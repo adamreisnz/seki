@@ -164,6 +164,24 @@ JGF = {
     ],
 	},
 
+  //Instructions for the game record replayer
+	settings: {
+
+		//Indicate variations with markup on the board or not
+		variationMarkup: true,
+
+		//Show variations of successor nodes
+		variationChildren: true,
+
+		//Show variations of current node
+		variationSiblings: false,
+
+		//Show solution paths for problems
+		solutionPaths: false,
+
+    //Extensible with other custom instructions for various players
+	},
+
   //Meta data for any other information to be saved with the record
   meta: {
     foo: "Bar",
@@ -173,11 +191,8 @@ JGF = {
 	tree: [
 
 		//First (root) node may contain comments, board setup or just a blank board.
-		//It cannot contain moves.
+		//It cannot contain moves or variations
 		{
-
-			//Flag to indicate this is the root node
-			root: true,
 
 			//Comments are placed in an array and each comment can either be
 			//a simple string, or an object if more information is present.
@@ -257,24 +272,28 @@ JGF = {
         //Default types are "circle", "triangle", "square", "mark", "label" and "selected".
 				//However, any other type can be specified in order to store custom markup types.
         {
-          x: 4,
-          y: 3,
-          type: "triangle"
+          type: "triangle",
+          coords: [
+            {x: 4, y: 3},
+            {x: 5, y: 3},
+          ],
+        },
+        {
+          type: "circle",
+          coords: [
+            {x: 6, y: 4},
+            {x: 7, y: 4},
+          ],
         },
 
-        //Label markup gets a third entry in the array with the label contents.
+        //Label markup gets a text property to indicate label contents
         {
-          x: 15,
-          y: 15,
           type: "label",
-          text: "A"
+          coords: [
+            {x: 8, y: 5, text: "A"},
+            {x: 9, y: 5, text: "1"},
+          ],
         },
-        {
-          x: 3,
-          y: 15,
-          type: "label",
-          text: "B"
-        }
       ],
 		},
 
@@ -284,25 +303,25 @@ JGF = {
 			setup: [
         {
           type: "black",
-          x: 4,
-          y: 16,
-        },
-        {
-          type: "black",
-          x: 2,
-          y: 15,
+          coords: [
+            {x: 4, y: 16},
+            {x: 2, y: 15},
+            {x: 9, y: 9},
+          ],
         },
         {
           type: "white",
-          x: 9,
-          y: 9,
+          coords: [
+            {x: 3, y: 15},
+          ],
         },
 
         //Instructions to clear a grid spot are indicated with the "empty" type
         {
           type: "empty",
-          x: 3,
-          y: 15,
+          coords: [
+            {x: 7, y: 18},
+          ],
         }
 			],
 
@@ -320,7 +339,7 @@ JGF = {
 			score: [
         {
           color: "black",
-          coordinates: [
+          coords: [
             {x: 0, y: 0},
             {x: 0, y: 1},
             {x: 1, y: 1},
@@ -328,7 +347,7 @@ JGF = {
         },
         {
           color: "white",
-          coordinates: [
+          coords: [
             {x: 6, y: 2},
             {x: 6, y: 3},
             {x: 7, y: 2},

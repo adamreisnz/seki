@@ -8,10 +8,10 @@ export default class StoneMono extends Stone {
   /**
    * Constructor
    */
-  constructor(board) {
+  constructor(board, data) {
 
     //Parent constructor
-    super(board)
+    super(board, data)
 
     //Don't draw shadows
     this.shadow = false

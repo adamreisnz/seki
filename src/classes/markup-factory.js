@@ -45,8 +45,8 @@ export default class MarkupFactory {
   /**
    * Create markup
    */
-  static create(...args) {
-    const {MarkupClass} = this
+  static create(type, ...args) {
+    const MarkupClass = this.getClass(type)
     return new MarkupClass(...args)
   }
 }

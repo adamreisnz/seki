@@ -26,18 +26,7 @@ export default class StoneFactory {
   /**
    * Create stone
    */
-  static create(theme, ...args) {
-
-    //Get style
-    const style = theme.get('stone.style')
-    const CustomClass = theme.get('stone.class')
-
-    //Has custom class
-    if (CustomClass) {
-      return new CustomClass(...args)
-    }
-
-    //Get stone class
+  static create(style, ...args) {
     const StoneClass = this.getClass(style)
     return new StoneClass(...args)
   }

@@ -51,9 +51,19 @@ export default class CoordinatesLayer extends BoardLayer {
       return
     }
 
+    //DRaw vertical and horizontal
+    this.drawVertical()
+    this.drawHorizontal()
+  }
+
+  /**
+   * Draw vertical coordinates
+   */
+  drawVertical() {
+
     //Get data
     const {board, theme, context} = this
-    const {drawWidth, drawHeight, drawMarginHor, drawMarginVer} = board
+    const {drawWidth, drawMarginHor} = board
 
     //Get cell size
     const cellSize = board.getCellSize()
@@ -61,26 +71,17 @@ export default class CoordinatesLayer extends BoardLayer {
     //Get boundary coordinates
     const xl = Math.ceil((drawMarginHor - cellSize / 2) / 2)
     const xr = drawWidth - xl
-    const yt = Math.ceil((drawMarginVer - cellSize / 2) / 2)
-    const yb = drawHeight - yt
 
-    //Get theme properties
-    const fillStyle = theme.get('coordinates.color')
-    const vertical = {
-      font: theme.get('coordinates.vertical.font'),
-      size: theme.get('coordinates.vertical.size'),
-      style: theme.get('coordinates.vertical.style'),
-      inverse: theme.get('coordinates.vertical.inverse'),
-    }
-    let horizontal = {
-      font: theme.get('coordinates.horizontal.font'),
-      size: theme.get('coordinates.horizontal.size'),
-      style: theme.get('coordinates.horizontal.style'),
-      inverse: theme.get('coordinates.horizontal.inverse'),
-    }
+    //Get theme data
+    const color = theme.get('coordinates.vertical.color')
+    const font = theme.get('coordinates.vertical.font')
+    const size = theme.get('coordinates.vertical.size')
+    const style = theme.get('coordinates.vertical.style')
+    const type = theme.get('coordinates.vertical.type')
+    const inverse = theme.get('coordinates.vertical.inverse')
 
     //Configure context
-    context.fillStyle = fillStyle
+    context.fillStyle = color
     context.textBaseline = 'middle'
     context.textAlign = 'center'
 
@@ -88,26 +89,56 @@ export default class CoordinatesLayer extends BoardLayer {
     for (let i = 0; i < board.height; i++) {
 
       //Get character
-      const j = this.getIndex(i, board.height, vertical.inverse)
-      const ch = this.getCharacter(j, vertical.style)
+      const j = this.getIndex(i, board.height, inverse)
+      const ch = this.getCharacter(j, type)
 
       //Draw
       const y = board.getAbsY(i)
-      context.font = `${vertical.size(ch, cellSize)} ${vertical.font}`
+      context.font = `${style || ''} ${size(ch, cellSize)} ${font}`
       context.fillText(ch, xl, y)
       context.fillText(ch, xr, y)
     }
+  }
+
+  /**
+   * Draw horizontal coordinates
+   */
+  drawHorizontal() {
+
+    //Get data
+    const {board, theme, context} = this
+    const {drawHeight, drawMarginVer} = board
+
+    //Get cell size
+    const cellSize = board.getCellSize()
+
+    //Get boundary coordinates
+    const yt = Math.ceil((drawMarginVer - cellSize / 2) / 2)
+    const yb = drawHeight - yt
+
+    //Get theme data
+    const color = theme.get('coordinates.horizontal.color')
+    const font = theme.get('coordinates.horizontal.font')
+    const size = theme.get('coordinates.horizontal.size')
+    const style = theme.get('coordinates.horizontal.style')
+    const type = theme.get('coordinates.horizontal.type')
+    const inverse = theme.get('coordinates.horizontal.inverse')
+
+    //Configure context
+    context.fillStyle = color
+    context.textBaseline = 'middle'
+    context.textAlign = 'center'
 
     //Draw horizontal coordinates
     for (let i = 0; i < board.width; i++) {
 
       //Get character
-      const j = this.getIndex(i, board.width, horizontal.inverse)
-      const ch = this.getCharacter(j, horizontal.style)
+      const j = this.getIndex(i, board.width, inverse)
+      const ch = this.getCharacter(j, type)
 
       //Draw
       const x = board.getAbsX(i)
-      context.font = `${horizontal.size(ch, cellSize)} ${horizontal.font}`
+      context.font = `${style || ''} ${size(ch, cellSize)} ${font}`
       context.fillText(ch, x, yt)
       context.fillText(ch, x, yb)
     }

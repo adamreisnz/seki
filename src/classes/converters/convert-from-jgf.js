@@ -1,11 +1,10 @@
 import Convert from '../convert.js'
 import Game from '../game.js'
 import GameNode from '../game-node.js'
-import {copy, set} from '../../helpers/object.js'
+import {copy, get, set} from '../../helpers/object.js'
 import {
   jgfPaths,
   jgfNodePaths,
-  jgfNodeObjectPaths,
 } from '../../constants/jgf.js'
 
 /**
@@ -23,14 +22,11 @@ export default class ConvertFromJgf extends Convert {
 
     //Copy over relevant paths
     for (const path of jgfPaths) {
-      game.setInfo(path, copy(jgf, path))
+      game.setInfo(path, copy(get(jgf, path)))
     }
 
-    //Create root node
-    game.root = new GameNode()
-
-    //Parse tree
-    this.parseTree(jgf.tree, game.root)
+    //Parse tree and obtain root node
+    game.root = this.parseTree(jgf.tree)
 
     //Return object
     return game
@@ -41,27 +37,40 @@ export default class ConvertFromJgf extends Convert {
    */
   parseTree(jgfTree, parentNode) {
 
+    //Nothing to do
+    if (jgfTree.length === 0) {
+      return
+    }
+
+    //Instantiate root node
+    let rootNode
+
     //Loop items in the tree
-    jgfTree.forEach(jgfNode => {
+    for (const jgfNode of jgfTree) {
+
+      //Create root node
+      if (!parentNode) {
+        rootNode = this.parseNode(jgfNode)
+        parentNode = rootNode
+        continue
+      }
 
       //Variation node
       if (this.isVariationNode(jgfNode)) {
         for (const jgfVariationTree of jgfNode.variations) {
           this.parseTree(jgfVariationTree, parentNode)
         }
+        continue
       }
 
       //Regular node
-      else {
+      const node = this.parseNode(jgfNode)
+      parentNode.appendChild(node)
+      parentNode = node
+    }
 
-        //Parse
-        const node = this.parseNode(jgfNode)
-
-        //Append to parent node
-        parentNode.appendChild(node)
-        parentNode = node
-      }
-    })
+    //Return root node
+    return rootNode
   }
 
   /**
@@ -74,51 +83,42 @@ export default class ConvertFromJgf extends Convert {
 
     //Copy over relevant node paths
     for (const path of jgfNodePaths) {
-      set(node, path, copy(jgfNode, path))
+      set(node, path, copy(get(jgfNode, path)))
     }
 
     //Move
     if (jgfNode.move) {
-      node.move = this.parseNodeObject(jgfNode.move)
+      node.move = copy(jgfNode.move)
     }
 
     //Turn indicataor
     if (jgfNode.turn) {
-      node.turn = this.convertColor(jgfNode.turn)
+      node.turn = copy(jgfNode.turn)
     }
 
     //Setup instructions
     if (Array.isArray(jgfNode.setup)) {
-      node.setup = jgfNode.setup.map(this.parseNodeObject)
+      node.setup = jgfNode.setup.map(entry => copy(entry))
     }
 
     //Markup
     if (Array.isArray(jgfNode.markup)) {
-      node.markup = jgfNode.markup.map(this.parseNodeObject)
-    }
-  }
-
-  /**
-   * Parse node object
-   */
-  parseNodeObject(jgfNodeObject) {
-
-    //Instantiate
-    const obj = {}
-
-    //Copy over relevant node object paths
-    for (const path of jgfNodeObjectPaths) {
-      set(obj, path, copy(jgfNodeObject, path))
+      node.markup = jgfNode.markup.map(entry => copy(entry))
     }
 
-    //Return
-    return obj
+    //Score
+    if (Array.isArray(jgfNode.score)) {
+      node.score = jgfNode.score.map(entry => copy(entry))
+    }
+
+    //Return the node
+    return node
   }
 
   /**
    * Check if a JGF node is a variation node
    */
   isVariationNode(jgfNode) {
-    return (jgfNode && jgfNode.variations)
+    return (jgfNode && Array.isArray(jgfNode.variations))
   }
 }

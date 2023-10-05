@@ -51,16 +51,16 @@ export default class GamePosition {
     this.stones.setSize(width, height)
     this.markup.setSize(width, height)
 
-    //Empty the position
-    this.empty()
+    //Clear the position
+    this.clear()
   }
 
   /**
    * Clear the whole position
    */
-  empty() {
-    this.stones.empty()
-    this.markup.empty()
+  clear() {
+    this.stones.clear()
+    this.markup.clear()
   }
 
   /**

@@ -131,6 +131,28 @@ export default class Grid {
   }
 
   /**
+   * Transform grid into another grid applying a transformation function
+   * on each entry. This is used to transform simple game position grids
+   * into grids with Stone or Markup instances
+   */
+  transform(fn) {
+
+    //Get data
+    const {width, height, map} = this
+
+    //Create new instance
+    const clone = new Grid(width, height)
+
+    //Process each entry
+    for (const [key, value] of map) {
+      clone.map.set(key, fn(value))
+    }
+
+    //Return cloned grid
+    return clone
+  }
+
+  /**
    * Checks if a given grid is the same as the current grid
    */
   isSameAs(grid) {
@@ -244,7 +266,7 @@ export default class Grid {
    */
   getMapValue(x, y) {
     const key = this.getMapKey(x, y)
-    return this.grid.get(key)
+    return this.map.get(key)
   }
 
   /**

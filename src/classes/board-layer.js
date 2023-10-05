@@ -65,6 +65,7 @@ export default class BoardLayer {
    */
   setAll(grid) {
     this.grid = grid.clone()
+    this.redraw()
   }
 
   /**

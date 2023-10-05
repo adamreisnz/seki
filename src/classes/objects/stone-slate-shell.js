@@ -56,7 +56,7 @@ export default class StoneSlateShell extends Stone {
       const angle = (2 / z) * (seed % z)
 
       //Draw shell pattern
-      this.shellPattern(style, absX, absY, radius, angle, strokeStyle)
+      this.shellPattern(context, style, absX, absY, radius, angle, strokeStyle)
 
       //Add radial gradient
       context.beginPath()
@@ -120,7 +120,7 @@ export default class StoneSlateShell extends Stone {
   /**
    * Helper to draw a shell pattern
    */
-  shellPattern(style, x, y, radius, angle, strokeStyle) {
+  shellPattern(context, style, x, y, radius, angle, strokeStyle) {
 
     //Get lines from style
     const {lines} = style
@@ -133,17 +133,18 @@ export default class StoneSlateShell extends Stone {
     for (let i = 0; i < lines.length; i++) {
       startAngle += lines[i]
       endAngle -= lines[i]
-      this.shellLine(style, x, y, radius, startAngle, endAngle, strokeStyle)
+      this.shellLine(
+        context, style, x, y, radius, startAngle, endAngle, strokeStyle,
+      )
     }
   }
 
   /**
    * Helper to draw a shell line
    */
-  shellLine(style, x, y, radius, startAngle, endAngle, strokeStyle) {
+  shellLine(context, style, x, y, radius, startAngle, endAngle, strokeStyle) {
 
-    //Get context
-    const {context} = this
+    //Get data
     const {thickness, factor} = style
 
     //Initialize

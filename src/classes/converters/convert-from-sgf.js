@@ -81,7 +81,7 @@ const parsingMap = {
   TR: 'parseMarkup',
   MA: 'parseMarkup',
   SL: 'parseMarkup',
-  LB: 'parseLabel',
+  LB: 'parseMarkup',
 }
 
 /**
@@ -244,7 +244,7 @@ export default class ConvertFromSgf extends Convert {
    */
   parseMove(game, node, key, values) {
 
-    //Create move container
+    //Instantiate move
     const move = {}
     const isNormalSize = (
       game.info && game.info.board && game.info.board.size <= 19
@@ -260,7 +260,7 @@ export default class ConvertFromSgf extends Convert {
 
     //Regular move
     else {
-      this.appendCoordinates(values[0], move)
+      Object.assign(move, this.createCoordinate(values[0]))
     }
 
     //Append to node
@@ -282,6 +282,33 @@ export default class ConvertFromSgf extends Convert {
   }
 
   /**
+   * Markup parser function
+   */
+  parseMarkup(game, node, key, values) {
+
+    //Initialize markup container
+    const markup = node.markup || []
+    const type = this.getMappedValue(key, sgfMarkupTypes, true)
+
+    //Create markup entry for this type
+    const coords = []
+    const entry = {type, coords}
+    markup.push(entry)
+
+    //Add values
+    for (const value of values) {
+      const coord = this.createCoordinate(value.substr(0, 2))
+      if (type === markupTypes.LABEL) {
+        coord.text = value.substr(3)
+      }
+      coords.push(coord)
+    }
+
+    //Append to node
+    node.markup = markup
+  }
+
+  /**
    * Board setup parser function
    */
   parseSetup(game, node, key, values) {
@@ -289,13 +316,17 @@ export default class ConvertFromSgf extends Convert {
     //Initialize setup container and get color
     const setup = node.setup || []
     const color = this.convertColor(key.charAt(1))
+    const type = color || setupTypes.EMPTY
+
+    //Create setup entry for this type
+    const coords = []
+    const entry = {type, coords}
+    setup.push(entry)
 
     //Add values
     for (const value of values) {
-      const type = color || setupTypes.EMPTY
-      const obj = {type, color}
-      this.appendCoordinates(value, obj)
-      setup.push(obj)
+      const coord = this.createCoordinate(value, {})
+      coords.push(coord)
     }
 
     //Append to node
@@ -312,14 +343,14 @@ export default class ConvertFromSgf extends Convert {
     const color = this.convertColor(key.charAt(1))
 
     //Create score entry for this color
-    const coordinates = []
-    const entry = {color, coordinates}
+    const coords = []
+    const entry = {color, coords}
     score.push(entry)
 
     //Add values
     for (const value of values) {
-      const coord = this.appendCoordinates(value, {})
-      coordinates.push(coord)
+      const coord = this.createCoordinate(value, {})
+      coords.push(coord)
     }
 
     //Append to node
@@ -331,62 +362,6 @@ export default class ConvertFromSgf extends Convert {
    */
   parseTurn(game, node, key, values) {
     node.turn = this.convertColor(values[0])
-  }
-
-  /**
-   * Label parser function
-   */
-  parseLabel(game, node, key, values) {
-
-    //Initialize markup container
-    const markup = node.markup || []
-    const type = markupTypes.LABEL
-
-    //Add values
-    for (const value of values) {
-
-      //Get coordinates and label text
-      const coord = value.substr(0, 2)
-      const text = value.substr(3)
-
-      //Create markup object
-      const obj = {type, text}
-
-      //Append coordinates and push to array
-      this.appendCoordinates(coord, obj)
-      markup.push(obj)
-    }
-
-    //Append to node
-    node.markup = markup
-  }
-
-  /**
-   * Markup parser function
-   */
-  parseMarkup(game, node, key, values) {
-
-    //Initialize markup container
-    const markup = node.markup || []
-    const type = this.getMappedValue(key, sgfMarkupTypes, true)
-    if (!type) {
-      console.warn(`Encountered unknown markup type: ${key}`)
-      return
-    }
-
-    //Add values
-    for (const value of values) {
-
-      //Create markup object
-      const obj = {type}
-
-      //Append coordinates and push to array
-      this.appendCoordinates(value, obj)
-      markup.push(obj)
-    }
-
-    //Append to node
-    node.markup = markup
   }
 
   /**
@@ -501,12 +476,13 @@ export default class ConvertFromSgf extends Convert {
    ***/
 
   /**
-   * Helper to convert SGF coordinates to x/y and append to an object
+   * Helper to create a coordinate
    */
-  appendCoordinates(coords, obj = {}) {
-    obj.x = coords.charCodeAt(0) - charCodeA
-    obj.y = coords.charCodeAt(1) - charCodeA
-    return obj
+  createCoordinate(str) {
+    return {
+      x: str.charCodeAt(0) - charCodeA,
+      y: str.charCodeAt(1) - charCodeA,
+    }
   }
 
   /**

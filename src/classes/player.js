@@ -1,3 +1,4 @@
+import Board from './board.js'
 import Game from './game.js'
 import GameScorer from './game-scorer.js'
 import EventHandler from './event-handler.js'
@@ -180,8 +181,8 @@ export default class Player extends EventTarget {
     this.modes[mode] = PlayerMode
 
     //Parse config if we have a handler
-    if (this.modes[mode].parseConfig) {
-      this.modes[mode].parseConfig.call(this, this.config)
+    if (this.modes[mode].setConfig) {
+      this.modes[mode].setConfig.call(this, this.config)
     }
 
     //Force switch the mode now, if it matches the initial mode
@@ -300,51 +301,31 @@ export default class Player extends EventTarget {
    ***/
 
   /**
-   * Load game record
+   * Load game data
    */
-  load(data, allowPlayerConfig) {
+  load(data, allowPlayerConfig = true) {
 
-    //Try to load the game record data
-    this.game.load(data)
-
-    //Reset path
+    //Create new game based on data and reset path
+    this.game = Game.fromData(data)
     this.path = null
 
-    //Parse configuration from JGF if allowed
-    if (allowPlayerConfig || typeof allowPlayerConfig === 'undefined') {
-      this.parseConfig(this.game.getInfo('settings'))
+    //Parse configuration if allowed
+    if (allowPlayerConfig) {
+      const config = this.game.getInfo('settings')
+      this.setConfig(config)
     }
 
     //Dispatch game loaded event
     this.triggerEvent('gameLoaded', this.game)
 
+    //Go to first move
+    this.game.first()
+
     //Board present?
     if (this.board) {
+      const boardConfig = this.game.getInfo('board')
       this.board.removeAll()
-      this.board.parseConfig(this.game.getInfo('board'))
-      this.processPosition()
-    }
-
-    //Loaded ok
-    return true
-  }
-
-  /**
-   * Reload the existing game record
-   */
-  reload() {
-
-    //Must have game
-    if (!this.game || !this.game.isLoaded) {
-      return
-    }
-
-    //Reload game
-    this.game.reload()
-
-    //Update board
-    if (this.board) {
-      this.board.removeAll()
+      this.board.setConfig(boardConfig)
       this.processPosition()
     }
   }
@@ -502,10 +483,10 @@ export default class Player extends EventTarget {
     }
 
     //Get current node and game position
-    let node = this.game.getNode()
-    let path = this.game.getPath()
-    let position = this.game.getPosition()
-    let pathChanged = !path.compare(this.path)
+    const node = this.game.getNode()
+    const path = this.game.getPath()
+    const position = this.game.getPosition()
+    const pathChanged = !path.compare(this.path)
 
     //Update board
     this.updateBoard(node, position, pathChanged)
@@ -519,13 +500,13 @@ export default class Player extends EventTarget {
 
       //Named node reached? Broadcast event
       if (node.name) {
-        this.triggerEvent('reachedNode.' + node.name, node)
+        this.triggerEvent(`nodeReached.${node.name}`, node)
       }
     }
 
     //Passed?
     if (node.move && node.move.pass) {
-      this.triggerEvent('movePassed', node)
+      this.triggerEvent('pass', node)
     }
   }
 
@@ -630,8 +611,6 @@ export default class Player extends EventTarget {
 
     //Get data
     const {board, lastMoveMarker} = this
-
-    //Must have board
     if (!board) {
       return
     }
@@ -641,12 +620,9 @@ export default class Player extends EventTarget {
 
     //Mark last move
     if (lastMoveMarker && node.move && !node.move.pass) {
-      board
-        .add(boardLayerTypes.MARKUP, node.move.x, node.move.y, lastMoveMarker)
+      const {x, y} = node.move
+      board.add(boardLayerTypes.MARKUP, x, y, lastMoveMarker)
     }
-
-    //Broadcast board update event
-    this.triggerEvent('boardUpdate', node)
   }
 
   /*****************************************************************************
@@ -667,9 +643,36 @@ export default class Player extends EventTarget {
     this.linkElement(element)
     this.applyClasses(element)
 
-    //Setup document listeners
+    //Setup listeners
     this.setupDocumentListeners()
     this.setupElementListeners()
+
+    //Bootstrap board
+    this.bootstrapBoard(element)
+  }
+
+  /**
+   * Bootstrap board
+   */
+  bootstrapBoard() {
+
+    //Get player element
+    const {element} = this
+    const boardElement = element.children[0]
+
+    //No board element
+    if (!boardElement) {
+      return
+    }
+
+    //Create board
+    const board = new Board()
+
+    //Bootstrap it
+    board.bootstrap(boardElement, element)
+
+    //Set board
+    this.setBoard(board)
   }
 
   /**
@@ -682,8 +685,10 @@ export default class Player extends EventTarget {
   /**
    * Apply classes
    */
-  applyClasses(element) {
-    element.classList.add('seki-player')
+  applyClasses() {
+    if (this.element) {
+      this.element.classList.add('seki-player')
+    }
   }
 
   /**************************************************************************

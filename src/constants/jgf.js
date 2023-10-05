@@ -42,13 +42,3 @@ export const jgfNodePaths = [
   'solution',
   'comments',
 ]
-
-//Node object paths to copy over
-export const jgfNodeObjectPaths = [
-  'color',
-  'x',
-  'y',
-  'pass',
-  'type',
-  'text',
-]

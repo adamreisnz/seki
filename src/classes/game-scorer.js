@@ -58,9 +58,9 @@ export default class GameScorer {
     //Get data
     const {stones, points, captures, score, game} = this
 
-    //Empty grids
-    points.empty()
-    captures.empty()
+    //Clear grids
+    points.clear()
+    captures.clear()
 
     //Determine score state
     this.determineScoreState()

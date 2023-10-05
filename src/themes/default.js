@@ -177,7 +177,7 @@ export default {
 
     //Label
     label: {
-      font: 'Arial',
+      font: 'Helvetica',
     },
 
     //Variation markup
@@ -281,33 +281,30 @@ export default {
   //Coordinates
   coordinates: {
 
-    //Color
-    color: 'rgba(101,69,37,0.8)',
-
     //Board margin factor when showing coordinates
-    margin: 1.25,
+    margin: 1.5,
 
-    //Vertical coordinates style
+    //Vertical coordinates
     vertical: {
+      color: 'rgba(101,69,37,0.5)',
       font: 'Helvetica',
-      style: 'numbers',
+      style: 'bold',
+      type: 'numbers',
       inverse: true,
-      size: function() {
-        return function(ch, cellSize) {
-          return Math.floor((cellSize * 0.3) + 3) + 'px'
-        }
+      size() {
+        return (ch, cellSize) => Math.floor((cellSize * 0.3) + 3) + 'px'
       },
     },
 
-    //Horizontal coordinates style
+    //Horizontal coordinates
     horizontal: {
+      color: 'rgba(101,69,37,0.5)',
       font: 'Helvetica',
-      style: 'letters',
+      style: 'bold',
+      type: 'letters',
       inverse: false,
-      size: function() {
-        return function(ch, cellSize) {
-          return Math.floor((cellSize * 0.3) + 3) + 'px'
-        }
+      size() {
+        return (ch, cellSize) => Math.floor((cellSize * 0.3) + 3) + 'px'
       },
     },
   },

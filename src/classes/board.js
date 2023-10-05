@@ -1,4 +1,6 @@
 import BoardLayerFactory from './board-layer-factory.js'
+import StoneFactory from './stone-factory.js'
+import MarkupFactory from './markup-factory.js'
 import EventHandler from './event-handler.js'
 import Theme from './theme.js'
 import {
@@ -464,9 +466,23 @@ export default class Board {
       this.removeAll(boardLayerTypes.MARKUP)
     }
 
+    //Get theme
+    const {theme} = this
+    const style = theme.get('stone.style')
+
+    //Transform stones grid into actual stone instances of given style
+    const stones = position.stones
+      .transform(color => StoneFactory
+        .create(style, this, {color}))
+
+    //Do the same for markup
+    const markup = position.markup
+      .transform(({type, text}) => MarkupFactory
+        .create(type, this, {text}))
+
     //Set new stones and markup grids
-    this.setAll(boardLayerTypes.STONES, position.stones)
-    this.setAll(boardLayerTypes.MARKUP, position.markup)
+    this.setAll(boardLayerTypes.STONES, stones)
+    this.setAll(boardLayerTypes.MARKUP, markup)
   }
 
   /*****************************************************************************
@@ -554,7 +570,6 @@ export default class Board {
 
     //Check if can draw
     if (!this.canDraw()) {
-      console.log('Cannot draw')
       return
     }
 
@@ -710,7 +725,7 @@ export default class Board {
   /**
    * Bootstrap board onto element
    */
-  bootstrap(element) {
+  bootstrap(element, playerElement) {
 
     //Already bootstrapped
     if (this.element) {
@@ -718,15 +733,18 @@ export default class Board {
     }
 
     //Link element and apply classes
-    this.linkElement(element)
-    this.applyClasses(element)
+    this.linkElement(element, playerElement)
+    this.applyClasses()
 
     //Calculate initial draw size and render layers
     this.recalculateDrawSize()
-    this.renderLayers(element)
+    this.renderLayers()
 
     //Setup window listeners
     this.setupWindowListeners()
+
+    //Redraw
+    this.redraw()
   }
 
   /**
@@ -746,17 +764,22 @@ export default class Board {
   /**
    * Apply element classes
    */
-  applyClasses(element) {
-    element.classList.add('seki-board')
+  applyClasses() {
+    if (this.element) {
+      this.element.classList.add('seki-board')
+    }
   }
 
   /**
    * Render layers
    */
-  renderLayers(element) {
+  renderLayers() {
 
     //Get draw width/height
-    const {drawWidth, drawHeight} = this
+    const {element, drawWidth, drawHeight} = this
+    if (!element) {
+      throw new Error(`Cannot render layers without linked element`)
+    }
 
     //Create for each layer
     this.layers
@@ -772,17 +795,13 @@ export default class Board {
   /**
    * Link the board to a HTML element
    */
-  linkElement(element) {
-    this.element = element
-    this.sizingElement = element
-  }
+  linkElement(element, playerElement) {
 
-  /**
-   * Link player
-   */
-  linkPlayer(playerElement) {
+    //Set elements
+    this.element = element
     this.playerElement = playerElement
-    this.sizingElement = playerElement.parentElement
+    this.sizingElement = playerElement ? playerElement.parentElement :
+      element
   }
 
   /**

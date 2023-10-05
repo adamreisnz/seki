@@ -22,17 +22,17 @@
 <script type="module">
   import Board from '../src/classes/board.js'
   import Player from '../src/classes/player.js'
-  const board = new Board({
-    width: 19,
-    height: 19,
-    showCoordinates: true,
-  })
-  const player = new Player()
-  const boardElement = document.getElementById('board')
+  import {jgf} from './data/jgf.js'
+
+  //Find player element
   const playerElement = document.getElementById('player')
-  board.bootstrap(boardElement)
+
+  //Instantiate player
+  const player = new Player()
+
+  //Bootstrap player and load JGF file
   player.bootstrap(playerElement)
-  board.redraw()
+  player.load(jgf)
 </script>
 </body>
 </html>

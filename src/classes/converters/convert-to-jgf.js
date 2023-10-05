@@ -4,7 +4,6 @@ import {copy, set} from '../../helpers/object.js'
 import {
   jgfPaths,
   jgfNodePaths,
-  jgfNodeObjectPaths,
 } from '../../constants/jgf.js'
 
 /**
@@ -96,40 +95,28 @@ export default class ConvertToJgf extends Convert {
 
     //Move
     if (node.move) {
-      jgfNode.move = this.parseNodeObject(node.move)
+      jgfNode.move = copy(node.move)
     }
 
     //Turn indicataor
     if (node.turn) {
-      jgfNode.turn = this.convertColor(node.turn)
+      jgfNode.turn = copy(node.turn)
     }
 
     //Setup instructions
     if (Array.isArray(node.setup)) {
-      jgfNode.setup = node.setup.map(this.parseNodeObject)
+      jgfNode.setup = node.setup.map(entry => copy(entry))
     }
 
     //Markup
     if (Array.isArray(node.markup)) {
-      jgfNode.markup = node.markup.map(this.parseNodeObject)
-    }
-  }
-
-  /**
-   * Parse node object
-   */
-  parseNodeObject(obj) {
-
-    //Instantiate
-    const jgfNodeObject = {}
-
-    //Copy over relevant node object paths
-    for (const path of jgfNodeObjectPaths) {
-      set(jgfNodeObject, path, copy(obj, path))
+      jgfNode.markup = node.markup.map(entry => copy(entry))
     }
 
-    //Return
-    return jgfNodeObject
+    //Score
+    if (Array.isArray(node.score)) {
+      jgfNode.score = node.score.map(entry => copy(entry))
+    }
   }
 
   /**

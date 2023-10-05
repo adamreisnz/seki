@@ -29,15 +29,10 @@ export default class Game {
   /**
    * Constructor
    */
-  constructor(data) {
+  constructor() {
 
-    //Load data
-    if (data) {
-      this.load(data)
-    }
-    else {
-      this.init()
-    }
+    //Init
+    this.init()
   }
 
   /**
@@ -55,9 +50,6 @@ export default class Game {
     //Game path
     this.path = new GamePath()
 
-    //JGF record we loaded from
-    this.jgf = null
-
     //Positions history stack
     this.history = []
 
@@ -65,40 +57,9 @@ export default class Game {
     this.allowSuicide = false
     this.rememberPath = true
     this.checkRepeat = checkRepeatTypes.KO
-  }
 
-  /**
-   * Load game record data
-   */
-  load(data) {
-
-    //Initialize
-    this.init()
-
-    //Try to load game record data
-    try {
-      this.fromData(data)
-    }
-    catch (error) {
-
-      //Just initialize our history with a blank position
-      this.initializeHistory()
-
-      //Re-throw error
-      throw error
-    }
-
-    //Go to the first move
-    this.first()
-  }
-
-  /**
-   * Reload game record
-   */
-  reload() {
-    if (this.jgf) {
-      this.load(this.jgf)
-    }
+    //Initialize history
+    this.initializeHistory()
   }
 
   /**
@@ -191,6 +152,19 @@ export default class Game {
    */
   setHandicap(handicap) {
     this.setInfo('rules.handicap', parseInt(handicap))
+  }
+
+  /**
+   * Get the configured board size
+   */
+  getBoardSize() {
+    const size = this.getInfo('board.size')
+    const width = this.getInfo('board.width')
+    const height = this.getInfo('board.height')
+    if (width && height) {
+      return {width, height}
+    }
+    return {width: size, height: size}
   }
 
   /**
@@ -888,7 +862,7 @@ export default class Game {
     }
 
     //Go to the first node
-    this.this.firstNode()
+    this.firstNode()
 
     //Create the initial position, clone it and parse the current node
     this.initializeHistory()
@@ -995,16 +969,16 @@ export default class Game {
   }
 
   /*****************************************************************************
-   * State handling
+   * State handling TODO
    ***/
 
   /**
-   * Get the board state
+   * Get the game position state
    */
   getState() {
 
-    //Can only create when we have a JGF and path
-    if (!this.jgf || !this.path) {
+    //Can only create when we have a path
+    if (!this.path) {
       return null
     }
 
@@ -1029,7 +1003,8 @@ export default class Game {
     }
 
     //Restore state
-    this.load(state.jgf)
+    // this.load(state.jgf)
+    //TODO load doesn't exist anymore
     this.goto(state.path)
   }
 
@@ -1157,8 +1132,9 @@ export default class Game {
     this.history.push(position)
 
     //Set board size if we have the info
-    if (this.info.board) {
-      this.history[0].setSize(this.info.board.width, this.info.board.height)
+    const {width, height} = this.getBoardSize()
+    if (width && height) {
+      this.history[0].setSize(width, height)
     }
   }
 
@@ -1243,18 +1219,21 @@ export default class Game {
     //Handle setup instructions
     if (this.node.setup) {
       for (const setup of this.node.setup) {
-        newPosition.stones.set(
-          setup.x, setup.y, setup.color,
-        )
+        const {type, coords} = setup
+        for (const coord of coords) {
+          newPosition.stones.set(coord.x, coord.y, type)
+        }
       }
     }
 
     //Handle markup
     if (this.node.markup) {
       for (const markup of this.node.markup) {
-        newPosition.markup.set(
-          markup.x, markup.y, markup,
-        )
+        const {type, coords} = markup
+        for (const coord of coords) {
+          const {text} = coord
+          newPosition.markup.set(coord.x, coord.y, {type, text})
+        }
       }
     }
 
@@ -1299,9 +1278,9 @@ export default class Game {
    */
   static fromJson(json) {
 
-    //Create convertr
-    const convertr = new ConvertFromJson()
-    const game = convertr.convert(json)
+    //Create converter
+    const converter = new ConvertFromJson()
+    const game = converter.convert(json)
     if (!game) {
       throw new Error(`Unable to parse JSON data`)
     }
@@ -1315,9 +1294,9 @@ export default class Game {
    */
   static fromJgf(jgf) {
 
-    //Create convertr
-    const convertr = new ConvertFromJgf()
-    const game = convertr.convert(jgf)
+    //Create converter
+    const converter = new ConvertFromJgf()
+    const game = converter.convert(jgf)
     if (!game) {
       throw new Error(`Unable to parse JGF data`)
     }

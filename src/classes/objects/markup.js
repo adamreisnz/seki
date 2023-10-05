@@ -105,12 +105,12 @@ export default class Markup extends GridObject {
     const {board} = this
 
     //Check if there's a stone
-    const entry = board.get(boardLayerTypes.STONES, x, y)
-    if (entry) {
+    const stone = board.get(boardLayerTypes.STONES, x, y)
+    if (stone) {
       if (board.swapColors) {
-        return swapColor(entry.value.color)
+        return swapColor(stone.color)
       }
-      return entry.value.color
+      return stone.color
     }
 
     //No stone
