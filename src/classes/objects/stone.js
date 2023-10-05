@@ -21,7 +21,7 @@ export default class Stone extends GridObject {
     this.shadow = this.theme.get('stone.shadow')
 
     //Set properties from data
-    Object.assign(this, data || {})
+    this.setData(data)
   }
 
   /**

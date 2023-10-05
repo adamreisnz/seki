@@ -20,7 +20,7 @@ export default {
     style: 'shell',
     shadow: true,
     radius: function(cellSize) {
-      return Math.floor(cellSize / 2)
+      return Math.floor(cellSize / 2) * 0.96
     },
 
     //Shell stones
@@ -29,9 +29,9 @@ export default {
         if (stoneColor === stoneColors.BLACK) {
           return '#111'
         }
-        return '#BFBFBA'
+        return '#cfcfca'
       },
-      stroke: 'rgba(128,128,128,0.15)',
+      stroke: 'rgba(128,128,150,0.15)',
       types: [
         {
           lines: [
@@ -106,16 +106,16 @@ export default {
   shadow: {
 
     //Shadow gradient colors
-    color: 'rgba(40,30,20,0.5)',
+    color: 'rgba(40,30,20,0.6)',
 
     //Shadow size
     size: function(cellSize) {
-      return Math.floor(cellSize / 20)
+      return Math.floor(cellSize / 100)
     },
 
     //Shadow blur size
     blur: function(cellSize) {
-      return cellSize / 20
+      return cellSize / 15
     },
 
     //Shadow offset
@@ -133,9 +133,9 @@ export default {
     //Standard color
     color: function(stoneColor) {
       if (stoneColor === stoneColors.BLACK) {
-        return 'rgba(255,255,255,0.9)'
+        return 'rgba(255,255,255,0.95)'
       }
-      return 'rgba(0,0,0,0.9)'
+      return 'rgba(0,0,0,0.95)'
     },
 
     //Line width
@@ -145,12 +145,12 @@ export default {
 
     //Triangle
     triangle: {
-      scale: 0.85,
+      scale: 0.75,
     },
 
     //Square
     square: {
-      scale: 0.85,
+      scale: 0.75,
     },
 
     //Cricle
@@ -158,10 +158,15 @@ export default {
       scale: 0.55,
     },
 
+    //Select
+    select: {
+      scale: 0.55,
+    },
+
     //Mark
     mark: {
       lineCap: 'square',
-      scale: 0.75,
+      scale: 0.7,
     },
 
     //Last move indicator
@@ -169,8 +174,14 @@ export default {
       scale: 0.7,
     },
 
-    //Smiley
-    smiley: {
+    //Happy smiley
+    happy: {
+      lineCap: 'round',
+      scale: 0.85,
+    },
+
+    //Sad smiley
+    sad: {
       lineCap: 'round',
       scale: 0.85,
     },

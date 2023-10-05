@@ -35,8 +35,6 @@ export default class ShadowLayer extends BoardLayer {
 
     //Get data
     const {board, theme, context} = this
-
-    //No context
     if (!context) {
       return
     }

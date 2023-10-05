@@ -9,10 +9,10 @@ export default class MarkupHappy extends Markup {
   /**
    * Constructor
    */
-  constructor(board) {
+  constructor(board, data) {
 
     //Parent constructor
-    super(board)
+    super(board, data)
 
     //Set type
     this.type = markupTypes.HAPPY
@@ -46,6 +46,7 @@ export default class MarkupHappy extends Markup {
     }
 
     //Configure context
+    context.fillStyle = color
     context.strokeStyle = color
     context.lineWidth = lineWidth
     context.lineCap = lineCap
@@ -58,7 +59,7 @@ export default class MarkupHappy extends Markup {
       radius / 6,
       0, 2 * Math.PI, true,
     )
-    context.stroke()
+    context.fill()
     context.beginPath()
     context.arc(
       absX + radius / 3,
@@ -66,7 +67,7 @@ export default class MarkupHappy extends Markup {
       radius / 6,
       0, 2 * Math.PI, true,
     )
-    context.stroke()
+    context.fill()
     context.beginPath()
     context.moveTo(absX - radius / 1.6, absY + radius / 8)
     context.bezierCurveTo(

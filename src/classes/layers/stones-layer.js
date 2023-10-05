@@ -1,4 +1,5 @@
 import BoardLayer from '../board-layer.js'
+import StoneFactory from '../stone-factory.js'
 import {boardLayerTypes} from '../../constants/board.js'
 
 /**
@@ -53,8 +54,11 @@ export default class StonesLayer extends BoardLayer {
     //Add to stones layer
     super.add(x, y, stone)
 
+    //Create shadow copy
+    const shadow = this.createStoneShadow(stone)
+
     //Also add to shadows layer
-    this.board.add(boardLayerTypes.SHADOW, x, y, stone)
+    this.board.add(boardLayerTypes.SHADOW, x, y, shadow)
   }
 
   /**
@@ -67,5 +71,28 @@ export default class StonesLayer extends BoardLayer {
 
     //Also remove from shadows layer
     this.board.remove(boardLayerTypes.SHADOW, x, y)
+  }
+
+  /**
+   * Set all
+   */
+  setAll(grid) {
+
+    //Parent method
+    super.setAll(grid)
+
+    //Create copy of grid with stone shadows
+    const shadows = grid
+      .transform(stone => this.createStoneShadow(stone))
+
+    //Set on shadow grid
+    this.board.setAll(boardLayerTypes.SHADOW, shadows)
+  }
+
+  /**
+   * Create stone shadow
+   */
+  createStoneShadow(stone) {
+    return StoneFactory.createShadowCopy(stone)
   }
 }

@@ -68,8 +68,10 @@ export default class StoneSlateShell extends Stone {
         absY - radius / 5,
         radius,
       )
-      context.fillStyle.addColorStop(0, 'rgba(255,255,255,0.9)')
-      context.fillStyle.addColorStop(1, 'rgba(255,255,255,0)')
+      context.fillStyle.addColorStop(0, 'rgba(255,255,255,0.95)')
+      context.fillStyle.addColorStop(0.1, 'rgba(255,255,255,0.85)')
+      context.fillStyle.addColorStop(0.5, 'rgba(255,255,255,0.5)')
+      context.fillStyle.addColorStop(1, 'rgba(255,255,255,0.1)')
       context.arc(absX, absY, Math.max(0, radius - 0.5), 0, 2 * Math.PI, true)
       context.fill()
     }
@@ -102,7 +104,8 @@ export default class StoneSlateShell extends Stone {
         absY - radius / 2,
         3 * radius / 2,
       )
-      context.fillStyle.addColorStop(0, 'rgba(64,64,64,1)')
+      context.fillStyle.addColorStop(0, 'rgba(90,90,90,1)')
+      context.fillStyle.addColorStop(0.5, 'rgba(0,0,0,0.2)')
       context.fillStyle.addColorStop(1, 'rgba(0,0,0,0)')
       context.arc(absX, absY, Math.max(0, radius - 0.5), 0, 2 * Math.PI, true)
       context.fill()

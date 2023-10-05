@@ -274,6 +274,6 @@ export default class Grid {
    */
   getCoords(mapKey) {
     const [x, y] = mapKey.split(',')
-    return {x, y}
+    return {x: parseInt(x), y: parseInt(y)}
   }
 }

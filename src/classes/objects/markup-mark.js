@@ -2,17 +2,17 @@ import Markup from './markup.js'
 import {markupTypes, cosPi4} from '../../constants/markup.js'
 
 /**
- * Mark markup
+ * Mark markup (cross)
  */
 export default class MarkupMark extends Markup {
 
   /**
    * Constructor
    */
-  constructor(board) {
+  constructor(board, data) {
 
     //Parent constructor
-    super(board)
+    super(board, data)
 
     //Set type
     this.type = markupTypes.MARK

@@ -7,8 +7,22 @@ export default class GridObject {
   /**
    * Constructor
    */
-  constructor(board) {
+  constructor(board, data) {
+
+    //Set board
     this.board = board
+
+    //Set properties from data
+    this.setData(data)
+  }
+
+  /**
+   * Set data
+   */
+  setData(data) {
+    if (data && typeof data === 'object') {
+      Object.assign(this, data)
+    }
   }
 
   /**

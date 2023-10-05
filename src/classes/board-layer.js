@@ -57,14 +57,14 @@ export default class BoardLayer {
    * Get all items
    */
   getAll() {
-    return this.grid.clone() //TODO need clone?
+    return this.grid
   }
 
   /**
    * Set all items at once
    */
   setAll(grid) {
-    this.grid = grid.clone()
+    this.grid = grid
     this.redraw()
   }
 

@@ -30,7 +30,7 @@ p {
   height: 100%;
 }
 .goban {
-  flex: 0 0 75%;
+  flex: 0 0 100%;
   height: 100%;
 }
 .goban-info {

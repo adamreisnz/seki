@@ -9,10 +9,10 @@ export default class MarkupLastMove extends Markup {
   /**
    * Constructor
    */
-  constructor(board) {
+  constructor(board, data) {
 
     //Parent constructor
-    super(board)
+    super(board, data)
 
     //Set type
     this.type = markupTypes.LAST_MOVE

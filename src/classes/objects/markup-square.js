@@ -9,10 +9,10 @@ export default class MarkupSquare extends Markup {
   /**
    * Constructor
    */
-  constructor(board) {
+  constructor(board, data) {
 
     //Parent constructor
-    super(board)
+    super(board, data)
 
     //Set type
     this.type = markupTypes.SQUARE

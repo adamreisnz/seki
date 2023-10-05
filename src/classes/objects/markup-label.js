@@ -10,17 +10,20 @@ export default class MarkupLabel extends Markup {
   /**
    * Constructor
    */
-  constructor(board) {
+  constructor(board, data) {
 
     //Parent constructor
     super(board)
 
-    //Set type
-    this.type = markupTypes.LABEL
-
     //Font and text
     this.font = undefined
     this.text = ''
+
+    //Set data
+    this.setData(data)
+
+    //Set type
+    this.type = markupTypes.LABEL
   }
 
   /**

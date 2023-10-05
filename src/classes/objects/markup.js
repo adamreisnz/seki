@@ -10,7 +10,7 @@ export default class Markup extends GridObject {
   /**
    * Constructor
    */
-  constructor(board) {
+  constructor(board, data) {
 
     //Parent constructor
     super(board)
@@ -21,6 +21,9 @@ export default class Markup extends GridObject {
     this.lineWidth = undefined
     this.lineCap = undefined
     this.alpha = 1
+
+    //Set data
+    this.setData(data)
   }
 
   /**
@@ -32,7 +35,7 @@ export default class Markup extends GridObject {
     const {board, theme, type} = this
     const cellSize = board.getCellSize()
     const radius = theme.get('stone.radius', cellSize)
-    const scale = theme.get(`markup.${type}.scale`)
+    const scale = theme.get(`markup.${type}.scale`) || 1
 
     //No scaling factor
     if (scale === 1) {

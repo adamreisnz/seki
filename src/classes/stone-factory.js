@@ -1,6 +1,7 @@
 import StoneSlateShell from './objects/stone-slate-shell.js'
 import StoneGlass from './objects/stone-glass.js'
 import StoneMono from './objects/stone-mono.js'
+import StoneShadow from './objects/stone-shadow.js'
 import {stoneStyles} from '../constants/stone.js'
 
 /**
@@ -29,5 +30,13 @@ export default class StoneFactory {
   static create(style, ...args) {
     const StoneClass = this.getClass(style)
     return new StoneClass(...args)
+  }
+
+  /**
+   * Get shadow copy
+   */
+  static createShadowCopy(stone) {
+    const {board, shadow, scale, alpha} = stone
+    return new StoneShadow(board, {shadow, scale, alpha})
   }
 }
