@@ -164,7 +164,14 @@ export default class GameNode {
    * Check if this is a move node
    */
   isMove() {
-    return !!this.move
+    return Boolean(this.move)
+  }
+
+  /**
+   * Check if this is a pass move node
+   */
+  isPass() {
+    return Boolean(this.move && this.move.pass)
   }
 
   /**

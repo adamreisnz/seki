@@ -100,7 +100,7 @@ export const defaultPlayerConfig = {
   },
 
   //Last move markup type, leave empty for none
-  lastMoveMarkupType: markupTypes.LAST,
+  lastMoveMarkupType: markupTypes.CIRCLE,
 
   //Indicate variations with markup on the board, and show
   //successor node variations or current node variations

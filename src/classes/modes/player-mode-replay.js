@@ -175,8 +175,13 @@ export default class PlayerModeReplay extends PlayerMode {
     const {player} = this
     const {node} = event.detail
 
+    //Get settings
+    const variationMarkup = player.getConfig('variationMarkup')
+    const variationSiblings = player.getConfig('variationSiblings')
+    const lastMoveMarkupType = player.getConfig('lastMoveMarkupType')
+
     //Show variations
-    if (player.getConfig('variationMarkup')) {
+    if (variationMarkup) {
       if (node.hasMoveVariations()) {
         const variations = node.getMoveVariations()
         this.showMoveVariations(variations)
@@ -184,10 +189,17 @@ export default class PlayerModeReplay extends PlayerMode {
     }
 
     //Show sibling variations
-    if (player.getConfig('variationSiblings')) {
+    if (variationSiblings) {
       if (node.parent && node.parent.hasMoveVariations()) {
         const variations = node.parent.getMoveVariations()
         this.showMoveVariations(variations)
+      }
+    }
+
+    //Last move markup
+    if (lastMoveMarkupType) {
+      if (node.isMove() && !node.isPass()) {
+        this.showLastMoveMarker(event, lastMoveMarkupType)
       }
     }
   }
@@ -392,5 +404,21 @@ export default class PlayerModeReplay extends PlayerMode {
       const i = game.getMoveVariation(x, y)
       player.next(i)
     }
+  }
+
+  /**
+   * Show last move marker
+   */
+  showLastMoveMarker(event, markupType) {
+
+    //Get data
+    const {board} = this
+    const {node} = event.detail
+    const {x, y} = node.move
+
+    //Add to board
+    board
+      .add(boardLayerTypes.MARKUP, x, y, MarkupFactory
+        .create(markupType, board))
   }
 }

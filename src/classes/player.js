@@ -3,7 +3,6 @@ import Board from './board.js'
 import Game from './game.js'
 import GameScorer from './game-scorer.js'
 import EventHandler from './event-handler.js'
-import MarkupFactory from './markup-factory.js'
 import PlayerModeFactory from './player-mode-factory.js'
 import {boardLayerTypes} from '../constants/board.js'
 import {markupTypes} from '../constants/markup.js'
@@ -557,7 +556,7 @@ export default class Player extends Base {
     const pathChanged = !path.compare(this.path)
 
     //Update board
-    this.updateBoard(node, position, pathChanged)
+    this.updateBoard(position, pathChanged)
 
     //Path change?
     if (pathChanged) {
@@ -670,7 +669,7 @@ export default class Player extends Base {
   /**
    * Update the board
    */
-  updateBoard(node, position, pathChanged) {
+  updateBoard(position, pathChanged) {
 
     //Get board
     const {board} = this
@@ -680,16 +679,6 @@ export default class Player extends Base {
 
     //Update board with new position
     board.updatePosition(position, pathChanged)
-
-    //Get settings
-    const markupType = this.getConfig('lastMoveMarkupType')
-
-    //Mark last move
-    if (markupType && node.move && !node.move.pass) {
-      const {x, y} = node.move
-      const marker = MarkupFactory.create(markupType)
-      board.add(boardLayerTypes.MARKUP, x, y, marker)
-    }
   }
 
   /*****************************************************************************
