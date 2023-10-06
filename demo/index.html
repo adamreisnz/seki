@@ -8,30 +8,44 @@
   <link rel="stylesheet" type="text/css" media="screen" href="demo.css">
 </head>
 <body lang="en">
-<div class="main">
+<div class="main" id="app">
   <div class="left">
-    <div id="player" mode="replay">
-      <div id="board" coordinates="true"></div>
+    <div id="player">
+      <div id="board"></div>
     </div>
   </div>
   <div class="right">
     <h2>Load data</h2>
     <button id="loadJgf">Load JGF</button>
     <button id="loadSgf">Load SGF</button>
+    <button id="loadGib">Load GIB</button>
 
-    <h2>Replay</h2>
+    <h2>Switch mode</h2>
+    <button id="switchModeNone">None</button>
+    <button id="switchModeReplay">Replay</button>
+    <button id="switchModePlay">Play</button>
+    <button id="switchModeEdit">Edit</button>
+    <button id="switchModeSolve">Solve</button>
+
+    <h2>Replay mode tools</h2>
     <button id="startAutoPlay">Start auto play</button>
     <button id="stopAutoPlay">Stop auto play</button>
+
+    <h2>Edit mode tools</h2>
+    <button id="switchToolMarkup">Markup</button>
+    <button id="switchToolSetup">Setup</button>
   </info>
 </div>
-
 <script type="module">
   import Board from '../src/classes/board.js'
   import Player from '../src/classes/player.js'
   import {bindClickHandler} from '../src/helpers/dom.js'
   import {playerModes} from '../src/constants/player.js'
+
+  //Test data
   import {jgf} from './data/jgf.js'
-  import {sgf, sgfSabaki, sgfOgs} from './data/sgf.js'
+  import {gib} from './data/gib.js'
+  import {sgf} from './data/sgf.js'
 
   //Find player element
   const playerElement = document.getElementById('player')
@@ -43,11 +57,21 @@
   player.bootstrap(playerElement)
   player.load(jgf)
 
-  //Bind some click handlers
+  //Data loading
   bindClickHandler('loadJgf', () => player.load(jgf))
   bindClickHandler('loadSgf', () => player.load(sgf))
-  bindClickHandler('startAutoPlay', () => player.mode.startAutoPlay())
-  bindClickHandler('stopAutoPlay', () => player.mode.stopAutoPlay())
+  bindClickHandler('loadGib', () => player.load(gib))
+
+  //Auto play
+  bindClickHandler('startAutoPlay', () => player.action('startAutoPlay'))
+  bindClickHandler('stopAutoPlay', () => player.action('stopAutoPlay'))
+
+  //Mode switching
+  bindClickHandler('switchModeNone', () => player.switchMode(playerModes.NONE))
+  bindClickHandler('switchModeReplay', () => player.switchMode(playerModes.REPLAY))
+  bindClickHandler('switchModePlay', () => player.switchMode(playerModes.PLAY))
+  bindClickHandler('switchModeEdit', () => player.switchMode(playerModes.EDIT))
+  bindClickHandler('switchModeSolve', () => player.switchMode(playerModes.SOLVE))
 </script>
 </body>
 </html>

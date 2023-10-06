@@ -134,13 +134,6 @@ export default class Player extends EventTarget {
    ***/
 
   /**
-   * Virtual mode shortcut
-   */
-  get mode() {
-    return this.getCurrentModeHandler()
-  }
-
-  /**
    * Set available tools
    *
    * NOTE: This is usually set by the mode handler, and not directly
@@ -197,6 +190,13 @@ export default class Player extends EventTarget {
    */
   isToolActive(tool) {
     return (this.activeTool === tool)
+  }
+
+  /**
+   * Get active tool
+   */
+  getActiveTool() {
+    return this.activeTool
   }
 
   /**
@@ -278,6 +278,26 @@ export default class Player extends EventTarget {
     //Set active tool
     this.activeTool = tool
     this.triggerEvent('tool', {tool})
+  }
+
+  /**
+   * Perform a player action on the currently active mode
+   */
+  action(fn, ...args) {
+
+    //Get current mode handler
+    const handler = this.getCurrentModeHandler()
+    if (!handler) {
+      return
+    }
+
+    //Check if action is available
+    if (typeof handler[fn] !== 'function') {
+      return
+    }
+
+    //Call handler method
+    handler[fn](...args)
   }
 
   /**************************************************************************
@@ -367,9 +387,7 @@ export default class Player extends EventTarget {
    * Save the current state
    */
   saveGameState() {
-    if (this.game && this.game.isLoaded) {
-      this.gameState = this.game.getState()
-    }
+    this.gameState = this.game.getState()
   }
 
   /**
@@ -377,8 +395,8 @@ export default class Player extends EventTarget {
    */
   restoreGameState() {
 
-    //Must have game and saved state
-    if (!this.game || !this.gameState) {
+    //Must have saved state
+    if (!this.gameState) {
       return
     }
 
@@ -401,11 +419,6 @@ export default class Player extends EventTarget {
    */
   next(i) {
 
-    //Must have game
-    if (!this.game || !this.game.isLoaded) {
-      return
-    }
-
     //At restricted end node
     if (this.isAtRestrictedEndNode()) {
       return
@@ -421,11 +434,6 @@ export default class Player extends EventTarget {
    */
   previous() {
 
-    //Must have game
-    if (!this.game || !this.game.isLoaded) {
-      return
-    }
-
     //At restricted start node
     if (this.isAtRestrictedStartNode()) {
       return
@@ -440,13 +448,6 @@ export default class Player extends EventTarget {
    * Go to the last position
    */
   last() {
-
-    //Must have game
-    if (!this.game || !this.game.isLoaded) {
-      return
-    }
-
-    //Go to last position
     this.game.last()
     this.processPosition()
   }
@@ -455,13 +456,6 @@ export default class Player extends EventTarget {
    * Go to the first position
    */
   first() {
-
-    //Must have game
-    if (!this.game || !this.game.isLoaded) {
-      return
-    }
-
-    //Go to first position
     this.game.first()
     this.processPosition()
   }
@@ -471,8 +465,8 @@ export default class Player extends EventTarget {
    */
   goto(target) {
 
-    //Must have game and target
-    if (!this.game || !this.game.isLoaded || !target) {
+    //Must have target
+    if (!target) {
       return
     }
 
@@ -485,13 +479,6 @@ export default class Player extends EventTarget {
    * Go to the previous fork
    */
   previousFork() {
-
-    //Must have game
-    if (!this.game || !this.game.isLoaded) {
-      return
-    }
-
-    //Go to previous fork
     this.game.previousFork()
     this.processPosition()
   }
@@ -500,13 +487,6 @@ export default class Player extends EventTarget {
    * Go to the next fork
    */
   nextFork() {
-
-    //Must have game
-    if (!this.game || !this.game.isLoaded) {
-      return
-    }
-
-    //Go to next fork
     this.game.nextFork()
     this.processPosition()
   }
@@ -515,11 +495,6 @@ export default class Player extends EventTarget {
    * Go to the next position with a comment
    */
   nextComment() {
-
-    //Must have game
-    if (!this.game || !this.game.isLoaded) {
-      return
-    }
 
     //At restricted end node
     if (this.isAtRestrictedEndNode()) {
@@ -536,11 +511,6 @@ export default class Player extends EventTarget {
    */
   previousComment() {
 
-    //Must have game
-    if (!this.game || !this.game.isLoaded) {
-      return
-    }
-
     //At restricted start node
     if (this.isAtRestrictedStartNode()) {
       return
@@ -552,23 +522,26 @@ export default class Player extends EventTarget {
   }
 
   /**
+   * Play a move
+   */
+  play(x, y) {
+    if (this.game.play(x, y)) {
+      this.processPosition()
+    }
+  }
+
+  /**
    * Set the current node as restricted start node
    */
   setRestrictedStartNode() {
-    const {game} = this
-    if (game && game.isLoaded && game.node) {
-      this.restrictedStartNode = game.node
-    }
+    this.restrictedStartNode = this.game.node
   }
 
   /**
    * Set the current node as restricted end node
    */
   setRestrictedEndNode() {
-    const {game} = this
-    if (game && game.isLoaded && game.node) {
-      this.restrictedEndNode = game.node
-    }
+    this.restrictedEndNode = this.game.node
   }
 
   /**
@@ -591,11 +564,6 @@ export default class Player extends EventTarget {
    * Process a new game position
    */
   processPosition() {
-
-    //No game?
-    if (!this.game || !this.game.isLoaded) {
-      return
-    }
 
     //Get current node and game position
     const node = this.game.getNode()
@@ -629,11 +597,6 @@ export default class Player extends EventTarget {
    * Show move numbers
    */
   showMoveNumbers(fromMove, toMove) {
-
-    //No game?
-    if (!this.game || !this.game.isLoaded) {
-      return
-    }
 
     //Use sensible defaults if no from/to moves given
     fromMove = fromMove || 1
@@ -706,17 +669,20 @@ export default class Player extends EventTarget {
   /**
    * Set the board
    */
-  setBoard(Board) {
+  setBoard(board) {
 
-    //Set the board
-    this.board = Board
+    //Set it
+    this.board = board
 
-    //If a game has been loaded already, parse config and update the board
-    if (this.game && this.game.isLoaded) {
-      this.board.removeAll()
-      this.board.setConfig(this.game.getInfo('board'))
-      this.processPosition()
-    }
+    //Get config
+    const boardConfig = this.game.getInfo('board')
+
+    //Set up board
+    this.board.removeAll()
+    this.board.setConfig(boardConfig)
+
+    //Process position
+    this.processPosition()
   }
 
   /**

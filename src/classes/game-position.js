@@ -96,14 +96,19 @@ export default class GamePosition {
     tested = tested || new Grid(this.width, this.height)
 
     //See what color is present on the coordinates
-    let color = this.stones.get(x, y)
+    const color = this.stones.get(x, y)
 
     //If no group color was given, use what's on the position
     groupColor = groupColor || color
     const enemyColor = swapColor(groupColor)
 
-    //Already tested, or enemy stone? Not giving any liberties
-    if (tested.get(x, y) === true || color === enemyColor) {
+    //Already tested
+    if (tested.get(x, y) === true) {
+      return false
+    }
+
+    //Enemy stone, not giving liberties
+    if (color === enemyColor) {
       return false
     }
 
@@ -115,8 +120,8 @@ export default class GamePosition {
     //Mark this position as tested now
     tested.set(x, y, true)
 
-    //Ok, so we're looking at a stone of our own color. Test adjacent positions.
-    //If we get at least one true, we have a liberty
+    //Ok, so we're looking at a stone of our own color.
+    //Test adjacent positions. If we get at least one true, we have a liberty
     return (
       this.hasLiberties(x, y - 1, groupColor, tested) ||
       this.hasLiberties(x, y + 1, groupColor, tested) ||

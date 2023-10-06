@@ -33,6 +33,16 @@ export default class PlayerModeReplay extends PlayerMode {
     //Auto play settings
     this.isAutoPlaying = false
     this.autoPlayInterval = null
+
+    //Create bound event listeners
+    this.createBoundListeners({
+      keydown: 'onKeyDown',
+      click: 'onClick',
+      wheel: 'onMouseWheel',
+      mousemove: 'onMouseMove',
+      mouseout: 'onMouseOut',
+      pathChange: 'onPathChange',
+    })
   }
 
   /**
@@ -52,56 +62,6 @@ export default class PlayerModeReplay extends PlayerMode {
    */
   get autoPlayDelay() {
     return this.player.getConfig('autoPlayDelay', 1000)
-  }
-
-  /**************************************************************************
-   * Event listeners setup
-   ***/
-
-  /**
-   * Create bound listeners
-   */
-  createBoundListeners() {
-    super.createBoundListeners([
-      'onKeyDown',
-      'onMouseWheel',
-      'onMouseMove',
-      'onMouseOut',
-      'onPathChange',
-    ])
-  }
-
-  /**
-   * Register event listeners on the player
-   */
-  registerEventListeners() {
-
-    //Get player
-    const {player, bound} = this
-
-    //Register event listeners
-    player.on('keydown', bound.onKeyDown)
-    player.on('wheel', bound.onMouseWheel)
-    player.on('mousemove', bound.onMouseMove)
-    player.on('mouseout', bound.onMouseOut)
-    player.on('mouseout', bound.onMouseOut)
-    player.on('pathChange', bound.onPathChange)
-  }
-
-  /**
-   * Remove event listeners
-   */
-  removeEventListeners() {
-
-    //Get player
-    const {player, bound} = this
-
-    //Register event listeners
-    player.off('keydown', bound.onKeyDown)
-    player.off('wheel', bound.onMouseWheel)
-    player.off('mousemove', bound.onMouseMove)
-    player.off('mouseout', bound.onMouseOut)
-    player.off('pathChange', bound.onPathChange)
   }
 
   /**************************************************************************
@@ -176,6 +136,37 @@ export default class PlayerModeReplay extends PlayerMode {
   }
 
   /**
+   * Click handler
+   */
+  onClick(event) {
+
+    //Get data
+    const {player, board} = this
+    const {x, y} = event.detail
+
+    //Did the click fall outside of the board grid?
+    if (!board || !board.isOnBoard(x, y)) {
+      return
+    }
+
+    //Clear hover layer
+    this.clearHoverLayer()
+
+    //Move tool active
+    if (player.isToolActive(playerTools.MOVE)) {
+      this.selectMoveVariation(event)
+    }
+
+    //Score tool active
+    else if (player.isToolActive(playerTools.SCORE)) {
+      //TODO: Refactor later
+      //Mark the clicked item and score the current game position
+      // GameScorer.mark(event.x, event.y)
+      // this.scoreGame()
+    }
+  }
+
+  /**
    * Path change event
    */
   onPathChange(event) {
@@ -184,12 +175,8 @@ export default class PlayerModeReplay extends PlayerMode {
     const {player} = this
     const {node} = event.detail
 
-    //Get settings
-    const variationMarkup = player.getConfig('variationMarkup')
-    const variationSiblings = player.getConfig('variationSiblings')
-
     //Show variations
-    if (variationMarkup) {
+    if (player.getConfig('variationMarkup')) {
       if (node.hasMoveVariations()) {
         const variations = node.getMoveVariations()
         this.showMoveVariations(variations)
@@ -197,8 +184,8 @@ export default class PlayerModeReplay extends PlayerMode {
     }
 
     //Show sibling variations
-    if (variationSiblings && node.parent) {
-      if (node.parent.hasMoveVariations()) {
+    if (player.getConfig('variationSiblings')) {
+      if (node.parent && node.parent.hasMoveVariations()) {
         const variations = node.parent.getMoveVariations()
         this.showMoveVariations(variations)
       }
@@ -372,8 +359,7 @@ export default class PlayerModeReplay extends PlayerMode {
   showMoveVariations(variations) {
 
     //Get data
-    const {player} = this
-    const {board} = player
+    const {board} = this
 
     //Loop variations
     variations.forEach((variation, i) => {
@@ -390,5 +376,21 @@ export default class PlayerModeReplay extends PlayerMode {
         .add(boardLayerTypes.MARKUP, x, y, MarkupFactory
           .createForVariation(i, board))
     })
+  }
+
+  /**
+   * Select move variation
+   */
+  selectMoveVariation(event) {
+
+    //Get data
+    const {player, game} = this
+    const {x, y} = event.detail
+
+    //Check if we clicked a move variation, advance to the next position if so
+    if (game.isMoveVariation(x, y)) {
+      const i = game.getMoveVariation(x, y)
+      player.next(i)
+    }
   }
 }

@@ -7,6 +7,15 @@ import {
   jgfNodePaths,
 } from '../../constants/jgf.js'
 
+//Skip these paths as this is handled separately
+const skipPaths = [
+  'board.size',
+  'board.width',
+  'board.height',
+  'rules.komi',
+  'rules.handicap',
+]
+
 /**
  * Convert JGF data into a seki game object
  */
@@ -20,9 +29,16 @@ export default class ConvertFromJgf extends Convert {
     //Initialize
     const game = new Game()
 
-    //Copy over relevant paths
+    //Determine some properties manually
+    this.extractBoardSize(game, jgf)
+    this.extractKomi(game, jgf)
+    this.extractHandicap(game, jgf)
+
+    //Copy over rest of relevant paths
     for (const path of jgfPaths) {
-      game.setInfo(path, copy(get(jgf, path)))
+      if (!skipPaths.includes(path)) {
+        game.setInfo(path, copy(get(jgf, path)))
+      }
     }
 
     //Parse tree and obtain root node
@@ -120,5 +136,35 @@ export default class ConvertFromJgf extends Convert {
    */
   isVariationNode(jgfNode) {
     return (jgfNode && Array.isArray(jgfNode.variations))
+  }
+
+  /**
+   * Extract board size
+   */
+  extractBoardSize(game, jgf) {
+
+    //Get board size properties
+    const size = get(jgf, 'board.size')
+    const width = get(jgf, 'board.width')
+    const height = get(jgf, 'board.height')
+
+    //Set board size
+    game.setBoardSize(width || size, height)
+  }
+
+  /**
+   * Extract komi
+   */
+  extractKomi(game, jgf) {
+    const komi = get(jgf, 'rules.komi')
+    game.setKomi(komi)
+  }
+
+  /**
+   * Extract handicap
+   */
+  extractHandicap(game, jgf) {
+    const handicap = get(jgf, 'rules.handicap')
+    game.setHandicap(handicap)
   }
 }

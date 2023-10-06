@@ -17,6 +17,7 @@ button {
   margin-right: 0.2rem;
 }
 h2 {
+  font-size: 1rem;
   margin: 1rem 0;
   color: #fff;
 }
@@ -39,10 +40,10 @@ p {
 }
 
 /* Board styling */
-.seki-board {
-  /* background: url('../src/css/wood-2.jpg');
-  background-size: 40%; */
-}
+/* .seki-board {
+  background: url('../src/css/wood-2.jpg');
+  background-size: 40%;
+} */
 .seki-board-static {
   flex: 0 0 150px;
   height: 150px;

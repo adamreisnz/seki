@@ -27,9 +27,6 @@ export default class PlayerMode {
       lastX: -1,
       lastY: -1,
     }
-
-    //Create bound event listeners
-    this.createBoundListeners()
   }
 
   /**
@@ -90,17 +87,21 @@ export default class PlayerMode {
    ***/
 
   /**
-   * Create bound listeners for given method names
+   * Create bound listeners for given event/method map
    */
-  createBoundListeners(names) {
+  createBoundListeners(map) {
 
-    //No names given
-    if (!Array.isArray(names)) {
+    //No map  given
+    if (!map) {
       return
     }
 
+    //Store map
+    this.eventListenersMap = map
+
     //Create bound listeners
-    this.bound = names
+    this.bound = Object
+      .values(map)
       .reduce((obj, name) => {
         obj[name] = this[name].bind(this)
         return obj
@@ -108,8 +109,38 @@ export default class PlayerMode {
   }
 
   /**
-   * Register event listeners on the player (none by default)
+   * Register event listeners on the player
    */
-  registerEventListeners() {}
-  removeEventListeners() {}
+  registerEventListeners() {
+
+    //Get event listeners map
+    const {eventListenersMap, player, bound} = this
+    if (!eventListenersMap) {
+      return
+    }
+
+    //Register event listeners
+    for (const key in eventListenersMap) {
+      const fn = eventListenersMap[key]
+      player.on(key, bound[fn])
+    }
+  }
+
+  /**
+   * Remove event listeners
+   */
+  removeEventListeners() {
+
+    //Get event listeners map
+    const {eventListenersMap, player, bound} = this
+    if (!eventListenersMap) {
+      return
+    }
+
+    //Remove event listeners
+    for (const key in eventListenersMap) {
+      const fn = eventListenersMap[key]
+      player.off(key, bound[fn])
+    }
+  }
 }

@@ -22,5 +22,32 @@ export default class PlayerModePlay extends PlayerMode {
 
     //Set default tool
     this.defaultTool = playerTools.MOVE
+
+    //Create bound event listeners
+    this.createBoundListeners({
+      click: 'onClick',
+    })
+  }
+
+  /**************************************************************************
+   * Event listeners
+   ***/
+
+  /**
+   * Click handler
+   */
+  onClick(event) {
+
+    //Get data
+    const {player, board} = this
+    const {x, y} = event.detail
+
+    //Did the click fall outside of the board grid?
+    if (!board || !board.isOnBoard(x, y)) {
+      return
+    }
+
+    //Play move
+    player.play(x, y)
   }
 }

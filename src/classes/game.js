@@ -34,6 +34,7 @@ export default class Game {
 
     //Init
     this.init()
+    this.initializeHistory()
   }
 
   /**
@@ -45,8 +46,8 @@ export default class Game {
     this.info = merge.all([defaultGameInfo, {}])
 
     //The rood node and pointer to the current node
-    this.root = null
-    this.node = null
+    this.root = new GameNode()
+    this.node = this.root
 
     //Game path
     this.path = new GamePath()
@@ -58,9 +59,6 @@ export default class Game {
     this.allowSuicide = false
     this.rememberPath = true
     this.checkRepeat = checkRepeatTypes.KO
-
-    //Initialize history
-    this.initializeHistory()
   }
 
   /**
@@ -84,13 +82,6 @@ export default class Game {
   /**************************************************************************
    * Virtuals
    ***/
-
-  /**
-   * Check if we managed to load a valid game record
-   */
-  get isLoaded() {
-    return this.root !== null
-  }
 
   /**
    * Getter returns the last position from the stack
@@ -125,38 +116,20 @@ export default class Game {
   }
 
   /**
-   * Get the game komi
+   * Set the board size
    */
-  getKomi() {
-    const {defaultKomi} = this.config
-    const komi = this.getInfo('rules.komi', defaultKomi)
-    return parseFloat(komi)
+  setBoardSize(width, height) {
+    if (width && height && width !== height) {
+      this.setInfo('board.width', parseInt(width))
+      this.setInfo('board.height', parseInt(height))
+    }
+    else if (width) {
+      this.setInfo('board.size', parseInt(width))
+    }
   }
 
   /**
-   * Set the game komi
-   */
-  setKomi(komi) {
-    this.setInfo('rules.komi', parseFloat(komi))
-  }
-
-  /**
-   * Get the game handicap
-   */
-  getHandicap() {
-    const handicap = this.getInfo('rules.handicap', 0)
-    return parseInt(handicap)
-  }
-
-  /**
-   * Set the game handicap
-   */
-  setHandicap(handicap) {
-    this.setInfo('rules.handicap', parseInt(handicap))
-  }
-
-  /**
-   * Get the configured board size
+   * Get the board size
    */
   getBoardSize() {
     const size = this.getInfo('board.size')
@@ -169,24 +142,34 @@ export default class Game {
   }
 
   /**
-   * Get the game name
+   * Set the game komi
    */
-  getName() {
-    return this.getInfo('game.name', '')
+  setKomi(komi) {
+    this.setInfo('rules.komi', parseFloat(komi))
   }
 
   /**
-   * Set the game name
+   * Get the game komi
    */
-  setName(name) {
-    this.setInfo('game.name', String(name).trim())
+  getKomi() {
+    const {defaultKomi} = this.config
+    const komi = this.getInfo('rules.komi', defaultKomi)
+    return parseFloat(komi)
   }
 
   /**
-   * Get the game result
+   * Set the game handicap
    */
-  getResult() {
-    return this.getInfo('game.result', '')
+  setHandicap(handicap) {
+    this.setInfo('rules.handicap', parseInt(handicap))
+  }
+
+  /**
+   * Get the game handicap
+   */
+  getHandicap() {
+    const handicap = this.getInfo('rules.handicap', 0)
+    return parseInt(handicap)
   }
 
   /*****************************************************************************
@@ -219,6 +202,34 @@ export default class Game {
 
     //Return nodes
     return nodes
+  }
+
+  /**
+   * Check if a node is the root node
+   */
+  isRootNode(node) {
+    return this.root === node
+  }
+
+  /**
+   * Check if a node is the current node
+   */
+  isCurrentNode(node) {
+    return this.node === node
+  }
+
+  /**
+   * Get the root node
+   */
+  getRootNode() {
+    return this.root
+  }
+
+  /**
+   * Get the current node
+   */
+  getCurrentNode() {
+    return this.node
   }
 
   /**
@@ -1094,15 +1105,14 @@ export default class Game {
    */
   firstNode() {
 
-    //Reset path
+    //Reset path and point to root
     this.path.reset()
-
-    //Set node pointer back to root
     this.node = this.root
 
     //Determine initial turn based on handicap
     //Can be overwritten by game record instructions
-    const turn = (this.info.game.handicap > 1) ?
+    const handicap = this.getHandicap()
+    const turn = (handicap > 1) ?
       stoneColors.WHITE :
       stoneColors.BLACK
 

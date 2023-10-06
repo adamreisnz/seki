@@ -19,13 +19,13 @@ export default {
     //Stone style can be shell, glass, mono, or specify a custom handler service
     style: 'shell',
     shadow: true,
-    radius: function(cellSize) {
+    radius(cellSize) {
       return Math.floor(cellSize / 2) * 0.96
     },
 
     //Shell stones
     shell: {
-      color: function(stoneColor) {
+      color(stoneColor) {
         if (stoneColor === stoneColors.BLACK) {
           return '#111'
         }
@@ -71,10 +71,10 @@ export default {
     //Mono stones
     mono: {
       lineWidth: 1,
-      lineColor: function() {
+      lineColor() {
         return '#000'
       },
-      color: function(stoneColor) {
+      color(stoneColor) {
         if (stoneColor === stoneColors.BLACK) {
           return '#000'
         }
@@ -93,7 +93,7 @@ export default {
     faded: {
       shadow: false,
       scale: 1,
-      alpha: function(stoneColor) {
+      alpha(stoneColor) {
         if (stoneColor === stoneColors.BLACK) {
           return 0.3
         }
@@ -109,20 +109,20 @@ export default {
     color: 'rgba(40,30,20,0.6)',
 
     //Shadow size
-    size: function(cellSize) {
+    size(cellSize) {
       return Math.floor(cellSize / 100)
     },
 
     //Shadow blur size
-    blur: function(cellSize) {
+    blur(cellSize) {
       return cellSize / 15
     },
 
     //Shadow offset
-    offsetX: function(cellSize) {
+    offsetX(cellSize) {
       return Math.ceil(cellSize / 20)
     },
-    offsetY: function(cellSize) {
+    offsetY(cellSize) {
       return Math.ceil(cellSize / 20)
     },
   },
@@ -131,7 +131,7 @@ export default {
   markup: {
 
     //Standard color
-    color: function(stoneColor) {
+    color(stoneColor) {
       if (stoneColor === stoneColors.BLACK) {
         return 'rgba(255,255,255,0.95)'
       }
@@ -139,7 +139,7 @@ export default {
     },
 
     //Line width
-    lineWidth: function(cellSize) {
+    lineWidth(cellSize) {
       return Math.max(1, Math.floor(cellSize / 16))
     },
 
@@ -194,10 +194,10 @@ export default {
     //Variation markup
     variation: {
       type: markupTypes.LABEL,
-      text: function(i) {
+      text(i) {
         return String.fromCharCode(65 + i)
       },
-      color: 'rgba(15, 137, 74, 1)',
+      color: 'rgba(0,0,0,0.95)',
     },
 
     //Solution paths markup
@@ -255,7 +255,7 @@ export default {
       },
 
       //Locations
-      points: function(width, height) {
+      points(width, height) {
 
         //19x19
         if (width === height && width === 19) {

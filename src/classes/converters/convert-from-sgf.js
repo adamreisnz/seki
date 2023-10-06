@@ -19,7 +19,7 @@ const regexSequence = /\(|\)|(;(\s*[A-Z]+\s*((\[\])|(\[(.|\s)*?([^\\]\])))+)*)/g
 const regexNode = /[A-Z]+\s*((\[\])|(\[(.|\s)*?([^\\]\])))+/g
 const regexProperty = /[A-Z]+/
 const regexValues = /(\[\])|(\[(.|\s)*?([^\\]\]))/g
-const regexMove = /^;B|W\[/i
+const regexMove = /^;[B|W]\[/i
 const regexBlackPlayer = /PB|BT|BR/i
 const regexWhitePlayer = /PW|WT|WR/i
 
@@ -87,17 +87,11 @@ export default class ConvertFromSgf extends Convert {
    */
   convert(sgf) {
 
-    //Initialize
+    //Initialize game and find sequence
     const game = new Game()
 
-    //Create root node
-    game.root = new GameNode()
-
-    //Find sequence of elements
-    const sequence = sgf.match(regexSequence)
-
-    //Parse sequence
-    this.parseSequence(sequence, game, game.root)
+    //Parse SGF
+    this.parseSgf(sgf, game)
 
     //Return object
     return game
@@ -106,10 +100,16 @@ export default class ConvertFromSgf extends Convert {
   /**
    * Parse sequence
    */
-  parseSequence(sequence, game, parentNode) {
+  parseSgf(sgf, game, parentNode) {
 
-    //Keep track of stack of nodes
+    //Get sequence and initialise stack for parent nodes
+    const sequence = sgf.match(regexSequence)
     const stack = []
+
+    //No parent node? Use root node
+    if (!parentNode) {
+      parentNode = game.getRootNode()
+    }
 
     //Loop sequence
     for (const str of sequence) {
@@ -128,7 +128,7 @@ export default class ConvertFromSgf extends Convert {
         continue
       }
 
-      //Is this a move? Create new node
+      //Is this a move?
       if (str.match(regexMove)) {
         const node = new GameNode()
         parentNode.appendChild(node)
@@ -335,16 +335,8 @@ export default class ConvertFromSgf extends Convert {
    * Size parser function
    */
   parseSize(game, node, key, values) {
-
-    //Add size property (can be width:height or just a single size)
     const [width, height] = values[0].split(':')
-    if (width && height && width !== height) {
-      game.setInfo('board.width', parseInt(width))
-      game.setInfo('board.height', parseInt(height))
-    }
-    else {
-      game.setInfo('board.size', parseInt(width))
-    }
+    game.setBoardSize(width, height)
   }
 
   /**

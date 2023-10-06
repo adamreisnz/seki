@@ -28,8 +28,7 @@ export const boardLayerTypes = {
 export const defaultBoardConfig = {
 
   //Width and height
-  width: 19,
-  height: 19,
+  size: 19,
 
   //Grid cut-off sides
   cutoff: {

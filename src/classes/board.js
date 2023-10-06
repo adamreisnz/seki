@@ -198,7 +198,14 @@ export default class Board {
     this.toggleSwapColors(config.swapColors)
     this.setCutoff(config.cutoff)
     this.setSection(config.section)
-    this.setSize(config.width, config.height)
+
+    //Set size
+    if (config.size) {
+      this.setSize(config.size)
+    }
+    else if (config.width && config.height) {
+      this.setSize(config.width, config.height)
+    }
   }
 
   /**
@@ -291,7 +298,7 @@ export default class Board {
   setSize(width, height) {
 
     //Check what's given
-    width = parseInt(width || height || 0)
+    width = parseInt(width || 0)
     height = parseInt(height || width || 0)
 
     //Invalid?
