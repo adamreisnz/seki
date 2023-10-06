@@ -4,5 +4,5 @@ import {stoneColors} from './stone.js'
 export const setupTypes = {
   BLACK: stoneColors.BLACK,
   WHITE: stoneColors.WHITE,
-  EMPTY: 'empty',
+  CLEAR: 'clear',
 }

@@ -78,6 +78,44 @@ export default class Player extends Base {
     board.loadConfigFromGame(game)
   }
 
+  /**
+   * Extend player with methods
+   */
+  extend(method, mode) {
+
+    //Ensure doesn't already exist
+    if (typeof this[method] !== 'undefined') {
+      return
+    }
+
+    //Debug
+    this.debug(
+      `extending with ${method} method for ${mode} mode`,
+    )
+
+    //Extend
+    this[method] = (...args) => {
+
+      //Check if mode is active
+      if (!this.isModeActive(mode)) {
+        this.warn(`not calling ${method} method as ${mode} mode is not active`)
+        return
+      }
+
+      //Log
+      this.debug(`calling ${method} method for ${mode} mode`)
+
+      //Get handler
+      const handler = this.getModeHandler(mode)
+      if (!handler) {
+        return
+      }
+
+      //Call method
+      handler[method](...args)
+    }
+  }
+
   /*****************************************************************************
    * Configuration
    ***/
@@ -190,6 +228,11 @@ export default class Player extends Base {
    */
   getModeHandler(mode) {
 
+    //No mode specified
+    if (!mode) {
+      throw new Error(`No mode specified`)
+    }
+
     //Get mode handlers
     const {modeHandlers} = this
 
@@ -219,11 +262,13 @@ export default class Player extends Base {
 
     //Already active
     if (this.isModeActive(mode)) {
+      this.debug(`${mode} mode is already active`)
       return
     }
 
     //Check if available
     if (!this.isModeAvailable(mode)) {
+      this.debug(`${mode} mode is not available`)
       return
     }
 
@@ -243,6 +288,7 @@ export default class Player extends Base {
 
     //Set active mode
     this.activeMode = mode
+    this.debug(`${mode} mode activated`)
     this.triggerEvent('mode', {mode})
   }
 
@@ -253,37 +299,20 @@ export default class Player extends Base {
 
     //Already active
     if (this.isToolActive(tool)) {
+      this.debug(`${tool} tool is already active`)
       return
     }
 
     //Validate
     if (!this.isToolAvailable(tool)) {
+      this.debug(`${tool} tool is not available`)
       return
     }
 
     //Set active tool
     this.activeTool = tool
+    this.debug(`${tool} tool activated`)
     this.triggerEvent('tool', {tool})
-  }
-
-  /**
-   * Perform a player action on the currently active mode
-   */
-  action(fn, ...args) {
-
-    //Get current mode handler
-    const handler = this.getCurrentModeHandler()
-    if (!handler) {
-      return
-    }
-
-    //Check if action is available
-    if (typeof handler[fn] !== 'function') {
-      return
-    }
-
-    //Call handler method
-    handler[fn](...args)
   }
 
   /**************************************************************************

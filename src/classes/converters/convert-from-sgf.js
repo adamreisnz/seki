@@ -283,7 +283,7 @@ export default class ConvertFromSgf extends Convert {
     //Initialize setup container and get color
     const setup = node.setup || []
     const color = this.convertColor(key.charAt(1))
-    const type = color || setupTypes.EMPTY
+    const type = color || setupTypes.CLEAR
 
     //Create setup entry for this type
     const coords = []

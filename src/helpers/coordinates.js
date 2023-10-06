@@ -1,3 +1,4 @@
+import {aCharUc, aCharLc} from '../constants/common.js'
 
 //Kanji
 const kanjiCoordinates = [
@@ -6,10 +7,6 @@ const kanjiCoordinates = [
   '二十一', '二十二', '二十三', '二十四', '二十五', '二十六', '二十七', '二十八', '二十九', '三十',
   '三十一', '三十二', '三十三', '三十四', '三十五', '三十六', '三十七', '三十八', '三十九', '四十',
 ]
-
-//Character codes
-const aChar = 65
-const aCharLc = 97
 
 //Kanji coordinates generator
 export function kanji(i) {
@@ -39,7 +36,7 @@ export function letters(i) {
   }
 
   //Return
-  return ch + String.fromCharCode(aChar + i)
+  return ch + String.fromCharCode(aCharUc + i)
 }
 
 //Index coordinates generator (starting at 0)
@@ -54,7 +51,7 @@ export function lowercase(i) {
     ch = aCharLc + i
   }
   else {
-    ch = aChar + i
+    ch = aCharUc + i
   }
   return String.fromCharCode(ch)
 }

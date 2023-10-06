@@ -3,7 +3,6 @@ import MarkupSquare from './objects/markup-square.js'
 import MarkupTriangle from './objects/markup-triangle.js'
 import MarkupMark from './objects/markup-mark.js'
 import MarkupSelect from './objects/markup-select.js'
-import MarkupLast from './objects/markup-last.js'
 import MarkupLabel from './objects/markup-label.js'
 import MarkupHappy from './objects/markup-happy.js'
 import MarkupSad from './objects/markup-sad.js'
@@ -29,8 +28,6 @@ export default class MarkupFactory {
         return MarkupMark
       case markupTypes.SELECT:
         return MarkupSelect
-      case markupTypes.LAST:
-        return MarkupLast
       case markupTypes.LABEL:
         return MarkupLabel
       case markupTypes.HAPPY:

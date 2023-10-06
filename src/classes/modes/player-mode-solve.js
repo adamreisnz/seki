@@ -6,21 +6,15 @@ import {playerModes, playerTools} from '../../constants/player.js'
  */
 export default class PlayerModeSolve extends PlayerMode {
 
-  /**
-   * Constructor
-   */
-  constructor(player) {
+  //Mode type
+  mode = playerModes.SOLVE
 
-    //Parent method
-    super(player, playerModes.SOLVE)
+  //Available tools in this mode
+  availableTools = [
+    playerTools.NONE,
+    playerTools.MOVE,
+  ]
 
-    //Available tools in this mode
-    this.availableTools = [
-      playerTools.NONE,
-      playerTools.MOVE,
-    ]
-
-    //Set default tool
-    this.defaultTool = playerTools.MOVE
-  }
+  //Set default tool
+  defaultTool = playerTools.MOVE
 }

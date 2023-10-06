@@ -36,21 +36,35 @@
     <button id="startAutoPlay">Start auto play</button>
     <button id="stopAutoPlay">Stop auto play</button>
 
-    <h2>Edit mode tools</h2>
-    <button id="switchToolMarkup">Markup</button>
-    <button id="switchToolSetup">Setup</button>
+    <h2>Markup tools</h2>
+    <button id="switchMarkupToolTriangle">Triangle</button>
+    <button id="switchMarkupToolSquare">Square</button>
+    <button id="switchMarkupToolCircle">Circle</button>
+    <button id="switchMarkupToolMark">Mark</button>
+    <button id="switchMarkupToolLetter">Letter</button>
+    <button id="switchMarkupToolNumber">Number</button>
+    <button id="switchMarkupToolClear">Clear</button>
+
+    <h2>Setup tools</h2>
+    <button id="switchSetupToolBlack">Black</button>
+    <button id="switchSetupToolWhite">White</button>
+    <button id="switchSetupToolClear">Clear</button>
   </info>
 </div>
 <script type="module">
   import Board from '../src/classes/board.js'
   import Player from '../src/classes/player.js'
+  import {setDebug} from '../src/helpers/util.js'
   import {bindClickHandler} from '../src/helpers/dom.js'
-  import {playerModes} from '../src/constants/player.js'
+  import {playerModes, playerTools, markupTools, setupTools} from '../src/constants/player.js'
 
   //Test data
   import {jgf} from './data/jgf.js'
   import {gib} from './data/gib.js'
   import {sgf} from './data/sgf.js'
+
+  //Set debug mode
+  setDebug(true)
 
   //Find player element
   const playerElement = document.getElementById('player')
@@ -85,8 +99,8 @@
   bindClickHandler('toggleSwapColors', () => player.board.toggleSwapColors())
 
   //Auto play
-  bindClickHandler('startAutoPlay', () => player.action('startAutoPlay'))
-  bindClickHandler('stopAutoPlay', () => player.action('stopAutoPlay'))
+  bindClickHandler('startAutoPlay', () => player.startAutoPlay())
+  bindClickHandler('stopAutoPlay', () => player.stopAutoPlay())
 
   //Mode switching
   bindClickHandler('switchModeNone', () => player.switchMode(playerModes.NONE))
@@ -94,6 +108,40 @@
   bindClickHandler('switchModePlay', () => player.switchMode(playerModes.PLAY))
   bindClickHandler('switchModeEdit', () => player.switchMode(playerModes.EDIT))
   bindClickHandler('switchModeSolve', () => player.switchMode(playerModes.SOLVE))
+
+  //Markup tools
+  bindClickHandler('switchMarkupToolTriangle', () => {
+    player.switchMarkupTool(markupTools.TRIANGLE)
+  })
+  bindClickHandler('switchMarkupToolSquare', () => {
+    player.switchMarkupTool(markupTools.SQUARE)
+  })
+  bindClickHandler('switchMarkupToolCircle', () => {
+    player.switchMarkupTool(markupTools.CIRCLE)
+  })
+  bindClickHandler('switchMarkupToolMark', () => {
+    player.switchMarkupTool(markupTools.MARK)
+  })
+  bindClickHandler('switchMarkupToolLetter', () => {
+    player.switchMarkupTool(markupTools.LETTER)
+  })
+  bindClickHandler('switchMarkupToolNumber', () => {
+    player.switchMarkupTool(markupTools.NUMBER)
+  })
+  bindClickHandler('switchMarkupToolClear', () => {
+    player.switchMarkupTool(markupTools.CLEAR)
+  })
+
+  //Setup tools
+  bindClickHandler('switchSetupToolBlack', () => {
+    player.switchSetupTool(setupTools.BLACK)
+  })
+  bindClickHandler('switchSetupToolWhite', () => {
+    player.switchSetupTool(setupTools.WHITE)
+  })
+  bindClickHandler('switchSetupToolClear', () => {
+    player.switchSetupTool(setupTools.CLEAR)
+  })
 </script>
 </body>
 </html>

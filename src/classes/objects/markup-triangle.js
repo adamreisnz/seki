@@ -1,5 +1,6 @@
 import Markup from './markup.js'
-import {markupTypes, cosPi6} from '../../constants/markup.js'
+import {markupTypes} from '../../constants/markup.js'
+import {cosPi6} from '../../constants/common.js'
 
 /**
  * Triangle markup

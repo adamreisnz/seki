@@ -1,5 +1,6 @@
 import Markup from './markup.js'
-import {markupTypes, cosPi4} from '../../constants/markup.js'
+import {markupTypes} from '../../constants/markup.js'
+import {cosPi4} from '../../constants/common.js'
 
 /**
  * Square markup

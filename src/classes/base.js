@@ -1,9 +1,36 @@
 import merge from 'deepmerge'
+import {getDebug} from '../helpers/util.js'
 
 /**
  * Base class for player, board and theme classes
  */
 export default class Base extends EventTarget {
+
+  /**************************************************************************
+   * Debugging and error handling
+   ***/
+
+  /**
+   * Debugging helper
+   */
+  debug(...args) {
+    if (getDebug()) {
+      console.log(`${this.constructor.name}:`, ...args)
+    }
+  }
+
+  /**
+   * Warning helper
+   */
+  warn(...args) {
+    if (getDebug()) {
+      console.warn(`${this.constructor.name}:`, ...args)
+    }
+  }
+
+  /**************************************************************************
+   * Configuration helpers
+   ***/
 
   /**
    * Init config

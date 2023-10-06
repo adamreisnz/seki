@@ -13,26 +13,32 @@ import {
  */
 export default class PlayerModeReplay extends PlayerMode {
 
+  //Mode type
+  mode = playerModes.REPLAY
+
+  //Available tools for this mode
+  availableTools = [
+    playerTools.NONE,
+    playerTools.MOVE,
+  ]
+
+  //Default tool
+  defaultTool = playerTools.MOVE
+
+  //Auto play settings
+  isAutoPlaying = false
+  autoPlayInterval = null
+
   /**
    * Constructor
    */
   constructor(player) {
 
     //Parent method
-    super(player, playerModes.REPLAY)
+    super(player)
 
-    //Available tools in this mode
-    this.availableTools = [
-      playerTools.NONE,
-      playerTools.MOVE,
-    ]
-
-    //Set default tool
-    this.defaultTool = playerTools.MOVE
-
-    //Auto play settings
-    this.isAutoPlaying = false
-    this.autoPlayInterval = null
+    //Extend player
+    this.extendPlayerForReplay()
 
     //Create bound event listeners
     this.createBoundListeners({
@@ -43,6 +49,19 @@ export default class PlayerModeReplay extends PlayerMode {
       mouseout: 'onMouseOut',
       pathChange: 'onPathChange',
     })
+  }
+
+  /**
+   * Extend the player with new methods
+   */
+  extendPlayerForReplay() {
+
+    //Get data
+    const {player, mode} = this
+
+    //Extend player
+    player.extend('startAutoPlay', mode)
+    player.extend('stopAutoPlay', mode)
   }
 
   /**
@@ -141,11 +160,15 @@ export default class PlayerModeReplay extends PlayerMode {
   onClick(event) {
 
     //Get data
-    const {player, board} = this
+    const {player, board, game} = this
     const {x, y} = event.detail
+
+    //Debug
+    this.debug(`click event at (${x},${y})`)
 
     //Did the click fall outside of the board grid?
     if (!board || !board.isOnBoard(x, y)) {
+      this.debug(`position (${x},${y}) is outside of board grid`)
       return
     }
 
@@ -154,7 +177,12 @@ export default class PlayerModeReplay extends PlayerMode {
 
     //Move tool active
     if (player.isToolActive(playerTools.MOVE)) {
-      this.selectMoveVariation(event)
+      if (game.isMoveVariation(x, y)) {
+        this.selectMoveVariation(x, y)
+      }
+      else {
+        this.playMove(x, y)
+      }
     }
 
     //Score tool active
@@ -199,7 +227,7 @@ export default class PlayerModeReplay extends PlayerMode {
     //Last move markup
     if (lastMoveMarkupType) {
       if (node.isMove() && !node.isPass()) {
-        this.showLastMoveMarker(event, lastMoveMarkupType)
+        this.showLastMoveMarker(node, lastMoveMarkupType)
       }
     }
   }
@@ -393,32 +421,36 @@ export default class PlayerModeReplay extends PlayerMode {
   /**
    * Select move variation
    */
-  selectMoveVariation(event) {
+  selectMoveVariation(x, y) {
 
     //Get data
     const {player, game} = this
-    const {x, y} = event.detail
+    const i = game.getMoveVariation(x, y)
 
-    //Check if we clicked a move variation, advance to the next position if so
-    if (game.isMoveVariation(x, y)) {
-      const i = game.getMoveVariation(x, y)
-      player.next(i)
-    }
+    //Follow a move variation
+    player.next(i)
   }
 
   /**
    * Show last move marker
    */
-  showLastMoveMarker(event, markupType) {
+  showLastMoveMarker(node, markupType) {
 
     //Get data
     const {board} = this
-    const {node} = event.detail
     const {x, y} = node.move
 
     //Add to board
     board
       .add(boardLayerTypes.MARKUP, x, y, MarkupFactory
         .create(markupType, board))
+  }
+
+  /**
+   * Playa  move
+   */
+  playMove(x, y) {
+    const {player} = this
+    player.play(x, y)
   }
 }

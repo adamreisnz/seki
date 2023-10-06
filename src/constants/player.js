@@ -1,4 +1,5 @@
 import {markupTypes} from './markup.js'
+import {setupTypes} from './setup.js'
 
 /**
  * Player modes
@@ -18,8 +19,35 @@ export const playerTools = {
   NONE: 'none',
   MOVE: 'move',
   SCORE: 'score',
-  SETUP: 'setup',
   MARKUP: 'markup',
+  SETUP: 'setup',
+}
+
+/**
+ * Markup tools
+ */
+export const markupTools = {
+  TRIANGLE: markupTypes.TRIANGLE,
+  CIRCLE: markupTypes.CIRCLE,
+  SQUARE: markupTypes.SQUARE,
+  ARROW: markupTypes.ARROW,
+  DIAMOND: markupTypes.DIAMOND,
+  MARK: markupTypes.MARK,
+  SELECT: markupTypes.SELECT,
+  HAPPY: markupTypes.HAPPY,
+  SAD: markupTypes.SAD,
+  LETTER: 'letter',
+  NUMBER: 'number',
+  CLEAR: 'clear',
+}
+
+/**
+ * Setup tools
+ */
+export const setupTools = {
+  BLACK: setupTypes.BLACK,
+  WHITE: setupTypes.WHITE,
+  CLEAR: setupTypes.CLEAR,
 }
 
 /**

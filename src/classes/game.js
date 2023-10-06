@@ -441,13 +441,8 @@ export default class Game {
    * Wrapper for validateMove() returning a boolean and catching any errors
    */
   isValidMove(x, y, color) {
-    try {
-      this.validateMove(x, y, color)
-      return true
-    }
-    catch (error) {
-      return false
-    }
+    const [newPosition] = this.validateMove(x, y, color)
+    return !!newPosition
   }
 
   /**
@@ -456,27 +451,28 @@ export default class Game {
    */
   validateMove(x, y, color, newPosition) {
 
+    //Get data
+    const {position, allowSuicide, checkRepeat} = this
+
     //Check coordinates validity
     if (!this.isOnBoard(x, y)) {
-      throw new Error(`Position out of bounds: ${x}, ${y}, ${color}`)
+      return [null, `Position (${x},${y}) is out of bounds`]
     }
 
     //Something already here?
-    if (this.position.stones.has(x, y)) {
-      throw new Error(`Position already has a stone: ${x}, ${y}, ${color}`)
+    if (position.stones.has(x, y)) {
+      return [null, `Position (${x},${y}) already has a stone`]
     }
 
     //Set color of move to make
-    color = color || this.position.getTurn()
+    color = color || position.getTurn()
 
-    //Determine position to use
-    newPosition = newPosition || this.position.clone()
-
-    //Place the stone
+    //Determine position to use and place the new stone
+    newPosition = newPosition || position.clone()
     newPosition.stones.set(x, y, color)
 
     //Capture adjacent stones if possible
-    let captures = newPosition.captureAdjacent(x, y)
+    const captures = newPosition.captureAdjacent(x, y)
 
     //No captures occurred? Check if the move we're making is a suicide move
     if (!captures) {
@@ -485,27 +481,27 @@ export default class Game {
       if (!newPosition.hasLiberties(x, y)) {
 
         //Capture the group if it's allowed
-        if (this.allowSuicide) {
+        if (allowSuicide) {
           newPosition.captureGroup(x, y)
         }
 
         //Invalid move
         else {
-          throw new Error(`Position is suicide: ${x}, ${y}, ${color}`)
+          return [null, `Move on (${x},${y}) is suicide`]
         }
       }
     }
 
     //Check history for repeating moves
-    if (this.checkRepeat && this.isRepeatingPosition(newPosition)) {
-      throw new Error(`Position is repeating: ${x}, ${y}, ${color}`)
+    if (checkRepeat && this.isRepeatingPosition(newPosition)) {
+      return [null, `Move on (${x},${y}) creates a repeating position`]
     }
 
     //Switch turn
     newPosition.switchTurn()
 
     //Move is valid
-    return newPosition
+    return [newPosition]
   }
 
   /**
@@ -602,7 +598,7 @@ export default class Game {
 
           //Remove from node and unset in position
           this.node.setup.splice(i, 1)
-          this.position.stones.unset(x, y)
+          this.position.stones.delete(x, y)
 
           //Mark as found
           break
@@ -633,16 +629,12 @@ export default class Game {
    */
   addMarkup(x, y, markup) {
 
-    //No markup instructions container in this node?
-    if (typeof this.node.markup === 'undefined') {
-      this.node.markup = []
-    }
+    //Get data
+    const {position, node} = this
 
-    //Add markup to game position
-    this.position.markup.set(x, y, markup)
-
-    //Add markup instructions to node
-    this.node.markup.push(this.position.markup.get(x, y, 'type'))
+    //Add markup to game position and node itself
+    position.markup.set(x, y, markup)
+    node.addMarkup(x, y, markup)
   }
 
   /**
@@ -650,16 +642,12 @@ export default class Game {
    */
   removeMarkup(x, y) {
 
-    //Remove from node
-    if (typeof this.node.markup !== 'undefined') {
-      for (let i = 0; i < this.node.markup.length; i++) {
-        if (x === this.node.markup[i].x && y === this.node.markup[i].y) {
-          this.node.markup.splice(i, 1)
-          this.position.markup.unset(x, y)
-          break
-        }
-      }
-    }
+    //Get data
+    const {position, node} = this
+
+    //Remove from node and postion
+    node.removeMarkup(x, y)
+    position.markup.delete(x, y)
   }
 
   /**
@@ -692,7 +680,13 @@ export default class Game {
     color = color || this.position.getTurn()
 
     //Validate move and get new position
-    let newPosition = this.validateMove(x, y, color)
+    const [newPosition, reason] = this.validateMove(x, y, color)
+
+    //Invalid move
+    if (!newPosition) {
+      this.warn(reason)
+      return false
+    }
 
     //Push new position
     this.pushPosition(newPosition)
@@ -1242,7 +1236,7 @@ export default class Game {
         const {type, coords} = setup
         for (const coord of coords) {
           const {x, y} = coord
-          if (type === setupTypes.EMPTY) {
+          if (type === setupTypes.CLEAR) {
             newPosition.stones.delete(x, y)
           }
           else {

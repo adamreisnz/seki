@@ -1,32 +1,26 @@
+import Base from './base.js'
 
 /**
  * Base player mode class
  */
-export default class PlayerMode {
+export default class PlayerMode extends Base {
+
+  //Mouse coordinates helper var
+  mouse = {
+    lastX: -1,
+    lastY: -1,
+  }
 
   /**
    * Constructor
    */
-  constructor(player, mode) {
+  constructor(player) {
 
-    //Reference to player
+    //Parent constructor
+    super()
+
+    //Store reference to player
     this.player = player
-
-    //Set the mode identifier
-    this.mode = mode
-
-    //Available tools in this mode
-    this.availableTools = []
-    this.defaultTool = undefined
-
-    //Event handler
-    this.eventHandler = undefined
-
-    //Mouse coordinate helper var
-    this.mouse = {
-      lastX: -1,
-      lastY: -1,
-    }
   }
 
   /**

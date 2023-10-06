@@ -91,7 +91,7 @@ export const sgfMarkupTypes = {
 export const sgfSetupTypes = {
   [setupTypes.BLACK]: 'AB',
   [setupTypes.WHITE]: 'AW',
-  [setupTypes.EMPTY]: 'AE',
+  [setupTypes.CLEAR]: 'AE',
 }
 
 //Scoring types

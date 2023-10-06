@@ -6,22 +6,25 @@ import {playerModes, playerTools} from '../../constants/player.js'
  */
 export default class PlayerModePlay extends PlayerMode {
 
+  //Mode type
+  mode = playerModes.PLAY
+
+  //Available tools for this mode
+  availableTools = [
+    playerTools.NONE,
+    playerTools.MOVE,
+  ]
+
+  //Default tool
+  defaultTool = playerTools.MOVE
+
   /**
    * Constructor
    */
   constructor(player) {
 
     //Parent method
-    super(player, playerModes.PLAY)
-
-    //Available tools in this mode
-    this.availableTools = [
-      playerTools.NONE,
-      playerTools.MOVE,
-    ]
-
-    //Set default tool
-    this.defaultTool = playerTools.MOVE
+    super(player)
 
     //Create bound event listeners
     this.createBoundListeners({
@@ -39,7 +42,7 @@ export default class PlayerModePlay extends PlayerMode {
   onClick(event) {
 
     //Get data
-    const {player, board} = this
+    const {board} = this
     const {x, y} = event.detail
 
     //Did the click fall outside of the board grid?
@@ -48,6 +51,14 @@ export default class PlayerModePlay extends PlayerMode {
     }
 
     //Play move
+    this.playMove(x, y)
+  }
+
+  /**
+   * Play move
+   */
+  playMove(x, y) {
+    const {player} = this
     player.play(x, y)
   }
 }

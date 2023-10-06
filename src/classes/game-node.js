@@ -298,4 +298,63 @@ export default class GameNode {
     //Set given node as the child of this node
     this.children = [node]
   }
+
+  /**************************************************************************
+   * Convenience helpers
+   ***/
+
+  /**
+   * Add markup
+   */
+  addMarkup(x, y, data) {
+
+    //Remove existing markup on same coords first
+    this.removeMarkup(x, y)
+
+    //No markup instructions container in this node?
+    if (typeof this.markup === 'undefined') {
+      this.markup = []
+    }
+
+    //Find entry for this type
+    const {markup} = this
+    const {type, text} = data
+    const entry = markup
+      .find(entry => entry.type === type)
+
+    //No entry yet?
+    if (!entry) {
+      markup.push({
+        type,
+        coords: [{x, y, text}],
+      })
+      return
+    }
+
+    //Add to existing entry
+    entry.coords.push({x, y})
+  }
+
+  /**
+   * Remove markup
+   */
+  removeMarkup(x, y) {
+
+    //No markup instructions container in this node?
+    const {markup} = this
+    if (typeof markup === 'undefined') {
+      return
+    }
+
+    //Go over markup and remove
+    markup.forEach(entry => {
+      const i = entry.coords.findIndex(coord => coord.x === x && coord.y === y)
+      if (i !== -1) {
+        entry.coords.splice(i, 1)
+      }
+    })
+
+    //Remove empty entries
+    this.markup = markup.filter(entry => entry.coords.length > 0)
+  }
 }

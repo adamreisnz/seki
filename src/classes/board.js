@@ -541,6 +541,16 @@ export default class Board extends Base {
   }
 
   /**
+   * Redraw cell on given layer
+   */
+  redrawCell(type, x, y) {
+    const layer = this.layers.get(type)
+    if (layer) {
+      layer.redrawCell(x, y)
+    }
+  }
+
+  /**
    * Can draw check
    */
   canDraw() {
