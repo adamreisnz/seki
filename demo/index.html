@@ -16,7 +16,7 @@
   </div>
   <div class="right">
     <h2>Load data</h2>
-    <button id="reset">Blank board</button>
+    <button id="loadBlank">Blank board</button>
     <button id="loadJgf">Load JGF</button>
     <button id="loadSgf">Load SGF</button>
     <button id="loadGib">Load GIB</button>
@@ -66,7 +66,10 @@
   bindClickHandler('loadJgf', () => player.load(jgf))
   bindClickHandler('loadSgf', () => player.load(sgf))
   bindClickHandler('loadGib', () => player.load(gib))
-  bindClickHandler('reset', () => player.reset())
+  bindClickHandler('loadBlank', () => {
+    player.reset()
+    player.switchMode(playerModes.PLAY)
+  })
 
   //Coordinates
   bindClickHandler('toggleCoordinates', () => player.board.toggleCoordinates())
