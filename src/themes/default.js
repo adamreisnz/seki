@@ -145,12 +145,12 @@ export default {
 
     //Triangle
     triangle: {
-      scale: 0.75,
+      scale: 0.7,
     },
 
     //Square
     square: {
-      scale: 0.75,
+      scale: 0.725,
     },
 
     //Diamond
