@@ -16,9 +16,14 @@
   </div>
   <div class="right">
     <h2>Load data</h2>
+    <button id="reset">Blank board</button>
     <button id="loadJgf">Load JGF</button>
     <button id="loadSgf">Load SGF</button>
     <button id="loadGib">Load GIB</button>
+
+    <h2>Other</h2>
+    <button id="toggleCoordinates">Toggle coordinates</button>
+    <button id="toggleSwapColors">Swap colors</button>
 
     <h2>Switch mode</h2>
     <button id="switchModeNone">None</button>
@@ -61,6 +66,11 @@
   bindClickHandler('loadJgf', () => player.load(jgf))
   bindClickHandler('loadSgf', () => player.load(sgf))
   bindClickHandler('loadGib', () => player.load(gib))
+  bindClickHandler('reset', () => player.reset())
+
+  //Coordinates
+  bindClickHandler('toggleCoordinates', () => player.board.toggleCoordinates())
+  bindClickHandler('toggleSwapColors', () => player.board.toggleSwapColors())
 
   //Auto play
   bindClickHandler('startAutoPlay', () => player.action('startAutoPlay'))

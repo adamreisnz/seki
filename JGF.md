@@ -158,10 +158,20 @@ JGF = {
 		height: 19,
 
 		//Cut-off part of the grid (for displaying problems)
-		cutOff: [
-      "right",
-      "bottom"
-    ],
+		cutoff: {
+      top: false,
+      bottom: false,
+      left: false,
+      right: false,
+    },
+
+    //Section of board to display
+    section: {
+      top: 0,
+      bottom: 0,
+      left: 0,
+      right: 0,
+    },
 	},
 
   //Instructions for the game record replayer

@@ -28,20 +28,6 @@ export default class CoordinatesLayer extends BoardLayer {
   removeAll() {}
 
   /**
-   * Check if we can or should draw coordinates
-   */
-  canDraw() {
-
-    //Parent method
-    if (!super.canDraw()) {
-      return false
-    }
-
-    //Check flag
-    return this.board.showCoordinates
-  }
-
-  /**
    * Draw
    */
   draw() {
@@ -51,7 +37,12 @@ export default class CoordinatesLayer extends BoardLayer {
       return
     }
 
-    //DRaw vertical and horizontal
+    //Check if enabled
+    if (!this.board.getConfig('showCoordinates')) {
+      return
+    }
+
+    //Draw vertical and horizontal
     this.drawVertical()
     this.drawHorizontal()
   }

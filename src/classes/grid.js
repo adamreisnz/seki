@@ -271,9 +271,14 @@ export default class Grid {
    */
   setSize(width, height) {
 
+    //Only if anything changed
+    if (this.width === width && this.height === height) {
+      return
+    }
+
     //Set
-    this.width = parseInt(width || 0)
-    this.height = parseInt(height || width || 0)
+    this.width = width || 0
+    this.height = height || width || 0
 
     //Clear grid
     this.grid.clear()

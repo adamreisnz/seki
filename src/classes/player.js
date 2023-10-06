@@ -1,3 +1,4 @@
+import Base from './base.js'
 import Board from './board.js'
 import Game from './game.js'
 import GameScorer from './game-scorer.js'
@@ -19,7 +20,14 @@ import {
  * player mode. Unless you want to display static positions, this is the class
  * you'd use by default.
  */
-export default class Player extends EventTarget {
+export default class Player extends Base {
+
+  //Props
+  board
+  modeHandlers = {}
+  availableTools = []
+  activeMode
+  activeTool
 
   /**
    * Constructor
@@ -31,8 +39,6 @@ export default class Player extends EventTarget {
 
     //Initialise
     this.init()
-
-    //Initialize config
     this.initConfig(config)
   }
 
@@ -41,24 +47,36 @@ export default class Player extends EventTarget {
    */
   init() {
 
-    //Unlink board instance, create new game
-    this.board = null
+    //Create new game and reset path
     this.game = new Game()
-
-    //Reset path
     this.path = null
-
-    //Available tools and instantiated mode handlers
-    this.availableTools = []
-    this.modeHandlers = {}
-
-    //Active player mode and tool
-    this.activeMode = undefined
-    this.activeTool = undefined
 
     //Restricted nodes
     this.restrictedStartNode = null
     this.restrictedEndNode = null
+  }
+
+  /**
+   * Reset
+   */
+  reset() {
+
+    //Get board and game
+    const {board, config} = this
+
+    //Reset player but preserve config
+    this.init()
+    this.initConfig(config)
+
+    //Get newly created game
+    const {game} = this
+
+    //Go to first move
+    game.first()
+
+    //Reset board
+    board.reset()
+    board.loadConfigFromGame(game)
   }
 
   /*****************************************************************************
@@ -71,13 +89,10 @@ export default class Player extends EventTarget {
   initConfig(config) {
 
     //Extend from default config
-    config = Object.assign({}, defaultPlayerConfig, config || {})
-
-    //Store config
-    this.config = config
+    super.initConfig(config, defaultPlayerConfig)
 
     //Get initial mode and tool
-    const {initialMode, initialTool} = config
+    const {initialMode, initialTool} = this.config
 
     //Switch to the configured mode and tool
     this.switchMode(initialMode)
@@ -85,48 +100,20 @@ export default class Player extends EventTarget {
   }
 
   /**
-   * Get a config flag
-   */
-  getConfig(key, defaultValue) {
-    if (this.config[key] === undefined) {
-      return defaultValue
-    }
-    return this.config[key]
-  }
-
-  /**
-   * Set a config flag
-   */
-  setConfig(key, value) {
-    this.config[key] = value
-  }
-
-  /**
    * Load configuration from a game if allowed
    */
-  loadGameConfig() {
-
-    //No game
-    const {game} = this
-    if (!game) {
-      return
-    }
+  loadConfigFromGame(game) {
 
     //Check if allowed
     if (!this.getConfig('allowPlayerConfig')) {
       return
     }
 
-    //No settings
-    const settings = game.getInfo('settings')
-    if (!settings) {
-      return
-    }
+    //Get config
+    const config = game.getInfo('settings')
 
-    //Set config
-    for (const key in settings) {
-      this.setConfig(key, settings[key])
-    }
+    //Load config
+    this.loadConfig(config)
   }
 
   /*****************************************************************************
@@ -361,24 +348,22 @@ export default class Player extends EventTarget {
 
     //Create new game
     const game = Game.fromData(data)
-    const {board} = this
 
     //Set
     this.game = game
     this.path = null
 
     //Load game config and trigger event
-    this.loadGameConfig()
+    this.loadConfigFromGame(game)
     this.triggerEvent('game', {game})
 
     //Go to first move
     game.first()
 
     //Board present?
-    if (board) {
-      const boardConfig = game.getInfo('board')
-      board.removeAll()
-      board.setConfig(boardConfig)
+    if (this.board) {
+      this.board.removeAll()
+      this.board.loadConfigFromGame(game)
       this.processPosition()
     }
   }
@@ -674,12 +659,9 @@ export default class Player extends EventTarget {
     //Set it
     this.board = board
 
-    //Get config
-    const boardConfig = this.game.getInfo('board')
-
     //Set up board
     this.board.removeAll()
-    this.board.setConfig(boardConfig)
+    this.board.loadConfigFromGame(this.game)
 
     //Process position
     this.processPosition()

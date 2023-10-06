@@ -1,3 +1,4 @@
+import Base from './base.js'
 import BoardLayerFactory from './board-layer-factory.js'
 import StoneFactory from './stone-factory.js'
 import MarkupFactory from './markup-factory.js'
@@ -22,108 +23,71 @@ import {
  * to toggle coordinates on or off. This class is responsible for drawing all
  * layers on the board.
  */
-export default class Board {
+export default class Board extends Base {
+
+  //Layer order
+  layerOrder = [
+    boardLayerTypes.GRID,
+    boardLayerTypes.COORDINATES,
+    boardLayerTypes.SHADOW,
+    boardLayerTypes.STONES,
+    boardLayerTypes.SCORE,
+    boardLayerTypes.MARKUP,
+    boardLayerTypes.HOVER,
+  ]
+
+  //Board draw dimensions in pixels
+  cellSize = 0
+  drawWidth = 0
+  drawHeight = 0
+  drawMarginHor = 0
+  drawMarginVer = 0
+  gridDrawWidth = 0
+  gridDrawHeight = 0
+
+  //Last draw width/height values for change tracking
+  lastDrawWidth = 0
+  lastDrawHeight = 0
 
   /**
    * Board constructor
    */
   constructor(config) {
 
-    //Initialize properties and setup board
-    this.init()
-    this.setup()
+    //Parent constructor
+    super()
 
-    //Set config
-    if (config) {
-      this.setConfig(config)
-    }
+    //Instantiate theme
+    this.theme = new Theme()
+
+    //Initialize board
+    this.init()
+    this.createLayers()
+    this.initConfig(config)
   }
 
   /**
-   * Initialize properties
+   * Initialize board
    */
   init() {
 
-    //Instantiate services
-    this.theme = new Theme()
-    this.layers = new Map()
-
-    //Instantiate properties
-    this.layerOrder = [
-      boardLayerTypes.GRID,
-      boardLayerTypes.COORDINATES,
-      boardLayerTypes.SHADOW,
-      boardLayerTypes.STONES,
-      boardLayerTypes.SCORE,
-      boardLayerTypes.MARKUP,
-      boardLayerTypes.HOVER,
-    ]
-
-    //Initialize board draw dimensions in pixels
-    this.cellSize = 0
-    this.drawWidth = 0
-    this.drawHeight = 0
-    this.drawMarginHor = 0
-    this.drawMarginVer = 0
-    this.gridDrawWidth = 0
-    this.gridDrawHeight = 0
-
-    //Last draw width/height values for change tracking
-    this.lastDrawWidth = 0
-    this.lastDrawHeight = 0
-
-    //Get margin from theme
-    this.margin = 0
-
-    //Flags
-    this.swapColors = false
-    this.showCoordinates = false
-
-    //Initialize grid size
+    //Initialize board size
     this.width = 0
     this.height = 0
-
-    //Initialize cutoff
-    this.cutoff = {
-      top: false,
-      left: false,
-      right: false,
-      bottom: false,
-    }
-
-    //Initialize section
-    this.section = {
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-    }
-  }
-
-  /**
-   * Setup board
-   */
-  setup() {
-
-    //Get margin from theme
-    this.margin = this.theme.get('board.margin')
-
-    //Clear layers
-    this.layers.clear()
-
-    //Create layers
-    for (const type of this.layerOrder) {
-      this.createLayer(type)
-    }
   }
 
   /**
    * Reset board
    */
   reset() {
+
+    //Preserve config
+    const {config} = this
+
+    //Reinitialise board (no need to recreate layers)
     this.removeAll()
     this.init()
-    this.setup()
+    this.initConfig(config)
   }
 
   /**************************************************************************
@@ -141,28 +105,86 @@ export default class Board {
   }
 
   /**
+   * Section config
+   */
+  get sectionLeft() {
+    return this.getConfig('section.left', 0)
+  }
+  get sectionRight() {
+    return this.getConfig('section.right', 0)
+  }
+  get sectionTop() {
+    return this.getConfig('section.top', 0)
+  }
+  get sectionBottom() {
+    return this.getConfig('section.bottom', 0)
+  }
+
+  /**
+   * Cutoff config
+   */
+  get cutoffLeft() {
+    return this.getConfig('cutoffLeft', false)
+  }
+  get cutoffRight() {
+    return this.getConfig('cutoffRight', false)
+  }
+  get cutoffTop() {
+    return this.getConfig('cutoffTop', false)
+  }
+  get cutoffBottom() {
+    return this.getConfig('cutoffBottom', false)
+  }
+
+  /**
    * Board's x & y coordinates
    */
   get xLeft() {
-    const {section} = this
-    return 0 + section.left
+    return 0 + this.sectionLeft
   }
   get xRight() {
-    const {width, section} = this
-    return width - 1 - section.right
+    return this.width - 1 - this.sectionRight
   }
   get yTop() {
-    const {section} = this
-    return 0 + section.top
+    return 0 + this.sectionTop
   }
   get yBottom() {
-    const {height, section} = this
-    return height - 1 - section.bottom
+    return this.height - 1 - this.sectionBottom
+  }
+
+  /**
+   * Get margin from theme
+   */
+  get margin() {
+
+    //Get data
+    const {theme} = this
+    const showCoordinates = this.getConfig('showCoordinates')
+
+    //Check if showing coordinates
+    if (showCoordinates) {
+      return theme.get('coordinates.margin') || 0
+    }
+    return theme.get('board.margin') || 0
   }
 
   /**************************************************************************
    * Layer handling
    ***/
+
+  /**
+   * Create layers
+   */
+  createLayers() {
+
+    //Initialise layers
+    this.layers = new Map()
+
+    //Create layers
+    for (const type of this.layerOrder) {
+      this.createLayer(type)
+    }
+  }
 
   /**
    * Create layer of given type
@@ -186,110 +208,47 @@ export default class Board {
    ***/
 
   /**
-   * Set config instructions in bulk
+   * Initialise config
    */
-  setConfig(config) {
+  initConfig(config) {
 
     //Extend from default config
-    config = Object.assign({}, defaultBoardConfig, config || {})
+    super.initConfig(config, defaultBoardConfig)
 
-    //Process config
-    this.toggleCoordinates(config.showCoordinates)
-    this.toggleSwapColors(config.swapColors)
-    this.setCutoff(config.cutoff)
-    this.setSection(config.section)
+    //Load size from config
+    this.loadSizeFromConfig()
+    this.computeAndRedraw()
+  }
+
+  /**
+   * Load config from game info
+   */
+  loadConfigFromGame(game) {
+
+    //Get board config
+    const config = game.getInfo('board')
+
+    //Load, then redraw
+    this.loadConfig(config)
+    this.loadSizeFromConfig()
+    this.computeAndRedraw()
+  }
+
+  /**
+   * Load size from config
+   */
+  loadSizeFromConfig() {
+
+    //Get sizing
+    const {size, width, height} = this.config
 
     //Set size
-    if (config.size) {
-      this.setSize(config.size)
+    if (size) {
+      this.setSize(size)
     }
-    else if (config.width && config.height) {
-      this.setSize(config.width, config.height)
+    else if (width && height) {
+      this.setSize(width, height)
     }
-  }
-
-  /**
-   * Set theme config
-   */
-  setThemeConfig(themeConfig) {
-    this.theme.setConfig(themeConfig)
-  }
-
-  /**
-   * Set margin
-   */
-  setMargin(margin) {
-
-    //Reset when not defined
-    if (typeof margin === 'undefined') {
-      margin = this.theme.get('board.margin')
-    }
-
-    //Set margin if changed
-    if (this.margin !== margin) {
-      this.margin = margin
-      this.computeAndRedraw()
-    }
-  }
-
-  /**
-   * Set grid cut-off
-   */
-  setCutoff(cutoff) {
-
-    //Nothing given? Reset cutoff
-    if (!cutoff || !Array.isArray(cutoff)) {
-      cutoff = []
-    }
-
-    //Init
-    let changes = false
-
-    //Check if there's a change
-    for (const side in this.cutoff) {
-      if (cutoff[side] !== this.cutoff[side]) {
-        this.cutoff[side] = cutoff[side]
-        changes = true
-      }
-    }
-
-    //Trigger redraw if there were changes
-    if (changes) {
-      this.computeAndRedraw()
-    }
-  }
-
-  /**
-   * Set section of the board to be displayed
-   */
-  setSection(section) {
-
-    //Nothing given?
-    if (!section || typeof section !== 'object') {
-      return
-    }
-
-    //Expand on default
-    section = Object.assign({
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-    }, section)
-
-    //No changes?
-    if (
-      this.section.top === section.top &&
-      this.section.bottom === section.bottom &&
-      this.section.left === section.left &&
-      this.section.right === section.right
-    ) {
-      return
-    }
-
-    //Set section and call resized handler
-    this.section = section
-    this.computeAndRedraw()
   }
 
   /**
@@ -344,39 +303,16 @@ export default class Board {
    * Toggle the coordinates
    */
   toggleCoordinates(show) {
-
-    //Set or toggle
-    if (typeof show !== 'undefined') {
-      this.showCoordinates = show
-    }
-    else {
-      this.showCoordinates = !this.showCoordinates
-    }
-
-    //Set the proper board margin
-    if (this.showCoordinates) {
-      this.setMargin(this.theme.get('coordinates.margin'))
-    }
-    else {
-      this.setMargin(this.theme.get('board.margin'))
-    }
+    this.toggleConfig('showCoordinates', show)
+    this.computeAndRedraw()
   }
 
   /**
    * Swap colors on the board
    */
   toggleSwapColors(swapColors) {
-
-    //Set
-    if (typeof swapColors !== 'undefined') {
-      this.swapColors = swapColors
-    }
-    else {
-      this.swapColors = !this.swapColors
-    }
-
-    //Redraw as needed
-    this.redrawAfterColorSwap()
+    this.toggleConfig('swapColors', swapColors)
+    this.redraw()
   }
 
   /*****************************************************************************
@@ -605,15 +541,6 @@ export default class Board {
   }
 
   /**
-   * Redraw after a color swap
-   */
-  redrawAfterColorSwap() {
-    this.redrawLayer(boardLayerTypes.STONES)
-    this.redrawLayer(boardLayerTypes.MARKUP)
-    this.redrawLayer(boardLayerTypes.SCORE)
-  }
-
-  /**
    * Can draw check
    */
   canDraw() {
@@ -638,16 +565,15 @@ export default class Board {
 
     //Get data
     const {
-      width, height,
-      drawWidth, drawHeight,
-      margin, cutoff,
+      width, height, drawWidth, drawHeight, margin,
+      cutoffLeft, cutoffRight, cutoffTop, cutoffBottom,
     } = this
 
     //Add half a cell of draw size if we're cutting of parts of the grid
-    const cutoffHor = [cutoff.left, cutoff.right]
+    const cutoffHor = [cutoffLeft, cutoffRight]
       .map(side => side ? 0.5 : 0)
       .reduce((value, total) => value + total, 0)
-    const cutoffVer = [cutoff.top, cutoff.bottom]
+    const cutoffVer = [cutoffTop, cutoffBottom]
       .map(side => side ? 0.5 : 0)
       .reduce((value, total) => value + total, 0)
 
@@ -692,7 +618,7 @@ export default class Board {
    * Convert grid coordinate to pixel coordinate
    */
   getAbsX(x) {
-    let offset = this.cutoff.left ? 0.5 : 0
+    let offset = this.cutoffLeft ? 0.5 : 0
     return this.drawMarginHor + Math.round((x + offset) * this.cellSize)
   }
 
@@ -700,7 +626,7 @@ export default class Board {
    * Convert grid coordinate to pixel coordinate
    */
   getAbsY(y) {
-    let offset = this.cutoff.top ? 0.5 : 0
+    let offset = this.cutoffTop ? 0.5 : 0
     return this.drawMarginVer + Math.round((y + offset) * this.cellSize)
   }
 
@@ -708,7 +634,7 @@ export default class Board {
    * Convert pixel coordinate to grid coordinate
    */
   getGridX(absX) {
-    let offset = this.cutoff.left ? 0.5 : 0
+    let offset = this.cutoffLeft ? 0.5 : 0
     return Math.round((absX - this.drawMarginHor) / this.cellSize - offset)
   }
 
@@ -716,7 +642,7 @@ export default class Board {
    * Convert pixel coordinate to grid coordinate
    */
   getGridY(absY) {
-    let offset = this.cutoff.top ? 0.5 : 0
+    let offset = this.cutoffTop ? 0.5 : 0
     return Math.round((absY - this.drawMarginVer) / this.cellSize - offset)
   }
 

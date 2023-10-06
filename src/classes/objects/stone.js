@@ -53,7 +53,7 @@ export default class Stone extends GridObject {
     const {board, color} = this
 
     //Swap if needed
-    if (board.swapColors) {
+    if (board.getConfig('swapColors')) {
       return swapColor(color)
     }
     return color

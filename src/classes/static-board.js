@@ -12,22 +12,13 @@ import {
  */
 export default class StaticBoard extends Board {
 
-  /**
-   * Initialize properties
-   */
-  init() {
-
-    //Parent init
-    super.init()
-
-    //Different layer order
-    this.layerOrder = [
-      boardLayerTypes.GRID,
-      boardLayerTypes.COORDINATES,
-      boardLayerTypes.STONES,
-      boardLayerTypes.MARKUP,
-    ]
-  }
+  //Layer order for static boards
+  layerOrder = [
+    boardLayerTypes.GRID,
+    boardLayerTypes.COORDINATES,
+    boardLayerTypes.STONES,
+    boardLayerTypes.MARKUP,
+  ]
 
   /**
    * Erase the whole board
@@ -44,13 +35,6 @@ export default class StaticBoard extends Board {
    */
   eraseLayer() {}
   redrawLayer() {}
-
-  /**
-   * Redraw after a color swap
-   */
-  redrawAfterColorSwap() {
-    this.redraw()
-  }
 
   /**
    * Setup elements

@@ -32,8 +32,8 @@ export const scoreState = {
  * Repeating positions check types
  */
 export const checkRepeatTypes = {
-  KO: 'KO',
-  ALL: 'ALL',
+  KO: 'ko',
+  ALL: 'all',
 }
 
 /**

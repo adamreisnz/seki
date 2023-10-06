@@ -34,7 +34,6 @@ export default class Game {
 
     //Init
     this.init()
-    this.initializeHistory()
   }
 
   /**
@@ -59,6 +58,16 @@ export default class Game {
     this.allowSuicide = false
     this.rememberPath = true
     this.checkRepeat = checkRepeatTypes.KO
+
+    //Initialize history
+    this.initializeHistory()
+  }
+
+  /**
+   * Reset
+   */
+  reset() {
+    this.init()
   }
 
   /**
@@ -398,16 +407,17 @@ export default class Game {
    */
   isRepeatingPosition(checkPosition) {
 
-    //Init
+    //Get data
+    const {checkRepeat, history} = this
     let stop
 
     //Check for ko only? (Last two positions)
-    if (this.checkRepeat === 'KO' && (this.history.length - 2) >= 0) {
-      stop = this.history.length - 2
+    if (checkRepeat === checkRepeatTypes.KO && (history.length - 2) >= 0) {
+      stop = history.length - 2
     }
 
     //Check all history?
-    else if (this.checkRepeat === 'ALL') {
+    else if (checkRepeat === checkRepeatTypes.ALL) {
       stop = 0
     }
 
@@ -417,8 +427,8 @@ export default class Game {
     }
 
     //Loop history of positions to check
-    for (let i = this.history.length - 2; i >= stop; i--) {
-      if (checkPosition.isSameAs(this.history[i])) {
+    for (let i = history.length - 2; i >= stop; i--) {
+      if (checkPosition.isSameAs(history[i])) {
         return true
       }
     }

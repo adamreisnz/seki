@@ -47,6 +47,6 @@ export const defaultBoardConfig = {
   },
 
   //Flags
-  showCoordinates: false,
+  showCoordinates: true,
   swapColors: false,
 }

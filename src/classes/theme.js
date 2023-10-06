@@ -1,4 +1,5 @@
 import merge from 'deepmerge'
+import Base from './base.js'
 import {get, set} from '../helpers/object.js'
 import defaultTheme from '../themes/default.js'
 
@@ -8,16 +9,19 @@ import defaultTheme from '../themes/default.js'
  * flexible and allows you to use static values or dynamic values depending on
  * other properties, like the grid cell size.
  */
-export default class Theme {
+export default class Theme extends Base {
 
   /**
    * Board theme constructor
    */
   constructor(config) {
 
+    //Parent constructor
+    super()
+
     //Set theme config
     if (config) {
-      this.setConfig(config)
+      this.initConfig(config)
     }
     else {
       this.resetToDefaults()
@@ -25,9 +29,9 @@ export default class Theme {
   }
 
   /**
-   * Change the theme
+   * Initialise config
    */
-  setConfig(config) {
+  initConfig(config) {
     this.config = merge.all([defaultTheme, config || {}])
   }
 
