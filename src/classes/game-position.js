@@ -318,18 +318,25 @@ export default class GamePosition {
   /**
    * Clones the whole position except turn and captures
    */
-  clone() {
+  clone(withMarkup = false) {
 
     //Create a new position
     const newPosition = new GamePosition()
-    const {turn, width, height, stones} = this
+    const {turn, width, height, stones, markup} = this
 
     //Set vars
     newPosition.turn = turn
     newPosition.width = width
     newPosition.height = height
     newPosition.stones = stones.clone()
-    newPosition.markup = new Grid(width, height)
+
+    //With markup?
+    if (withMarkup) {
+      newPosition.markup = markup.clone()
+    }
+    else {
+      newPosition.markup = new Grid(width, height)
+    }
 
     //Return
     return newPosition

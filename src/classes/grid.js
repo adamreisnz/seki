@@ -70,10 +70,30 @@ export default class Grid {
    * Check if we have a specific value on the coordinates
    */
   is(x, y, check) {
+
+    //Nothing on grid on these coordinates
     if (!this.isOnGrid(x, y)) {
       return false
     }
+
+    //Get value
     const value = this.getGridMapValue(x, y)
+
+    //Object, check keys (1 level deep)
+    if (value && typeof value === 'object') {
+
+      //Check is not an object
+      if (!check || typeof check !== 'object') {
+        return false
+      }
+
+      //Compare
+      return Object
+        .keys(check)
+        .every(key => value[key] === check[key])
+    }
+
+    //Simple check
     return (value === check)
   }
 

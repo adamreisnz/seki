@@ -432,6 +432,9 @@ export default class Board extends Base {
     //Set new stones and markup grids
     this.setAll(boardLayerTypes.STONES, stones)
     this.setAll(boardLayerTypes.MARKUP, markup)
+
+    //TODO: let's see if this is useful
+    this.redraw()
   }
 
   /*****************************************************************************

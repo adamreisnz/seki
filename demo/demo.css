@@ -44,6 +44,7 @@ p {
 }
 .left {
   flex: 1;
+  padding-right: 2rem;
 }
 .right {
   flex: 0 0 250px

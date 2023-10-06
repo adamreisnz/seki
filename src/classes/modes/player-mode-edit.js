@@ -1,7 +1,7 @@
 import PlayerModeReplay from './player-mode-replay.js'
 import {aCharUc, aCharLc} from '../../constants/common.js'
 import {markupTypes} from '../../constants/markup.js'
-import {boardLayerTypes} from '../../constants/board.js'
+import {stoneColors} from '../../constants/stone.js'
 import {
   playerModes,
   playerTools,
@@ -179,39 +179,33 @@ export default class PlayerModeEdit extends PlayerModeReplay {
   /**
    * Set setup
    */
-  setSetup(x, y, isDrag) {
+  setSetup(x, y) {
 
     //Get data
-    const {game, board, setupTool} = this
+    const {player, game, setupTool} = this
+    const color = this.getColorForSetupTool(setupTool)
 
-    //Clear
-    if (setupTool === setupTools.CLEAR) {
+    //Debug
+    this.debug(`setup ${setupTool} at (${x},${y})`)
+
+    //Stone already in place of this same color
+    if (color && game.hasStone(x, y, color)) {
+      this.debug(`already have ${color} stone at (${x},${y})`)
+      return
+    }
+
+    //Remove existing stone
+    if (game.hasStone(x, y)) {
       game.removeStone(x, y)
     }
 
-    //Adding a stone
-    else {
-
-      //The color is the tool
-      const color = setupTool
-
-      //A stone there already of the same color? Just remove if not dragging
-      if (!isDrag && game.hasStone(x, y, color)) {
-        game.removeStone(x, y)
-        return
-      }
-
-      //Any stone present?
-      else if (game.hasStone(x, y)) {
-        game.removeStone(x, y)
-      }
-
-      //Add stone now
+    //Add stone unless clear tool was used
+    if (setupTool !== setupTools.CLEAR) {
       game.addStone(x, y, color)
     }
 
-    //Redraw markup
-    board.redrawCell(boardLayerTypes.MARKUP, x, y)
+    //Process position
+    player.processPosition()
   }
 
   /**
@@ -301,5 +295,17 @@ export default class PlayerModeEdit extends PlayerModeReplay {
 
     //Return
     return text
+  }
+
+  /**
+   * Get stone color for a given setup type
+   */
+  getColorForSetupTool(tool) {
+    if (tool === setupTools.BLACK) {
+      return stoneColors.BLACK
+    }
+    else if (tool === setupTools.WHITE) {
+      return stoneColors.WHITE
+    }
   }
 }

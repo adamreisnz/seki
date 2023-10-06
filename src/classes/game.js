@@ -1,4 +1,5 @@
 import merge from 'deepmerge'
+import Base from './base.js'
 import GamePath from './game-path.js'
 import GameNode from './game-node.js'
 import GamePosition from './game-position.js'
@@ -10,6 +11,7 @@ import ConvertToJgf from './converters/convert-to-jgf.js'
 import ConvertToJson from './converters/convert-to-json.js'
 import ConvertToSgf from './converters/convert-to-sgf.js'
 import {set, get} from '../helpers/object.js'
+import {isValidColor} from '../helpers/stone.js'
 import {stoneColors} from '../constants/stone.js'
 import {kifuFormats} from '../constants/app.js'
 import {setupTypes} from '../constants/setup.js'
@@ -25,12 +27,15 @@ import {
  * The class also keeps a stack of all board positions in memory and can validate moves to make
  * sure they are not repeating or suicide.
  */
-export default class Game {
+export default class Game extends Base {
 
   /**
    * Constructor
    */
   constructor() {
+
+    //Parent
+    super()
 
     //Init
     this.init()
@@ -505,134 +510,58 @@ export default class Game {
   }
 
   /**
-   * Check if a stone (setup) placement is valid.
+   * Check if a setup placement is valid.
    */
-  validatePlacement(x, y, color, position) {
+  validateSetupPlacement(x, y, color, newPosition) {
+
+    //Get data
+    const {position} = this
 
     //Check coordinates validity
     if (!this.isOnBoard(x, y)) {
-      throw new Error(`Position out of bounds: ${x}, ${y}, ${color}`)
+      return [null, `Position (${x},${y}) is out of bounds`]
     }
 
-    //Place the stone
-    position.stones.set(x, y, color)
-
-    //Empty spot? Don't need to check for captures
-    if (!color) {
-      return
-    }
+    //Create position
+    newPosition = newPosition || position.clone()
+    newPosition.stones.set(x, y, color)
 
     //Capture adjacent stones if possible
-    let captures = position.captureAdjacent(x, y)
+    const captures = newPosition.captureAdjacent(x, y)
 
     //No captures occurred? Check if the move we're making is a suicide move
     if (!captures) {
 
       //No liberties for the group we've just created? Capture it
-      if (!position.hasLiberties(x, y)) {
-        position.captureGroup(x, y)
+      if (!newPosition.hasLiberties(x, y)) {
+        newPosition.captureGroup(x, y)
       }
     }
+
+    //Return position
+    return [newPosition]
   }
 
   /*****************************************************************************
-   * Stone and markup handling
+   * Markup and setup stones handling
    ***/
-
-  /**
-   * Add a stone
-   */
-  addStone(x, y, color) {
-
-    //Check if there's anything to do at all
-    if (this.position.stones.is(x, y, color)) {
-      return
-    }
-
-    //Create temporary position
-    let tempPosition = this.position.clone()
-
-    //Validate placement on temp position
-    this.validatePlacement(x, y, color, tempPosition)
-
-    //No setup instructions container in this node?
-    if (typeof this.node.setup === 'undefined') {
-
-      //Is this a move node?
-      if (this.node.isMove()) {
-
-        //Clone our position
-        this.pushPosition()
-
-        //Create new node
-        let node = new GameNode()
-
-        //Append it to the current node and change the pointer
-        let i = node.appendTo(this.node)
-        this.node = node
-
-        //Advance path to the added node index
-        this.path.advance(i)
-      }
-
-      //Create setup container in this node
-      this.node.setup = []
-    }
-
-    //Replace current position
-    this.replacePosition(tempPosition)
-
-    //Add setup instructions to node
-    this.node.setup.push(this.position.stones.get(x, y))
-  }
-
-  /**
-   * Remove a stone
-   */
-  removeStone(x, y) {
-
-    //Remove from node setup instruction
-    if (typeof this.node.setup !== 'undefined') {
-      for (let i = 0; i < this.node.setup.length; i++) {
-        if (x === this.node.setup[i].x && y === this.node.setup[i].y) {
-
-          //Remove from node and unset in position
-          this.node.setup.splice(i, 1)
-          this.position.stones.delete(x, y)
-
-          //Mark as found
-          break
-        }
-      }
-    }
-  }
-
-  /**
-   * Get stone on coordinates
-   */
-  getStone(x, y) {
-    return this.position.stones.get(x, y)
-  }
-
-  /**
-   * Check if there is a stone at the given coordinates for the current position
-   */
-  hasStone(x, y, color) {
-    if (typeof color !== 'undefined') {
-      return this.position.stones.is(x, y, color)
-    }
-    return this.position.stones.has(x, y)
-  }
 
   /**
    * Add markup
    */
   addMarkup(x, y, markup) {
 
-    //Get data
-    const {position, node} = this
+    //No markup here
+    if (this.hasMarkup(x, y, markup)) {
+      this.debug(`already has markup of type ${markup.type} on (${x},${y})`)
+      return
+    }
 
-    //Add markup to game position and node itself
+    //Debug
+    this.debug(`adding ${markup.type} markup to (${x},${y})`)
+
+    //Add
+    const {position, node} = this
     position.markup.set(x, y, markup)
     node.addMarkup(x, y, markup)
   }
@@ -642,10 +571,17 @@ export default class Game {
    */
   removeMarkup(x, y) {
 
-    //Get data
-    const {position, node} = this
+    //No markup here
+    if (!this.hasMarkup(x, y)) {
+      this.debug(`no markup present on (${x},${y})`)
+      return
+    }
 
-    //Remove from node and postion
+    //Debug
+    this.debug(`removing markup from (${x},${y})`)
+
+    //Remove
+    const {position, node} = this
     node.removeMarkup(x, y)
     position.markup.delete(x, y)
   }
@@ -654,17 +590,141 @@ export default class Game {
    * Get markup on coordinates
    */
   getMarkup(x, y) {
-    return this.position.markup.get(x, y)
+    const {position} = this
+    return position.markup.get(x, y)
   }
 
   /**
    * Check if there is markup at the given coordinate for the current position
    */
-  hasMarkup(x, y, type) {
-    if (typeof type !== 'undefined') {
-      return this.position.markup.is(x, y, type)
+  hasMarkup(x, y, markup) {
+    const {position} = this
+    if (typeof markup === 'undefined') {
+      return position.markup.has(x, y)
     }
-    return this.position.markup.has(x, y)
+    return position.markup.is(x, y, markup)
+  }
+
+  /**
+   * Add a stone
+   */
+  addStone(x, y, color) {
+
+    //Validate color
+    if (!isValidColor(color)) {
+      this.warn(`invalid color ${color}`)
+      return
+    }
+
+    //Already have stone of this color
+    if (this.hasStone(x, y, color)) {
+      this.debug(`already has stone of color ${color} on (${x},${y})`)
+      return
+    }
+
+    //Debug
+    this.debug(`adding ${color} stone at (${x},${y})`)
+
+    //Get data and validate placement
+    const {position, node} = this
+    const [newPosition, reason] = this.validateSetupPlacement(x, y, color)
+
+    //Invalid placement
+    if (!newPosition) {
+      this.debug.warn(reason)
+      return
+    }
+
+    //Add to node as a setup instruction
+    const newNodeIndex = node.addSetup(x, y, {type: color})
+
+    //Replace the position if a new node was created
+    if (typeof newNodeIndex !== 'undefined') {
+      this.debug(`new node was created with index ${newNodeIndex}`)
+      this.handleNewSetupNodeCreation(newNodeIndex)
+      this.replacePosition(newPosition)
+      return
+    }
+
+    //Just set stone on current position
+    position.stones.set(x, y, color)
+  }
+
+  /**
+   * Remove a stone
+   */
+  removeStone(x, y) {
+
+    //No stone on this position
+    if (!this.hasStone(x, y)) {
+      this.debug(`no stone present on (${x},${y})`)
+      return
+    }
+
+    //Debug
+    this.debug(`removing stone from (${x},${y})`)
+
+    //Get data
+    const {position, node} = this
+
+    //Check if stone is present in setup instructions
+    //If so, just remove it from the setup
+    if (node.hasSetup(x, y)) {
+      node.removeSetup(x, y)
+      position.stones.delete(x, y)
+      return
+    }
+
+    //Not present, so it was added on the board previously,
+    //either by another setup instruction or by a move
+    //We have to clear it using a new setup instruction and
+    //this also creates a new position
+    const newPosition = position.clone()
+    newPosition.stones.delete(x, y)
+
+    //Add setup instruction
+    const newNodeIndex = node.addSetup(x, y, {type: setupTypes.CLEAR})
+
+    //Replace current position
+    this.handleNewSetupNodeCreation(newNodeIndex)
+    this.replacePosition(newPosition)
+  }
+
+  /**
+   * Get stone on coordinates
+   */
+  getStone(x, y) {
+    const {position} = this
+    return position.stones.get(x, y)
+  }
+
+  /**
+   * Check if there is a stone at given coordinates
+   */
+  hasStone(x, y, color) {
+    const {position} = this
+    if (typeof color === 'undefined') {
+      return position.stones.has(x, y)
+    }
+    return position.stones.is(x, y, color)
+  }
+
+  /**
+   * Helper to handle the creation of a new setup node
+   */
+  handleNewSetupNodeCreation(i) {
+
+    //Nothing to do
+    if (typeof i === 'undefined') {
+      return
+    }
+
+    //Clone our position
+    this.pushPosition()
+
+    //Advance path to the added node index
+    this.node = this.node.getChild(i)
+    this.path.advance(i)
   }
 
   /*****************************************************************************
