@@ -1,6 +1,7 @@
 import MarkupCircle from './objects/markup-circle.js'
 import MarkupSquare from './objects/markup-square.js'
 import MarkupTriangle from './objects/markup-triangle.js'
+import MarkupDiamond from './objects/markup-diamond.js'
 import MarkupMark from './objects/markup-mark.js'
 import MarkupSelect from './objects/markup-select.js'
 import MarkupLabel from './objects/markup-label.js'
@@ -24,6 +25,8 @@ export default class MarkupFactory {
         return MarkupSquare
       case markupTypes.TRIANGLE:
         return MarkupTriangle
+      case markupTypes.DIAMOND:
+        return MarkupDiamond
       case markupTypes.MARK:
         return MarkupMark
       case markupTypes.SELECT:

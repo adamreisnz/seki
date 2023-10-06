@@ -2,9 +2,9 @@ import Markup from './markup.js'
 import {markupTypes} from '../../constants/markup.js'
 
 /**
- * Sad smiley markup
+ * Diamond markup
  */
-export default class MarkupSad extends Markup {
+export default class MarkupDiamond extends Markup {
 
   /**
    * Constructor
@@ -15,14 +15,14 @@ export default class MarkupSad extends Markup {
     super(board, data)
 
     //Set type
-    this.type = markupTypes.SAD
+    this.type = markupTypes.DIAMOND
   }
 
   /**
    * Get grid erase radius
    */
   getGridEraseRadius() {
-    return this.getRadius() * 0.8
+    return this.getRadius() * 1.4
   }
 
   /**
@@ -44,7 +44,6 @@ export default class MarkupSad extends Markup {
 
     //Get theme variables
     const lineWidth = this.getLineWidth()
-    const lineCap = this.getLineCap()
     const canvasTranslate = theme.canvasTranslate(lineWidth)
 
     //Translate canvas
@@ -56,38 +55,16 @@ export default class MarkupSad extends Markup {
     }
 
     //Configure context
-    context.fillStyle = color
     context.strokeStyle = color
     context.lineWidth = lineWidth
-    context.lineCap = lineCap
 
     //Draw element
     context.beginPath()
-    context.arc(
-      absX - radius / 3,
-      absY - radius / 3,
-      radius / 6,
-      0, 2 * Math.PI, true,
-    )
-    context.fill()
-    context.beginPath()
-    context.arc(
-      absX + radius / 3,
-      absY - radius / 3,
-      radius / 6,
-      0, 2 * Math.PI, true,
-    )
-    context.fill()
-    context.beginPath()
-    context.moveTo(absX - radius / 1.6, absY + radius / 1.5 - 1)
-    context.bezierCurveTo(
-      absX - radius / 1.8,
-      absY + radius / 8 - 1,
-      absX + radius / 1.8,
-      absY + radius / 8 - 1,
-      absX + radius / 1.6,
-      absY + radius / 1.5 - 1,
-    )
+    context.moveTo(absX, absY - radius)
+    context.lineTo(absX - radius, absY)
+    context.lineTo(absX, absY + radius)
+    context.lineTo(absX + radius, absY)
+    context.closePath()
     context.stroke()
 
     //Reset transparency

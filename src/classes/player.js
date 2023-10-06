@@ -217,6 +217,13 @@ export default class Player extends Base {
   }
 
   /**
+   * Get active mode
+   */
+  getActiveMode() {
+    return this.activeMode
+  }
+
+  /**
    * Get active tool
    */
   getActiveTool() {
@@ -289,7 +296,7 @@ export default class Player extends Base {
     //Set active mode
     this.activeMode = mode
     this.debug(`${mode} mode activated`)
-    this.triggerEvent('mode', {mode})
+    this.triggerEvent('modeChanged', {mode})
   }
 
   /**
@@ -312,7 +319,7 @@ export default class Player extends Base {
     //Set active tool
     this.activeTool = tool
     this.debug(`${tool} tool activated`)
-    this.triggerEvent('tool', {tool})
+    this.triggerEvent('toolChanged', {tool})
   }
 
   /**************************************************************************

@@ -54,3 +54,11 @@ export function bindClickHandler(id, handler) {
   const element = document.getElementById(id)
   element.addEventListener('click', handler)
 }
+
+/**
+ * Toggle visibility
+ */
+export function toggleVisibility(id, visible) {
+  const element = document.getElementById(id)
+  element.style.display = visible ? 'block' : 'none'
+}

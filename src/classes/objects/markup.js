@@ -7,6 +7,13 @@ import {swapColor} from '../../helpers/stone.js'
  */
 export default class Markup extends GridObject {
 
+  //Properties
+  type
+  color
+  lineWidth
+  lineCap
+  alpha = 1
+
   /**
    * Constructor
    */
@@ -14,13 +21,6 @@ export default class Markup extends GridObject {
 
     //Parent constructor
     super(board)
-
-    //Instantiate properties
-    this.type = undefined
-    this.color = undefined
-    this.lineWidth = undefined
-    this.lineCap = undefined
-    this.alpha = 1
 
     //Set data
     this.setData(data)
@@ -44,6 +44,13 @@ export default class Markup extends GridObject {
 
     //Scale
     return Math.round(radius * scale)
+  }
+
+  /**
+   * Get grid erase radius
+   */
+  getGridEraseRadius() {
+    return this.getRadius()
   }
 
   /**
@@ -135,5 +142,41 @@ export default class Markup extends GridObject {
 
     //Return copy
     return copy
+  }
+
+  /**
+   * Draw
+   */
+  draw(context, x, y) {
+
+    //Check if we clear the grid below us
+    const {board} = this
+    const radius = this.getGridEraseRadius()
+
+    //No stone, no need
+    if (!board.has(boardLayerTypes.STONES, x, y)) {
+      board
+        .getLayer(boardLayerTypes.GRID)
+        .eraseCell(x, y, radius)
+    }
+
+    //Actual drawing is left as an excercise for the child class
+  }
+
+  /**
+   * Erase
+   */
+  erase(context, x, y) {
+
+    //Erase the markup
+    super.erase(context, x, y)
+
+    //Redraw grid cell
+    const {board} = this
+    if (!board.has(boardLayerTypes.STONES, x, y)) {
+      board
+        .getLayer(boardLayerTypes.GRID)
+        .redrawCell(x, y)
+    }
   }
 }

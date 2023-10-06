@@ -21,10 +21,6 @@
     <button id="loadSgf">Load SGF</button>
     <button id="loadGib">Load GIB</button>
 
-    <h2>Other</h2>
-    <button id="toggleCoordinates">Toggle coordinates</button>
-    <button id="toggleSwapColors">Swap colors</button>
-
     <h2>Switch mode</h2>
     <button id="switchModeNone">None</button>
     <button id="switchModeReplay">Replay</button>
@@ -32,30 +28,40 @@
     <button id="switchModeEdit">Edit</button>
     <button id="switchModeSolve">Solve</button>
 
-    <h2>Replay mode tools</h2>
-    <button id="startAutoPlay">Start auto play</button>
-    <button id="stopAutoPlay">Stop auto play</button>
+    <div id="editTools">
+      <h2>Markup</h2>
+      <button id="switchMarkupToolCircle">Circle</button>
+      <button id="switchMarkupToolTriangle">Triangle</button>
+      <button id="switchMarkupToolSquare">Square</button>
+      <button id="switchMarkupToolDiamond">Diamond</button>
+      <button id="switchMarkupToolMark">Mark</button>
+      <button id="switchMarkupToolLetter">Letter</button>
+      <button id="switchMarkupToolNumber">Number</button>
+      <button id="switchMarkupToolClear">Clear</button>
 
-    <h2>Markup tools</h2>
-    <button id="switchMarkupToolTriangle">Triangle</button>
-    <button id="switchMarkupToolSquare">Square</button>
-    <button id="switchMarkupToolCircle">Circle</button>
-    <button id="switchMarkupToolMark">Mark</button>
-    <button id="switchMarkupToolLetter">Letter</button>
-    <button id="switchMarkupToolNumber">Number</button>
-    <button id="switchMarkupToolClear">Clear</button>
+      <h2>Setup</h2>
+      <button id="switchToolMove">Move</button>
+      <button id="switchSetupToolBlack">Black</button>
+      <button id="switchSetupToolWhite">White</button>
+      <button id="switchSetupToolClear">Clear</button>
+    </div>
 
-    <h2>Setup tools</h2>
-    <button id="switchSetupToolBlack">Black</button>
-    <button id="switchSetupToolWhite">White</button>
-    <button id="switchSetupToolClear">Clear</button>
+    <div id="replayTools">
+      <h2>Auto play</h2>
+      <button id="startAutoPlay">Start</button>
+      <button id="stopAutoPlay">Stop</button>
+    </div>
+
+    <h2>Other</h2>
+    <button id="toggleCoordinates">Toggle coordinates</button>
+    <button id="toggleSwapColors">Swap colors</button>
   </info>
 </div>
 <script type="module">
   import Board from '../src/classes/board.js'
   import Player from '../src/classes/player.js'
   import {setDebug} from '../src/helpers/util.js'
-  import {bindClickHandler} from '../src/helpers/dom.js'
+  import {bindClickHandler, toggleVisibility} from '../src/helpers/dom.js'
   import {playerModes, playerTools, markupTools, setupTools} from '../src/constants/player.js'
 
   //Test data
@@ -110,14 +116,17 @@
   bindClickHandler('switchModeSolve', () => player.switchMode(playerModes.SOLVE))
 
   //Markup tools
+  bindClickHandler('switchMarkupToolCircle', () => {
+    player.switchMarkupTool(markupTools.CIRCLE)
+  })
   bindClickHandler('switchMarkupToolTriangle', () => {
     player.switchMarkupTool(markupTools.TRIANGLE)
   })
   bindClickHandler('switchMarkupToolSquare', () => {
     player.switchMarkupTool(markupTools.SQUARE)
   })
-  bindClickHandler('switchMarkupToolCircle', () => {
-    player.switchMarkupTool(markupTools.CIRCLE)
+  bindClickHandler('switchMarkupToolDiamond', () => {
+    player.switchMarkupTool(markupTools.DIAMOND)
   })
   bindClickHandler('switchMarkupToolMark', () => {
     player.switchMarkupTool(markupTools.MARK)
@@ -133,6 +142,9 @@
   })
 
   //Setup tools
+  bindClickHandler('switchToolMove', () => {
+    player.switchTool(playerTools.MOVE)
+  })
   bindClickHandler('switchSetupToolBlack', () => {
     player.switchSetupTool(setupTools.BLACK)
   })
@@ -142,6 +154,17 @@
   bindClickHandler('switchSetupToolClear', () => {
     player.switchSetupTool(setupTools.CLEAR)
   })
+
+  //Handler for mode changes
+  const onModeChange = () => {
+    const mode = player.getActiveMode()
+    toggleVisibility('replayTools', mode === playerModes.REPLAY)
+    toggleVisibility('editTools', mode === playerModes.EDIT)
+  }
+
+  //Event handlers
+  player.on('modeChanged', onModeChange)
+  onModeChange()
 </script>
 </body>
 </html>

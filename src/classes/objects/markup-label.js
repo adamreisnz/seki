@@ -1,6 +1,5 @@
 import Markup from './markup.js'
 import {markupTypes} from '../../constants/markup.js'
-import {boardLayerTypes} from '../../constants/board.js'
 
 /**
  * Label markup
@@ -24,6 +23,13 @@ export default class MarkupLabel extends Markup {
 
     //Set type
     this.type = markupTypes.LABEL
+  }
+
+  /**
+   * Get grid erase radius
+   */
+  getGridEraseRadius() {
+    return this.getRadius() * 0.8
   }
 
   /**
@@ -62,6 +68,9 @@ export default class MarkupLabel extends Markup {
    */
   draw(context, x, y) {
 
+    //Parent draw
+    super.draw(context, x, y)
+
     //Get data
     const {board, theme, alpha, text} = this
 
@@ -75,13 +84,6 @@ export default class MarkupLabel extends Markup {
     const font = this.getFont()
     const fontSize = this.determineFontSize(text, radius)
     const canvasTranslate = theme.canvasTranslate()
-
-    //First, clear grid square below for clarity
-    if (!board.has(boardLayerTypes.STONES, x, y)) {
-      board
-        .getLayer(boardLayerTypes.GRID)
-        .clearCell(x, y)
-    }
 
     //Translate canvas
     context.translate(canvasTranslate, canvasTranslate)
@@ -108,24 +110,5 @@ export default class MarkupLabel extends Markup {
 
     //Undo translation
     context.translate(-canvasTranslate, -canvasTranslate)
-  }
-
-  /**
-   * Erase
-   */
-  erase(context, x, y) {
-
-    //Get board
-    const {board} = this
-
-    //Erase the label
-    super.erase(context, x, y)
-
-    //If no stone on location, redraw the grid cell that we erased
-    if (!board.has(boardLayerTypes.STONES, x, y)) {
-      board
-        .getLayer(boardLayerTypes.GRID)
-        .redrawCell(x, y)
-    }
   }
 }

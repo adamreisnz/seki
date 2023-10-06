@@ -19,9 +19,19 @@ export default class MarkupHappy extends Markup {
   }
 
   /**
+   * Get grid erase radius
+   */
+  getGridEraseRadius() {
+    return this.getRadius() * 0.8
+  }
+
+  /**
    * Draw
    */
   draw(context, x, y) {
+
+    //Parent draw
+    super.draw(context, x, y)
 
     //Get data
     const {board, theme, alpha} = this

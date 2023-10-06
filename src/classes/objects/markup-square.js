@@ -24,6 +24,9 @@ export default class MarkupSquare extends Markup {
    */
   draw(context, x, y) {
 
+    //Parent draw
+    super.draw(context, x, y)
+
     //Get data
     const {board, theme, alpha} = this
 

@@ -20,9 +20,19 @@ export default class MarkupMark extends Markup {
   }
 
   /**
+   * Get grid erase radius
+   */
+  getGridEraseRadius() {
+    return this.getRadius()
+  }
+
+  /**
    * Draw
    */
   draw(context, x, y) {
+
+    //Parent draw
+    super.draw(context, x, y)
 
     //Get data
     const {board, theme, alpha} = this

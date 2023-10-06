@@ -58,7 +58,7 @@ export const jgf = {
           ],
         },
         {
-          type: 'select',
+          type: 'diamond',
           coords: [
             {x: 0, y: 3},
             {x: 1, y: 3},

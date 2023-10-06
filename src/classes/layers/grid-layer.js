@@ -119,9 +119,9 @@ export default class GridLayer extends BoardLayer {
   }
 
   /**
-   * Clear a square cell area on the grid
+   * Erase a square cell area on the grid
    */
-  clearCell(x, y) {
+  eraseCell(x, y, radius) {
 
     //Get board and context
     const {board, theme, context} = this
@@ -130,7 +130,11 @@ export default class GridLayer extends BoardLayer {
     const absX = board.getAbsX(x)
     const absY = board.getAbsY(y)
     const cellSize = board.getCellSize()
-    const radius = theme.get('stone.radius', cellSize)
+
+    //Determine radius if not given
+    if (!radius) {
+      radius = theme.get('stone.radius', cellSize)
+    }
 
     //Get theme properties
     const lineWidth = theme.get('grid.lineWidth', cellSize)

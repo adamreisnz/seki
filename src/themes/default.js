@@ -153,6 +153,11 @@ export default {
       scale: 0.75,
     },
 
+    //Diamond
+    diamond: {
+      scale: 0.65,
+    },
+
     //Cricle
     circle: {
       scale: 0.55,
