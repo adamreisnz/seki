@@ -223,9 +223,6 @@ export default class Board {
       this.margin = margin
       this.computeAndRedraw()
     }
-
-    //Return self for chaining
-    return this
   }
 
   /**

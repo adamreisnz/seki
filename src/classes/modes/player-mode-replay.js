@@ -24,11 +24,33 @@ export default class PlayerModeReplay extends PlayerMode {
     this.availableTools = [
       playerTools.NONE,
       playerTools.MOVE,
-      playerTools.SCORE,
     ]
 
     //Set default tool
     this.defaultTool = playerTools.MOVE
+
+    //Auto play settings
+    this.isAutoPlaying = false
+    this.autoPlayInterval = null
+  }
+
+  /**
+   * Deactivate this mode
+   */
+  deactivate() {
+
+    //Parent method
+    super.deactivate()
+
+    //Stop auto play
+    this.stopAutoPlay()
+  }
+
+  /**
+   * Auto play delay setting
+   */
+  get autoPlayDelay() {
+    return this.player.getConfig('autoPlayDelay', 1000)
   }
 
   /**************************************************************************
@@ -214,11 +236,23 @@ export default class PlayerModeReplay extends PlayerMode {
   goToNextPosition() {
 
     //Get data
-    const {player} = this
+    const {player, isAutoPlaying} = this
 
     //Go to the next move
     if (player.isToolActive(playerTools.MOVE)) {
+
+      //Stop auto play
+      if (isAutoPlaying) {
+        this.stopAutoPlay()
+      }
+
+      //Go to next move
       player.next()
+
+      //Start auto play again
+      if (isAutoPlaying) {
+        this.startAutoPlay()
+      }
     }
   }
 
@@ -228,11 +262,72 @@ export default class PlayerModeReplay extends PlayerMode {
   goToPreviousPosition() {
 
     //Get data
-    const {player} = this
+    const {player, isAutoPlaying} = this
 
     //Go to the previous move
     if (player.isToolActive(playerTools.MOVE)) {
+
+      //Stop auto play
+      if (isAutoPlaying) {
+        this.stopAutoPlay()
+      }
+
+      //Go to previous move
       player.previous()
+
+      //Start auto play again
+      if (isAutoPlaying) {
+        this.startAutoPlay()
+      }
     }
+  }
+
+  /**
+   * Start auto play with a given delay
+   */
+  startAutoPlay(delay = this.autoPlayDelay) {
+
+    //Get data
+    const {player, game, isAutoPlaying} = this
+    if (isAutoPlaying) {
+      return
+    }
+
+    //No game, or no further moves
+    if (!game || !game.node.hasChildren()) {
+      return
+    }
+
+    //Create interval
+    this.isAutoPlaying = true
+    this.autoPlayInterval = setInterval(() => {
+
+      //Advance to the next node
+      player.next()
+
+      //Ran out of children?
+      if (!game.node.hasChildren()) {
+        this.stopAutoPlay()
+      }
+    }, delay)
+  }
+
+  /**
+   * Stop auto play
+   */
+  stopAutoPlay() {
+
+    //Get data
+    const {isAutoPlaying, autoPlayInterval} = this
+    if (!isAutoPlaying) {
+      return
+    }
+
+    //Clear interval
+    clearInterval(autoPlayInterval)
+
+    //Clear flags
+    this.autoPlayInterval = null
+    this.isAutoPlaying = false
   }
 }

@@ -31,6 +31,11 @@
   //Bootstrap player and load JGF file
   player.bootstrap(playerElement)
   player.load(jgf)
+
+  //Auto play
+  player
+    .getCurrentModeHandler()
+    .startAutoPlay()
 </script>
 </body>
 </html>

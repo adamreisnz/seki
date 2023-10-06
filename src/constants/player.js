@@ -110,4 +110,7 @@ export const defaultPlayerConfig = {
 
   //Show solution paths
   solutionPaths: false,
+
+  //Allow player configuration settigns to be loaded from game records
+  allowPlayerConfig: true,
 }

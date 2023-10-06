@@ -32,10 +32,8 @@ export default class Player extends EventTarget {
     //Initialise
     this.init()
 
-    //Set config
-    if (config) {
-      this.setConfig(config)
-    }
+    //Initialize config
+    this.initConfig(config)
   }
 
   /**
@@ -50,28 +48,13 @@ export default class Player extends EventTarget {
     //Reset path
     this.path = null
 
-    //Enabled modes and mode handlers container
-    this.availableModes = []
-    this.modeHandlers = {}
-
-    //Available tools
+    //Available tools and instantiated mode handlers
     this.availableTools = []
+    this.modeHandlers = {}
 
     //Player mode and active tool
     this.mode = undefined
     this.tool = undefined
-
-    //Key and mouse bindings
-    this.keyBindings = {}
-    this.mouseBindings = {}
-
-    //Last move marker
-    this.lastMoveMarkupType = undefined
-
-    //Variation markup
-    this.variationMarkup = false
-    this.variationChildren = false
-    this.variationSiblings = false
 
     //Restricted nodes
     this.restrictedStartNode = null
@@ -83,120 +66,72 @@ export default class Player extends EventTarget {
    ***/
 
   /**
-   * Set configuration
+   * Initialise configuration
    */
-  setConfig(config) {
+  initConfig(config) {
 
     //Extend from default config
     config = Object.assign({}, defaultPlayerConfig, config || {})
 
-    //Process settings
-    this.setAvailableModes(config.availableModes)
-    this.setLastMoveMarkupType(config.lastMoveMarkupType)
-    this.setKeyBindings(config.keyBindings)
-    this.setMouseBindings(config.mouseBindings)
-    this.setVariationMarkup(
-      config.variationMarkup,
-      config.variationChildren,
-      config.variationSiblings,
-    )
+    //Store config
+    this.config = config
+
+    //Get initial mode and tool
+    const {mode, tool} = config
 
     //Switch to the configured mode and tool
-    this.switchMode(config.mode)
-    this.switchTool(config.tool)
+    this.switchMode(mode)
+    this.switchTool(tool)
   }
 
   /**
-   * Set the last move marker
+   * Get a config flag
    */
-  setLastMoveMarkupType(lastMoveMarkupType) {
-    if (lastMoveMarkupType !== this.lastMoveMarkupType) {
-      this.lastMoveMarkupType = lastMoveMarkupType
+  getConfig(key, defaultValue) {
+    if (this.config[key] === undefined) {
+      return defaultValue
     }
+    return this.config[key]
   }
 
   /**
-   * Set key bindings
+   * Set a config flag
    */
-  setKeyBindings(keyBindings) {
-    this.keyBindings = keyBindings
+  setConfig(key, value) {
+    this.config[key] = value
   }
 
   /**
-   * Set mouse bindings
+   * Load configuration from a game if allowed
    */
-  setMouseBindings(mouseBindings) {
-    this.mouseBindings = mouseBindings
-  }
+  loadGameConfig() {
 
-  /**
-   * Set variation markup on the board
-   */
-  setVariationMarkup(variationMarkup, variationChildren, variationSiblings) {
-
-    //One change event for these three settings
-    let change = false
-
-    //Markup setting change?
-    if (variationMarkup !== this.variationMarkup) {
-      this.variationMarkup = variationMarkup
-      change = true
+    //No game
+    const {game} = this
+    if (!game) {
+      return
     }
 
-    //Children setting change?
-    if (
-      typeof variationChildren !== 'undefined' &&
-      variationChildren !== this.variationChildren
-    ) {
-      this.variationChildren = variationChildren
-      change = true
+    //Check if allowed
+    if (!this.getConfig('allowPlayerConfig')) {
+      return
     }
 
-    //Siblings setting change?
-    if (
-      typeof variationSiblings !== 'undefined' &&
-      variationSiblings !== this.variationSiblings
-    ) {
-      this.variationSiblings = variationSiblings
-      change = true
+    //No settings
+    const settings = game.getInfo('settings')
+    if (!settings) {
+      return
     }
 
-    //Did anything change?
-    if (change) {
-      this.triggerEvent('setting', 'variationMarkup')
+    //Set config
+    for (const key in settings) {
+      this.setConfig(key, settings[key])
     }
   }
 
   /*****************************************************************************
    * Mode and tool handling
    ***/
-
-  /**
-   * Set available modes
-   */
-  setAvailableModes(availableModes) {
-
-    //Ensure array
-    if (!Array.isArray(availableModes)) {
-      availableModes = availableModes ? [availableModes] : []
-    }
-
-    //Ensure the none mode is included
-    if (!availableModes.includes(playerModes.NONE)) {
-      availableModes.push(playerModes.NONE)
-    }
-
-    //Reset mode handlers
-    this.modeHandlers = {}
-
-    //Instantiate handlers for each enabled mode
-    for (const mode of availableModes) {
-      this.modeHandlers[mode] = PlayerModeFactory.create(mode, this)
-    }
-
-    //Trigger event
-    this.triggerEvent('setting', 'availableModes')
-  }
 
   /**
    * Set available tools
@@ -230,7 +165,11 @@ export default class Player extends EventTarget {
    * Check if a specific player mode is available
    */
   isModeAvailable(mode) {
-    return this.availableModes.includes(mode)
+    if (mode === playerModes.NONE) {
+      return true
+    }
+    const availableModes = this.getConfig('availableModes', [])
+    return availableModes.includes(mode)
   }
 
   /**
@@ -258,7 +197,16 @@ export default class Player extends EventTarget {
    * Get mode handler for a given mode
    */
   getModeHandler(mode) {
+
+    //Get mode handlers
     const {modeHandlers} = this
+
+    //Check if handler needs to be instantiated
+    if (!modeHandlers[mode]) {
+      modeHandlers[mode] = PlayerModeFactory.create(mode, this)
+    }
+
+    //Return handler
     return modeHandlers[mode]
   }
 
@@ -267,7 +215,9 @@ export default class Player extends EventTarget {
    */
   getCurrentModeHandler() {
     const {mode} = this
-    return this.getModeHandler(mode)
+    if (mode) {
+      return this.getModeHandler(mode)
+    }
   }
 
   /**
@@ -280,14 +230,21 @@ export default class Player extends EventTarget {
       return
     }
 
-    //Deactivate current mode
+    //Check if available
+    if (!this.isModeAvailable(mode)) {
+      return
+    }
+
+    //Get handlers
     const currentHandler = this.getCurrentModeHandler()
+    const newHandler = this.getModeHandler(mode)
+
+    //Deactivate current mode
     if (currentHandler) {
       currentHandler.deactivate()
     }
 
     //Activate new mode
-    const newHandler = this.getModeHandler(mode)
     if (newHandler) {
       newHandler.activate()
     }
@@ -349,7 +306,10 @@ export default class Player extends EventTarget {
     }
 
     //Get data
-    const {mode, tool, restrictedStartNode, restrictedEndNode} = this.playerState
+    const {
+      mode, tool,
+      restrictedStartNode, restrictedEndNode,
+    } = this.playerState
 
     //Restore
     this.switchMode(mode)
@@ -368,17 +328,14 @@ export default class Player extends EventTarget {
   /**
    * Load game data
    */
-  load(data, allowPlayerConfig = true) {
+  load(data) {
 
     //Create new game based on data and reset path
     this.game = Game.fromData(data)
     this.path = null
 
-    //Parse configuration if allowed
-    if (allowPlayerConfig) {
-      const config = this.game.getInfo('settings')
-      this.setConfig(config)
-    }
+    //Load game config
+    this.loadGameConfig()
 
     //Dispatch game event
     this.triggerEvent('game', this.game)
@@ -756,8 +713,8 @@ export default class Player extends EventTarget {
    */
   updateBoard(node, position, pathChanged) {
 
-    //Get data
-    const {board, lastMoveMarkupType} = this
+    //Get board
+    const {board} = this
     if (!board) {
       return
     }
@@ -766,10 +723,13 @@ export default class Player extends EventTarget {
     board.updatePosition(position, pathChanged)
 
     //Mark last move
-    if (lastMoveMarkupType && node.move && !node.move.pass) {
-      const {x, y} = node.move
-      const marker = MarkupFactory.create(lastMoveMarkupType)
-      board.add(boardLayerTypes.MARKUP, x, y, marker)
+    if (node.move && !node.move.pass) {
+      const markupType = this.getConfig('lastMoveMarkupType')
+      if (markupType) {
+        const {x, y} = node.move
+        const marker = MarkupFactory.create(markupType)
+        board.add(boardLayerTypes.MARKUP, x, y, marker)
+      }
     }
   }
 
@@ -895,14 +855,16 @@ export default class Player extends EventTarget {
    * Get action for given key code
    */
   getActionForKeyCode(keyCode) {
-    return this.keyBindings[keyCode]
+    const keyBindings = this.getConfig('keyBindings')
+    return keyBindings[keyCode]
   }
 
   /**
    * Get action for given mouse event
    */
   getActionForMouseEvent(mouseEvent) {
-    return this.mouseBindings[mouseEvent]
+    const mouseBindings = this.getConfig('mouseBindings')
+    return mouseBindings[mouseEvent]
   }
 
   /**

@@ -228,6 +228,14 @@ export const jgf = {
           {move: {color: 'white', x: 7, y: 5}},
           {move: {color: 'black', x: 5, y: 3}},
         ],
+        [
+          {
+            name: 'Second variation',
+            comments: ['Comment at second variation'],
+          },
+          {move: {color: 'black', x: 3, y: 3}},
+          {move: {color: 'white', x: 5, y: 5}},
+        ],
         // [
         //   {move: {B: 'gg'}, comments: ['Comment at second variation'], name: 'Second variation'},
         //   [
