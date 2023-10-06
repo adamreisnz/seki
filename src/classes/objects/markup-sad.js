@@ -47,6 +47,13 @@ export default class MarkupSad extends Markup {
     const lineCap = this.getLineCap()
     const canvasTranslate = theme.canvasTranslate(lineWidth)
 
+    //Deltas
+    const dEye = Math.round(radius * 0.36)
+    const dxMouth = Math.round(radius * 0.6)
+    const dyMouth = Math.round(radius * 0.6)
+    const dxCp = Math.round(radius * 0.4)
+    const dyCp = 0
+
     //Translate canvas
     context.translate(canvasTranslate, canvasTranslate)
 
@@ -64,29 +71,29 @@ export default class MarkupSad extends Markup {
     //Draw element
     context.beginPath()
     context.arc(
-      absX - radius / 3,
-      absY - radius / 3,
-      radius / 6,
+      absX - dEye,
+      absY - dEye,
+      Math.round(radius / 6),
       0, 2 * Math.PI, true,
     )
     context.fill()
     context.beginPath()
     context.arc(
-      absX + radius / 3,
-      absY - radius / 3,
-      radius / 6,
+      absX + dEye,
+      absY - dEye,
+      Math.round(radius / 6),
       0, 2 * Math.PI, true,
     )
     context.fill()
     context.beginPath()
-    context.moveTo(absX - radius / 1.6, absY + radius / 1.5 - 1)
+    context.moveTo(absX - dxMouth, absY + dyMouth)
     context.bezierCurveTo(
-      absX - radius / 1.8,
-      absY + radius / 8 - 1,
-      absX + radius / 1.8,
-      absY + radius / 8 - 1,
-      absX + radius / 1.6,
-      absY + radius / 1.5 - 1,
+      absX - dxCp,
+      absY + dyCp,
+      absX + dxCp,
+      absY + dyCp,
+      absX + dxMouth,
+      absY + dyMouth,
     )
     context.stroke()
 

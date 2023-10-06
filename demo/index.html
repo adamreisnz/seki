@@ -37,6 +37,8 @@
       <button id="switchMarkupToolMark">Mark</button>
       <button id="switchMarkupToolLetter">Letter</button>
       <button id="switchMarkupToolNumber">Number</button>
+      <button id="switchMarkupToolHappy">Happy</button>
+      <button id="switchMarkupToolSad">Sad</button>
       <button id="switchMarkupToolClear">Clear</button>
 
       <h2>Setup</h2>
@@ -136,6 +138,12 @@
   })
   bindClickHandler('switchMarkupToolNumber', () => {
     player.switchMarkupTool(markupTools.NUMBER)
+  })
+  bindClickHandler('switchMarkupToolHappy', () => {
+    player.switchMarkupTool(markupTools.HAPPY)
+  })
+  bindClickHandler('switchMarkupToolSad', () => {
+    player.switchMarkupTool(markupTools.SAD)
   })
   bindClickHandler('switchMarkupToolClear', () => {
     player.switchMarkupTool(markupTools.CLEAR)

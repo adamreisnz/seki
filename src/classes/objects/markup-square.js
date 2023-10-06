@@ -1,6 +1,5 @@
 import Markup from './markup.js'
 import {markupTypes} from '../../constants/markup.js'
-import {cosPi4} from '../../constants/common.js'
 
 /**
  * Square markup
@@ -40,8 +39,8 @@ export default class MarkupSquare extends Markup {
     const lineWidth = this.getLineWidth()
     const canvasTranslate = theme.canvasTranslate(lineWidth)
 
-    //Determine cos
-    const rCos = Math.round(radius * cosPi4)
+    //Determine delta
+    const d = Math.round(radius * Math.cos(Math.PI / 4))
 
     //Translate canvas
     context.translate(canvasTranslate, canvasTranslate)
@@ -58,10 +57,10 @@ export default class MarkupSquare extends Markup {
     //Draw element
     context.beginPath()
     context.rect(
-      absX - rCos,
-      absY - rCos,
-      2 * rCos,
-      2 * rCos,
+      absX - d,
+      absY - d,
+      2 * d,
+      2 * d,
     )
     context.stroke()
 

@@ -1,6 +1,5 @@
 import Markup from './markup.js'
 import {markupTypes} from '../../constants/markup.js'
-import {cosPi4} from '../../constants/common.js'
 
 /**
  * Mark markup (cross)
@@ -48,8 +47,8 @@ export default class MarkupMark extends Markup {
     const lineCap = this.getLineCap()
     const canvasTranslate = theme.canvasTranslate(lineWidth)
 
-    //Determine cos
-    const rCos = Math.round(radius * cosPi4)
+    //Determine delta
+    const d = Math.round(radius * Math.cos(Math.PI / 4))
 
     //Translate canvas
     context.translate(canvasTranslate, canvasTranslate)
@@ -66,10 +65,10 @@ export default class MarkupMark extends Markup {
 
     //Draw element
     context.beginPath()
-    context.moveTo(absX - rCos, absY - rCos)
-    context.lineTo(absX + rCos, absY + rCos)
-    context.moveTo(absX + rCos, absY - rCos)
-    context.lineTo(absX - rCos, absY + rCos)
+    context.moveTo(absX - d, absY - d)
+    context.lineTo(absX + d, absY + d)
+    context.moveTo(absX + d, absY - d)
+    context.lineTo(absX - d, absY + d)
     context.stroke()
 
     //Reset transparency

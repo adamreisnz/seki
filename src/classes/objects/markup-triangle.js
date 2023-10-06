@@ -1,6 +1,5 @@
 import Markup from './markup.js'
 import {markupTypes} from '../../constants/markup.js'
-import {cosPi6} from '../../constants/common.js'
 
 /**
  * Triangle markup
@@ -40,6 +39,10 @@ export default class MarkupTriangle extends Markup {
     const lineWidth = this.getLineWidth()
     const canvasTranslate = theme.canvasTranslate(lineWidth)
 
+    //Moving triangle a bit lower to look more natural next to squares
+    const dy = Math.round(radius * Math.cos(Math.PI / 3.5))
+    const dx = Math.round(radius * Math.cos(Math.PI / 6))
+
     //Translate canvas
     context.translate(canvasTranslate, canvasTranslate)
 
@@ -54,14 +57,14 @@ export default class MarkupTriangle extends Markup {
 
     //Draw element
     context.beginPath()
-    context.moveTo(absX, absY - radius)
+    context.moveTo(absX, absY - dy * 1.25)
     context.lineTo(
-      absX - Math.round(radius * cosPi6),
-      absY + Math.round(radius / 2),
+      absX - dx,
+      absY + dy,
     )
     context.lineTo(
-      absX + Math.round(radius * cosPi6),
-      absY + Math.round(radius / 2),
+      absX + dx,
+      absY + dy,
     )
     context.closePath()
     context.stroke()

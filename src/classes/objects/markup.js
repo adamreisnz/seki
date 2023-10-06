@@ -77,7 +77,7 @@ export default class Markup extends GridObject {
   getLineCap() {
 
     //Get data
-    const {theme, lineCap} = this
+    const {theme, type, lineCap} = this
 
     //Preset line width
     if (lineCap) {
@@ -85,7 +85,7 @@ export default class Markup extends GridObject {
     }
 
     //Dynamic line cap based on theme
-    return theme.get('markup.lineCap')
+    return theme.get(`markup.${type}.lineCap`)
   }
 
   /**
