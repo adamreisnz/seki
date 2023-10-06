@@ -29,22 +29,11 @@ export default class ConvertFromGib extends Convert {
     //Initialize
     const game = new Game()
 
-    //Create root node
-    game.root = new GameNode()
-
-    //Find player information
+    //Find data
     this.findPlayerInformation(gib, game)
-
-    //Find komi
     this.findKomi(gib, game)
-
-    //Find game date
     this.findDate(gib, game)
-
-    //Find game result
     this.findGameResult(gib, game)
-
-    //Find moves
     this.findMoves(gib, game, game.root)
 
     //Return game
@@ -117,12 +106,13 @@ export default class ConvertFromGib extends Convert {
 
       //Create move node
       const node = this.parseMove(match)
-
-      //Append to parent node
-      parentNode.appendChild(node)
+      if (node) {
+        parentNode.appendChild(node)
+        parentNode = node
+      }
 
       //Continue finding moves
-      this.findMoves(gib, game, node)
+      this.findMoves(gib, game, parentNode)
     }
   }
 
@@ -248,10 +238,10 @@ export default class ConvertFromGib extends Convert {
    * Convert a string color value to a numeric color value
    */
   convertColor(color) {
-    if (color === 1) {
+    if (Number(color) === 1) {
       return stoneColors.BLACK
     }
-    else if (color === 2) {
+    else if (Number(color) === 2) {
       return stoneColors.WHITE
     }
   }

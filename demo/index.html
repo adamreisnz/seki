@@ -63,9 +63,18 @@
   player.load(jgf)
 
   //Data loading
-  bindClickHandler('loadJgf', () => player.load(jgf))
-  bindClickHandler('loadSgf', () => player.load(sgf))
-  bindClickHandler('loadGib', () => player.load(gib))
+  bindClickHandler('loadJgf', () => {
+    player.load(jgf)
+    player.switchMode(playerModes.REPLAY)
+  })
+  bindClickHandler('loadSgf', () => {
+    player.load(sgf)
+    player.switchMode(playerModes.REPLAY)
+  })
+  bindClickHandler('loadGib', () => {
+    player.load(gib)
+    player.switchMode(playerModes.REPLAY)
+  })
   bindClickHandler('loadBlank', () => {
     player.reset()
     player.switchMode(playerModes.PLAY)
