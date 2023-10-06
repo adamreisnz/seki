@@ -46,3 +46,11 @@ export function getElementSize(element) {
   const height = parseInt(s.height)
   return {width, height}
 }
+
+/**
+ * Bind click handler
+ */
+export function bindClickHandler(id, handler) {
+  const element = document.getElementById(id)
+  element.addEventListener('click', handler)
+}

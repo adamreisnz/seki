@@ -9,18 +9,29 @@
 </head>
 <body lang="en">
 <div class="main">
-  <div class="wrapper">
+  <div class="left">
     <div id="player" mode="replay">
       <div id="board" coordinates="true"></div>
     </div>
   </div>
+  <div class="right">
+    <h2>Load data</h2>
+    <button id="loadJgf">Load JGF</button>
+    <button id="loadSgf">Load SGF</button>
+
+    <h2>Replay</h2>
+    <button id="startAutoPlay">Start auto play</button>
+    <button id="stopAutoPlay">Stop auto play</button>
+  </info>
 </div>
 
 <script type="module">
   import Board from '../src/classes/board.js'
   import Player from '../src/classes/player.js'
+  import {bindClickHandler} from '../src/helpers/dom.js'
   import {playerModes} from '../src/constants/player.js'
   import {jgf} from './data/jgf.js'
+  import {sgf, sgfSabaki, sgfOgs} from './data/sgf.js'
 
   //Find player element
   const playerElement = document.getElementById('player')
@@ -32,10 +43,11 @@
   player.bootstrap(playerElement)
   player.load(jgf)
 
-  //Auto play
-  player
-    .getCurrentModeHandler()
-    .startAutoPlay()
+  //Bind some click handlers
+  bindClickHandler('loadJgf', () => player.load(jgf))
+  bindClickHandler('loadSgf', () => player.load(sgf))
+  bindClickHandler('startAutoPlay', () => player.mode.startAutoPlay())
+  bindClickHandler('stopAutoPlay', () => player.mode.stopAutoPlay())
 </script>
 </body>
 </html>

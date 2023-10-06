@@ -45,8 +45,19 @@ export default class MarkupFactory {
   /**
    * Create markup
    */
-  static create(type, ...args) {
+  static create(type, board, data, ...args) {
     const MarkupClass = this.getClass(type)
-    return new MarkupClass(...args)
+    return new MarkupClass(board, data, ...args)
+  }
+
+  /**
+   * Create for variation
+   */
+  static createForVariation(i, board) {
+    const {theme} = board
+    const type = theme.get('markup.variation.type')
+    const text = theme.get('markup.variation.text', i)
+    const color = theme.get('markup.variation.color')
+    return this.create(type, board, {text, color})
   }
 }

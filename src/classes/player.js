@@ -52,9 +52,9 @@ export default class Player extends EventTarget {
     this.availableTools = []
     this.modeHandlers = {}
 
-    //Player mode and active tool
-    this.mode = undefined
-    this.tool = undefined
+    //Active player mode and tool
+    this.activeMode = undefined
+    this.activeTool = undefined
 
     //Restricted nodes
     this.restrictedStartNode = null
@@ -77,11 +77,11 @@ export default class Player extends EventTarget {
     this.config = config
 
     //Get initial mode and tool
-    const {mode, tool} = config
+    const {initialMode, initialTool} = config
 
     //Switch to the configured mode and tool
-    this.switchMode(mode)
-    this.switchTool(tool)
+    this.switchMode(initialMode)
+    this.switchTool(initialTool)
   }
 
   /**
@@ -134,6 +134,13 @@ export default class Player extends EventTarget {
    ***/
 
   /**
+   * Virtual mode shortcut
+   */
+  get mode() {
+    return this.getCurrentModeHandler()
+  }
+
+  /**
    * Set available tools
    *
    * NOTE: This is usually set by the mode handler, and not directly
@@ -151,9 +158,8 @@ export default class Player extends EventTarget {
       tools.push(playerTools.NONE)
     }
 
-    //Set available tools and trigger event
+    //Set available tools
     this.availableTools = tools
-    this.triggerEvent('setting', 'availableTools')
 
     //Reset active tool if invalid
     if (tools.includes(this.tool)) {
@@ -183,14 +189,14 @@ export default class Player extends EventTarget {
    * Check if a specific player mode is active
    */
   isModeActive(mode) {
-    return (this.mode === mode)
+    return (this.activeMode === mode)
   }
 
   /**
    * Check if a specific player tool is active
    */
   isToolActive(tool) {
-    return (this.tool === tool)
+    return (this.activeTool === tool)
   }
 
   /**
@@ -214,9 +220,9 @@ export default class Player extends EventTarget {
    * Get current mode handler
    */
   getCurrentModeHandler() {
-    const {mode} = this
-    if (mode) {
-      return this.getModeHandler(mode)
+    const {activeMode} = this
+    if (activeMode) {
+      return this.getModeHandler(activeMode)
     }
   }
 
@@ -249,10 +255,9 @@ export default class Player extends EventTarget {
       newHandler.activate()
     }
 
-    //Set mode
-    this.mode = mode
-    this.triggerEvent('mode', mode)
-    return true
+    //Set active mode
+    this.activeMode = mode
+    this.triggerEvent('mode', {mode})
   }
 
   /**
@@ -260,15 +265,19 @@ export default class Player extends EventTarget {
    */
   switchTool(tool) {
 
-    //Validate
-    if (!this.isToolAvailable(tool)) {
-      return false
+    //Already active
+    if (this.isToolActive(tool)) {
+      return
     }
 
-    //Set tool
-    this.tool = tool
-    this.triggerEvent('tool', tool)
-    return true
+    //Validate
+    if (!this.isToolAvailable(tool)) {
+      return
+    }
+
+    //Set active tool
+    this.activeTool = tool
+    this.triggerEvent('tool', {tool})
   }
 
   /**************************************************************************
@@ -330,24 +339,26 @@ export default class Player extends EventTarget {
    */
   load(data) {
 
-    //Create new game based on data and reset path
-    this.game = Game.fromData(data)
+    //Create new game
+    const game = Game.fromData(data)
+    const {board} = this
+
+    //Set
+    this.game = game
     this.path = null
 
-    //Load game config
+    //Load game config and trigger event
     this.loadGameConfig()
-
-    //Dispatch game event
-    this.triggerEvent('game', this.game)
+    this.triggerEvent('game', {game})
 
     //Go to first move
-    this.game.first()
+    game.first()
 
     //Board present?
-    if (this.board) {
-      const boardConfig = this.game.getInfo('board')
-      this.board.removeAll()
-      this.board.setConfig(boardConfig)
+    if (board) {
+      const boardConfig = game.getInfo('board')
+      board.removeAll()
+      board.setConfig(boardConfig)
       this.processPosition()
     }
   }
@@ -600,17 +611,17 @@ export default class Player extends EventTarget {
 
       //Copy new path and triggerEvent path change
       this.path = path.clone()
-      this.triggerEvent('pathChange', node)
+      this.triggerEvent('pathChange', {node})
 
       //Named node reached? Broadcast event
       if (node.name) {
-        this.triggerEvent(`nodeReached.${node.name}`, node)
+        this.triggerEvent(`nodeReached.${node.name}`, {node})
       }
     }
 
     //Passed?
     if (node.move && node.move.pass) {
-      this.triggerEvent('pass', node)
+      this.triggerEvent('pass', {node})
     }
   }
 
@@ -678,7 +689,7 @@ export default class Player extends EventTarget {
     this.board.layers.score.setAll(points, captures)
 
     //Broadcast score
-    this.triggerEvent('scoreCalculated', score)
+    this.triggerEvent('score', {score})
   }
 
   /*****************************************************************************
@@ -722,14 +733,14 @@ export default class Player extends EventTarget {
     //Update board with new position
     board.updatePosition(position, pathChanged)
 
+    //Get settings
+    const markupType = this.getConfig('lastMoveMarkupType')
+
     //Mark last move
-    if (node.move && !node.move.pass) {
-      const markupType = this.getConfig('lastMoveMarkupType')
-      if (markupType) {
-        const {x, y} = node.move
-        const marker = MarkupFactory.create(markupType)
-        board.add(boardLayerTypes.MARKUP, x, y, marker)
-      }
+    if (markupType && node.move && !node.move.pass) {
+      const {x, y} = node.move
+      const marker = MarkupFactory.create(markupType)
+      board.add(boardLayerTypes.MARKUP, x, y, marker)
     }
   }
 

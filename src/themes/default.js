@@ -197,7 +197,7 @@ export default {
       text: function(i) {
         return String.fromCharCode(65 + i)
       },
-      color: 'rgba(86,114,30,0.9)',
+      color: 'rgba(15, 137, 74, 1)',
     },
 
     //Solution paths markup
@@ -205,7 +205,7 @@ export default {
       valid: {
         type: markupTypes.SELECT,
         text: null,
-        color: 'rgba(86,114,30,1)',
+        color: 'rgba(15, 137, 74, 1)',
         scale: 0.5,
       },
       invalid: {

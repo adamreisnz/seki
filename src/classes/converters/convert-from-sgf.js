@@ -19,16 +19,9 @@ const regexSequence = /\(|\)|(;(\s*[A-Z]+\s*((\[\])|(\[(.|\s)*?([^\\]\])))+)*)/g
 const regexNode = /[A-Z]+\s*((\[\])|(\[(.|\s)*?([^\\]\])))+/g
 const regexProperty = /[A-Z]+/
 const regexValues = /(\[\])|(\[(.|\s)*?([^\\]\]))/g
+const regexMove = /^;B|W\[/i
 const regexBlackPlayer = /PB|BT|BR/i
 const regexWhitePlayer = /PW|WT|WR/i
-
-//These properties need a node object
-// const needsNode = [
-//   'B', 'W', 'C', 'N',
-//   'AB', 'AW', 'AE', 'PL',
-//   'LB', 'CR', 'SQ', 'TR',
-//   'MA', 'SL', 'TW', 'TB',
-// ]
 
 //Property to parser map
 const parsingMap = {
@@ -118,51 +111,44 @@ export default class ConvertFromSgf extends Convert {
     //Keep track of stack of nodes
     const stack = []
 
-    //Loop sequence items
-    for (let i = 0; i < sequence.length; i++) {
+    //Loop sequence
+    for (const str of sequence) {
 
-      //New variation found
-      if (sequence[i] === '(') {
-
-        //First encounter, this defines the main tree branch, so skip
-        if (i === 0 || i === '0') {
-          continue
-        }
-
-        //Push the current parent node to the stack
+      //New variation
+      if (str === '(') {
         stack.push(parentNode)
-
-        //Create new node for variation and set as current parent node
-        const variationNode = new GameNode()
-        parentNode.appendChild(variationNode)
-        parentNode = variationNode
-
-        //Continue with next sequence item
         continue
       }
 
-      //End of variations reached, grab last parent node from stack
-      else if (sequence[i] === ')') {
-        if (stack.length) {
+      //End of variation
+      else if (str === ')') {
+        if (stack.length > 0) {
           parentNode = stack.pop()
         }
         continue
       }
 
-      //Make array of properties within this sequence
-      const properties = sequence[i].match(regexNode) || []
+      //Is this a move? Create new node
+      if (str.match(regexMove)) {
+        const node = new GameNode()
+        parentNode.appendChild(node)
+        parentNode = node
+      }
 
-      //Parse properties
-      this.parseProperties(properties, game, parentNode)
+      //Get node properties and parse them
+      const properties = str.match(regexNode)
+      if (properties) {
+        this.parseProperties(properties, parentNode, game)
+      }
     }
   }
 
   /**
-   * Parse properties
+   * Parse node propties
    */
-  parseProperties(properties, game, parentNode) {
+  parseProperties(properties, node, game) {
 
-    //Loop them
+    //Make array of properties within this sequence
     for (const prop of properties) {
 
       //Get key
@@ -178,18 +164,7 @@ export default class ConvertFromSgf extends Convert {
 
       //SGF parser present for this key?
       if (parsingMap[key]) {
-
-        //For moves, always create a new node
-        if (this.isMove(key)) {
-          const node = new GameNode()
-
-          //Append to parent node
-          parentNode.appendChild(node)
-          parentNode = node
-        }
-
-        //Apply parsing function on node
-        this[parsingMap[key]](game, parentNode, key, values)
+        this[parsingMap[key]](game, node, key, values)
         continue
       }
 
@@ -205,13 +180,6 @@ export default class ConvertFromSgf extends Convert {
     }
   }
 
-  /**
-   * Check if key is a move
-   */
-  isMove(key) {
-    return (key === 'B' || key === 'W')
-  }
-
   /*****************************************************************************
    * Parsers
    ***/
@@ -221,7 +189,7 @@ export default class ConvertFromSgf extends Convert {
    */
   parseGenerator(game, node, key, values) {
     const [name, version] = values[0].split(':')
-    game.record.generator = `${name}${version ? ` v${version}` : ''}`
+    game.setInfo('record.generator', `${name}${version ? ` v${version}` : ''}`)
   }
 
   /**
@@ -246,9 +214,8 @@ export default class ConvertFromSgf extends Convert {
 
     //Instantiate move
     const move = {}
-    const isNormalSize = (
-      game.info && game.info.board && game.info.board.size <= 19
-    )
+    const size = game.getInfo('board.size')
+    const isNormalSize = (size && size <= 19)
 
     //Set color
     move.color = this.convertColor(key)
@@ -468,7 +435,7 @@ export default class ConvertFromSgf extends Convert {
     }
 
     //Set on game
-    game.setInfo(game, 'players', players)
+    game.setInfo('players', players)
   }
 
   /*****************************************************************************

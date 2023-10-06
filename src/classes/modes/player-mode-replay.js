@@ -1,4 +1,5 @@
 import PlayerMode from '../player-mode.js'
+import MarkupFactory from '../markup-factory.js'
 import {boardLayerTypes} from '../../constants/board.js'
 import {
   mouseEvents,
@@ -66,6 +67,7 @@ export default class PlayerModeReplay extends PlayerMode {
       'onMouseWheel',
       'onMouseMove',
       'onMouseOut',
+      'onPathChange',
     ])
   }
 
@@ -82,6 +84,8 @@ export default class PlayerModeReplay extends PlayerMode {
     player.on('wheel', bound.onMouseWheel)
     player.on('mousemove', bound.onMouseMove)
     player.on('mouseout', bound.onMouseOut)
+    player.on('mouseout', bound.onMouseOut)
+    player.on('pathChange', bound.onPathChange)
   }
 
   /**
@@ -97,6 +101,7 @@ export default class PlayerModeReplay extends PlayerMode {
     player.off('wheel', bound.onMouseWheel)
     player.off('mousemove', bound.onMouseMove)
     player.off('mouseout', bound.onMouseOut)
+    player.off('pathChange', bound.onPathChange)
   }
 
   /**************************************************************************
@@ -168,6 +173,36 @@ export default class PlayerModeReplay extends PlayerMode {
 
     //Clear hover layer
     this.clearHoverLayer()
+  }
+
+  /**
+   * Path change event
+   */
+  onPathChange(event) {
+
+    //Get data
+    const {player} = this
+    const {node} = event.detail
+
+    //Get settings
+    const variationMarkup = player.getConfig('variationMarkup')
+    const variationSiblings = player.getConfig('variationSiblings')
+
+    //Show variations
+    if (variationMarkup) {
+      if (node.hasMoveVariations()) {
+        const variations = node.getMoveVariations()
+        this.showMoveVariations(variations)
+      }
+    }
+
+    //Show sibling variations
+    if (variationSiblings && node.parent) {
+      if (node.parent.hasMoveVariations()) {
+        const variations = node.parent.getMoveVariations()
+        this.showMoveVariations(variations)
+      }
+    }
   }
 
   /**************************************************************************
@@ -329,5 +364,31 @@ export default class PlayerModeReplay extends PlayerMode {
     //Clear flags
     this.autoPlayInterval = null
     this.isAutoPlaying = false
+  }
+
+  /**
+   * Show move variations on the board
+   */
+  showMoveVariations(variations) {
+
+    //Get data
+    const {player} = this
+    const {board} = player
+
+    //Loop variations
+    variations.forEach((variation, i) => {
+      const {move} = variation
+      const {x, y} = move
+
+      //Auto variation markup should never overwrite existing markup
+      if (board.has(boardLayerTypes.MARKUP, x, y)) {
+        return
+      }
+
+      //Add to board
+      board
+        .add(boardLayerTypes.MARKUP, x, y, MarkupFactory
+          .createForVariation(i, board))
+    })
   }
 }

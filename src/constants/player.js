@@ -79,8 +79,8 @@ export const defaultPlayerConfig = {
   ],
 
   //Initial mode and tool
-  mode: playerModes.REPLAY,
-  tool: playerTools.MOVE,
+  initialMode: playerModes.REPLAY,
+  initialTool: playerTools.MOVE,
 
   //Key bindings
   keyBindings: {

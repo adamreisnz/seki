@@ -25,8 +25,8 @@ export function flip(obj) {
  */
 export function get(obj, path, defaultValue = undefined) {
 
-  //No path given
-  if (path === null || path === undefined) {
+  //Invalid path given
+  if (typeof path !== 'string') {
     throw new Error(`Invalid path given for lookup: ${path}`)
   }
 
@@ -51,8 +51,8 @@ export function get(obj, path, defaultValue = undefined) {
  */
 export function set(obj, path, value) {
 
-  //No path given
-  if (path === null || path === undefined) {
+  //Invalid path
+  if (typeof path !== 'string') {
     throw new Error(`Invalid path given for set: ${path}`)
   }
 

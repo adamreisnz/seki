@@ -368,12 +368,8 @@ export default class Game {
    * Check if coordinates are on the board
    */
   isOnBoard(x, y) {
-    return (
-      x >= 0 &&
-      y >= 0 &&
-      x < this.info.board.width &&
-      y < this.info.board.height
-    )
+    const {width, height} = this.getBoardSize()
+    return (x >= 0 && y >= 0 && x < width && y < height)
   }
 
   /**

@@ -18,9 +18,11 @@ button {
 }
 h2 {
   margin: 1rem 0;
+  color: #fff;
 }
 p {
   margin-bottom: 1rem;
+  color: #fff;
 }
 
 /* Demo layout */
@@ -29,8 +31,11 @@ p {
   padding: 1rem;
   height: 100%;
 }
-.wrapper {
-  flex: 0 0 100%;
+.left {
+  flex: 1;
+}
+.right {
+  flex: 0 0 250px
 }
 
 /* Board styling */
