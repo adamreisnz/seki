@@ -29,15 +29,14 @@ import {
  */
 export default class Game extends Base {
 
+  //History stack
+  history = []
+
   /**
    * Constructor
    */
   constructor() {
-
-    //Parent
     super()
-
-    //Init
     this.init()
   }
 
@@ -55,9 +54,6 @@ export default class Game extends Base {
 
     //Game path
     this.path = new GamePath()
-
-    //Positions history stack
-    this.history = []
 
     //Settings
     this.allowSuicide = false
@@ -208,7 +204,7 @@ export default class Game extends Base {
 
     //Process children
     while (node) {
-      node = node.getRememberedChild()
+      node = node.getPathNode()
       if (node) {
         nodes.push(node)
       }
@@ -762,12 +758,13 @@ export default class Game extends Base {
       move: {x, y, color},
     })
 
-    //Append it to the current node, remember the path, and change the pointer
-    const i = node.appendTo(this.node)
-    this.node.rememberPath(i)
-    this.node = node
+    //Append it to the current node, remember the variation, and change the pointer
+    const parent = this.node
+    const i = node.appendToParent(parent)
+    parent.setPathIndex(i)
 
     //Advance path to the added node index
+    this.node = node
     this.path.advance(i)
 
     //Valid move
@@ -797,12 +794,13 @@ export default class Game extends Base {
       },
     })
 
-    //Append it to the current node, remember the path, and change the pointer
-    const i = node.appendTo(this.node)
-    this.node.rememberPath(i)
-    this.node = node
+    //Append it to the current node, remember the path
+    const parent = this.node
+    const i = node.appendToParent(parent)
+    parent.setPathIndex(i)
 
     //Advance path to the added node index
+    this.node = node
     this.path.advance(i)
   }
 
@@ -1167,10 +1165,12 @@ export default class Game extends Base {
       return false
     }
 
-    //Get the remembered path, or preferred path if it's valid
-    const i = node.getRememberedPath(variationIndex)
+    //Get path index
+    const i = node.isValidPathIndex(variationIndex) ?
+      variationIndex : node.getPathIndex()
 
     //Advance path and set pointer of current node
+    //TODO create helper for this as it's repeated often
     this.path.advance(i)
     this.node = node.getChild(i)
     return true
@@ -1225,21 +1225,22 @@ export default class Game extends Base {
   initializeHistory() {
 
     //Already at beginning?
-    if (this.history.length === 1) {
+    const {history} = this
+    if (history.length === 1) {
       return
     }
 
     //Create new blank game position
     const position = new GamePosition()
+    const {width, height} = this.getBoardSize()
 
     //Clear positions stack push the position
-    this.history = []
-    this.history.push(position)
+    history.length = 0
+    history.push(position)
 
     //Set board size if we have the info
-    const {width, height} = this.getBoardSize()
     if (width && height) {
-      this.history[0].setSize(width, height)
+      history[0].setSize(width, height)
     }
   }
 
@@ -1295,8 +1296,8 @@ export default class Game extends Base {
     //Get data
     const {node, position} = this
 
-    //Remember selected node on parent
-    node.setRememberedPathOnParent()
+    //Make this node the path node on its parent
+    node.setAsParentPathNode()
 
     //Initialize new position
     const newPosition = position.clone()

@@ -13,8 +13,8 @@ export default class GameNode {
   parent
   children = []
 
-  //The remembered path in this node
-  rememberedPath = 0
+  //The selected path index (for navigating variations)
+  index = 0
 
   /**
    * Constructor
@@ -175,9 +175,9 @@ export default class GameNode {
   }
 
   /**
-   * Append this node to another node
+   * Append this node to a parent node
    */
-  appendTo(node) {
+  appendToParent(node) {
     this.detach()
     this.setParent(node)
     return node.addChild(this)
@@ -196,7 +196,7 @@ export default class GameNode {
    * Move the node up in the parent's child tree
    * NOTE: Not currently in use
    */
-  moveUp() {
+  moveUpInParent() {
     const {parent} = this
     if (parent) {
       const i = parent.indexOf(this)
@@ -208,7 +208,7 @@ export default class GameNode {
    * Move the node down in the parent's child tree
    * NOTE: Not currently in use
    */
-  moveDown() {
+  moveDownInParent() {
     const {parent} = this
     if (parent) {
       const i = parent.indexOf(this)
@@ -240,11 +240,37 @@ export default class GameNode {
    ***/
 
   /**
+   * Get move number
+   */
+  getMoveNumber() {
+    const {parent, move} = this
+    const n = move ? 1 : 0
+    const p = parent ? parent.getMoveNumber() : 0
+    return n + p
+  }
+
+  /**
    * Check if this is a move node
    */
   isMove() {
     const {move} = this
     return Boolean(move)
+  }
+
+  /**
+   * Check if this is a non-pass move
+   */
+  isPlayMove() {
+    const {move} = this
+    return Boolean(move && !move.pass)
+  }
+
+  /**
+   * Check if this is a pass move
+   */
+  isPassMove() {
+    const {move} = this
+    return Boolean(move && move.pass)
   }
 
   /**
@@ -256,29 +282,29 @@ export default class GameNode {
   }
 
   /**
-   * Check if this is a pass move node
-   */
-  isPass() {
-    const {move} = this
-    return Boolean(move && move.pass)
-  }
-
-  /**
-   * Get move number
-   */
-  getMoveNumber() {
-    const {parent, move} = this
-    const n = move ? 1 : 0
-    const p = parent ? parent.getMoveNumber() : 0
-    return n + p
-  }
-
-  /**
    * Check if there is a move variation at the given coordinates
    */
   hasMoveVariation(x, y) {
     const {children} = this
     return children.some(child => child.hasMove(x, y))
+  }
+
+  /**
+   * Get the move child node for the given coordinates
+   */
+  getMoveVariation(x, y) {
+    const {children} = this
+    return children
+      .findIndex(child => child.hasMove(x, y))
+  }
+
+  /**
+   * Check if given coordinates are from one of the next child move nodes
+   */
+  isMoveVariation(x, y) {
+    const {children} = this
+    return children
+      .some(child => child.hasMove(x, y))
   }
 
   /**
@@ -302,7 +328,7 @@ export default class GameNode {
   }
 
   /**
-   * Get all the move variation nodes
+   * Get all the child nodes that are moves
    */
   getMoveVariations() {
     const {children} = this
@@ -311,91 +337,67 @@ export default class GameNode {
   }
 
   /**
-   * Get the move variation for given coordinates
+   * Check if we have comments in this node
    */
-  getMoveVariation(x, y) {
+  hasComments() {
+    const {comments} = this
+    return (comments && comments.length > 0)
+  }
+
+  /**************************************************************************
+   * Path helpers
+   ***/
+
+  /**
+   * Set the path index if valid
+   */
+  setPathIndex(i) {
+    if (this.isValidPathIndex(i)) {
+      this.index = i
+    }
+  }
+
+  /**
+   * Get active path index
+   */
+  getPathIndex() {
+    return this.index
+  }
+
+  /**
+   * Check if an index is a valid path index
+   */
+  isValidPathIndex(i) {
     const {children} = this
-    return children
-      .findIndex(child => child.hasMove(x, y))
-  }
-
-  /**
-   * Check if given coordinates are one of the next child node coordinates
-   */
-  isMoveVariation(x, y) {
-    const {children} = this
-    return children
-      .some(child => child.hasMove(x, y))
-  }
-
-  /**
-   * Remember path
-   */
-  rememberPath(i) {
-
-    //Node instance given?
-    if (i instanceof GameNode) {
-      i = this.indexOf(i)
-      if (i === -1) {
-        return
-      }
+    if (typeof i === 'undefined' || i < 0) {
+      return false
     }
-
-    //Set remembered path
-    this.rememberedPath = i
+    return (typeof children[i] !== 'undefined')
   }
 
   /**
-   * Get remembered path
+   * Set the path to point to the given node
    */
-  getRememberedPath(preferredPath) {
-
-    //Preferred path given?
-    if (typeof preferredPath !== 'undefined') {
-      if (this.children[preferredPath]) {
-        return preferredPath
-      }
-    }
-
-    //Return active path
-    return this.rememberedPath
+  setPathNode(child) {
+    const i = this.indexOf(child)
+    this.setPathIndex(i)
   }
 
   /**
-   * Set remembered path on the parent with index of this node
+   * Get node on path index
    */
-  setRememberedPathOnParent() {
-    if (this.parent) {
-      this.parent.rememberPath(this)
-    }
+  getPathNode() {
+    const {children, index} = this
+    return children[index]
   }
 
   /**
-   * Get child for remembered path
+   * Make this node the path node on its parent
    */
-  getRememberedChild() {
-    return this.children[this.rememberedPath]
-  }
-
-  /**
-   * Select next path if possible
-   */
-  selectNextPath() {
-    const {children, rememberedPath} = this
-    const next = rememberedPath + 1
-    if (next < children.length && children[next]) {
-      this.rememberedPath = next
-    }
-  }
-
-  /**
-   * Select previous path if possible
-   */
-  selectPreviousPath() {
-    const {children, rememberedPath} = this
-    const prev = rememberedPath - 1
-    if (prev >= 0 && children[prev]) {
-      this.rememberedPath = prev
+  setAsParentPathNode() {
+    const {parent} = this
+    if (parent) {
+      parent.setPathNode(this)
     }
   }
 
@@ -403,20 +405,35 @@ export default class GameNode {
    * Check if a node is the selected path
    */
   isSelectedPath(child) {
-    return (child === this.getRememberedChild())
+    const {children, index} = this
+    return (child === children[index])
+  }
+
+  /**
+   * Select next path if possible
+   */
+  selectNextPath() {
+    const {children, index} = this
+    const next = index + 1
+    if (next < children.length && children[next]) {
+      this.index = next
+    }
+  }
+
+  /**
+   * Select previous path if possible
+   */
+  selectPreviousPath() {
+    const {children, index} = this
+    const prev = index - 1
+    if (prev >= 0 && children[prev]) {
+      this.index = prev
+    }
   }
 
   /**************************************************************************
-   * Convenience helpers
+   * Markup helpers
    ***/
-
-  /**
-   * Check if we have comments in this node
-   */
-  hasComments() {
-    const {comments} = this
-    return (comments && comments.length > 0)
-  }
 
   /**
    * Add markup
@@ -489,6 +506,10 @@ export default class GameNode {
         .some(coord => coord.x === x && coord.y === y))
   }
 
+  /**************************************************************************
+   * Setup helpers
+   ***/
+
   /**
    * Add setup instruction
    */
@@ -507,7 +528,7 @@ export default class GameNode {
 
       //Create a new node
       const node = new GameNode()
-      const i = node.appendTo(this)
+      const i = node.appendToParent(this)
 
       //Add the setup instruction to this node
       node.addSetup(x, y, data)

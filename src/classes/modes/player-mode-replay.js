@@ -451,8 +451,8 @@ export default class PlayerModeReplay extends PlayerMode {
    */
   addLastMoveMarker(node) {
 
-    //Not a move node or a pass
-    if (!node.isMove() || node.isPass()) {
+    //Not a play move
+    if (!node.isPlayMove()) {
       return
     }
 
