@@ -280,12 +280,10 @@ export default class Game extends Base {
    * Get current move number
    */
   getMoveNumber() {
-    return this.path.getMoveNumber()
-    //TODO check if this is ok
-    // if (this.node) {
-    //   return this.node.getMoveNumber()
-    // }
-    // return 0
+    if (this.node) {
+      return this.node.getMoveNumber()
+    }
+    return 0
   }
 
   /**
