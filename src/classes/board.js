@@ -684,6 +684,7 @@ export default class Board extends Base {
     this.setupElements(container)
     this.createLayerContexts()
     this.setupResizeObserver()
+    this.makeVisible()
   }
 
   /**
@@ -713,6 +714,16 @@ export default class Board extends Base {
       board,
       canvasContainer,
     }
+  }
+
+  /**
+   * Make visible
+   */
+  makeVisible() {
+    const {board} = this.elements
+    setTimeout(() => {
+      board.style.visibility = 'visible'
+    }, 150)
   }
 
   /**
