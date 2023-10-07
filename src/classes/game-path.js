@@ -17,7 +17,7 @@ export default class GamePath {
    * Init
    */
   init() {
-    this.move = 0
+    this.moveNo = 0
     this.path = {}
     this.branches = 0
   }
@@ -34,14 +34,17 @@ export default class GamePath {
    */
   advance(i) {
 
+    //Get data
+    const {moveNo, path} = this
+
     //Different child variation chosen? Remember
     if (i > 0) {
-      this.path[this.move] = 1
+      path[moveNo] = i
       this.branches++
     }
 
-    //Increment move
-    this.move++
+    //Increment move no
+    this.moveNo++
   }
 
   /**
@@ -49,19 +52,22 @@ export default class GamePath {
    */
   retreat() {
 
+    //Get data
+    const {moveNo, path} = this
+
     //At start?
-    if (this.move === 0) {
+    if (moveNo === 0) {
       return
     }
 
     //Delete path choice
-    if (this.path[this.move]) {
-      delete this.path[this.move]
+    if (path[moveNo] > 0) {
+      delete path[moveNo]
       this.branches--
     }
 
     //Decrement move
-    this.move--
+    this.moveNo--
   }
 
   /**
@@ -69,32 +75,47 @@ export default class GamePath {
    */
   setMove(no) {
 
+    //Get data
+    const {moveNo, path} = this
+
     //Less than our current move? We need to erase any paths above the move number
-    if (no < this.move) {
-      for (let i in this.path) {
+    if (no < moveNo) {
+      for (const i in path) {
         if (i > no) {
-          delete this.path[i]
+          delete path[i]
           this.branches--
         }
       }
     }
 
     //Set move number
-    this.move = no
+    this.moveNo = no
   }
 
   /**
    * Get the move number
    */
-  getMove() {
-    return this.move
+  getMoveNumber() {
+    return this.moveNo
+  }
+
+  /**
+   * Get the current path index
+   */
+  currentIndex() {
+    const {moveNo, path} = this
+    return path[moveNo]
   }
 
   /**
    * Get the node choice at a specific move number
    */
-  nodeAt(no) {
-    return (typeof this.path[no] === 'undefined') ? 0 : this.path[no]
+  indexAtMove(moveNo) {
+    const {path} = this
+    if (typeof path[moveNo] !== 'undefined') {
+      return path[moveNo]
+    }
+    return 0
   }
 
   /**
@@ -106,21 +127,24 @@ export default class GamePath {
     if (
       !otherPath ||
       typeof otherPath !== 'object' ||
-      typeof otherPath.move === 'undefined'
+      typeof otherPath.moveNo === 'undefined'
     ) {
       return
     }
 
+    //Get data
+    const {path, moveNo, branches} = this
+
     //Different move number or path length?
-    if (this.move !== otherPath.move || this.branches !== otherPath.branches) {
+    if (moveNo !== otherPath.moveNo || branches !== otherPath.branches) {
       return false
     }
 
     //Check path
-    for (let i in this.path) {
+    for (const i in path) {
       if (
         typeof otherPath.path[i] === 'undefined' ||
-        this.path[i] !== otherPath.path[i]
+        path[i] !== otherPath.path[i]
       ) {
         return false
       }
@@ -139,7 +163,7 @@ export default class GamePath {
     const newPath = new GamePath()
 
     //Set vars
-    newPath.move = this.move
+    newPath.moveNo = this.moveNo
     newPath.branches = this.branches
     newPath.path = JSON.parse(JSON.stringify(this.path))
 
@@ -159,12 +183,13 @@ export default class GamePath {
 
     //Loop children
     for (let i = 0; i < node.children.length; i++) {
+      const child = node.children[i]
 
       //Advance path
       path.advance(i)
 
       //Found in child node?
-      if (this.findNodeName(node.children[i], nodeName, path)) {
+      if (this.findNodeName(child, nodeName, path)) {
         return true
       }
 
@@ -182,7 +207,7 @@ export default class GamePath {
   static findNode(nodeName, rootNode) {
 
     //Create new instance
-    let path = new GamePath()
+    const path = new GamePath()
 
     //Find the node name
     if (this.findNodeName(rootNode, nodeName, path)) {

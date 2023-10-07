@@ -246,6 +246,12 @@ export default class PlayerModeReplay extends PlayerMode {
       case playerActions.PREV_POSITION:
         this.goToPreviousPosition()
         break
+      case playerActions.NEXT_VARIATION:
+        this.selectNextVariation()
+        break
+      case playerActions.PREV_VARIATION:
+        this.selectPreviousVariation()
+        break
     }
   }
 
@@ -301,6 +307,22 @@ export default class PlayerModeReplay extends PlayerMode {
     if (isAutoPlaying) {
       this.startAutoPlay()
     }
+  }
+
+  /**
+   * Select next variation
+   */
+  selectNextVariation() {
+    this.debug(`selecting next variation`)
+    this.game.selectNextVariation()
+  }
+
+  /**
+   * Select previous variation
+   */
+  selectPreviousVariation() {
+    this.debug(`selecting previous variation`)
+    this.game.selectPreviousVariation()
   }
 
   /**

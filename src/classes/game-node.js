@@ -13,6 +13,9 @@ export default class GameNode {
   parent
   children = []
 
+  //The remembered path in this node
+  rememberedPath = 0
+
   /**
    * Constructor
    */
@@ -33,6 +36,13 @@ export default class GameNode {
    */
   hasChildren() {
     return (this.children.length > 0)
+  }
+
+  /**
+   * Check if the node has more than one child
+   */
+  hasMultipleChildren() {
+    return (this.children.length > 1)
   }
 
   /**
@@ -120,6 +130,13 @@ export default class GameNode {
     //Swap
     children[newIndex] = child
     children[currentIndex] = existing
+  }
+
+  /**
+   * Check if the node has a parent
+   */
+  hasParent() {
+    return Boolean(this.parent)
   }
 
   /**
@@ -294,16 +311,87 @@ export default class GameNode {
   }
 
   /**
+   * Remember path
+   */
+  rememberPath(i) {
+
+    //Node instance given?
+    if (i instanceof GameNode) {
+      i = this.indexOf(i)
+      if (i === -1) {
+        return
+      }
+    }
+
+    //Set remembered path
+    this.rememberedPath = i
+  }
+
+  /**
+   * Get remembered path
+   */
+  getRememberedPath(preferredPath) {
+
+    //Preferred path given?
+    if (typeof preferredPath !== 'undefined') {
+      if (this.children[preferredPath]) {
+        return preferredPath
+      }
+    }
+
+    //Return active path
+    return this.rememberedPath
+  }
+
+  /**
+   * Set remembered path on the parent with index of this node
+   */
+  setRememberedPathOnParent() {
+    if (this.parent) {
+      this.parent.rememberPath(this)
+    }
+  }
+
+  /**
+   * Get child for remembered path
+   */
+  getRememberedChild() {
+    return this.children[this.rememberedPath]
+  }
+
+  /**
+   * Select next path if possible
+   */
+  selectNextPath() {
+    const {children, rememberedPath} = this
+    const next = rememberedPath + 1
+    if (next < children.length && children[next]) {
+      this.rememberedPath = next
+    }
+  }
+
+  /**
+   * Select previous path if possible
+   */
+  selectPreviousPath() {
+    const {children, rememberedPath} = this
+    const prev = rememberedPath - 1
+    if (prev >= 0 && children[prev]) {
+      this.rememberedPath = prev
+    }
+  }
+
+  /**************************************************************************
+   * Convenience helpers
+   ***/
+
+  /**
    * Check if we have comments in this node
    */
   hasComments() {
     const {comments} = this
     return (comments && comments.length > 0)
   }
-
-  /**************************************************************************
-   * Convenience helpers
-   ***/
 
   /**
    * Add markup

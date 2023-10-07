@@ -669,7 +669,7 @@ export default class Player extends Base {
 
     //Use sensible defaults if no from/to moves given
     fromMove = fromMove || 1
-    toMove = toMove || this.game.getMove()
+    toMove = toMove || this.game.getMoveNumber()
 
     //Get nodes for these moves
     let nodes = this.game.getMoveNodes(fromMove, toMove)

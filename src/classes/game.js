@@ -204,11 +204,11 @@ export default class Game extends Base {
 
     //Initialize node to process
     let node = this.root
-    let nodes = [node]
+    const nodes = [node]
 
     //Process children
     while (node) {
-      node = node.getChild(node.rememberedPath)
+      node = node.getRememberedChild()
       if (node) {
         nodes.push(node)
       }
@@ -279,11 +279,13 @@ export default class Game extends Base {
   /**
    * Get current move number
    */
-  getMove() {
-    if (this.node) {
-      return this.node.getMoveNumber()
-    }
-    return 0
+  getMoveNumber() {
+    return this.path.getMoveNumber()
+    //TODO check if this is ok
+    // if (this.node) {
+    //   return this.node.getMoveNumber()
+    // }
+    // return 0
   }
 
   /**
@@ -762,13 +764,13 @@ export default class Game extends Base {
     this.pushPosition(newPosition)
 
     //Create new move node
-    let node = new GameNode({
+    const node = new GameNode({
       move: {x, y, color},
     })
 
     //Append it to the current node, remember the path, and change the pointer
-    let i = node.appendTo(this.node)
-    this.node.rememberedPath = i
+    const i = node.appendTo(this.node)
+    this.node.rememberPath(i)
     this.node = node
 
     //Advance path to the added node index
@@ -787,14 +789,14 @@ export default class Game extends Base {
     color = color || this.position.getTurn()
 
     //Initialize new position and switch the turn
-    let newPosition = this.position.clone()
+    const newPosition = this.position.clone()
     newPosition.switchTurn()
 
     //Push new position
     this.pushPosition(newPosition)
 
     //Create new move node
-    let node = new GameNode({
+    const node = new GameNode({
       move: {
         pass: true,
         color,
@@ -802,8 +804,8 @@ export default class Game extends Base {
     })
 
     //Append it to the current node, remember the path, and change the pointer
-    let i = node.appendTo(this.node)
-    this.node.rememberedPath = i
+    const i = node.appendTo(this.node)
+    this.node.rememberPath(i)
     this.node = node
 
     //Advance path to the added node index
@@ -821,7 +823,7 @@ export default class Game extends Base {
 
     //Object (node) given as parameter? Find index
     if (typeof i === 'object') {
-      i = this.node.children.indexOf(i)
+      i = this.node.getChild(i)
     }
 
     //Go to the next node
@@ -973,11 +975,12 @@ export default class Game extends Base {
     this.pushPosition(this.executeNode())
 
     //Loop path
-    let n = path.getMove()
-    for (let i = 0; i < n; i++) {
+    const n = path.getMoveNumber()
+    for (let m = 0; m < n; m++) {
 
       //Try going to the next node
-      if (!this.nextNode(path.nodeAt(i))) {
+      const i = path.indexAtMove(m)
+      if (!this.nextNode(i)) {
         break
       }
 
@@ -1142,39 +1145,40 @@ export default class Game extends Base {
    ***/
 
   /**
+   * Select next variation
+   */
+  selectNextVariation() {
+    const {node} = this
+    node.selectNextPath()
+  }
+
+  /**
+   * Select previous variation
+   */
+  selectPreviousVariation() {
+    const {node} = this
+    node.selectPreviousPath()
+  }
+
+  /**
    * Navigate to the next node
    */
-  nextNode(i) {
+  nextNode(variationIndex) {
 
     //Get data
-    const {children, rememberedPath} = this.node
+    const {node} = this
 
     //Check if we have children
-    if (children.length === 0) {
+    if (!node.hasChildren()) {
       return false
     }
 
-    //Remembered the path we took earlier?
-    if (i === undefined) {
-      i = rememberedPath
-    }
+    //Get the remembered path, or preferred path if it's valid
+    const i = node.getRememberedPath(variationIndex)
 
-    //Determine which child node to process
-    i = i || 0
-    if (i === -1) {
-      i = 0
-    }
-
-    //Validate
-    if (i >= children.length || !children[i]) {
-      return false
-    }
-
-    //Advance path
+    //Advance path and set pointer of current node
     this.path.advance(i)
-
-    //Set pointer of current node
-    this.node = children[i]
+    this.node = node.getChild(i)
     return true
   }
 
@@ -1183,16 +1187,17 @@ export default class Game extends Base {
    */
   previousNode() {
 
+    //Get data
+    const {node} = this
+
     //No parent node?
-    if (!this.node.parent) {
+    if (!node.hasParent()) {
       return false
     }
 
-    //Retreat path
+    //Retreat path and set pointer to current node
     this.path.retreat()
-
-    //Set pointer of current node
-    this.node = this.node.parent
+    this.node = node.getParent()
     return true
   }
 
@@ -1293,38 +1298,38 @@ export default class Game extends Base {
    */
   executeNode() {
 
-    //Remember last selected node if we have a parent
-    if (this.node.parent) {
-      this.node.parent.rememberedPath = this.node.parent.children
-        .indexOf(this.node)
-    }
+    //Get data
+    const {node, position} = this
+
+    //Remember selected node on parent
+    node.setRememberedPathOnParent()
 
     //Initialize new position
-    const newPosition = this.position.clone()
+    const newPosition = position.clone()
 
     //Handle moves
-    if (this.node.isMove()) {
-      if (this.node.move.pass) {
-        newPosition.setTurn(-this.node.move.color)
+    if (node.isMove()) {
+      if (node.move.pass) {
+        newPosition.setTurn(-node.move.color)
       }
       else {
         this.validateMove(
-          this.node.move.x,
-          this.node.move.y,
-          this.node.move.color,
+          node.move.x,
+          node.move.y,
+          node.move.color,
           newPosition,
         )
       }
     }
 
     //Handle turn instructions
-    if (this.node.turn) {
-      newPosition.setTurn(this.node.turn)
+    if (node.turn) {
+      newPosition.setTurn(node.turn)
     }
 
     //Handle setup instructions
-    if (this.node.setup) {
-      for (const setup of this.node.setup) {
+    if (node.setup) {
+      for (const setup of node.setup) {
         const {type, coords} = setup
         for (const coord of coords) {
           const {x, y} = coord
@@ -1339,8 +1344,8 @@ export default class Game extends Base {
     }
 
     //Handle markup
-    if (this.node.markup) {
-      for (const markup of this.node.markup) {
+    if (node.markup) {
+      for (const markup of node.markup) {
         const {type, coords} = markup
         for (const coord of coords) {
           const {x, y, text} = coord
