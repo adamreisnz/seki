@@ -46,6 +46,9 @@ export default class Player extends Base {
     //Initialise
     this.init()
     this.initConfig(config)
+
+    //Create event listeners on ourselves
+    this.setupOwnListeners()
   }
 
   /**
@@ -158,6 +161,18 @@ export default class Player extends Base {
 
     //Load config
     this.loadConfig(config)
+  }
+
+  /**
+   * Set a config flag
+   */
+  setConfig(key, value) {
+
+    //Parent method
+    super.setConfig(key, value)
+
+    //Trigger event
+    this.triggerEvent('config', {key, value})
   }
 
   /*****************************************************************************
@@ -608,7 +623,10 @@ export default class Player extends Base {
   /**
    * Process a new game position
    */
-  processPosition() {
+  processPosition(redraw) {
+
+    //Debug
+    this.debug('processing position')
 
     //Get current node and game position
     const node = this.game.getNode()
@@ -616,8 +634,14 @@ export default class Player extends Base {
     const position = this.game.getPosition()
     const pathChanged = !path.compare(this.path)
 
-    //Update board
+    //Update and redraw board
     this.updateBoard(position, pathChanged)
+    if (redraw) {
+      this.redrawBoard()
+    }
+
+    //Trigger event
+    this.triggerEvent('positionUpdate', {node})
 
     //Path change?
     if (pathChanged) {
@@ -980,5 +1004,29 @@ export default class Player extends Base {
     if (nativeEvent.drag) {
       detail.drag = nativeEvent.drag
     }
+  }
+
+  /**
+   * Setup listeners on ourselves
+   */
+  setupOwnListeners() {
+
+    //These need reprocessing
+    const needsRedraw = [
+      'showNextMove',
+      'showVariations',
+    ]
+
+    //Config change
+    this.on('config', event => {
+
+      //Check what has changed
+      const {key} = event.detail
+
+      //Need to reprocess position?
+      if (needsRedraw.includes(key)) {
+        this.processPosition(true)
+      }
+    })
   }
 }

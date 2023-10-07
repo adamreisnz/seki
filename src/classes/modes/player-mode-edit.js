@@ -52,7 +52,7 @@ export default class PlayerModeEdit extends PlayerModeReplay {
       keydown: 'onKeyDown',
       click: 'onClick',
       wheel: 'onMouseWheel',
-      pathChange: 'onPathChange',
+      positionUpdate: 'onPostionUpdate',
       gridEnter: 'onGridEnter',
       gridLeave: 'onGridLeave',
     })

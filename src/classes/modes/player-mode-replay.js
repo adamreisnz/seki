@@ -46,7 +46,7 @@ export default class PlayerModeReplay extends PlayerMode {
       keydown: 'onKeyDown',
       click: 'onClick',
       wheel: 'onMouseWheel',
-      pathChange: 'onPathChange',
+      positionUpdate: 'onPositionUpdate',
       gameLoad: 'onGameLoad',
     })
   }
@@ -167,9 +167,9 @@ export default class PlayerModeReplay extends PlayerMode {
   }
 
   /**
-   * Path change event
+   * Position update event
    */
-  onPathChange(event) {
+  onPositionUpdate(event) {
 
     //Get data
     const {player} = this
@@ -398,6 +398,9 @@ export default class PlayerModeReplay extends PlayerMode {
       return
     }
 
+    //Debug
+    this.debug(`adding last move marker`)
+
     //Get data
     const {board} = this
     const {x, y, color} = node.move
@@ -418,6 +421,9 @@ export default class PlayerModeReplay extends PlayerMode {
     const variations = node
       .getMoveVariations()
       .filter(node => !node.isPass())
+
+    //Debug
+    this.debug(`adding next move marker for ${variations.length} variation(s)`)
 
     //Add for each variation
     variations.forEach(variation => {

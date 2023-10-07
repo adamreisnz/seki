@@ -405,6 +405,9 @@ export default class Board extends Base {
    */
   updatePosition(position, pathChanged) {
 
+    //Debug
+    this.debug('updating position')
+
     //If we have no grid size yet, use what's in the position
     if (!this.width || !this.height) {
       this.setSize(position.width, position.height)
@@ -432,9 +435,6 @@ export default class Board extends Base {
     //Set new stones and markup grids
     this.setAll(boardLayerTypes.STONES, stones)
     this.setAll(boardLayerTypes.MARKUP, markup)
-
-    //TODO: let's see if this is useful
-    this.redraw()
   }
 
   /*****************************************************************************
@@ -524,6 +524,9 @@ export default class Board extends Base {
     if (!this.canDraw()) {
       return
     }
+
+    //Debug
+    this.debug('redrawing')
 
     //Erase the board first
     this.erase()

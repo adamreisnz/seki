@@ -37,6 +37,7 @@ export default class Base extends EventTarget {
    */
   initConfig(config, defaultConfig) {
     this.config = merge.all([defaultConfig, config || {}])
+    this.debug(`config initialised`)
   }
 
   /**
@@ -54,6 +55,7 @@ export default class Base extends EventTarget {
    */
   setConfig(key, value) {
     this.config[key] = value
+    this.debug(`config ${key} changed to`, value)
   }
 
   /**
@@ -61,10 +63,10 @@ export default class Base extends EventTarget {
    */
   toggleConfig(key, value) {
     if (value === true || value === false) {
-      this.config[key] = value
+      this.setConfig(key, value)
     }
     else {
-      this.config[key] = !this.config[key]
+      this.setConfig(key, !this.config[key])
     }
   }
 

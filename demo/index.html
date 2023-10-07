@@ -160,14 +160,8 @@
   })
 
   //Toggles
-  bindClickHandler('toggleNextMove', () => {
-    player.toggleConfig('showNextMove')
-    player.processPosition()
-  })
-  bindClickHandler('toggleVariations', () => {
-    player.toggleConfig('showVariations')
-    player.processPosition()
-  })
+  bindClickHandler('toggleNextMove', () => player.toggleConfig('showNextMove'))
+  bindClickHandler('toggleVariations', () => player.toggleConfig('showVariations'))
   bindClickHandler('toggleCoordinates', () => player.board.toggleCoordinates())
   bindClickHandler('toggleSwapColors', () => player.board.toggleSwapColors())
 
