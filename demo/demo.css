@@ -21,9 +21,16 @@ button {
   outline: none;
   background: #444;
   padding: 0.5rem;
+
 }
 button.icon {
-  padding: 0.125rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  line-height: 1rem;
+  vertical-align: middle;
 }
 button:hover {
   cursor: pointer;
@@ -50,7 +57,7 @@ p {
   padding-right: 2rem;
 }
 .right {
-  flex: 0 0 270px
+  flex: 0 0 320px
 }
 
 /* Board styling */
