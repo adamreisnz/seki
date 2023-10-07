@@ -890,6 +890,28 @@ export default class Game extends Base {
   }
 
   /**
+   * Skip forward a number of positions
+   */
+  skipForward(num) {
+    for (let i = 0; i < num; i++) {
+      if (!this.next()) {
+        return
+      }
+    }
+  }
+
+  /**
+   * Skip backwards a number of positions
+   */
+  skipBack(num) {
+    for (let i = 0; i < num; i++) {
+      if (!this.previous()) {
+        return
+      }
+    }
+  }
+
+  /**
    * Go to position specified by a path object, a numeric move numer, or a node name string
    */
   goto(target) {

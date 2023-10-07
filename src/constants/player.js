@@ -129,10 +129,13 @@ export const defaultPlayerConfig = {
 
   //Move and variation flags
   showLastMove: true,
-  showNextMove: true,
+  showNextMove: false,
   showSolutions: false,
   showVariations: true,
   showSiblingVariations: false,
+
+  //Number of moves to skip at a time
+  numSkipMoves: 10,
 
   //Allow player configuration settigns to be loaded from game records
   allowPlayerConfig: true,

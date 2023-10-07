@@ -488,6 +488,24 @@ export default class Player extends Base {
   }
 
   /**
+   * Skip forward
+   */
+  skipForward(num) {
+    num = num || this.getConfig('numSkipMoves')
+    this.game.skipForward(num)
+    this.processPosition()
+  }
+
+  /**
+   * Skip back
+   */
+  skipBack(num) {
+    num = num || this.getConfig('numSkipMoves')
+    this.game.skipBack(num)
+    this.processPosition()
+  }
+
+  /**
    * Go to a specific move number, tree path or named node
    */
   goto(target) {

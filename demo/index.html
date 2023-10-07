@@ -6,6 +6,7 @@
   <meta name="author" content="Adam Reis">
   <link rel="stylesheet" type="text/css" media="screen" href="../src/css/seki.css">
   <link rel="stylesheet" type="text/css" media="screen" href="demo.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
 </head>
 <body lang="en">
 <div class="main" id="app">
@@ -49,9 +50,34 @@
     </div>
 
     <div id="replayTools">
-      <h2>Auto play</h2>
-      <button id="startAutoPlay">Start</button>
-      <button id="stopAutoPlay">Stop</button>
+      <h2>Navigate</h2>
+
+      <button class="icon" id="firstMove" title="First move">
+        <span class="material-symbols-outlined">line_start_arrow</span>
+      </button>
+      <button class="icon" id="skipBack" title="Skip back 10 moves">
+        <span class="material-symbols-outlined">fast_rewind</span>
+      </button>
+      <button class="icon" id="prevMove" title="Previous move">
+        <span class="material-symbols-outlined">skip_previous</span>
+      </button>
+
+      <button class="icon" id="startAutoPlay" title="Start auto play">
+        <span class="material-symbols-outlined">play_arrow</span>
+      </button>
+      <button class="icon" id="stopAutoPlay" title="Stop auto play">
+        <span class="material-symbols-outlined">stop</span>
+      </button>
+
+      <button class="icon" id="nextMove" title="Next move">
+        <span class="material-symbols-outlined">skip_next</span>
+      </button>
+      <button class="icon" id="skipForward" title="Skip forward 10 moves">
+        <span class="material-symbols-outlined">fast_forward</span>
+      </button>
+      <button class="icon" id="lastMove" title="Last move">
+        <span class="material-symbols-outlined">line_end_arrow</span>
+      </button>
     </div>
 
     <h2>Other</h2>
@@ -116,9 +142,25 @@
   bindClickHandler('toggleCoordinates', () => player.board.toggleCoordinates())
   bindClickHandler('toggleSwapColors', () => player.board.toggleSwapColors())
 
+  //Navigation
+  bindClickHandler('firstMove', () => player.first())
+  bindClickHandler('skipBack', () => player.skipBack())
+  bindClickHandler('prevMove', () => player.previous())
+  bindClickHandler('nextMove', () => player.next())
+  bindClickHandler('skipForward', () => player.skipForward())
+  bindClickHandler('lastMove', () => player.last())
+
   //Auto play
-  bindClickHandler('startAutoPlay', () => player.startAutoPlay())
-  bindClickHandler('stopAutoPlay', () => player.stopAutoPlay())
+  bindClickHandler('startAutoPlay', () => {
+    player.startAutoPlay()
+    toggleVisibility('startAutoPlay', false)
+    toggleVisibility('stopAutoPlay', true)
+  })
+  bindClickHandler('stopAutoPlay', () => {
+    player.stopAutoPlay()
+    toggleVisibility('stopAutoPlay', false)
+    toggleVisibility('startAutoPlay', true)
+  })
 
   //Mode switching
   bindClickHandler('switchModeNone', () => player.switchMode(playerModes.NONE))
@@ -182,7 +224,11 @@
 
   //Event handlers
   player.on('modeChange', onModeChange)
+
+  //Init
   onModeChange()
+  toggleVisibility('stopAutoPlay', false)
+
 </script>
 </body>
 </html>
