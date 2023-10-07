@@ -257,21 +257,22 @@ export default class PlayerModeReplay extends PlayerMode {
     //Get data
     const {player, isAutoPlaying} = this
 
-    //Go to the next move
-    if (player.isToolActive(playerTools.MOVE)) {
+    //Move tool not active? Switch first
+    if (!player.isToolActive(playerTools.MOVE)) {
+      player.switchTool(playerTools.MOVE)
+    }
 
-      //Stop auto play
-      if (isAutoPlaying) {
-        this.stopAutoPlay()
-      }
+    //Stop auto play
+    if (isAutoPlaying) {
+      this.stopAutoPlay()
+    }
 
-      //Go to next move
-      player.next()
+    //Go to next move
+    player.next()
 
-      //Start auto play again
-      if (isAutoPlaying) {
-        this.startAutoPlay()
-      }
+    //Start auto play again
+    if (isAutoPlaying) {
+      this.startAutoPlay()
     }
   }
 
@@ -283,21 +284,22 @@ export default class PlayerModeReplay extends PlayerMode {
     //Get data
     const {player, isAutoPlaying} = this
 
-    //Go to the previous move
-    if (player.isToolActive(playerTools.MOVE)) {
+    //Move tool not active? Switch first
+    if (!player.isToolActive(playerTools.MOVE)) {
+      player.switchTool(playerTools.MOVE)
+    }
 
-      //Stop auto play
-      if (isAutoPlaying) {
-        this.stopAutoPlay()
-      }
+    //Stop auto play
+    if (isAutoPlaying) {
+      this.stopAutoPlay()
+    }
 
-      //Go to previous move
-      player.previous()
+    //Go to previous move
+    player.previous()
 
-      //Start auto play again
-      if (isAutoPlaying) {
-        this.startAutoPlay()
-      }
+    //Start auto play again
+    if (isAutoPlaying) {
+      this.startAutoPlay()
     }
   }
 

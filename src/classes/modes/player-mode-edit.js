@@ -52,7 +52,8 @@ export default class PlayerModeEdit extends PlayerModeReplay {
       keydown: 'onKeyDown',
       click: 'onClick',
       wheel: 'onMouseWheel',
-      positionUpdate: 'onPostionUpdate',
+      positionUpdate: 'onPositionUpdate',
+      pathChange: 'onPathChange',
       gridEnter: 'onGridEnter',
       gridLeave: 'onGridLeave',
     })
@@ -69,6 +70,19 @@ export default class PlayerModeEdit extends PlayerModeReplay {
     //Extend player
     player.extend('switchMarkupTool', mode)
     player.extend('switchSetupTool', mode)
+  }
+
+  /**
+   * Activate this mode
+   */
+  activate() {
+
+    //Parent method
+    super.activate()
+
+    //Find used markup labels
+    this.resetUsedMarkupLabels()
+    this.findUsedMarkupLabels()
   }
 
   /**************************************************************************
@@ -142,6 +156,14 @@ export default class PlayerModeEdit extends PlayerModeReplay {
     //Clear hover and redraw grid cell (for removed markup)
     this.clearHover()
     this.redrawGridCell(x, y)
+  }
+
+  /**
+   * Path change event
+   */
+  onPathChange() {
+    this.resetUsedMarkupLabels()
+    this.findUsedMarkupLabels()
   }
 
   /**************************************************************************
@@ -364,6 +386,33 @@ export default class PlayerModeEdit extends PlayerModeReplay {
 
     //Return
     return text
+  }
+
+  /**
+   * Find all the used markup labels in current position
+   */
+  findUsedMarkupLabels() {
+
+    //Get data
+    const {game, usedMarkupLabels} = this
+    const markup = game.position.markup.getAll()
+
+    //Filter function
+    const isLabel = (entry) =>
+      entry.value.type === markupTypes.LABEL &&
+      entry.value.text
+
+    //Loop
+    markup
+      .filter(isLabel)
+      .forEach(item => usedMarkupLabels.push(item.value.text))
+  }
+
+  /**
+   * Reset used markup labels
+   */
+  resetUsedMarkupLabels() {
+    this.usedMarkupLabels = []
   }
 
   /**
