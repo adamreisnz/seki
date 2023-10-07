@@ -6,17 +6,8 @@ import {markupTypes} from '../../constants/markup.js'
  */
 export default class MarkupSad extends Markup {
 
-  /**
-   * Constructor
-   */
-  constructor(board, data) {
-
-    //Parent constructor
-    super(board, data)
-
-    //Set type
-    this.type = markupTypes.SAD
-  }
+  //Type
+  type = markupTypes.SAD
 
   /**
    * Get grid erase radius

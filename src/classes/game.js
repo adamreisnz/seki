@@ -408,16 +408,6 @@ export default class Game extends Base {
   }
 
   /**
-   * Check if we have move variations on the current node
-   */
-  hasMoveVariations() {
-    if (this.node) {
-      return this.node.hasMoveVariations()
-    }
-    return false
-  }
-
-  /**
    * Check if a given position is repeating within this game
    */
   isRepeatingPosition(checkPosition) {

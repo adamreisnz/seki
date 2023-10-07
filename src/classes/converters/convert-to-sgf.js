@@ -399,14 +399,10 @@ export default class ConvertToSgf extends Convert {
    * Settings parser
    */
   convertVariationSettings(settings) {
-    let value = 0
-    if (!settings.showVariations) {
-      value += 2
-    }
-    if (settings.showSiblingVariations) {
-      value += 1
-    }
-    return value
+    return (
+      (settings.showVariations ? 0 : 2) +
+      (settings.showSiblingVariations ? 1 : 0)
+    )
   }
 
   /**

@@ -1,7 +1,7 @@
 import PlayerMode from '../player-mode.js'
 import MarkupFactory from '../markup-factory.js'
 import {boardLayerTypes} from '../../constants/board.js'
-import {markupIndicatorTypes} from '../../constants/markup.js'
+import {markupTypes} from '../../constants/markup.js'
 import {
   mouseEvents,
   playerModes,
@@ -186,28 +186,27 @@ export default class PlayerModeReplay extends PlayerMode {
 
     //Show sibling variations
     if (showVariations && showSiblingVariations) {
-      if (node.parent && node.parent.hasMoveVariations()) {
+      if (node.parent && node.parent.hasMultipleMoveVariations()) {
         const variations = node.parent.getMoveVariations()
         this.showMoveVariations(variations)
       }
     }
 
-    //Show child variations
-    else if (showVariations) {
-      if (node.hasMoveVariations()) {
-        const variations = node.getMoveVariations()
-        this.showMoveVariations(variations)
-      }
+    //Show child variations or next move if we have more than one move variation
+    if ((showVariations || showNextMove) && node.hasMultipleMoveVariations()) {
+      const variations = node.getMoveVariations()
+      this.showMoveVariations(variations, showVariations)
+    }
+
+    //Show next move only
+    else if (showNextMove && node.hasMoveVariations()) {
+      const variations = node.getMoveVariations()
+      this.showMoveVariations(variations, false)
     }
 
     //Last move markup
     if (showLastMove) {
       this.addLastMoveMarker(node)
-    }
-
-    //Next move markup
-    if (showNextMove) {
-      this.addNextMoveMarker(node)
     }
   }
 
@@ -377,25 +376,34 @@ export default class PlayerModeReplay extends PlayerMode {
   /**
    * Show move variations on the board
    */
-  showMoveVariations(variations) {
+  showMoveVariations(variations, showText = false) {
 
     //Get data
     const {board} = this
 
     //Loop variations
     variations.forEach((variation, i) => {
+
+      //Get data
       const {move} = variation
       const {x, y, color} = move
+      const index = i
 
-      //Auto variation markup should never overwrite existing markup
-      if (board.has(boardLayerTypes.MARKUP, x, y)) {
+      //Not on top of stones (if displaying sibling variations)
+      if (board.has(boardLayerTypes.STONES, x, y)) {
         return
       }
+
+      //Auto variation markup should never overwrite existing markup
+      //TODO: Why not?
+      // if (board.has(boardLayerTypes.MARKUP, x, y)) {
+      //   return
+      // }
 
       //Add to board
       board
         .add(boardLayerTypes.MARKUP, x, y, MarkupFactory
-          .createForIndicator(markupIndicatorTypes.VARIATION, board, color, i))
+          .create(markupTypes.VARIATION, board, {index, color, showText}))
     })
   }
 
@@ -427,40 +435,12 @@ export default class PlayerModeReplay extends PlayerMode {
 
     //Get data
     const {board} = this
-    const {x, y, color} = node.move
+    const {x, y} = node.move
 
     //Add to board
     board
       .add(boardLayerTypes.MARKUP, x, y, MarkupFactory
-        .createForIndicator(markupIndicatorTypes.LAST_MOVE, board, color))
-  }
-
-  /**
-   * Show next move marker
-   */
-  addNextMoveMarker(node) {
-
-    //Get data
-    const {board} = this
-    const variations = node
-      .getMoveVariations()
-      .filter(node => !node.isPass())
-
-    //Debug
-    this.debug(`adding next move marker for ${variations.length} variation(s)`)
-
-    //Add for each variation
-    variations.forEach(variation => {
-
-      //Get data
-      const {move} = variation
-      const {x, y, color} = move
-
-      //Add to board
-      board
-        .add(boardLayerTypes.MARKUP, x, y, MarkupFactory
-          .createForIndicator(markupIndicatorTypes.NEXT_MOVE, board, color))
-    })
+        .create(markupTypes.LAST_MOVE, board))
   }
 
   /**

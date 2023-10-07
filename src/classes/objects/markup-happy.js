@@ -6,17 +6,8 @@ import {markupTypes} from '../../constants/markup.js'
  */
 export default class MarkupHappy extends Markup {
 
-  /**
-   * Constructor
-   */
-  constructor(board, data) {
-
-    //Parent constructor
-    super(board, data)
-
-    //Set type
-    this.type = markupTypes.HAPPY
-  }
+  //Type
+  type = markupTypes.HAPPY
 
   /**
    * Get grid erase radius

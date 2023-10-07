@@ -6,17 +6,8 @@ import {markupTypes} from '../../constants/markup.js'
  */
 export default class MarkupTriangle extends Markup {
 
-  /**
-   * Constructor
-   */
-  constructor(board) {
-
-    //Parent constructor
-    super(board)
-
-    //Set type
-    this.type = markupTypes.TRIANGLE
-  }
+  //Type
+  type = markupTypes.TRIANGLE
 
   /**
    * Draw

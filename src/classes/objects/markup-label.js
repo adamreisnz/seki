@@ -6,24 +6,8 @@ import {markupTypes} from '../../constants/markup.js'
  */
 export default class MarkupLabel extends Markup {
 
-  /**
-   * Constructor
-   */
-  constructor(board, data) {
-
-    //Parent constructor
-    super(board)
-
-    //Font and text
-    this.font = undefined
-    this.text = ''
-
-    //Set data
-    this.setData(data)
-
-    //Set type
-    this.type = markupTypes.LABEL
-  }
+  //Type
+  type = markupTypes.LABEL
 
   /**
    * Get grid erase radius
@@ -33,20 +17,10 @@ export default class MarkupLabel extends Markup {
   }
 
   /**
-   * Get markup font
+   * Get text
    */
-  getFont() {
-
-    //Get data
-    const {theme, font} = this
-
-    //Preset font
-    if (font) {
-      return font
-    }
-
-    //Dynamic line cap based on theme
-    return theme.get('markup.label.font')
+  getText() {
+    return this.text || ''
   }
 
   /**
@@ -72,13 +46,14 @@ export default class MarkupLabel extends Markup {
     super.draw(context, x, y)
 
     //Get data
-    const {board, theme, text} = this
+    const {board, theme} = this
 
     //Get coordinates and stone radius
     const absX = board.getAbsX(x)
     const absY = board.getAbsY(y)
     const radius = this.getRadius()
     const color = this.getColor(x, y)
+    const text = this.getText()
 
     //Get theme variables
     const font = this.getFont()

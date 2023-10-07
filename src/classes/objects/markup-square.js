@@ -6,17 +6,8 @@ import {markupTypes} from '../../constants/markup.js'
  */
 export default class MarkupSquare extends Markup {
 
-  /**
-   * Constructor
-   */
-  constructor(board, data) {
-
-    //Parent constructor
-    super(board, data)
-
-    //Set type
-    this.type = markupTypes.SQUARE
-  }
+  //Type
+  type = markupTypes.SQUARE
 
   /**
    * Draw

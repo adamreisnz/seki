@@ -6,17 +6,8 @@ import {markupTypes} from '../../constants/markup.js'
  */
 export default class MarkupDiamond extends Markup {
 
-  /**
-   * Constructor
-   */
-  constructor(board, data) {
-
-    //Parent constructor
-    super(board, data)
-
-    //Set type
-    this.type = markupTypes.DIAMOND
-  }
+  //Type
+  type = markupTypes.DIAMOND
 
   /**
    * Get grid erase radius

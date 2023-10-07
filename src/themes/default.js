@@ -200,6 +200,8 @@ export default {
     //Variation markers
     variation: {
       type: markupTypes.LABEL,
+      scale: 0.9,
+      lineDash: '5,10',
       text(i) {
         return String.fromCharCode(65 + i)
       },
@@ -214,6 +216,7 @@ export default {
     //Last move marker
     lastMove: {
       type: markupTypes.CIRCLE,
+      scale: 0.55,
     },
 
     //Next move marker

@@ -6,17 +6,8 @@ import {markupTypes} from '../../constants/markup.js'
  */
 export default class MarkupSelect extends Markup {
 
-  /**
-   * Constructor
-   */
-  constructor(board, data) {
-
-    //Parent constructor
-    super(board, data)
-
-    //Set type
-    this.type = markupTypes.SELECT
-  }
+  //Type
+  type = markupTypes.SELECT
 
   /**
    * Get grid erase radius

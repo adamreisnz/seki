@@ -7,6 +7,12 @@ import {swapColor} from '../../helpers/stone.js'
  */
 export default class Markup extends GridObject {
 
+  //NOTE: All possible properties are declared here, even if they don't apply
+  //to every child class. This is because of current implementation of public
+  //class fields, which sees the child class overwrite any properties that are
+  //set via setData() in the parent constructor.
+  //SEE: https://stackoverflow.com/questions/64357900/javascript-why-does-declaring-a-property-in-a-subclass-overwrite-the-same-prope
+
   //Properties
   type
   color
@@ -14,7 +20,11 @@ export default class Markup extends GridObject {
   lineCap
   lineDash
   scale
+  font
+  text
+  showText
   alpha = 1
+  index = 0
 
   /**
    * Constructor
@@ -88,6 +98,14 @@ export default class Markup extends GridObject {
 
     //Comma separated
     return lineDash ? lineDash.split(',') : null
+  }
+
+  /**
+   * Get font
+   */
+  getFont() {
+    const {theme, font} = this
+    return font || theme.get('markup.label.font')
   }
 
   /**

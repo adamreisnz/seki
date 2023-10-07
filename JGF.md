@@ -183,14 +183,14 @@ JGF = {
     //Show the next move when replaying
     showNextMove: false,
 
-		//Show solutions for problems
-		showSolutions: false,
-
-		//Show variations on the board
+		//Show child variations of current node
 		showVariations: true,
 
-		//Show variations of current node
+		//Show sibling variations of current node
 		showSiblingVariations: false,
+
+    //Show solutions for problems
+		showSolutions: false,
 
     //...extensible with other custom instructions for various players
 	},

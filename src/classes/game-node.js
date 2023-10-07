@@ -274,9 +274,19 @@ export default class GameNode {
   }
 
   /**
-   * Check if the node has more than one move variation
+   * Check if the node has any move variation
    */
   hasMoveVariations() {
+    const {children} = this
+    return children
+      .filter(child => child.isMove())
+      .length > 0
+  }
+
+  /**
+   * Check if the node has more than one move variation
+   */
+  hasMultipleMoveVariations() {
     const {children} = this
     return children
       .filter(child => child.isMove())

@@ -1,25 +1,23 @@
 
 //Markup types
 export const markupTypes = {
+
+  //Drawable
   TRIANGLE: 'triangle',
   CIRCLE: 'circle',
-  CIRCLE_DASHED: 'circleDashed',
   SQUARE: 'square',
-  ARROW: 'arrow',
   DIAMOND: 'diamond',
   MARK: 'mark',
-  LINE: 'line',
-  SELECT: 'select',
-  LABEL: 'label',
   HAPPY: 'happy',
   SAD: 'sad',
-}
+  LABEL: 'label',
 
-/**
- * Markup indicator types
- */
-export const markupIndicatorTypes = {
-  LAST_MOVE: 'lastMove',
-  NEXT_MOVE: 'nextMove',
+  //Currently not implemented
+  ARROW: 'arrow',
+  LINE: 'line',
+
+  //Special
+  SELECT: 'select',
   VARIATION: 'variation',
+  LAST_MOVE: 'lastMove',
 }

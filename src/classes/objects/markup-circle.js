@@ -6,17 +6,8 @@ import {markupTypes} from '../../constants/markup.js'
  */
 export default class MarkupCircle extends Markup {
 
-  /**
-   * Constructor
-   */
-  constructor(board, data) {
-
-    //Parent constructor
-    super(board, data)
-
-    //Set type
-    this.type = markupTypes.CIRCLE
-  }
+  //Type
+  type = markupTypes.CIRCLE
 
   /**
    * Get grid erase radius
@@ -44,7 +35,6 @@ export default class MarkupCircle extends Markup {
 
     //Get theme variables
     const lineWidth = this.getLineWidth()
-    const lineDash = this.getLineDash()
     const canvasTranslate = theme.canvasTranslate(lineWidth)
 
     //Prepare context
@@ -53,7 +43,6 @@ export default class MarkupCircle extends Markup {
     //Configure context
     context.strokeStyle = color
     context.lineWidth = lineWidth
-    context.setLineDash(lineDash || [])
 
     //Draw element
     context.beginPath()
