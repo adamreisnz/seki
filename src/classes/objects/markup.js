@@ -22,9 +22,12 @@ export default class Markup extends GridObject {
   scale
   font
   text
-  showText
   alpha = 1
+
+  //Variation markup
   index = 0
+  showText
+  isSelected
 
   /**
    * Constructor

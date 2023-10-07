@@ -79,7 +79,7 @@
     </div>
 
     <div id="replayTools">
-      <h2>Navigate</h2>
+      <h2>Navigation</h2>
 
       <button class="icon" id="firstMove" title="First move">
         <span class="material-symbols-outlined">line_start_arrow</span>
@@ -106,6 +106,26 @@
       </button>
       <button class="icon" id="lastMove" title="Last move">
         <span class="material-symbols-outlined">line_end_arrow</span>
+      </button>
+
+      <br>
+      <button class="icon" id="prevVariation" title="Previous variation">
+        <span class="material-symbols-outlined">expand_less</span>
+      </button>
+      <button class="icon" id="nextVariation" title="Next variation">
+        <span class="material-symbols-outlined">expand_more</span>
+      </button>
+      <button class="icon" id="prevFork" title="Previous fork">
+        <span class="material-symbols-outlined">fork_left</span>
+      </button>
+      <button class="icon" id="nextFork" title="Next fork">
+        <span class="material-symbols-outlined">fork_right</span>
+      </button>
+      <button class="icon" id="prevComment" title="Previous comment">
+        <span class="material-symbols-outlined">comment</span>
+      </button>
+      <button class="icon" id="nextComment" title="Next comment">
+        <span class="material-symbols-outlined">chat</span>
       </button>
     </div>
 
@@ -170,6 +190,12 @@ onClick('#prevMove', () => player.previous())
 onClick('#nextMove', () => player.next())
 onClick('#skipForward', () => player.skipForward())
 onClick('#lastMove', () => player.last())
+onClick('#prevFork', () => player.previousFork())
+onClick('#nextFork', () => player.nextFork())
+onClick('#prevComment', () => player.previousComment())
+onClick('#nextComment', () => player.nextComment())
+onClick('#prevVariation', () => player.selectPreviousVariation())
+onClick('#nextVariation', () => player.selectNextVariation())
 
 //Auto play
 onClick('#startAutoPlay', () => {

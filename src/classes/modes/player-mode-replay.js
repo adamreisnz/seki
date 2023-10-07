@@ -187,21 +187,18 @@ export default class PlayerModeReplay extends PlayerMode {
     //Show sibling variations
     if (showVariations && showSiblingVariations) {
       if (node.parent && node.parent.hasMultipleMoveVariations()) {
-        const variations = node.parent.getMoveVariations()
-        this.showMoveVariations(variations)
+        this.showMoveVariations(node.parent)
       }
     }
 
     //Show child variations or next move if we have more than one move variation
     if ((showVariations || showNextMove) && node.hasMultipleMoveVariations()) {
-      const variations = node.getMoveVariations()
-      this.showMoveVariations(variations, showVariations)
+      this.showMoveVariations(node, showVariations)
     }
 
     //Show next move only
     else if (showNextMove && node.hasMoveVariations()) {
-      const variations = node.getMoveVariations()
-      this.showMoveVariations(variations, false)
+      this.showMoveVariations(node, false)
     }
 
     //Last move markup
@@ -313,7 +310,7 @@ export default class PlayerModeReplay extends PlayerMode {
    */
   selectNextVariation() {
     this.debug(`selecting next variation`)
-    this.game.selectNextVariation()
+    this.player.selectNextVariation()
   }
 
   /**
@@ -321,7 +318,7 @@ export default class PlayerModeReplay extends PlayerMode {
    */
   selectPreviousVariation() {
     this.debug(`selecting previous variation`)
-    this.game.selectPreviousVariation()
+    this.player.selectPreviousVariation()
   }
 
   /**
@@ -376,10 +373,11 @@ export default class PlayerModeReplay extends PlayerMode {
   /**
    * Show move variations on the board
    */
-  showMoveVariations(variations, showText = false) {
+  showMoveVariations(node, showText = false) {
 
     //Get data
     const {board} = this
+    const variations = node.getMoveVariations()
 
     //Loop variations
     variations.forEach((variation, i) => {
@@ -387,17 +385,21 @@ export default class PlayerModeReplay extends PlayerMode {
       //Get data
       const {move} = variation
       const {x, y, color} = move
-      const index = i
 
       //Not on top of stones (if displaying sibling variations)
       if (board.has(boardLayerTypes.STONES, x, y)) {
         return
       }
 
+      //Construct data for factory
+      const index = i
+      const isSelected = node.isSelectedPath(variation)
+      const data = {index, color, showText, isSelected}
+
       //Add to board
       board
         .add(boardLayerTypes.MARKUP, x, y, MarkupFactory
-          .create(markupTypes.VARIATION, board, {index, color, showText}))
+          .create(markupTypes.VARIATION, board, data))
     })
   }
 

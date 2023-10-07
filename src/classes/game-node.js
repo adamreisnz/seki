@@ -391,6 +391,13 @@ export default class GameNode {
     }
   }
 
+  /**
+   * Check if a node is the selected path
+   */
+  isSelectedPath(child) {
+    return (child === this.getRememberedChild())
+  }
+
   /**************************************************************************
    * Convenience helpers
    ***/

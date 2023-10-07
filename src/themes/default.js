@@ -201,15 +201,16 @@ export default {
     variation: {
       type: markupTypes.LABEL,
       scale: 0.9,
-      lineDash: '5,10',
+      lineDash: '5,8',
       text(i) {
         return String.fromCharCode(65 + i)
       },
-      color(stoneColor) {
+      color(stoneColor, isSelected) {
+        const opacity = isSelected ? 1 : 0.75
         if (stoneColor === stoneColors.WHITE) {
-          return 'rgba(255,255,255,0.95)'
+          return `rgba(255,255,255,${opacity})`
         }
-        return 'rgba(0,0,0,0.95)'
+        return `rgba(0,0,0,${opacity})`
       },
     },
 

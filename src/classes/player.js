@@ -586,6 +586,22 @@ export default class Player extends Base {
   }
 
   /**
+   * Select the previous variation
+   */
+  selectNextVariation() {
+    this.game.selectNextVariation()
+    this.processPosition()
+  }
+
+  /**
+   * Select the next variation
+   */
+  selectPreviousVariation() {
+    this.game.selectPreviousVariation()
+    this.processPosition()
+  }
+
+  /**
    * Play a move
    */
   play(x, y) {

@@ -29,8 +29,8 @@ export default class MarkupVariation extends MarkupCircle {
    * Get markup color
    */
   getColor() {
-    const {theme, color} = this
-    return theme.get('markup.variation.color', color)
+    const {theme, color, isSelected} = this
+    return theme.get('markup.variation.color', color, isSelected)
   }
 
   /**
