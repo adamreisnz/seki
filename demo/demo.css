@@ -32,7 +32,10 @@ button.icon {
   line-height: 1rem;
   vertical-align: middle;
 }
-button:hover {
+button:disabled {
+  opacity: 0.5
+}
+button:not([disabled]):hover {
   cursor: pointer;
   background: #555;
 }
@@ -73,10 +76,16 @@ p {
   margin-bottom: 10px;
 }
 
+/* Material icons */
 .material-symbols-outlined {
   font-variation-settings:
     'FILL' 1,
     'wght' 400,
     'GRAD' 0,
     'opsz' 24
+}
+
+/* Utility */
+.hidden {
+  display: none !important;
 }

@@ -9,12 +9,10 @@ import {
 } from '../constants/board.js'
 import {
   throttle,
-} from '../helpers/util.js'
-import {
-  pixelRatio,
+  getPixelRatio,
   createElement,
   createCanvasContext,
-} from '../helpers/dom.js'
+} from '../helpers/util.js'
 
 /**
  * This class represents the Go board. It is a placeholder for all the various
@@ -851,6 +849,7 @@ export default class Board extends Base {
 
     //Get elements
     const {board, canvasses} = this.elements
+    const pixelRatio = getPixelRatio()
 
     //Set the new dimension on the main board element
     board.style.width = `${width}px`

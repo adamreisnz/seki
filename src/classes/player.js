@@ -6,7 +6,11 @@ import EventHandler from './event-handler.js'
 import PlayerModeFactory from './player-mode-factory.js'
 import {boardLayerTypes} from '../constants/board.js'
 import {markupTypes} from '../constants/markup.js'
-import {pixelRatio} from '../helpers/dom.js'
+import {
+  getPixelRatio,
+  addClass,
+  removeClass,
+} from '../helpers/util.js'
 import {
   playerTools,
   playerModes,
@@ -210,7 +214,7 @@ export default class Player extends Base {
    * Check if a specific player mode is available
    */
   isModeAvailable(mode) {
-    if (mode === playerModes.NONE) {
+    if (mode === playerModes.STATIC) {
       return true
     }
     const availableModes = this.getConfig('availableModes', [])
@@ -785,7 +789,7 @@ export default class Player extends Base {
 
     //Link element and apply classes
     this.linkElement(element)
-    this.applyClasses(element)
+    this.addClass('seki-player')
 
     //Setup listeners
     this.setupDocumentListeners()
@@ -827,12 +831,17 @@ export default class Player extends Base {
   }
 
   /**
-   * Apply classes
+   * Add class to player
    */
-  applyClasses() {
-    if (this.element) {
-      this.element.classList.add('seki-player')
-    }
+  addClass(className) {
+    addClass(this.element, className)
+  }
+
+  /**
+   * Remove class from player
+   */
+  removeClass(className) {
+    removeClass(this.element, className)
   }
 
   /**************************************************************************
@@ -991,6 +1000,7 @@ export default class Player extends Base {
 
     //Get data
     const {offsetX, offsetY} = nativeEvent
+    const pixelRatio = getPixelRatio()
 
     //Apply pixel ratio factor
     const absX = offsetX * pixelRatio

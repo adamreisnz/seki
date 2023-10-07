@@ -4,7 +4,7 @@ import {
 } from '../constants/board.js'
 import {
   createCanvasContext,
-} from '../helpers/dom.js'
+} from '../helpers/util.js'
 
 /**
  * This class represents a static Go board, used for just rendering and

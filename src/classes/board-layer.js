@@ -1,5 +1,5 @@
 import Grid from './grid.js'
-import {pixelRatio} from '../helpers/dom.js'
+import {getPixelRatio} from '../helpers/util.js'
 
 /**
  * This class represents a layer on the board and is the base class
@@ -152,6 +152,7 @@ export default class BoardLayer {
 
     //Get context
     const {context} = this
+    const pixelRatio = getPixelRatio()
 
     //Clear rectangle
     context.clearRect(

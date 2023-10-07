@@ -1,4 +1,4 @@
-import PlayerModeNone from './modes/player-mode-none.js'
+import PlayerModeStatic from './modes/player-mode-static.js'
 import PlayerModePlay from './modes/player-mode-play.js'
 import PlayerModeReplay from './modes/player-mode-replay.js'
 import PlayerModeEdit from './modes/player-mode-edit.js'
@@ -23,8 +23,8 @@ export default class PlayerModeFactory {
         return PlayerModeEdit
       case playerModes.SOLVE:
         return PlayerModeSolve
-      case playerModes.NONE:
-        return PlayerModeNone
+      case playerModes.STATIC:
+        return PlayerModeStatic
       default:
         throw new Error(`Unrecognized player mode: ${mode}`)
     }

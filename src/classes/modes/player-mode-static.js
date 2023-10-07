@@ -4,10 +4,10 @@ import {playerModes, playerTools} from '../../constants/player.js'
 /**
  * A mode that doesn't allow the player to do anything
  */
-export default class PlayerModeNone extends PlayerMode {
+export default class PlayerModeStatic extends PlayerMode {
 
   //Mode type
-  mode = playerModes.NONE
+  mode = playerModes.STATIC
 
   //Available tools for this mode
   availableTools = [

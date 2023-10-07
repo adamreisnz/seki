@@ -5,10 +5,10 @@ import {setupTypes} from './setup.js'
  * Player modes
  */
 export const playerModes = {
-  NONE: 'none',
-  PLAY: 'play',
+  STATIC: 'static',
   REPLAY: 'replay',
   EDIT: 'edit',
+  PLAY: 'play',
   SOLVE: 'solve',
 }
 
@@ -99,7 +99,7 @@ export const defaultPlayerConfig = {
 
   //Available modes
   availableModes: [
-    playerModes.NONE,
+    playerModes.STATIC,
     playerModes.PLAY,
     playerModes.REPLAY,
     playerModes.EDIT,

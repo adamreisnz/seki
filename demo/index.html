@@ -23,57 +23,57 @@
     <button id="loadGib">GIB</button>
 
     <h2>Switch mode</h2>
-    <button id="switchModeNone">None</button>
-    <button id="switchModeReplay">Replay</button>
-    <button id="switchModePlay">Play</button>
-    <button id="switchModeEdit">Edit</button>
-    <!-- <button id="switchModeSolve">Solve</button> -->
+    <button class="btnSwitchMode" mode="static">Static</button>
+    <button class="btnSwitchMode" mode="replay">Replay</button>
+    <button class="btnSwitchMode" mode="play">Play</button>
+    <button class="btnSwitchMode" mode="edit">Edit</button>
+    <button class="btnSwitchMode" mode="solve">Solve</button>
 
     <div id="editTools">
       <h2>Markup</h2>
-      <button id="switchMarkupToolCircle" class="icon">
+      <button class="btnSwitchMarkupTool" tool="circle" class="icon">
         <span class="material-symbols-outlined">circle</span>
       </button>
-      <button id="switchMarkupToolTriangle" class="icon">
+      <button class="btnSwitchMarkupTool" tool="triangle" class="icon">
         <span class="material-symbols-outlined">change_history</span>
       </button>
-      <button id="switchMarkupToolSquare" class="icon">
+      <button class="btnSwitchMarkupTool" tool="square" class="icon">
         <span class="material-symbols-outlined">square</span>
       </button>
-      <button id="switchMarkupToolDiamond" class="icon">
+      <button class="btnSwitchMarkupTool" tool="diamond" class="icon">
         <span class="material-symbols-outlined">diamond</span>
       </button>
-      <button id="switchMarkupToolMark" class="icon">
+      <button class="btnSwitchMarkupTool" tool="mark" class="icon">
         <span class="material-symbols-outlined">close</span>
       </button>
       <br>
-      <button id="switchMarkupToolLetter" class="icon">
+      <button class="btnSwitchMarkupTool" tool="letter" class="icon">
         <span class="material-symbols-outlined">abc</span>
       </button>
-      <button id="switchMarkupToolNumber" class="icon">
+      <button class="btnSwitchMarkupTool" tool="number" class="icon">
         <span class="material-symbols-outlined">123</span>
       </button>
-      <button id="switchMarkupToolHappy" class="icon">
+      <button class="btnSwitchMarkupTool" tool="happy" class="icon">
         <span class="material-symbols-outlined">sentiment_satisfied</span>
       </button>
-      <button id="switchMarkupToolSad" class="icon">
+      <button class="btnSwitchMarkupTool" tool="sad" class="icon">
         <span class="material-symbols-outlined">sentiment_dissatisfied</span>
       </button>
-      <button id="switchMarkupToolClear" class="icon" title="Clear">
+      <button class="btnSwitchMarkupTool" tool="clear" class="icon" title="Clear">
         <span class="material-symbols-outlined">ink_eraser</span>
       </button>
 
       <h2>Setup</h2>
-      <button id="switchToolMove" class="icon" title="Move tool">
+      <button class="switchTool" tool="move" class="icon" title="Move tool">
         <span class="material-symbols-outlined">fiber_smart_record</span>
       </button>
-      <button id="switchSetupToolBlack" class="icon" title="Black stone">
+      <button class="btnSwitchSetupTool" tool="black" class="icon" title="Black stone">
         <span class="material-symbols-outlined">trip_origin</span>
       </button>
-      <button id="switchSetupToolWhite" class="icon" title="White stone">
+      <button class="btnSwitchSetupTool" tool="white" class="icon" title="White stone">
         <span class="material-symbols-outlined">fiber_manual_record</span>
       </button>
-      <button id="switchSetupToolClear" class="icon" title="Clear">
+      <button class="btnSwitchSetupTool" tool="clear" class="icon" title="Clear">
         <span class="material-symbols-outlined">ink_eraser</span>
       </button>
     </div>
@@ -117,141 +117,115 @@
   </info>
 </div>
 <script type="module">
-  import Board from '../src/classes/board.js'
-  import Player from '../src/classes/player.js'
-  import {setDebug} from '../src/helpers/util.js'
-  import {bindClickHandler, toggleVisibility} from '../src/helpers/dom.js'
-  import {playerModes, playerTools, markupTools, setupTools} from '../src/constants/player.js'
+import Board from '../src/classes/board.js'
+import Player from '../src/classes/player.js'
+import {setDebug} from '../src/helpers/util.js'
+import {playerModes, playerTools, markupTools, setupTools} from '../src/constants/player.js'
+import {onClick, findByQuery, toggleHidden} from './demo.js'
 
-  //Test data
-  import {jgf} from './data/jgf.js'
-  import {gib} from './data/gib.js'
-  import {sgf} from './data/sgf.js'
+//Test data
+import {jgf} from './data/jgf.js'
+import {gib} from './data/gib.js'
+import {sgf} from './data/sgf.js'
 
-  //Set debug mode
-  setDebug(true)
+//Set debug mode
+setDebug(true)
 
-  //Find player element
-  const playerElement = document.getElementById('player')
+//Find player element and instantiate player
+const playerElement = document.getElementById('player')
+const player = new Player()
 
-  //Instantiate player
-  const player = new Player()
+//Bootstrap player and load JGF file
+player.bootstrap(playerElement)
+player.load(jgf)
 
-  //Bootstrap player and load JGF file
-  player.bootstrap(playerElement)
+//Data loading
+onClick('#loadJgf', () => {
   player.load(jgf)
+  player.switchMode(playerModes.REPLAY)
+})
+onClick('#loadSgf', () => {
+  player.load(sgf)
+  player.switchMode(playerModes.REPLAY)
+})
+onClick('#loadGib', () => {
+  player.load(gib)
+  player.switchMode(playerModes.REPLAY)
+})
+onClick('#loadBlank', () => {
+  player.reset()
+  player.switchMode(playerModes.PLAY)
+})
 
-  //Data loading
-  bindClickHandler('loadJgf', () => {
-    player.load(jgf)
-    player.switchMode(playerModes.REPLAY)
-  })
-  bindClickHandler('loadSgf', () => {
-    player.load(sgf)
-    player.switchMode(playerModes.REPLAY)
-  })
-  bindClickHandler('loadGib', () => {
-    player.load(gib)
-    player.switchMode(playerModes.REPLAY)
-  })
-  bindClickHandler('loadBlank', () => {
-    player.reset()
-    player.switchMode(playerModes.PLAY)
-  })
+//Toggles
+onClick('#toggleNextMove', () => player.toggleConfig('showNextMove'))
+onClick('#toggleVariations', () => player.toggleConfig('showVariations'))
+onClick('#toggleCoordinates', () => player.board.toggleCoordinates())
+onClick('#toggleSwapColors', () => player.board.toggleSwapColors())
 
-  //Toggles
-  bindClickHandler('toggleNextMove', () => player.toggleConfig('showNextMove'))
-  bindClickHandler('toggleVariations', () => player.toggleConfig('showVariations'))
-  bindClickHandler('toggleCoordinates', () => player.board.toggleCoordinates())
-  bindClickHandler('toggleSwapColors', () => player.board.toggleSwapColors())
+//Navigation
+onClick('#firstMove', () => player.first())
+onClick('#skipBack', () => player.skipBack())
+onClick('#prevMove', () => player.previous())
+onClick('#nextMove', () => player.next())
+onClick('#skipForward', () => player.skipForward())
+onClick('#lastMove', () => player.last())
 
-  //Navigation
-  bindClickHandler('firstMove', () => player.first())
-  bindClickHandler('skipBack', () => player.skipBack())
-  bindClickHandler('prevMove', () => player.previous())
-  bindClickHandler('nextMove', () => player.next())
-  bindClickHandler('skipForward', () => player.skipForward())
-  bindClickHandler('lastMove', () => player.last())
+//Auto play
+onClick('#startAutoPlay', () => {
+  player.startAutoPlay()
+  toggleHidden('#startAutoPlay', true)
+  toggleHidden('#stopAutoPlay', false)
+})
+onClick('#stopAutoPlay', () => {
+  player.stopAutoPlay()
+  toggleHidden('#stopAutoPlay', true)
+  toggleHidden('#startAutoPlay', false)
+})
 
-  //Auto play
-  bindClickHandler('startAutoPlay', () => {
-    player.startAutoPlay()
-    toggleVisibility('startAutoPlay', false)
-    toggleVisibility('stopAutoPlay', true)
-  })
-  bindClickHandler('stopAutoPlay', () => {
-    player.stopAutoPlay()
-    toggleVisibility('stopAutoPlay', false)
-    toggleVisibility('startAutoPlay', true)
-  })
+//Mode switching
+onClick('.btnSwitchMode', btn => {
+  const mode = btn.getAttribute('mode')
+  player.switchMode(mode)
+})
 
-  //Mode switching
-  bindClickHandler('switchModeNone', () => player.switchMode(playerModes.NONE))
-  bindClickHandler('switchModeReplay', () => player.switchMode(playerModes.REPLAY))
-  bindClickHandler('switchModePlay', () => player.switchMode(playerModes.PLAY))
-  bindClickHandler('switchModeEdit', () => player.switchMode(playerModes.EDIT))
-  bindClickHandler('switchModeSolve', () => player.switchMode(playerModes.SOLVE))
+//Tool switching
+onClick('.btnSwitchTool', btn => {
+  const tool = btn.getAttribute('tool')
+  player.switchTool(tool)
+})
 
-  //Markup tools
-  bindClickHandler('switchMarkupToolCircle', () => {
-    player.switchMarkupTool(markupTools.CIRCLE)
-  })
-  bindClickHandler('switchMarkupToolTriangle', () => {
-    player.switchMarkupTool(markupTools.TRIANGLE)
-  })
-  bindClickHandler('switchMarkupToolSquare', () => {
-    player.switchMarkupTool(markupTools.SQUARE)
-  })
-  bindClickHandler('switchMarkupToolDiamond', () => {
-    player.switchMarkupTool(markupTools.DIAMOND)
-  })
-  bindClickHandler('switchMarkupToolMark', () => {
-    player.switchMarkupTool(markupTools.MARK)
-  })
-  bindClickHandler('switchMarkupToolLetter', () => {
-    player.switchMarkupTool(markupTools.LETTER)
-  })
-  bindClickHandler('switchMarkupToolNumber', () => {
-    player.switchMarkupTool(markupTools.NUMBER)
-  })
-  bindClickHandler('switchMarkupToolHappy', () => {
-    player.switchMarkupTool(markupTools.HAPPY)
-  })
-  bindClickHandler('switchMarkupToolSad', () => {
-    player.switchMarkupTool(markupTools.SAD)
-  })
-  bindClickHandler('switchMarkupToolClear', () => {
-    player.switchMarkupTool(markupTools.CLEAR)
-  })
+//Markup tool switching
+onClick('.btnSwitchMarkupTool', btn => {
+  const tool = btn.getAttribute('tool')
+  player.switchMarkupTool(tool)
+})
 
-  //Setup tools
-  bindClickHandler('switchToolMove', () => {
-    player.switchTool(playerTools.MOVE)
-  })
-  bindClickHandler('switchSetupToolBlack', () => {
-    player.switchSetupTool(setupTools.BLACK)
-  })
-  bindClickHandler('switchSetupToolWhite', () => {
-    player.switchSetupTool(setupTools.WHITE)
-  })
-  bindClickHandler('switchSetupToolClear', () => {
-    player.switchSetupTool(setupTools.CLEAR)
-  })
+//Setup tool switching
+onClick('.btnSwitchSetupTool', btn => {
+  const tool = btn.getAttribute('tool')
+  player.switchSetupTool(tool)
+})
 
-  //Handler for mode changes
-  const onModeChange = () => {
-    const mode = player.getActiveMode()
-    toggleVisibility('replayTools', mode === playerModes.REPLAY)
-    toggleVisibility('editTools', mode === playerModes.EDIT)
-  }
+//Handler for mode changes
+const onModeChange = () => {
+  const mode = player.getActiveMode()
 
-  //Event handlers
-  player.on('modeChange', onModeChange)
+  //Toggle mode buttons
+  findByQuery('.btnSwitchMode')
+    .forEach(btn => btn.disabled = btn.getAttribute('mode') === mode)
 
-  //Init
-  onModeChange()
-  toggleVisibility('stopAutoPlay', false)
+  //Toggle tools
+  toggleHidden('#replayTools', mode !== playerModes.REPLAY)
+  toggleHidden('#editTools', mode !== playerModes.EDIT)
+}
 
+//Event handlers
+player.on('modeChange', onModeChange)
+
+//Init
+onModeChange()
+toggleHidden('#stopAutoPlay', true)
 </script>
 </body>
 </html>

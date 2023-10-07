@@ -52,7 +52,7 @@ export default class PlayerMode extends Base {
   activate() {
 
     //Get data
-    const {player, availableTools, defaultTool} = this
+    const {player, mode, availableTools, defaultTool} = this
 
     //Register event listeners
     this.registerEventListeners()
@@ -60,6 +60,9 @@ export default class PlayerMode extends Base {
     //Set available tools and active tool
     player.setAvailableTools(availableTools)
     player.switchTool(defaultTool)
+
+    //Set player class
+    player.addClass(`seki-player-mode-${mode}`)
   }
 
   /**
@@ -67,11 +70,17 @@ export default class PlayerMode extends Base {
    */
   deactivate() {
 
+    //Get data
+    const {player, mode} = this
+
     //NOTE: There is no need to tear down any available tools or active tool,
     //because the new mode will do that automatically when it's activated.
 
     //Remove event listeners
     this.removeEventListeners()
+
+    //Remove player class
+    player.removeClass(`seki-player-mode-${mode}`)
   }
 
   /**************************************************************************

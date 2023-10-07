@@ -42,3 +42,9 @@
     cursor: pointer;
   }
 }
+.seki-board-static,
+.seki-player-mode-none .seki-board {
+  canvas {
+    cursor: default;
+  }
+}
