@@ -198,8 +198,11 @@ export default class BoardLayer {
     const object = this.grid.get(x, y)
     const {context} = this
 
-    //Erase it
-    if (object) {
+    //Draw it
+    if (Array.isArray(object)) {
+      object.forEach(obj => obj.erase(context, x, y))
+    }
+    else if (object) {
       object.erase(context, x, y)
     }
   }

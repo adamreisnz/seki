@@ -30,6 +30,9 @@ export default class PlayerModeReplay extends PlayerMode {
   isAutoPlaying = false
   autoPlayInterval = null
 
+  //Track last move and variation markers we've put on the board
+  markers = []
+
   /**
    * Constructor
    */
@@ -39,7 +42,7 @@ export default class PlayerModeReplay extends PlayerMode {
     super(player)
 
     //Extend player
-    this.extendPlayerForReplay()
+    this.extendPlayer()
 
     //Create bound event listeners
     this.createBoundListeners({
@@ -54,7 +57,7 @@ export default class PlayerModeReplay extends PlayerMode {
   /**
    * Extend the player with new methods
    */
-  extendPlayerForReplay() {
+  extendPlayer() {
 
     //Get data
     const {player, mode} = this
@@ -65,6 +68,18 @@ export default class PlayerModeReplay extends PlayerMode {
   }
 
   /**
+   * Activate this mode
+   */
+  activate() {
+
+    //Parent method
+    super.activate()
+
+    //Render markers
+    this.renderMarkers()
+  }
+
+  /**
    * Deactivate this mode
    */
   deactivate() {
@@ -72,8 +87,9 @@ export default class PlayerModeReplay extends PlayerMode {
     //Parent method
     super.deactivate()
 
-    //Stop auto play
+    //Stop auto play and clear markers
     this.stopAutoPlay()
+    this.clearMarkers()
   }
 
   /**
@@ -169,42 +185,8 @@ export default class PlayerModeReplay extends PlayerMode {
   /**
    * Position update event
    */
-  onPositionUpdate(event) {
-
-    //Get data
-    const {player} = this
-    const {node} = event.detail
-
-    //Get settings
-    const showLastMove = player.getConfig('showLastMove')
-    const showNextMove = player.getConfig('showNextMove')
-    const showVariations = player.getConfig('showVariations')
-    const showSiblingVariations = player.getConfig('showSiblingVariations')
-
-    //Clear hover
-    this.clearHover()
-
-    //Show sibling variations
-    if (showVariations && showSiblingVariations) {
-      if (node.parent && node.parent.hasMultipleMoveVariations()) {
-        this.showMoveVariations(node.parent)
-      }
-    }
-
-    //Show child variations or next move if we have more than one move variation
-    if ((showVariations || showNextMove) && node.hasMultipleMoveVariations()) {
-      this.showMoveVariations(node, showVariations)
-    }
-
-    //Show next move only
-    else if (showNextMove && node.hasMoveVariations()) {
-      this.showMoveVariations(node, false)
-    }
-
-    //Last move markup
-    if (showLastMove) {
-      this.addLastMoveMarker(node)
-    }
+  onPositionUpdate() {
+    this.renderMarkers()
   }
 
   /**
@@ -219,7 +201,7 @@ export default class PlayerModeReplay extends PlayerMode {
    ***/
 
   /**
-   * Perform an action
+   * Perform a bound action
    */
   performAction(action, event) {
 
@@ -227,6 +209,9 @@ export default class PlayerModeReplay extends PlayerMode {
     if (!action) {
       return
     }
+
+    //Debug
+    this.debug(`performing action ${action}`)
 
     //Get data
     const {nativeEvent} = event.detail
@@ -371,12 +356,54 @@ export default class PlayerModeReplay extends PlayerMode {
   }
 
   /**
-   * Show move variations on the board
+   * Render markers
    */
-  showMoveVariations(node, showText = false) {
+  renderMarkers() {
 
     //Get data
-    const {board} = this
+    const {player, game} = this
+    const {node} = game
+
+    //Get settings
+    const showLastMove = player.getConfig('showLastMove')
+    const showNextMove = player.getConfig('showNextMove')
+    const showVariations = player.getConfig('showVariations')
+    const showSiblingVariations = player.getConfig('showSiblingVariations')
+
+    //Clear hover and last move markers
+    this.clearHover()
+    this.clearMarkers()
+
+    //Show sibling variations
+    if (showVariations && showSiblingVariations) {
+      if (node.parent && node.parent.hasMultipleMoveVariations()) {
+        this.addMoveVariationMarkers(node.parent)
+      }
+    }
+
+    //Show child variations or next move if we have more than one move variation
+    if ((showVariations || showNextMove) && node.hasMultipleMoveVariations()) {
+      this.addMoveVariationMarkers(node, showVariations)
+    }
+
+    //Show next move only
+    else if (showNextMove && node.hasMoveVariations()) {
+      this.addMoveVariationMarkers(node, false)
+    }
+
+    //Last move markup
+    if (showLastMove) {
+      this.addLastMoveMarker(node)
+    }
+  }
+
+  /**
+   * Add move variation markers
+   */
+  addMoveVariationMarkers(node, showText = false) {
+
+    //Get data
+    const {board, markers} = this
     const variations = node.getMoveVariations()
 
     //Loop variations
@@ -395,6 +422,9 @@ export default class PlayerModeReplay extends PlayerMode {
       const index = i
       const isSelected = node.isSelectedPath(variation)
       const data = {index, color, showText, isSelected}
+
+      //Add to markers
+      markers.push({x, y})
 
       //Add to board
       board
@@ -430,13 +460,32 @@ export default class PlayerModeReplay extends PlayerMode {
     this.debug(`adding last move marker`)
 
     //Get data
-    const {board} = this
+    const {board, markers} = this
     const {x, y} = node.move
+
+    //Store
+    markers.push({x, y})
 
     //Add to board
     board
       .add(boardLayerTypes.MARKUP, x, y, MarkupFactory
         .create(markupTypes.LAST_MOVE, board))
+  }
+
+  /**
+   * Clear markers
+   */
+  clearMarkers() {
+
+    //Get data
+    const {board, markers} = this
+
+    //Debug
+    this.debug(`clearing ${markers.length} markers`)
+
+    //Remove markers
+    markers.forEach(({x, y}) => board.remove(boardLayerTypes.MARKUP, x, y))
+    this.markers = []
   }
 
   /**

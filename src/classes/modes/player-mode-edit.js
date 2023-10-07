@@ -1,8 +1,9 @@
-import PlayerModeReplay from './player-mode-replay.js'
+import PlayerMode from '../player-mode.js'
 import {aCharUc, aCharLc} from '../../constants/common.js'
 import {markupTypes} from '../../constants/markup.js'
 import {stoneColors} from '../../constants/stone.js'
 import {
+  playerActions,
   playerModes,
   playerTools,
   markupTools,
@@ -10,9 +11,9 @@ import {
 } from '../../constants/player.js'
 
 /**
- * Edit mode, go wild!
+ * This mode lets you edit a single position
  */
-export default class PlayerModeEdit extends PlayerModeReplay {
+export default class PlayerModeEdit extends PlayerMode {
 
   //Mode type
   mode = playerModes.EDIT
@@ -20,14 +21,13 @@ export default class PlayerModeEdit extends PlayerModeReplay {
   //Available tools in this mode
   availableTools = [
     playerTools.NONE,
-    playerTools.MOVE,
-    playerTools.SCORE,
-    playerTools.MARKUP,
     playerTools.SETUP,
+    playerTools.MARKUP,
+    playerTools.SCORE,
   ]
 
   //Set default tool
-  defaultTool = playerTools.MOVE
+  defaultTool = playerTools.SETUP
 
   //Default markup and setup tools
   markupTool = markupTools.TRIANGLE
@@ -35,6 +35,9 @@ export default class PlayerModeEdit extends PlayerModeReplay {
 
   //Used markup labels
   usedMarkupLabels = []
+
+  //Track hover coordinates so we can update the hover object
+  currentHoverGrid
 
   /**
    * Constructor
@@ -45,15 +48,12 @@ export default class PlayerModeEdit extends PlayerModeReplay {
     super(player)
 
     //Extend player
-    this.extendPlayerForEdit()
+    this.extendPlayer()
 
     //Create bound event listeners
     this.createBoundListeners({
       keydown: 'onKeyDown',
       click: 'onClick',
-      wheel: 'onMouseWheel',
-      positionUpdate: 'onPositionUpdate',
-      pathChange: 'onPathChange',
       gridEnter: 'onGridEnter',
       gridLeave: 'onGridLeave',
     })
@@ -62,7 +62,7 @@ export default class PlayerModeEdit extends PlayerModeReplay {
   /**
    * Extend the player with new methods
    */
-  extendPlayerForEdit() {
+  extendPlayer() {
 
     //Get data
     const {player, mode} = this
@@ -88,6 +88,20 @@ export default class PlayerModeEdit extends PlayerModeReplay {
   /**************************************************************************
    * Event listeners
    ***/
+
+  /**
+   * Keydown events
+   */
+  onKeyDown(event) {
+
+    //Get data
+    const {player} = this
+    const {keyCode} = event.detail.nativeEvent
+    const action = player.getActionForKeyCode(keyCode)
+
+    //Perform action
+    this.performAction(action, event)
+  }
 
   /**
    * Click handler
@@ -119,11 +133,6 @@ export default class PlayerModeEdit extends PlayerModeReplay {
     else if (player.isToolActive(playerTools.SETUP)) {
       this.setSetup(x, y)
     }
-
-    //Parent handler
-    else {
-      super.onClick(event)
-    }
   }
 
   /**
@@ -131,18 +140,12 @@ export default class PlayerModeEdit extends PlayerModeReplay {
    */
   onGridEnter(event) {
 
-    //Get data
-    const {player} = this
+    //Track coordinates
+    this.currentHoverGrid = event.detail
 
-    //Markup tool active
-    if (player.isToolActive(playerTools.MARKUP)) {
-      this.showHoverMarkup(event)
-    }
-
-    //Setup tool active
-    else if (player.isToolActive(playerTools.SETUP)) {
-      this.showHoverStone(event)
-    }
+    //Show hover markup or stone
+    this.showHoverMarkup()
+    this.showHoverStone()
   }
 
   /**
@@ -158,17 +161,81 @@ export default class PlayerModeEdit extends PlayerModeReplay {
     this.redrawGridCell(x, y)
   }
 
-  /**
-   * Path change event
-   */
-  onPathChange() {
-    this.resetUsedMarkupLabels()
-    this.findUsedMarkupLabels()
-  }
-
   /**************************************************************************
    * Actions
    ***/
+
+  /**
+   * Perform a bound action
+   */
+  performAction(action, event) {
+
+    //No action
+    if (!action) {
+      return
+    }
+
+    //Debug
+    this.debug(`performing action ${action}`)
+
+    //Get data
+    const {player} = this
+    const {nativeEvent} = event.detail
+
+    //Prevent default
+    nativeEvent.preventDefault()
+
+    //Determine action
+    switch (action) {
+
+      //Setup tool actions
+      case playerActions.SELECT_BLACK_SETUP_TOOL:
+        this.switchSetupTool(setupTools.BLACK)
+        break
+      case playerActions.SELECT_WHITE_SETUP_TOOL:
+        this.switchSetupTool(setupTools.WHITE)
+        break
+
+      //Shared between setup and markup tools
+      case playerActions.SELECT_CLEAR_TOOL:
+        if (player.isToolActive(playerTools.SETUP)) {
+          this.switchSetupTool(setupTools.CLEAR)
+        }
+        else if (player.isToolActive(playerTools.MARKUP)) {
+          this.switchMarkupTool(markupTools.CLEAR)
+        }
+        break
+
+      //Markup tool actions
+      case playerActions.SELECT_TRIANGLE_MARKUP_TOOL:
+        this.switchMarkupTool(markupTools.TRIANGLE)
+        break
+      case playerActions.SELECT_CIRCLE_MARKUP_TOOL:
+        this.switchMarkupTool(markupTools.CIRCLE)
+        break
+      case playerActions.SELECT_SQUARE_MARKUP_TOOL:
+        this.switchMarkupTool(markupTools.SQUARE)
+        break
+      case playerActions.SELECT_DIAMOND_MARKUP_TOOL:
+        this.switchMarkupTool(markupTools.DIAMOND)
+        break
+      case playerActions.SELECT_MARK_MARKUP_TOOL:
+        this.switchMarkupTool(markupTools.MARK)
+        break
+      case playerActions.SELECT_HAPPY_MARKUP_TOOL:
+        this.switchMarkupTool(markupTools.HAPPY)
+        break
+      case playerActions.SELECT_SAD_MARKUP_TOOL:
+        this.switchMarkupTool(markupTools.SAD)
+        break
+      case playerActions.SELECT_LETTER_MARKUP_TOOL:
+        this.switchMarkupTool(markupTools.LETTER)
+        break
+      case playerActions.SELECT_NUMBER_MARKUP_TOOL:
+        this.switchMarkupTool(markupTools.NUMBER)
+        break
+    }
+  }
 
   /**
    * Set markup
@@ -255,6 +322,7 @@ export default class PlayerModeEdit extends PlayerModeReplay {
     this.player.switchTool(playerTools.MARKUP)
     this.markupTool = markupTool
     this.debug(`${markupTool} markup tool activated`)
+    this.showHoverMarkup()
   }
 
   /**
@@ -264,19 +332,23 @@ export default class PlayerModeEdit extends PlayerModeReplay {
     this.player.switchTool(playerTools.SETUP)
     this.setupTool = setupTool
     this.debug(`${setupTool} setup tool activated`)
+    this.showHoverStone()
   }
 
   /**
    * Show hover stone
    */
-  showHoverStone(event) {
+  showHoverStone() {
+
+    //Check if anything to do
+    const {player, setupTool, currentHoverGrid} = this
+    if (!currentHoverGrid || !player.isToolActive(playerTools.SETUP)) {
+      return
+    }
 
     //Get data
-    const {setupTool} = this
-    const {x, y} = event.detail
+    const {x, y} = currentHoverGrid
     const color = this.getColorForSetupTool(setupTool)
-
-    //No color
     if (!color) {
       return
     }
@@ -288,14 +360,17 @@ export default class PlayerModeEdit extends PlayerModeReplay {
   /**
    * Show hover markup
    */
-  showHoverMarkup(event) {
+  showHoverMarkup() {
 
-    //Get data
-    const {markupTool} = this
-    const {x, y} = event.detail
+    //Check if anything to do
+    const {player, markupTool, currentHoverGrid} = this
+    if (!currentHoverGrid || !player.isToolActive(playerTools.MARKUP)) {
+      return
+    }
+
+    //Get details
+    const {x, y} = currentHoverGrid
     const type = this.getTypeForMarkupTool(markupTool)
-
-    //No type
     if (!type) {
       return
     }
