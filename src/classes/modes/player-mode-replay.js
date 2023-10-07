@@ -394,12 +394,6 @@ export default class PlayerModeReplay extends PlayerMode {
         return
       }
 
-      //Auto variation markup should never overwrite existing markup
-      //TODO: Why not?
-      // if (board.has(boardLayerTypes.MARKUP, x, y)) {
-      //   return
-      // }
-
       //Add to board
       board
         .add(boardLayerTypes.MARKUP, x, y, MarkupFactory
