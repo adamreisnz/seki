@@ -23,7 +23,7 @@ export default class StoneMono extends Stone {
   draw(context, x, y) {
 
     //Get data
-    const {board, theme, alpha} = this
+    const {board, theme} = this
 
     //Get coordinates and stone radius
     const absX = board.getAbsX(x)
@@ -38,13 +38,8 @@ export default class StoneMono extends Stone {
     const strokeStyle = theme.get('stone.mono.lineColor', color)
     const canvasTranslate = theme.canvasTranslate()
 
-    //Translate canvas
-    context.translate(canvasTranslate, canvasTranslate)
-
-    //Apply transparency?
-    if (alpha && alpha < 1) {
-      context.globalAlpha = alpha
-    }
+    //Prepare context
+    this.prepareContext(context, canvasTranslate)
 
     //Configure context
     context.fillStyle = fillStyle
@@ -68,12 +63,7 @@ export default class StoneMono extends Stone {
     //Draw outline
     context.stroke()
 
-    //Undo transparency?
-    if (alpha && alpha < 1) {
-      context.globalAlpha = 1
-    }
-
-    //Undo translation
-    context.translate(-canvasTranslate, -canvasTranslate)
+    //Restore context
+    this.restoreContext(context, canvasTranslate)
   }
 }

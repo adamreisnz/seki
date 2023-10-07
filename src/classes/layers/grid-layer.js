@@ -46,7 +46,7 @@ export default class GridLayer extends BoardLayer {
     const canvasTranslate = theme.canvasTranslate(lineWidth)
 
     //Translate canvas
-    context.translate(canvasTranslate, canvasTranslate)
+    this.prepareContext(canvasTranslate)
 
     //Configure context
     context.beginPath()
@@ -81,8 +81,8 @@ export default class GridLayer extends BoardLayer {
       )
     }
 
-    //Undo translation
-    context.translate(-canvasTranslate, -canvasTranslate)
+    //Restore context
+    this.restoreContext(canvasTranslate)
   }
 
   /**
@@ -131,14 +131,14 @@ export default class GridLayer extends BoardLayer {
     const lineWidth = theme.get('grid.lineWidth', cellSize)
     const canvasTranslate = theme.canvasTranslate(lineWidth)
 
-    //Translate canvas
-    context.translate(canvasTranslate, canvasTranslate)
+    //Prepare context
+    this.prepareContext(canvasTranslate)
 
     //Clear rectangle
     context.clearRect(absX - radius, absY - radius, 2 * radius, 2 * radius)
 
-    //Undo translation
-    context.translate(-canvasTranslate, -canvasTranslate)
+    //Restore context
+    this.restoreContext(canvasTranslate)
   }
 
   /**
@@ -169,8 +169,8 @@ export default class GridLayer extends BoardLayer {
     const y1 = (y === 0) ? absY : absY - radius
     const y2 = (y === board.height - 1) ? absY : absY + radius
 
-    //Translate canvas
-    context.translate(canvasTranslate, canvasTranslate)
+    //Prepare context
+    this.prepareContext(canvasTranslate)
 
     //Configure context
     context.beginPath()
@@ -191,7 +191,7 @@ export default class GridLayer extends BoardLayer {
       }
     }
 
-    //Undo translation
-    context.translate(-canvasTranslate, -canvasTranslate)
+    //Restore context
+    this.restoreContext(canvasTranslate)
   }
 }

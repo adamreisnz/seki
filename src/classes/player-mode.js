@@ -162,9 +162,13 @@ export default class PlayerMode extends Base {
       .create(style, color, board)
       .getModifiedCopy(stoneModifierTypes.HOVER)
 
+    //Create shadow copy
+    const shadow = StoneFactory
+      .createShadowCopy(stone)
+
     //Add to board
-    board.removeAll(boardLayerTypes.HOVER)
-    board.add(boardLayerTypes.HOVER, x, y, stone)
+    board.eraseLayer(boardLayerTypes.HOVER)
+    board.add(boardLayerTypes.HOVER, x, y, [shadow, stone])
   }
 
   /**

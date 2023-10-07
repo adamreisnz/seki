@@ -526,7 +526,7 @@ export default class Board extends Base {
     }
 
     //Debug
-    this.debug('redrawing')
+    this.debug('🎨 redrawing')
 
     //Erase the board first
     this.erase()

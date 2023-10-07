@@ -15,27 +15,38 @@ export default class StoneSlateShell extends Stone {
   draw(context, x, y) {
 
     //Get data
-    const {board, theme, alpha} = this
+    const {theme} = this
+    const color = this.getColor()
+    const canvasTranslate = theme.canvasTranslate()
 
-    //Get coordinates and stone radius
+    //Prepare context
+    this.prepareContext(context, canvasTranslate)
+
+    //Draw stone
+    if (color === stoneColors.WHITE) {
+      this.drawShellStone(context, x, y, color)
+    }
+    else {
+      this.drawSlateStone(context, x, y, color)
+    }
+
+    //Restore context
+    this.restoreContext(context, canvasTranslate)
+  }
+
+  /**
+   * Draw slate stone
+   */
+  drawSlateStone(context, x, y, color) {
+
+    //Get data
+    const {board, theme} = this
+
+    //Coordinates
     const absX = board.getAbsX(x)
     const absY = board.getAbsY(y)
     const radius = this.getRadius()
-    const color = this.getColor()
-
-    //Get theme variables
-    const shellTypes = theme.get('stone.shell.types')
     const fillStyle = theme.get('stone.shell.color', color)
-    const strokeStyle = theme.get('stone.shell.stroke')
-    const canvasTranslate = theme.canvasTranslate()
-
-    //Translate canvas
-    context.translate(canvasTranslate, canvasTranslate)
-
-    //Apply transparency?
-    if (alpha && alpha < 1) {
-      context.globalAlpha = alpha
-    }
 
     //Draw stone
     context.beginPath()
@@ -43,87 +54,98 @@ export default class StoneSlateShell extends Stone {
     context.fillStyle = fillStyle
     context.fill()
 
-    //Shell stones
-    if (color === stoneColors.WHITE) {
+    //Add radial gradient
+    context.beginPath()
+    context.fillStyle = context.createRadialGradient(
+      absX + 2 * radius / 5,
+      absY + 2 * radius / 5,
+      0,
+      absX + radius / 2,
+      absY + radius / 2,
+      radius,
+    )
+    context.fillStyle.addColorStop(0, 'rgba(32,32,32,1)')
+    context.fillStyle.addColorStop(1, 'rgba(0,0,0,0)')
+    context.arc(absX, absY, Math.max(0, radius - 0.5), 0, 2 * Math.PI, true)
+    context.fill()
 
-      //Get random shell type
-      const len = shellTypes.length
-      const type = seed % (len + x * board.width + y) % len
-      const style = shellTypes[type]
+    //Add radial gradient
+    context.beginPath()
+    context.fillStyle = context.createRadialGradient(
+      absX - 2 * radius / 5,
+      absY - 2 * radius / 5,
+      1,
+      absX - radius / 2,
+      absY - radius / 2,
+      3 * radius / 2,
+    )
+    context.fillStyle.addColorStop(0, 'rgba(90,90,90,1)')
+    context.fillStyle.addColorStop(0.5, 'rgba(0,0,0,0.2)')
+    context.fillStyle.addColorStop(1, 'rgba(0,0,0,0)')
+    context.arc(absX, absY, Math.max(0, radius - 0.5), 0, 2 * Math.PI, true)
+    context.fill()
+  }
 
-      //Determine random angle
-      const z = board.width * board.height + x * board.width + y
-      const angle = (2 / z) * (seed % z)
+  /**
+   * Draw shell stone
+   */
+  drawShellStone(context, x, y, color) {
 
-      //Draw shell pattern
-      this.shellPattern(context, style, absX, absY, radius, angle, strokeStyle)
+    //Get data
+    const {board, theme} = this
 
-      //Add radial gradient
-      context.beginPath()
-      context.fillStyle = context.createRadialGradient(
-        absX - 2 * radius / 5,
-        absY - 2 * radius / 5,
-        radius / 6,
-        absX - radius / 5,
-        absY - radius / 5,
-        radius,
-      )
-      context.fillStyle.addColorStop(0, 'rgba(255,255,255,0.95)')
-      context.fillStyle.addColorStop(0.1, 'rgba(255,255,255,0.85)')
-      context.fillStyle.addColorStop(0.5, 'rgba(255,255,255,0.5)')
-      context.fillStyle.addColorStop(1, 'rgba(255,255,255,0.1)')
-      context.arc(absX, absY, Math.max(0, radius - 0.5), 0, 2 * Math.PI, true)
-      context.fill()
-    }
+    //Coordinates
+    const absX = board.getAbsX(x)
+    const absY = board.getAbsY(y)
+    const radius = this.getRadius()
 
-    //Slate stones
-    else {
+    //Get theme vars
+    const fillStyle = theme.get('stone.shell.color', color)
+    const shellTypes = theme.get('stone.shell.types')
+    const strokeStyle = theme.get('stone.shell.stroke')
 
-      //Add radial gradient
-      context.beginPath()
-      context.fillStyle = context.createRadialGradient(
-        absX + 2 * radius / 5,
-        absY + 2 * radius / 5,
-        0,
-        absX + radius / 2,
-        absY + radius / 2,
-        radius,
-      )
-      context.fillStyle.addColorStop(0, 'rgba(32,32,32,1)')
-      context.fillStyle.addColorStop(1, 'rgba(0,0,0,0)')
-      context.arc(absX, absY, Math.max(0, radius - 0.5), 0, 2 * Math.PI, true)
-      context.fill()
+    //Get random shell type
+    const len = shellTypes.length
+    const type = seed % (len + x * board.width + y) % len
+    const style = shellTypes[type]
 
-      //Add radial gradient
-      context.beginPath()
-      context.fillStyle = context.createRadialGradient(
-        absX - 2 * radius / 5,
-        absY - 2 * radius / 5,
-        1,
-        absX - radius / 2,
-        absY - radius / 2,
-        3 * radius / 2,
-      )
-      context.fillStyle.addColorStop(0, 'rgba(90,90,90,1)')
-      context.fillStyle.addColorStop(0.5, 'rgba(0,0,0,0.2)')
-      context.fillStyle.addColorStop(1, 'rgba(0,0,0,0)')
-      context.arc(absX, absY, Math.max(0, radius - 0.5), 0, 2 * Math.PI, true)
-      context.fill()
-    }
+    //Determine random angle
+    const z = board.width * board.height + x * board.width + y
+    const angle = (2 / z) * (seed % z)
 
-    //Undo transparency?
-    if (alpha && alpha < 1) {
-      context.globalAlpha = 1
-    }
+    //Draw stone
+    context.beginPath()
+    context.arc(absX, absY, Math.max(0, radius - 0.5), 0, 2 * Math.PI, true)
+    context.fillStyle = fillStyle
+    context.fill()
 
-    //Undo translation
-    context.translate(-canvasTranslate, -canvasTranslate)
+    //Draw shell pattern
+    this.drawShellPattern(
+      context, style, absX, absY, radius, angle, strokeStyle,
+    )
+
+    //Add radial gradient
+    context.beginPath()
+    context.fillStyle = context.createRadialGradient(
+      absX - 2 * radius / 5,
+      absY - 2 * radius / 5,
+      radius / 6,
+      absX - radius / 5,
+      absY - radius / 5,
+      radius,
+    )
+    context.fillStyle.addColorStop(0, 'rgba(255,255,255,0.95)')
+    context.fillStyle.addColorStop(0.1, 'rgba(255,255,255,0.85)')
+    context.fillStyle.addColorStop(0.5, 'rgba(255,255,255,0.5)')
+    context.fillStyle.addColorStop(1, 'rgba(255,255,255,0.1)')
+    context.arc(absX, absY, Math.max(0, radius - 0.5), 0, 2 * Math.PI, true)
+    context.fill()
   }
 
   /**
    * Helper to draw a shell pattern
    */
-  shellPattern(context, style, x, y, radius, angle, strokeStyle) {
+  drawShellPattern(context, style, x, y, radius, angle, strokeStyle) {
 
     //Get lines from style
     const {lines} = style
@@ -136,7 +158,7 @@ export default class StoneSlateShell extends Stone {
     for (let i = 0; i < lines.length; i++) {
       startAngle += lines[i]
       endAngle -= lines[i]
-      this.shellLine(
+      this.drawShellLine(
         context, style, x, y, radius, startAngle, endAngle, strokeStyle,
       )
     }
@@ -145,7 +167,9 @@ export default class StoneSlateShell extends Stone {
   /**
    * Helper to draw a shell line
    */
-  shellLine(context, style, x, y, radius, startAngle, endAngle, strokeStyle) {
+  drawShellLine(
+    context, style, x, y, radius, startAngle, endAngle, strokeStyle,
+  ) {
 
     //Get data
     const {thickness, factor} = style

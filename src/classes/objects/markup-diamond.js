@@ -34,7 +34,7 @@ export default class MarkupDiamond extends Markup {
     super.draw(context, x, y)
 
     //Get data
-    const {board, theme, alpha} = this
+    const {board, theme} = this
 
     //Get coordinates and stone radius
     const absX = board.getAbsX(x)
@@ -46,13 +46,8 @@ export default class MarkupDiamond extends Markup {
     const lineWidth = this.getLineWidth()
     const canvasTranslate = theme.canvasTranslate(lineWidth)
 
-    //Translate canvas
-    context.translate(canvasTranslate, canvasTranslate)
-
-    //Apply transparency?
-    if (alpha && alpha < 1) {
-      context.globalAlpha = alpha
-    }
+    //Prepare context
+    this.prepareContext(context, canvasTranslate)
 
     //Configure context
     context.strokeStyle = color
@@ -67,12 +62,7 @@ export default class MarkupDiamond extends Markup {
     context.closePath()
     context.stroke()
 
-    //Reset transparency
-    if (alpha && alpha < 1) {
-      context.globalAlpha = 1
-    }
-
-    //Undo translation
-    context.translate(-canvasTranslate, -canvasTranslate)
+    //Restore context
+    this.restoreContext(context, canvasTranslate)
   }
 }

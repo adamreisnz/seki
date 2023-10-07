@@ -105,7 +105,6 @@ export default {
     hover: {
       shadow: false,
       scale: 1,
-      alpha: 1,
     },
   },
 

@@ -70,4 +70,38 @@ export default class GridObject {
     this.erase(...args)
     this.draw(...args)
   }
+
+  /**
+   * Helper to prepare a context for drawing
+   */
+  prepareContext(context, canvasTranslate) {
+
+    //Get data
+    const {alpha} = this
+
+    //Translate canvas
+    context.translate(canvasTranslate, canvasTranslate)
+
+    //Apply transparency?
+    if (alpha && alpha < 1) {
+      context.globalAlpha = alpha
+    }
+  }
+
+  /**
+   * Helper to restore context state after drawing
+   */
+  restoreContext(context, canvasTranslate) {
+
+    //Get data
+    const {alpha} = this
+
+    //Reset transparency
+    if (alpha && alpha < 1) {
+      context.globalAlpha = 1
+    }
+
+    //Undo translation
+    context.translate(-canvasTranslate, -canvasTranslate)
+  }
 }

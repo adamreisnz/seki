@@ -53,6 +53,7 @@ export default class PlayerModePlay extends PlayerMode {
     }
 
     //Play move
+    this.clearHover()
     this.playMove(x, y)
   }
 

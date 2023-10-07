@@ -72,7 +72,7 @@ export default class MarkupLabel extends Markup {
     super.draw(context, x, y)
 
     //Get data
-    const {board, theme, alpha, text} = this
+    const {board, theme, text} = this
 
     //Get coordinates and stone radius
     const absX = board.getAbsX(x)
@@ -85,13 +85,8 @@ export default class MarkupLabel extends Markup {
     const fontSize = this.determineFontSize(text, radius)
     const canvasTranslate = theme.canvasTranslate()
 
-    //Translate canvas
-    context.translate(canvasTranslate, canvasTranslate)
-
-    //Apply transparency?
-    if (alpha && alpha < 1) {
-      context.globalAlpha = alpha
-    }
+    //Prepare context
+    this.prepareContext(context, canvasTranslate)
 
     //Configure context
     context.fillStyle = color
@@ -103,12 +98,7 @@ export default class MarkupLabel extends Markup {
     context.beginPath()
     context.fillText(String(text), absX, absY, 2 * radius)
 
-    //Reset transparency
-    if (alpha && alpha < 1) {
-      context.globalAlpha = 1
-    }
-
-    //Undo translation
-    context.translate(-canvasTranslate, -canvasTranslate)
+    //Restore context
+    this.restoreContext(context, canvasTranslate)
   }
 }

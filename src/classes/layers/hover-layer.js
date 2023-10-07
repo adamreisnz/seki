@@ -43,9 +43,10 @@ export default class HoverLayer extends BoardLayer {
     }
 
     //Determine type
+    const check = Array.isArray(object) ? object[0] : object
     const type = Object
       .keys(typeToObject)
-      .find(type => object instanceof typeToObject[type])
+      .find(type => check instanceof typeToObject[type])
 
     //Validate
     if (!type) {

@@ -12,7 +12,7 @@ export default class StoneGlass extends Stone {
   draw(context, x, y) {
 
     //Get data
-    const {board, theme, alpha} = this
+    const {board, theme} = this
 
     //Get coordinates and stone radius
     const absX = board.getAbsX(x)
@@ -23,13 +23,8 @@ export default class StoneGlass extends Stone {
     //Get theme variables
     const canvasTranslate = theme.canvasTranslate()
 
-    //Translate canvas
-    context.translate(canvasTranslate, canvasTranslate)
-
-    //Apply transparency?
-    if (alpha && alpha < 1) {
-      context.globalAlpha = alpha
-    }
+    //Prepare context
+    this.prepareContext(context, canvasTranslate)
 
     //Begin path
     context.beginPath()
@@ -64,12 +59,7 @@ export default class StoneGlass extends Stone {
     context.arc(absX, absY, Math.max(0, radius - 0.5), 0, 2 * Math.PI, true)
     context.fill()
 
-    //Reset transparency
-    if (alpha && alpha < 1) {
-      context.globalAlpha = 1
-    }
-
-    //Undo translation
-    context.translate(-canvasTranslate, -canvasTranslate)
+    //Restore context
+    this.restoreContext(context, canvasTranslate)
   }
 }

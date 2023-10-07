@@ -34,7 +34,7 @@ export default class MarkupMark extends Markup {
     super.draw(context, x, y)
 
     //Get data
-    const {board, theme, alpha} = this
+    const {board, theme} = this
 
     //Get coordinates and stone radius
     const absX = board.getAbsX(x)
@@ -50,13 +50,8 @@ export default class MarkupMark extends Markup {
     //Determine delta
     const d = Math.round(radius * Math.cos(Math.PI / 4))
 
-    //Translate canvas
-    context.translate(canvasTranslate, canvasTranslate)
-
-    //Apply transparency?
-    if (alpha && alpha < 1) {
-      context.globalAlpha = alpha
-    }
+    //Prepare context
+    this.prepareContext(context, canvasTranslate)
 
     //Configure context
     context.strokeStyle = color
@@ -71,12 +66,7 @@ export default class MarkupMark extends Markup {
     context.lineTo(absX - d, absY + d)
     context.stroke()
 
-    //Reset transparency
-    if (alpha && alpha < 1) {
-      context.globalAlpha = 1
-    }
-
-    //Undo translation
-    context.translate(-canvasTranslate, -canvasTranslate)
+    //Restore context
+    this.restoreContext(context, canvasTranslate)
   }
 }

@@ -131,7 +131,12 @@ export default class BoardLayer {
     //Draw them
     for (const entry of entries) {
       const {x, y, value: object} = entry
-      object.draw(context, x, y)
+      if (Array.isArray(object)) {
+        object.forEach(obj => obj.draw(context, x, y))
+      }
+      else {
+        object.draw(context, x, y)
+      }
     }
   }
 
@@ -175,7 +180,10 @@ export default class BoardLayer {
     const {context} = this
 
     //Draw it
-    if (object) {
+    if (Array.isArray(object)) {
+      object.forEach(obj => obj.draw(context, x, y))
+    }
+    else if (object) {
       object.draw(context, x, y)
     }
   }
@@ -218,5 +226,29 @@ export default class BoardLayer {
 
     //Ok to draw
     return true
+  }
+
+  /**
+   * Helper to prepare a context for drawing
+   */
+  prepareContext(canvasTranslate) {
+
+    //Get data
+    const {context} = this
+
+    //Translate canvas
+    context.translate(canvasTranslate, canvasTranslate)
+  }
+
+  /**
+   * Helper to restore context state after drawing
+   */
+  restoreContext(canvasTranslate) {
+
+    //Get data
+    const {context} = this
+
+    //Undo translation
+    context.translate(-canvasTranslate, -canvasTranslate)
   }
 }
