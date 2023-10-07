@@ -303,7 +303,7 @@ export default class Player extends Base {
     //Set active mode
     this.activeMode = mode
     this.debug(`${mode} mode activated`)
-    this.triggerEvent('modeChanged', {mode})
+    this.triggerEvent('modeChange', {mode})
   }
 
   /**
@@ -326,7 +326,7 @@ export default class Player extends Base {
     //Set active tool
     this.activeTool = tool
     this.debug(`${tool} tool activated`)
-    this.triggerEvent('toolChanged', {tool})
+    this.triggerEvent('toolChange', {tool})
   }
 
   /**************************************************************************
@@ -397,7 +397,7 @@ export default class Player extends Base {
 
     //Load game config and trigger event
     this.loadConfigFromGame(game)
-    this.triggerEvent('game', {game})
+    this.triggerEvent('gameLoad', {game})
 
     //Go to first move
     game.first()
@@ -608,9 +608,9 @@ export default class Player extends Base {
       this.path = path.clone()
       this.triggerEvent('pathChange', {node})
 
-      //Named node reached? Broadcast event
+      //Named node reached? Trigger event
       if (node.name) {
-        this.triggerEvent(`nodeReached.${node.name}`, {node})
+        this.triggerEvent(`namedNode`, {node})
       }
     }
 

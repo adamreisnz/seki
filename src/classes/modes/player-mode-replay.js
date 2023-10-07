@@ -47,6 +47,7 @@ export default class PlayerModeReplay extends PlayerMode {
       click: 'onClick',
       wheel: 'onMouseWheel',
       pathChange: 'onPathChange',
+      gameLoad: 'onGameLoad',
     })
   }
 
@@ -208,6 +209,13 @@ export default class PlayerModeReplay extends PlayerMode {
     if (showNextMove) {
       this.addNextMoveMarker(node)
     }
+  }
+
+  /**
+   * Game loaded
+   */
+  onGameLoad() {
+    this.stopAutoPlay()
   }
 
   /**************************************************************************
