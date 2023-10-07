@@ -274,6 +274,14 @@ export default class GameNode {
   }
 
   /**
+   * Check if there is a move variation at the given coordinates
+   */
+  hasMoveVariation(x, y) {
+    const {children} = this
+    return children.some(child => child.hasMove(x, y))
+  }
+
+  /**
    * Check if the node has any move variation
    */
   hasMoveVariations() {

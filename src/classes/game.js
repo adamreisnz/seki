@@ -736,8 +736,14 @@ export default class Game extends Base {
    */
   play(x, y, color) {
 
-    //Color defaults to current turn
+    //Color defaults to player's current turn color
     color = color || this.position.getTurn()
+
+    //Already have a variation here? Just advance position
+    if (this.node.hasMoveVariation(x, y)) {
+      const i = this.node.getMoveVariation(x, y)
+      return this.next(i)
+    }
 
     //Validate move and get new position
     const [newPosition, reason] = this.validateMove(x, y, color)
