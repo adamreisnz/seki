@@ -89,8 +89,8 @@ export default {
       alpha: 1,
     },
 
-    //Faded stones
-    faded: {
+    //Captured stones
+    captured: {
       shadow: false,
       scale: 1,
       alpha(stoneColor) {
@@ -99,6 +99,13 @@ export default {
         }
         return 0.4
       },
+    },
+
+    //Hover stones
+    hover: {
+      shadow: false,
+      scale: 1,
+      alpha: 1,
     },
   },
 
@@ -174,11 +181,6 @@ export default {
       scale: 0.7,
     },
 
-    //Last move indicator
-    lastMove: {
-      scale: 0.7,
-    },
-
     //Happy smiley
     happy: {
       lineCap: 'round',
@@ -196,13 +198,36 @@ export default {
       font: 'Helvetica',
     },
 
-    //Variation markup
+    //Variation markers
     variation: {
       type: markupTypes.LABEL,
       text(i) {
         return String.fromCharCode(65 + i)
       },
-      color: 'rgba(0,0,0,0.95)',
+      color(stoneColor) {
+        if (stoneColor === stoneColors.WHITE) {
+          return 'rgba(255,255,255,0.95)'
+        }
+        return 'rgba(0,0,0,0.95)'
+      },
+    },
+
+    //Last move marker
+    lastMove: {
+      type: markupTypes.CIRCLE,
+    },
+
+    //Next move marker
+    nextMove: {
+      type: markupTypes.CIRCLE,
+      scale: 0.9,
+      lineDash: '5,10',
+      color(stoneColor) {
+        if (stoneColor === stoneColors.WHITE) {
+          return 'rgba(255,255,255,0.95)'
+        }
+        return 'rgba(0,0,0,0.95)'
+      },
     },
 
     //Solution paths markup

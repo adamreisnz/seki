@@ -44,6 +44,7 @@ export default class MarkupCircle extends Markup {
 
     //Get theme variables
     const lineWidth = this.getLineWidth()
+    const lineDash = this.getLineDash()
     const canvasTranslate = theme.canvasTranslate(lineWidth)
 
     //Translate canvas
@@ -57,11 +58,15 @@ export default class MarkupCircle extends Markup {
     //Configure context
     context.strokeStyle = color
     context.lineWidth = lineWidth
+    context.setLineDash(lineDash || [])
 
     //Draw element
     context.beginPath()
     context.arc(absX, absY, radius, 0, 2 * Math.PI, true)
     context.stroke()
+
+    //Reset line dash
+    context.setLineDash([])
 
     //Reset transparency
     if (alpha && alpha < 1) {

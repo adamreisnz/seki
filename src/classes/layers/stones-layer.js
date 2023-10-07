@@ -7,44 +7,8 @@ import {boardLayerTypes} from '../../constants/board.js'
  */
 export default class StonesLayer extends BoardLayer {
 
-  /**
-   * Constructor
-   */
-  constructor(board) {
-
-    //Call parent constructor
-    super(board)
-
-    //Set type
-    this.type = boardLayerTypes.STONES
-  }
-
-  /**
-   * Set all stones at once
-   */
-  // setAll(grid) {
-
-  //   //TODO: Why is this going over changes one by one as opposed to just cloning the grid?
-
-  //   //Get changes compared to current grid
-  //   const changes = this.grid.compare(grid)
-
-  //   //Clear removed stones
-  //   for (const entry of changes.remove) {
-  //     const {x, y} = entry
-  //     this.remove(x, y)
-  //   }
-
-  //   //Draw added stones
-  //   for (const entry of changes.add) {
-  //     const {x, y, value: stone} = entry
-  //     this.add(x, y, stone)
-  //   }
-
-  //   //Redraw layer
-  //   //TODO: why redraw needed right after setAll()
-  //   this.redraw()
-  // }
+  //Type
+  type = boardLayerTypes.STONES
 
   /**
    * Add a single stone

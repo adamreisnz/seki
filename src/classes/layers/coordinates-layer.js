@@ -8,17 +8,8 @@ import {coordinateGenerators} from '../../helpers/coordinates.js'
  */
 export default class CoordinatesLayer extends BoardLayer {
 
-  /**
-   * Constructor
-   */
-  constructor(board) {
-
-    //Parent constructor
-    super(board)
-
-    //Set type
-    this.type = boardLayerTypes.COORDINATES
-  }
+  //Type
+  type = boardLayerTypes.COORDINATES
 
   /**
    * Unneeded methods

@@ -91,6 +91,9 @@ export default class Stone extends GridObject {
       throw new Error(`Invalid stone modifier type: ${type}`)
     }
 
+    //Set color
+    copy.color = color
+
     //Set themed properties
     copy.shadow = theme.get(`stone.${type}.shadow`)
     copy.scale = theme.get(`stone.${type}.scale`)

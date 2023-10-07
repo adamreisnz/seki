@@ -6,6 +6,7 @@ import EventHandler from './event-handler.js'
 import PlayerModeFactory from './player-mode-factory.js'
 import {boardLayerTypes} from '../constants/board.js'
 import {markupTypes} from '../constants/markup.js'
+import {pixelRatio} from '../helpers/dom.js'
 import {
   playerTools,
   playerModes,
@@ -27,6 +28,12 @@ export default class Player extends Base {
   availableTools = []
   activeMode
   activeTool
+
+  //Mouse coordinates helper var
+  mouse = {
+    lastX: -1,
+    lastY: -1,
+  }
 
   /**
    * Constructor
@@ -706,15 +713,18 @@ export default class Player extends Base {
    * Update the board
    */
   updateBoard(position, pathChanged) {
-
-    //Get board
-    const {board} = this
-    if (!board) {
-      return
+    if (this.board) {
+      this.board.updatePosition(position, pathChanged)
     }
+  }
 
-    //Update board with new position
-    board.updatePosition(position, pathChanged)
+  /**
+   * Redraw the board
+   */
+  redrawBoard() {
+    if (this.board) {
+      this.board.redraw()
+    }
   }
 
   /*****************************************************************************
@@ -880,11 +890,55 @@ export default class Player extends Base {
       this.appendCoordinatesToEvent(detail)
     }
 
+    //Trigger hover event if first time coming onto a grid square
+    if (type === 'mousemove') {
+      this.triggerHoverEvent(detail)
+    }
+
+    //Clear hover layer on mouse out
+    if (type === 'mouseout') {
+      this.clearHover()
+    }
+
     //Create new event
     const event = new CustomEvent(type, {detail})
 
     //Dispatch
     this.dispatchEvent(event)
+  }
+
+  /**
+   * Trigger hover event
+   */
+  triggerHoverEvent(detail) {
+
+    //Get data
+    const {board, mouse} = this
+    const {x, y} = detail
+
+    //Last coordinates are the same? Ignore
+    if (mouse.lastX === x && mouse.lastY === y) {
+      return
+    }
+
+    //Remember last coordinates
+    mouse.lastX = x
+    mouse.lastY = y
+
+    //Anything to do
+    if (board && board.hasLayer(boardLayerTypes.HOVER)) {
+      this.triggerEvent('hover', detail)
+    }
+  }
+
+  /**
+   * Clear hover
+   */
+  clearHover() {
+    const {board} = this
+    if (board && board.hasLayer(boardLayerTypes.HOVER)) {
+      board.removeAll(boardLayerTypes.HOVER)
+    }
   }
 
   /**
@@ -894,64 +948,29 @@ export default class Player extends Base {
 
     //Get board
     const {board} = this
-    const {nativeEvent: mouseEvent} = detail
+    const {nativeEvent} = detail
 
     //Can only do this with a board and mouse event
-    if (!board || !mouseEvent) {
+    if (!board || !nativeEvent) {
       detail.x = -1
       detail.y = -1
       return
     }
 
-    //Init
-    let x = 0
-    let y = 0
-
-    //Set x
-    if (typeof mouseEvent.offsetX !== 'undefined') {
-      x = mouseEvent.offsetX
-    }
-    else if (
-      mouseEvent.originalEvent &&
-      typeof mouseEvent.originalEvent.offsetX !== 'undefined'
-    ) {
-      x = mouseEvent.originalEvent.offsetX
-    }
-    else if (
-      mouseEvent.originalEvent &&
-      typeof mouseEvent.originalEvent.layerX !== 'undefined'
-    ) {
-      x = mouseEvent.originalEvent.layerX
-    }
-
-    //Set y
-    if (typeof mouseEvent.offsetY !== 'undefined') {
-      y = mouseEvent.offsetY
-    }
-    else if (
-      mouseEvent.originalEvent &&
-      typeof mouseEvent.originalEvent.offsetY !== 'undefined'
-    ) {
-      y = mouseEvent.originalEvent.offsetY
-    }
-    else if (
-      mouseEvent.originalEvent &&
-      typeof mouseEvent.originalEvent.layerY !== 'undefined'
-    ) {
-      y = mouseEvent.originalEvent.layerY
-    }
+    //Get data
+    const {offsetX, offsetY} = nativeEvent
 
     //Apply pixel ratio factor
-    x *= (window.devicePixelRatio || 1)
-    y *= (window.devicePixelRatio || 1)
+    const absX = offsetX * pixelRatio
+    const absY = offsetY * pixelRatio
 
     //Append coords
-    detail.x = board.getGridX(x)
-    detail.y = board.getGridY(y)
+    detail.x = board.getGridX(absX)
+    detail.y = board.getGridY(absY)
 
     //Did we drag?
-    if (mouseEvent.drag) {
-      detail.drag = mouseEvent.drag
+    if (nativeEvent.drag) {
+      detail.drag = nativeEvent.drag
     }
   }
 }

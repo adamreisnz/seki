@@ -51,13 +51,26 @@ export default class MarkupFactory {
   }
 
   /**
-   * Create for variation
+   * Create for indicator
    */
-  static createForVariation(i, board) {
-    const {theme} = board
-    const type = theme.get('markup.variation.type')
-    const text = theme.get('markup.variation.text', i)
-    const color = theme.get('markup.variation.color')
-    return this.create(type, board, {text, color})
+  static createForIndicator(indicatorType, board, stoneColor, t) {
+
+    //Get theme data
+    const type = board.theme.get(`markup.${indicatorType}.type`)
+    const text = board.theme.get(`markup.${indicatorType}.text`, t)
+    const color = board.theme.get(`markup.${indicatorType}.color`, stoneColor)
+    const scale = board.theme.get(`markup.${indicatorType}.scale`)
+    const alpha = board.theme.get(`markup.${indicatorType}.alpha`)
+    const lineDash = board.theme.get(`markup.${indicatorType}.lineDash`)
+
+    //No type
+    if (!type) {
+      return
+    }
+
+    //Create
+    return this.create(type, board, {
+      text, color, scale, alpha, lineDash, indicatorType,
+    })
   }
 }

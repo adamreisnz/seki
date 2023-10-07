@@ -9,6 +9,9 @@ import {pixelRatio} from '../helpers/dom.js'
  */
 export default class BoardLayer {
 
+  //Context
+  context
+
   /**
    * Constructor
    */
@@ -17,7 +20,6 @@ export default class BoardLayer {
     //Init
     this.board = board
     this.grid = new Grid()
-    this.context = undefined
   }
 
   /**

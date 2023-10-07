@@ -20,6 +20,7 @@ export const stoneStyles = {
  * Stone modifier types
  */
 export const stoneModifierTypes = {
-  FADED: 'faded',
+  CAPTURED: 'captured',
+  HOVER: 'hover',
   MINI: 'mini',
 }

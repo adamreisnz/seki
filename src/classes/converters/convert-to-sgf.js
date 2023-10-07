@@ -400,10 +400,10 @@ export default class ConvertToSgf extends Convert {
    */
   convertVariationSettings(settings) {
     let value = 0
-    if (!settings.variationMarkup) {
+    if (!settings.showVariations) {
       value += 2
     }
-    if (settings.variationSiblings) {
+    if (settings.showSiblingVariations) {
       value += 1
     }
     return value

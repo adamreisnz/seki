@@ -370,9 +370,8 @@ export default class ConvertFromSgf extends Convert {
 
     //Initialize variation display settings
     const settings = {
-      variationMarkup: false,
-      variationChildren: false,
-      variationSiblings: false,
+      showVariations: false,
+      showSiblingVariations: false,
     }
 
     //Parse as integer
@@ -381,18 +380,20 @@ export default class ConvertFromSgf extends Convert {
     //Determine what we want (see SGF specs for details)
     switch (value) {
       case 0:
-        settings.variationMarkup = true
-        settings.variationChildren = true
+        settings.showVariations = true
+        settings.showSiblingVariations = false
         break
       case 1:
-        settings.variationMarkup = true
-        settings.variationSiblings = true
+        settings.showVariations = true
+        settings.showSiblingVariations = true
         break
       case 2:
-        settings.variationChildren = true
+        settings.showVariations = false
+        settings.showSiblingVariations = false
         break
       case 3:
-        settings.variationSiblings = true
+        settings.showVariations = false
+        settings.showSiblingVariations = true
         break
     }
 

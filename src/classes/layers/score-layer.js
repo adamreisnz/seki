@@ -7,21 +7,12 @@ import {stoneModifierTypes} from '../../constants/stone.js'
  */
 export default class ScoreLayer extends BoardLayer {
 
-  /**
-   * Constructor
-   */
-  constructor(board) {
+  //Type
+  type = boardLayerTypes.SCORE
 
-    //Parent constructor
-    super(board)
-
-    //Set type
-    this.type = boardLayerTypes.SCORE
-
-    //Points and captures
-    this.points = []
-    this.captures = []
-  }
+  //Helper vars
+  points = []
+  captures = []
 
   /**
    * Set points and captures
@@ -83,7 +74,7 @@ export default class ScoreLayer extends BoardLayer {
     //Draw captures first
     for (const entry of captures) {
       const {x, y, value: stone} = entry
-      const capture = stone.getModifiedCopy(stoneModifierTypes.FADED)
+      const capture = stone.getModifiedCopy(stoneModifierTypes.CAPTURED)
       capture.draw(context, x, y)
     }
 

@@ -1,15 +1,12 @@
 import Base from './base.js'
+import StoneFactory from './stone-factory.js'
+import {boardLayerTypes} from '../constants/board.js'
+import {stoneModifierTypes} from '../constants/stone.js'
 
 /**
  * Base player mode class
  */
 export default class PlayerMode extends Base {
-
-  //Mouse coordinates helper var
-  mouse = {
-    lastX: -1,
-    lastY: -1,
-  }
 
   /**
    * Constructor
@@ -136,5 +133,37 @@ export default class PlayerMode extends Base {
       const fn = eventListenersMap[key]
       player.off(key, bound[fn])
     }
+  }
+
+  /**************************************************************************
+   * Shared helpers
+   ***/
+
+  /**
+   * Create a hover stone
+   */
+  createHoverStone(event) {
+
+    //Get data
+    const {board, game} = this
+    const {x, y} = event.detail
+
+    //Falling outside of grid or already have a stone?
+    if (!board || !board.isOnBoard(x, y) || game.hasStone(x, y)) {
+      return
+    }
+
+    //Get style and color
+    const style = board.theme.get('stone.style')
+    const color = game.getTurn()
+
+    //Create stone
+    const stone = StoneFactory
+      .create(style, color, board)
+      .getModifiedCopy(stoneModifierTypes.HOVER)
+
+    //Add to board
+    board.removeAll(boardLayerTypes.HOVER)
+    board.add(boardLayerTypes.HOVER, x, y, stone)
   }
 }

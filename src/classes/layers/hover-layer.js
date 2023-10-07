@@ -1,16 +1,21 @@
 import BoardLayer from '../board-layer.js'
 import {boardLayerTypes} from '../../constants/board.js'
+import Stone from '../objects/stone.js'
+import Markup from '../objects/markup.js'
 
-//Valid types
-const validTypes = [
-  boardLayerTypes.STONES,
-  boardLayerTypes.MARKUP,
-]
+//Layer type to object mapping
+const typeToObject = {
+  [boardLayerTypes.STONES]: Stone,
+  [boardLayerTypes.MARKUP]: Markup,
+}
 
 /**
  * Hover layer
  */
 export default class HoverLayer extends BoardLayer {
+
+  //Type
+  type = boardLayerTypes.HOVER
 
   /**
    * Constructor
@@ -20,9 +25,6 @@ export default class HoverLayer extends BoardLayer {
     //Parent constructor
     super(board)
 
-    //Set type
-    this.type = boardLayerTypes.HOVER
-
     //Container for items to restore
     this.restore = new Set()
   }
@@ -30,7 +32,7 @@ export default class HoverLayer extends BoardLayer {
   /**
    * Add hover object
    */
-  add(x, y, object, type) {
+  add(x, y, object) {
 
     //Get data
     const {board, grid, restore} = this
@@ -40,9 +42,14 @@ export default class HoverLayer extends BoardLayer {
       return
     }
 
-    //Validate type
-    if (!validTypes.includes(type)) {
-      throw new Error(`Invalid hover item type: ${type}`)
+    //Determine type
+    const type = Object
+      .keys(typeToObject)
+      .find(type => object instanceof typeToObject[type])
+
+    //Validate
+    if (!type) {
+      throw new Error(`Invalid hover object`)
     }
 
     //Check if we need to remove something from layers underneath

@@ -250,7 +250,7 @@ export default class Game extends Base {
    * Get node for a certain move
    */
   getMoveNode(move) {
-    let nodes = this.getMoveNodes(move, move)
+    const nodes = this.getMoveNodes(move, move)
     return nodes.length ? nodes[0] : null
   }
 
@@ -260,7 +260,7 @@ export default class Game extends Base {
   getMoveNodes(fromMove, toMove) {
 
     //Get all nodes for the current path
-    let nodes = this.getNodes()
+    const nodes = this.getNodes()
 
     //Use sensible defaults if no from/to moves given
     fromMove = fromMove || 1
@@ -269,7 +269,7 @@ export default class Game extends Base {
     //Filter
     return nodes.filter(function(node) {
       if (node.isMove()) {
-        let move = node.getMoveNumber()
+        const move = node.getMoveNumber()
         return (move >= fromMove && move <= toMove)
       }
       return false
@@ -290,7 +290,7 @@ export default class Game extends Base {
    * Get the number of moves in the main branch
    */
   getMoveCount() {
-    let moveNodes = this.getMoveNodes()
+    const moveNodes = this.getMoveNodes()
     return moveNodes.length
   }
 
@@ -403,6 +403,16 @@ export default class Game extends Base {
   isMoveVariation(x, y) {
     if (this.node) {
       return this.node.isMoveVariation(x, y)
+    }
+    return false
+  }
+
+  /**
+   * Check if we have move variations on the current node
+   */
+  hasMoveVariations() {
+    if (this.node) {
+      return this.node.hasMoveVariations()
     }
     return false
   }

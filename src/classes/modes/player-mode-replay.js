@@ -1,6 +1,7 @@
 import PlayerMode from '../player-mode.js'
 import MarkupFactory from '../markup-factory.js'
 import {boardLayerTypes} from '../../constants/board.js'
+import {markupIndicatorTypes} from '../../constants/markup.js'
 import {
   mouseEvents,
   playerModes,
@@ -45,8 +46,6 @@ export default class PlayerModeReplay extends PlayerMode {
       keydown: 'onKeyDown',
       click: 'onClick',
       wheel: 'onMouseWheel',
-      mousemove: 'onMouseMove',
-      mouseout: 'onMouseOut',
       pathChange: 'onPathChange',
     })
   }
@@ -110,8 +109,8 @@ export default class PlayerModeReplay extends PlayerMode {
     const {player} = this
     const {nativeEvent} = event.detail
 
-    //Clear hover layer
-    this.clearHoverLayer()
+    //Clear hover
+    player.clearHover()
 
     //Wheeling up
     if (nativeEvent.deltaY < 0) {
@@ -124,34 +123,6 @@ export default class PlayerModeReplay extends PlayerMode {
       const action = player.getActionForMouseEvent(mouseEvents.WHEEL_DOWN)
       this.performAction(action, event)
     }
-  }
-
-  /**
-   * Mouse move handler
-   */
-  onMouseMove(event) {
-
-    //Last coordinates are the same?
-    const {mouse} = this
-    if (mouse.lastX === event.x && mouse.lastY === event.y) {
-      return
-    }
-
-    //Remember last coordinates
-    mouse.lastX = event.x
-    mouse.lastY = event.y
-
-    //Trigger hover event
-    this.triggerHoverEvent(event)
-  }
-
-  /**
-   * Mouse out handler
-   */
-  onMouseOut() {
-
-    //Clear hover layer
-    this.clearHoverLayer()
   }
 
   /**
@@ -172,8 +143,8 @@ export default class PlayerModeReplay extends PlayerMode {
       return
     }
 
-    //Clear hover layer
-    this.clearHoverLayer()
+    //Clear hover
+    player.clearHover()
 
     //Move tool active
     if (player.isToolActive(playerTools.MOVE)) {
@@ -204,66 +175,44 @@ export default class PlayerModeReplay extends PlayerMode {
     const {node} = event.detail
 
     //Get settings
-    const variationMarkup = player.getConfig('variationMarkup')
-    const variationSiblings = player.getConfig('variationSiblings')
-    const lastMoveMarkupType = player.getConfig('lastMoveMarkupType')
+    const showLastMove = player.getConfig('showLastMove')
+    const showNextMove = player.getConfig('showNextMove')
+    const showVariations = player.getConfig('showVariations')
+    const showSiblingVariations = player.getConfig('showSiblingVariations')
 
-    //Show variations
-    if (variationMarkup) {
-      if (node.hasMoveVariations()) {
-        const variations = node.getMoveVariations()
-        this.showMoveVariations(variations)
-      }
-    }
+    //Clear hover
+    player.clearHover()
 
     //Show sibling variations
-    if (variationSiblings) {
+    if (showVariations && showSiblingVariations) {
       if (node.parent && node.parent.hasMoveVariations()) {
         const variations = node.parent.getMoveVariations()
         this.showMoveVariations(variations)
       }
     }
 
-    //Last move markup
-    if (lastMoveMarkupType) {
-      if (node.isMove() && !node.isPass()) {
-        this.showLastMoveMarker(node, lastMoveMarkupType)
+    //Show child variations
+    else if (showVariations) {
+      if (node.hasMoveVariations()) {
+        const variations = node.getMoveVariations()
+        this.showMoveVariations(variations)
       }
+    }
+
+    //Last move markup
+    if (showLastMove) {
+      this.addLastMoveMarker(node)
+    }
+
+    //Next move markup
+    if (showNextMove) {
+      this.addNextMoveMarker(node)
     }
   }
 
   /**************************************************************************
    * Actions
    ***/
-
-  /**
-   * Trigger hover event
-   */
-  triggerHoverEvent(event) {
-
-    //Get data
-    const {player, board} = this
-    const {nativeEvent} = event.detail
-
-    //Anything to do
-    if (board && board.hasLayer(boardLayerTypes.HOVER)) {
-      player.triggerEvent('hover', {nativeEvent})
-    }
-  }
-
-  /**
-   * Clear hover layer
-   */
-  clearHoverLayer() {
-
-    //Get data
-    const {board} = this
-
-    //Remove all hover data from board
-    if (board && board.hasLayer(boardLayerTypes.HOVER)) {
-      board.removeAll(boardLayerTypes.HOVER)
-    }
-  }
 
   /**
    * Perform an action
@@ -404,7 +353,7 @@ export default class PlayerModeReplay extends PlayerMode {
     //Loop variations
     variations.forEach((variation, i) => {
       const {move} = variation
-      const {x, y} = move
+      const {x, y, color} = move
 
       //Auto variation markup should never overwrite existing markup
       if (board.has(boardLayerTypes.MARKUP, x, y)) {
@@ -414,7 +363,7 @@ export default class PlayerModeReplay extends PlayerMode {
       //Add to board
       board
         .add(boardLayerTypes.MARKUP, x, y, MarkupFactory
-          .createForVariation(i, board))
+          .createForIndicator(markupIndicatorTypes.VARIATION, board, color, i))
     })
   }
 
@@ -432,22 +381,52 @@ export default class PlayerModeReplay extends PlayerMode {
   }
 
   /**
-   * Show last move marker
+   * Add last move marker
    */
-  showLastMoveMarker(node, markupType) {
+  addLastMoveMarker(node) {
+
+    //Not a move node or a pass
+    if (!node.isMove() || node.isPass()) {
+      return
+    }
 
     //Get data
     const {board} = this
-    const {x, y} = node.move
+    const {x, y, color} = node.move
 
     //Add to board
     board
       .add(boardLayerTypes.MARKUP, x, y, MarkupFactory
-        .create(markupType, board))
+        .createForIndicator(markupIndicatorTypes.LAST_MOVE, board, color))
   }
 
   /**
-   * Playa  move
+   * Show next move marker
+   */
+  addNextMoveMarker(node) {
+
+    //Get data
+    const {board} = this
+    const variations = node
+      .getMoveVariations()
+      .filter(node => !node.isPass())
+
+    //Add for each variation
+    variations.forEach(variation => {
+
+      //Get data
+      const {move} = variation
+      const {x, y, color} = move
+
+      //Add to board
+      board
+        .add(boardLayerTypes.MARKUP, x, y, MarkupFactory
+          .createForIndicator(markupIndicatorTypes.NEXT_MOVE, board, color))
+    })
+  }
+
+  /**
+   * Play a move
    */
   playMove(x, y) {
     const {player} = this

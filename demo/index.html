@@ -16,17 +16,17 @@
   </div>
   <div class="right">
     <h2>Load data</h2>
-    <button id="loadBlank">Blank board</button>
-    <button id="loadJgf">Load JGF</button>
-    <button id="loadSgf">Load SGF</button>
-    <button id="loadGib">Load GIB</button>
+    <button id="loadBlank">Blank</button>
+    <button id="loadJgf">JGF</button>
+    <button id="loadSgf">SGF</button>
+    <button id="loadGib">GIB</button>
 
     <h2>Switch mode</h2>
     <button id="switchModeNone">None</button>
     <button id="switchModeReplay">Replay</button>
     <button id="switchModePlay">Play</button>
     <button id="switchModeEdit">Edit</button>
-    <button id="switchModeSolve">Solve</button>
+    <!-- <button id="switchModeSolve">Solve</button> -->
 
     <div id="editTools">
       <h2>Markup</h2>
@@ -56,6 +56,8 @@
 
     <h2>Other</h2>
     <button id="toggleCoordinates">Toggle coordinates</button>
+    <button id="toggleNextMove">Toggle next move</button>
+    <button id="toggleVariations">Toggle variations</button>
     <button id="toggleSwapColors">Swap colors</button>
   </info>
 </div>
@@ -102,7 +104,15 @@
     player.switchMode(playerModes.PLAY)
   })
 
-  //Coordinates
+  //Toggles
+  bindClickHandler('toggleNextMove', () => {
+    player.toggleConfig('showNextMove')
+    player.processPosition()
+  })
+  bindClickHandler('toggleVariations', () => {
+    player.toggleConfig('showVariations')
+    player.processPosition()
+  })
   bindClickHandler('toggleCoordinates', () => player.board.toggleCoordinates())
   bindClickHandler('toggleSwapColors', () => player.board.toggleSwapColors())
 

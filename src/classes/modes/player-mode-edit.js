@@ -84,7 +84,7 @@ export default class PlayerModeEdit extends PlayerModeReplay {
     }
 
     //Clear hover layer
-    this.clearHoverLayer()
+    player.clearHover()
 
     //Markup tool active
     if (player.isToolActive(playerTools.MARKUP)) {

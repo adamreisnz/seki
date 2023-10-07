@@ -6,17 +6,8 @@ import {boardLayerTypes} from '../../constants/board.js'
  */
 export default class ShadowLayer extends BoardLayer {
 
-  /**
-   * Constructor
-   */
-  constructor(board) {
-
-    //Parent constructor
-    super(board)
-
-    //Set type
-    this.type = boardLayerTypes.SHADOW
-  }
+  //Type
+  type = boardLayerTypes.SHADOW
 
   /**
    * Remove a single stone shadow object

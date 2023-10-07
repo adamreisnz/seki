@@ -177,19 +177,22 @@ JGF = {
   //Instructions for the game record replayer
 	settings: {
 
-		//Indicate variations with markup on the board or not
-		variationMarkup: true,
+    //Show the last played move
+    showLastMove: false,
 
-		//Show variations of successor nodes
-		variationChildren: true,
+    //Show the next move when replaying
+    showNextMove: false,
+
+		//Show solutions for problems
+		showSolutions: false,
+
+		//Show variations on the board
+		showVariations: true,
 
 		//Show variations of current node
-		variationSiblings: false,
+		showSiblingVariations: false,
 
-		//Show solution paths for problems
-		solutionPaths: false,
-
-    //Extensible with other custom instructions for various players
+    //...extensible with other custom instructions for various players
 	},
 
   //Meta data for any other information to be saved with the record

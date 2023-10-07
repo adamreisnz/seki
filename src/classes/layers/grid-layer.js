@@ -7,17 +7,8 @@ import {boardLayerTypes} from '../../constants/board.js'
  */
 export default class GridLayer extends BoardLayer {
 
-  /**
-   * Constructor
-   */
-  constructor(board) {
-
-    //Parent constructor
-    super(board)
-
-    //Set type
-    this.type = boardLayerTypes.GRID
-  }
+  //Type
+  type = boardLayerTypes.GRID
 
   /**
    * Unneeded methods

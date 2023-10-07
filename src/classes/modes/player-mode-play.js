@@ -29,6 +29,7 @@ export default class PlayerModePlay extends PlayerMode {
     //Create bound event listeners
     this.createBoundListeners({
       click: 'onClick',
+      hover: 'onHover',
     })
   }
 
@@ -53,6 +54,24 @@ export default class PlayerModePlay extends PlayerMode {
     //Play move
     this.playMove(x, y)
   }
+
+  /**
+   * On hover
+   */
+  onHover(event) {
+
+    //Get data
+    const {player} = this
+
+    //Move tool active
+    if (player.isToolActive(playerTools.MOVE)) {
+      this.createHoverStone(event)
+    }
+  }
+
+  /**************************************************************************
+   * Actions
+   ***/
 
   /**
    * Play move

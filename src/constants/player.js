@@ -127,17 +127,12 @@ export const defaultPlayerConfig = {
     [mouseEvents.WHEEL_RIGHT]: playerActions.NEXT_VARIATION,
   },
 
-  //Last move markup type, leave empty for none
-  lastMoveMarkupType: markupTypes.CIRCLE,
-
-  //Indicate variations with markup on the board, and show
-  //successor node variations or current node variations
-  variationMarkup: true,
-  variationChildren: true,
-  variationSiblings: false,
-
-  //Show solution paths
-  solutionPaths: false,
+  //Move and variation flags
+  showLastMove: true,
+  showNextMove: true,
+  showSolutions: false,
+  showVariations: true,
+  showSiblingVariations: false,
 
   //Allow player configuration settigns to be loaded from game records
   allowPlayerConfig: true,
