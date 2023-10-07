@@ -29,7 +29,8 @@ export default class PlayerModePlay extends PlayerMode {
     //Create bound event listeners
     this.createBoundListeners({
       click: 'onClick',
-      hover: 'onHover',
+      gridEnter: 'onGridEnter',
+      gridLeave: 'onGridLeave',
     })
   }
 
@@ -56,17 +57,24 @@ export default class PlayerModePlay extends PlayerMode {
   }
 
   /**
-   * On hover
+   * On grid enter
    */
-  onHover(event) {
+  onGridEnter(event) {
 
     //Get data
     const {player} = this
 
     //Move tool active
     if (player.isToolActive(playerTools.MOVE)) {
-      this.createHoverStone(event)
+      this.showHoverStone(event)
     }
+  }
+
+  /**
+   * On grid leave
+   */
+  onGridLeave() {
+    this.clearHover()
   }
 
   /**************************************************************************
@@ -79,5 +87,19 @@ export default class PlayerModePlay extends PlayerMode {
   playMove(x, y) {
     const {player} = this
     player.play(x, y)
+  }
+
+  /**
+   * Show hover stone
+   */
+  showHoverStone(event) {
+
+    //Get data
+    const {game} = this
+    const {x, y} = event.detail
+    const color = game.getTurn()
+
+    //Parent method
+    super.showHoverStone(x, y, color)
   }
 }

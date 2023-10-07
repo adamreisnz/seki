@@ -890,14 +890,9 @@ export default class Player extends Base {
       this.appendCoordinatesToEvent(detail)
     }
 
-    //Trigger hover event if first time coming onto a grid square
-    if (type === 'mousemove') {
-      this.triggerHoverEvent(detail)
-    }
-
-    //Clear hover layer on mouse out
-    if (type === 'mouseout') {
-      this.clearHover()
+    //Trigger grid entry/leave events
+    if (type === 'mousemove' || type === 'mouseout') {
+      this.triggerGridEvent(detail)
     }
 
     //Create new event
@@ -908,16 +903,17 @@ export default class Player extends Base {
   }
 
   /**
-   * Trigger hover event
+   * Trigger grid entry/leave events
    */
-  triggerHoverEvent(detail) {
+  triggerGridEvent(detail) {
 
     //Get data
-    const {board, mouse} = this
+    const {mouse} = this
+    const {lastX, lastY} = mouse
     const {x, y} = detail
 
     //Last coordinates are the same? Ignore
-    if (mouse.lastX === x && mouse.lastY === y) {
+    if (lastX === x && lastY === y) {
       return
     }
 
@@ -925,20 +921,14 @@ export default class Player extends Base {
     mouse.lastX = x
     mouse.lastY = y
 
-    //Anything to do
-    if (board && board.hasLayer(boardLayerTypes.HOVER)) {
-      this.triggerEvent('hover', detail)
-    }
-  }
+    //Trigger grid leave event
+    this.triggerEvent('gridLeave', Object.assign({}, detail, {
+      x: lastX,
+      y: lastY,
+    }))
 
-  /**
-   * Clear hover
-   */
-  clearHover() {
-    const {board} = this
-    if (board && board.hasLayer(boardLayerTypes.HOVER)) {
-      board.removeAll(boardLayerTypes.HOVER)
-    }
+    //Trigger grid entry event
+    this.triggerEvent('gridEnter', detail)
   }
 
   /**

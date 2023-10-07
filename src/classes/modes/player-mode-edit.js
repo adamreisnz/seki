@@ -46,6 +46,16 @@ export default class PlayerModeEdit extends PlayerModeReplay {
 
     //Extend player
     this.extendPlayerForEdit()
+
+    //Create bound event listeners
+    this.createBoundListeners({
+      keydown: 'onKeyDown',
+      click: 'onClick',
+      wheel: 'onMouseWheel',
+      pathChange: 'onPathChange',
+      gridEnter: 'onGridEnter',
+      gridLeave: 'onGridLeave',
+    })
   }
 
   /**
@@ -84,7 +94,7 @@ export default class PlayerModeEdit extends PlayerModeReplay {
     }
 
     //Clear hover layer
-    player.clearHover()
+    this.clearHover()
 
     //Markup tool active
     if (player.isToolActive(playerTools.MARKUP)) {
@@ -102,6 +112,38 @@ export default class PlayerModeEdit extends PlayerModeReplay {
     }
   }
 
+  /**
+   * On grid enter
+   */
+  onGridEnter(event) {
+
+    //Get data
+    const {player} = this
+
+    //Markup tool active
+    if (player.isToolActive(playerTools.MARKUP)) {
+      this.showHoverMarkup(event)
+    }
+
+    //Setup tool active
+    else if (player.isToolActive(playerTools.SETUP)) {
+      this.showHoverStone(event)
+    }
+  }
+
+  /**
+   * On grid leave
+   */
+  onGridLeave(event) {
+
+    //Get data
+    const {x, y} = event.detail
+
+    //Clear hover and redraw grid cell (for removed markup)
+    this.clearHover()
+    this.redrawGridCell(x, y)
+  }
+
   /**************************************************************************
    * Actions
    ***/
@@ -113,6 +155,7 @@ export default class PlayerModeEdit extends PlayerModeReplay {
 
     //Get data
     const {player, game, markupTool, usedMarkupLabels} = this
+    const type = this.getTypeForMarkupTool(markupTool)
 
     //Debug
     this.debug(`setting markup ${markupTool} at (${x},${y})`)
@@ -135,41 +178,16 @@ export default class PlayerModeEdit extends PlayerModeReplay {
       game.removeMarkup(x, y)
 
       //Was existing markup of the same type?
-      if (
-        markup.type === markupTool ||
-        (
-          markup.type === markupTypes.LABEL &&
-          [markupTools.LETTER, markupTools.NUMBER].includes(markupTool)
-        )) {
+      if (markup.type === type) {
         player.processPosition()
         return
       }
     }
 
-    //Clear tool used? Done
-    if (markupTool === markupTools.CLEAR) {
-      //Fall through
-    }
-
-    //Letter
-    else if (markupTool === markupTools.LETTER) {
-      game.addMarkup(x, y, {
-        type: markupTypes.LABEL,
-        text: this.getNextLetter(),
-      })
-    }
-
-    //Number
-    else if (markupTool === markupTools.NUMBER) {
-      game.addMarkup(x, y, {
-        type: markupTypes.LABEL,
-        text: this.getNextNumber(),
-      })
-    }
-
-    //Other markup, safe to add as is
-    else {
-      game.addMarkup(x, y, {type: markupTool})
+    //Not clearing
+    if (markupTool !== markupTools.CLEAR) {
+      const text = this.getText()
+      game.addMarkup(x, y, {type, text})
     }
 
     //Process position
@@ -226,9 +244,60 @@ export default class PlayerModeEdit extends PlayerModeReplay {
     this.debug(`${setupTool} setup tool activated`)
   }
 
+  /**
+   * Show hover stone
+   */
+  showHoverStone(event) {
+
+    //Get data
+    const {setupTool} = this
+    const {x, y} = event.detail
+    const color = this.getColorForSetupTool(setupTool)
+
+    //No color
+    if (!color) {
+      return
+    }
+
+    //Parent method
+    super.showHoverStone(x, y, color)
+  }
+
+  /**
+   * Show hover markup
+   */
+  showHoverMarkup(event) {
+
+    //Get data
+    const {markupTool} = this
+    const {x, y} = event.detail
+    const type = this.getTypeForMarkupTool(markupTool)
+
+    //No type
+    if (!type) {
+      return
+    }
+
+    //Parent method
+    super.showHoverMarkup(x, y, type)
+  }
+
   /**************************************************************************
    * Helpers
    ***/
+
+  /**
+   * Get text for markup
+   */
+  getText() {
+    const {markupTool} = this
+    if (markupTool === markupTools.LETTER) {
+      return this.getNextLetter()
+    }
+    else if (markupTool === markupTools.NUMBER) {
+      return this.getNextNumber()
+    }
+  }
 
   /**
    * Determine the next letter for markup label text
@@ -306,6 +375,22 @@ export default class PlayerModeEdit extends PlayerModeReplay {
     }
     else if (tool === setupTools.WHITE) {
       return stoneColors.WHITE
+    }
+  }
+
+  /**
+   * Get markup type for a give nmarkup tool
+   */
+  getTypeForMarkupTool(tool) {
+    const label = [
+      markupTools.LETTER,
+      markupTools.NUMBER,
+    ]
+    if (label.includes(tool)) {
+      return markupTypes.LABEL
+    }
+    else if (tool !== markupTools.CLEAR) {
+      return tool
     }
   }
 }

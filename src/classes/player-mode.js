@@ -1,5 +1,6 @@
 import Base from './base.js'
 import StoneFactory from './stone-factory.js'
+import MarkupFactory from './markup-factory.js'
 import {boardLayerTypes} from '../constants/board.js'
 import {stoneModifierTypes} from '../constants/stone.js'
 
@@ -113,6 +114,7 @@ export default class PlayerMode extends Base {
     //Register event listeners
     for (const key in eventListenersMap) {
       const fn = eventListenersMap[key]
+      this.debug(`registering event listener ${key}`)
       player.on(key, bound[fn])
     }
   }
@@ -140,22 +142,20 @@ export default class PlayerMode extends Base {
    ***/
 
   /**
-   * Create a hover stone
+   * Show a hover stone
    */
-  createHoverStone(event) {
+  showHoverStone(x, y, color) {
 
     //Get data
-    const {board, game} = this
-    const {x, y} = event.detail
+    const {game, board} = this
 
     //Falling outside of grid or already have a stone?
     if (!board || !board.isOnBoard(x, y) || game.hasStone(x, y)) {
       return
     }
 
-    //Get style and color
+    //Get style
     const style = board.theme.get('stone.style')
-    const color = game.getTurn()
 
     //Create stone
     const stone = StoneFactory
@@ -165,5 +165,73 @@ export default class PlayerMode extends Base {
     //Add to board
     board.removeAll(boardLayerTypes.HOVER)
     board.add(boardLayerTypes.HOVER, x, y, stone)
+  }
+
+  /**
+   * Show hover markup
+   */
+  showHoverMarkup(x, y, type, data) {
+
+    //Get data
+    const {board} = this
+
+    //Falling outside of grid or already have a stone?
+    if (!board || !board.isOnBoard(x, y)) {
+      return
+    }
+
+    //Create markup
+    const markup = MarkupFactory
+      .create(type, board, data)
+
+    //Add to board
+    board.removeAll(boardLayerTypes.HOVER)
+    board.add(boardLayerTypes.HOVER, x, y, markup)
+  }
+
+  /**
+   * Clear hover layer
+   */
+  clearHover() {
+
+    //Get data
+    const {board} = this
+
+    //Check if board and layer are there
+    if (!board || !board.hasLayer(boardLayerTypes.HOVER)) {
+      return
+    }
+
+    //Remove all items
+    board.removeAll(boardLayerTypes.HOVER)
+  }
+
+  /**
+   * Redraw a grid cell
+   */
+  redrawGridCell(x, y) {
+
+    //Redraw grid cell
+    const {board} = this
+
+    //Falling outside of grid or already have a stone?
+    if (!board || !board.isOnBoard(x, y)) {
+      return
+    }
+
+    //Stone here, not needed
+    if (board.has(boardLayerTypes.STONES, x, y)) {
+      return
+    }
+
+    //Markup here, keep as is
+    if (board.has(boardLayerTypes.MARKUP, x, y)) {
+      return
+    }
+
+    //Redraw cell
+    board
+      .getLayer(boardLayerTypes.GRID)
+      .redrawCell(x, y)
   }
 }

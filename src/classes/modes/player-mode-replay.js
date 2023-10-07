@@ -110,7 +110,7 @@ export default class PlayerModeReplay extends PlayerMode {
     const {nativeEvent} = event.detail
 
     //Clear hover
-    player.clearHover()
+    this.clearHover()
 
     //Wheeling up
     if (nativeEvent.deltaY < 0) {
@@ -144,7 +144,7 @@ export default class PlayerModeReplay extends PlayerMode {
     }
 
     //Clear hover
-    player.clearHover()
+    this.clearHover()
 
     //Move tool active
     if (player.isToolActive(playerTools.MOVE)) {
@@ -181,7 +181,7 @@ export default class PlayerModeReplay extends PlayerMode {
     const showSiblingVariations = player.getConfig('showSiblingVariations')
 
     //Clear hover
-    player.clearHover()
+    this.clearHover()
 
     //Show sibling variations
     if (showVariations && showSiblingVariations) {
