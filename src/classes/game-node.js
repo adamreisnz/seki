@@ -13,6 +13,7 @@ export default class GameNode {
   root
   parent
   children = []
+  variationRoot
 
   //The selected path index (for navigating variations)
   index = 0
@@ -29,6 +30,20 @@ export default class GameNode {
 
     //Root node is ourselves unless we get attached to a parent
     this.root = this
+  }
+
+  /**
+   * Get root node
+   */
+  getRoot() {
+    return this.root
+  }
+
+  /**
+   * Get variation root node
+   */
+  getVariationRoot() {
+    return this.variationRoot
   }
 
   /**************************************************************************
@@ -154,8 +169,21 @@ export default class GameNode {
    * Set parent node
    */
   setParent(parent) {
+
+    //Set parent and root
     this.parent = parent
     this.root = parent.root
+    this.variationRoot = null
+
+    //If our parent has a variation root, set it
+    if (parent.variationRoot) {
+      this.variationRoot = parent.variationRoot
+    }
+
+    //If we're the start of a variation branch, we are the root
+    else if (parent.indexOf(this) > 0) {
+      this.variationRoot = this
+    }
   }
 
   /**
@@ -163,6 +191,8 @@ export default class GameNode {
    */
   removeParent() {
     this.parent = null
+    this.root = this
+    this.variationRoot = null
   }
 
   /*****************************************************************************
@@ -176,8 +206,7 @@ export default class GameNode {
     const {parent} = this
     if (parent) {
       parent.removeChild(this)
-      this.parent = null
-      this.root = this
+      this.removeParent()
     }
   }
 
@@ -186,8 +215,9 @@ export default class GameNode {
    */
   appendToParent(node) {
     this.detachFromParent()
+    node.addChild(this)
     this.setParent(node)
-    return node.addChild(this)
+    return node.indexOf(this)
   }
 
   /**
@@ -195,51 +225,9 @@ export default class GameNode {
    */
   appendChild(node) {
     node.detachFromParent()
+    this.addChild(node)
     node.setParent(this)
-    return this.addChild(node)
-  }
-
-  /**
-   * Move the node up in the parent's child tree
-   * NOTE: Not currently in use
-   */
-  moveUpInParent() {
-    const {parent} = this
-    if (parent) {
-      const i = parent.indexOf(this)
-      parent.moveChild(this, i - 1)
-    }
-  }
-
-  /**
-   * Move the node down in the parent's child tree
-   * NOTE: Not currently in use
-   */
-  moveDownInParent() {
-    const {parent} = this
-    if (parent) {
-      const i = parent.indexOf(this)
-      parent.moveChild(this, i + 1)
-    }
-  }
-
-  /**
-   * Insert another node after this one
-   */
-  insertNode(node) {
-
-    //Change parent node on children
-    const {children} = this
-    for (const child of children) {
-      child.setParent(node)
-    }
-
-    //Merge children, set this node as the parent of given node
-    node.mergeChildren(children)
-    node.setParent(this)
-
-    //Set given node as the child of this node
-    this.setChildren([node])
+    return this.indexOf(node)
   }
 
   /**************************************************************************
@@ -257,38 +245,24 @@ export default class GameNode {
   }
 
   /**
-   * Get the move number since we
-   */
-  getVariationMoveNumber() {
-    const {parent, move} = this
-    if (!this.isVariationBranch()) {
-      return 0
-    }
-    const n = move ? 1 : 0
-    const p = parent ? parent.getVariationMoveNumber() : 0
-    return n + p
-  }
-
-  /**
    * Check if we're on a variation branch
    */
   isVariationBranch() {
+    return Boolean(this.variationRoot)
+  }
 
-    //Get parent
-    const {parent} = this
-
-    //If no parent, we're the root node of the main branch
-    if (!parent) {
-      return false
+  /**
+   * Get array of move nodes up to the variation node
+   */
+  getVariationMoveNodes(arr = []) {
+    const {parent, variationRoot} = this
+    if (variationRoot) {
+      arr.unshift(this)
     }
-
-    //If the parent is on a variation branch, we are too
-    if (parent.isVariationBranch()) {
-      return true
+    if (parent) {
+      return parent.getVariationMoveNodes(arr)
     }
-
-    //Get our child index – if not zero, we're a variation branch
-    return parent.indexOf(this) > 0
+    return arr
   }
 
   /**

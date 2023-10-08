@@ -217,8 +217,9 @@ export default {
         return [line, dash]
       },
       text(i) {
-        return (i + 1) //Numbers
-        // return String.fromCharCode(65 + i) //Letters
+        // return '' //No text
+        // return (i + 1) //Numbers
+        return String.fromCharCode(65 + i) //Letters
       },
       fontSize(stoneColor, cellSize) {
         return Math.floor(cellSize * 0.6)

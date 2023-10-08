@@ -378,14 +378,16 @@ export default class PlayerModeReplay extends PlayerMode {
       this.addMoveVariationMarkers(node, false)
     }
 
-    //Last move markup
-    if (showLastMove) {
-      this.addLastMoveMarker(node)
-    }
+    console.log(node.isVariationBranch())
 
     //Number variation moves
-    if (numberVariationMoves) {
+    if (numberVariationMoves && node.isVariationBranch()) {
       this.numberVariationMoves(node)
+    }
+
+    //Last move
+    else if (showLastMove) {
+      this.addLastMoveMarker(node)
     }
   }
 
@@ -466,23 +468,27 @@ export default class PlayerModeReplay extends PlayerMode {
    */
   numberVariationMoves(node) {
 
-    //Get data
-    const number = node.getVariationMoveNumber()
-    if (!number) {
-      return
-    }
-
-    //Get data
+    //Get variation nodes
     const {board, markers} = this
-    const {x, y} = node.move
+    const nodes = node.getVariationMoveNodes()
 
-    //Store
-    markers.push({x, y})
+    console.log(nodes)
 
-    //Add to board
-    board
-      .add(boardLayerTypes.MARKUP, x, y, MarkupFactory
-        .create(markupTypes.MOVE_NUMBER, board, {number}))
+    //Loop each
+    nodes.forEach((node, i) => {
+
+      //Get node data
+      const {x, y} = node.move
+      const number = i + 1
+
+      //Store
+      markers.push({x, y})
+
+      //Add to board
+      board
+        .add(boardLayerTypes.MARKUP, x, y, MarkupFactory
+          .create(markupTypes.MOVE_NUMBER, board, {number}))
+    })
   }
 
   /**
