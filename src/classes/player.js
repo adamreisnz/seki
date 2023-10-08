@@ -12,7 +12,6 @@ import {
   removeClass,
 } from '../helpers/util.js'
 import {
-  playerTools,
   playerModes,
   defaultPlayerConfig,
 } from '../constants/player.js'
@@ -29,9 +28,7 @@ export default class Player extends Base {
   //Props
   board
   modeHandlers = {}
-  availableTools = []
   activeMode
-  activeTool
 
   //Mouse coordinates helper var
   mouse = {
@@ -142,12 +139,11 @@ export default class Player extends Base {
     //Extend from default config
     super.initConfig(config, defaultPlayerConfig)
 
-    //Get initial mode and tool
-    const {initialMode, initialTool} = this.config
+    //Get initial mode
+    const {initialMode} = this.config
 
-    //Switch to the configured mode and tool
+    //Switch to the configured mode
     this.switchMode(initialMode)
-    this.switchTool(initialTool)
   }
 
   /**
@@ -180,35 +176,8 @@ export default class Player extends Base {
   }
 
   /*****************************************************************************
-   * Mode and tool handling
+   * Mode handling
    ***/
-
-  /**
-   * Set available tools
-   *
-   * NOTE: This is usually set by the mode handler, and not directly
-   * configured on the player itself
-   */
-  setAvailableTools(tools) {
-
-    //Ensure array
-    if (!Array.isArray(tools)) {
-      tools = tools ? [tools] : []
-    }
-
-    //Must include NONE tool
-    if (!tools.includes(playerTools.NONE)) {
-      tools.push(playerTools.NONE)
-    }
-
-    //Set available tools
-    this.availableTools = tools
-
-    //Reset active tool if invalid
-    if (tools.includes(this.tool)) {
-      this.switchTool(tools[0])
-    }
-  }
 
   /**
    * Check if a specific player mode is available
@@ -222,13 +191,6 @@ export default class Player extends Base {
   }
 
   /**
-   * Check if we have a player tool available
-   */
-  isToolAvailable(tool) {
-    return this.availableTools.includes(tool)
-  }
-
-  /**
    * Check if a specific player mode is active
    */
   isModeActive(mode) {
@@ -236,24 +198,10 @@ export default class Player extends Base {
   }
 
   /**
-   * Check if a specific player tool is active
-   */
-  isToolActive(tool) {
-    return (this.activeTool === tool)
-  }
-
-  /**
    * Get active mode
    */
   getActiveMode() {
     return this.activeMode
-  }
-
-  /**
-   * Get active tool
-   */
-  getActiveTool() {
-    return this.activeTool
   }
 
   /**
@@ -325,29 +273,6 @@ export default class Player extends Base {
     this.triggerEvent('modeChange', {mode})
   }
 
-  /**
-   * Switch the active player tool
-   */
-  switchTool(tool) {
-
-    //Already active
-    if (this.isToolActive(tool)) {
-      this.debug(`${tool} tool is already active`)
-      return
-    }
-
-    //Validate
-    if (!this.isToolAvailable(tool)) {
-      this.debug(`${tool} tool is not available`)
-      return
-    }
-
-    //Set active tool
-    this.activeTool = tool
-    this.debug(`${tool} tool activated`)
-    this.triggerEvent('toolChange', {tool})
-  }
-
   /**************************************************************************
    * State handling
    ***/
@@ -384,13 +309,11 @@ export default class Player extends Base {
 
     //Get data
     const {
-      mode, tool,
-      restrictedStartNode, restrictedEndNode,
+      mode, restrictedStartNode, restrictedEndNode,
     } = this.playerState
 
     //Restore
     this.switchMode(mode)
-    this.switchTool(tool)
     this.restrictedStartNode = restrictedStartNode
     this.restrictedEndNode = restrictedEndNode
 

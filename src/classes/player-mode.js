@@ -52,14 +52,10 @@ export default class PlayerMode extends Base {
   activate() {
 
     //Get data
-    const {player, mode, availableTools, defaultTool} = this
+    const {player, mode} = this
 
     //Register event listeners
     this.registerEventListeners()
-
-    //Set available tools and active tool
-    player.setAvailableTools(availableTools)
-    player.switchTool(defaultTool)
 
     //Set player class
     player.addClass(`seki-player-mode-${mode}`)
@@ -123,7 +119,6 @@ export default class PlayerMode extends Base {
     //Register event listeners
     for (const key in eventListenersMap) {
       const fn = eventListenersMap[key]
-      this.debug(`registering event listener ${key}`)
       player.on(key, bound[fn])
     }
   }
@@ -179,7 +174,7 @@ export default class PlayerMode extends Base {
   /**
    * Show hover markup
    */
-  showHoverMarkup(x, y, type, data) {
+  showHoverMarkup(x, y, type, text) {
 
     //Get data
     const {board} = this
@@ -191,7 +186,7 @@ export default class PlayerMode extends Base {
 
     //Create markup
     const markup = MarkupFactory
-      .create(type, board, data)
+      .create(type, board, {text})
 
     //Add to board
     board.removeAll(boardLayerTypes.HOVER)

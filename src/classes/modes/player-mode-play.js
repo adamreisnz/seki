@@ -1,5 +1,5 @@
 import PlayerMode from '../player-mode.js'
-import {playerModes, playerTools} from '../../constants/player.js'
+import {playerModes} from '../../constants/player.js'
 
 /**
  * Play a game in this mode
@@ -8,15 +8,6 @@ export default class PlayerModePlay extends PlayerMode {
 
   //Mode type
   mode = playerModes.PLAY
-
-  //Available tools for this mode
-  availableTools = [
-    playerTools.NONE,
-    playerTools.MOVE,
-  ]
-
-  //Default tool
-  defaultTool = playerTools.MOVE
 
   /**
    * Constructor

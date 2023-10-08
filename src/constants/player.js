@@ -14,19 +14,11 @@ export const playerModes = {
 }
 
 /**
- * Player tools
+ * Editing tools
  */
-export const playerTools = {
-  NONE: 'none',
-  MOVE: 'move',
-  MARKUP: 'markup',
-  SETUP: 'setup',
-}
+export const editingTools = {
 
-/**
- * Markup tools
- */
-export const markupTools = {
+  //Markup
   TRIANGLE: markupTypes.TRIANGLE,
   CIRCLE: markupTypes.CIRCLE,
   SQUARE: markupTypes.SQUARE,
@@ -38,13 +30,8 @@ export const markupTools = {
   SAD: markupTypes.SAD,
   LETTER: 'letter',
   NUMBER: 'number',
-  CLEAR: 'clear',
-}
 
-/**
- * Setup tools
- */
-export const setupTools = {
+  //Setup
   BLACK: setupTypes.BLACK,
   WHITE: setupTypes.WHITE,
   CLEAR: setupTypes.CLEAR,
@@ -65,20 +52,20 @@ export const playerActions = {
   NEXT_VARIATION: 'nextVariation',
 
   //Setup tool selection
-  SELECT_BLACK_SETUP_TOOL: 'selectBlackSetupTool',
-  SELECT_WHITE_SETUP_TOOL: 'selectWhiteSetupTool',
-  SELECT_CLEAR_TOOL: 'selectClearTool',
+  USE_EDIT_TOOL_BLACK: 'useEditToolBlack',
+  USE_EDIT_TOOL_WHITE: 'useEditToolWhite',
+  USE_EDIT_TOOL_CLEAR: 'useEditToolClear',
 
   //Markup tool selection
-  SELECT_TRIANGLE_MARKUP_TOOL: 'selectTriangleMarkupTool',
-  SELECT_CIRCLE_MARKUP_TOOL: 'selectCircleMarkupTool',
-  SELECT_SQUARE_MARKUP_TOOL: 'selectSquareMarkupTool',
-  SELECT_DIAMOND_MARKUP_TOOL: 'selectDiamondMarkupTool',
-  SELECT_MARK_MARKUP_TOOL: 'selectMarkMarkupTool',
-  SELECT_HAPPY_MARKUP_TOOL: 'selectHappyMarkupTool',
-  SELECT_SAD_MARKUP_TOOL: 'selectSadMarkupTool',
-  SELECT_LETTER_MARKUP_TOOL: 'selectLetterMarkupTool',
-  SELECT_NUMBER_MARKUP_TOOL: 'selectNumberMarkupTool',
+  USE_EDIT_TOOL_TRIANGLE: 'useEditToolTriangle',
+  USE_EDIT_TOOL_CIRCLE: 'useEditToolCircle',
+  USE_EDIT_TOOL_SQUARE: 'useEditToolSquare',
+  USE_EDIT_TOOL_DIAMOND: 'useEditToolDiamond',
+  USE_EDIT_TOOL_MARK: 'useEditToolMark',
+  USE_EDIT_TOOL_HAPPY: 'useEditToolHappy',
+  USE_EDIT_TOOL_SAD: 'useEditToolSad',
+  USE_EDIT_TOOL_LETTER: 'useEditToolLetter',
+  USE_EDIT_TOOL_NUMBER: 'useEditToolNumber',
 }
 
 /**
@@ -152,9 +139,8 @@ export const defaultPlayerConfig = {
     playerModes.SOLVE,
   ],
 
-  //Initial mode and tool
+  //Initial mode
   initialMode: playerModes.REPLAY,
-  initialTool: playerTools.MOVE,
 
   //Key bindings
   keyBindings: {
@@ -169,20 +155,20 @@ export const defaultPlayerConfig = {
     [keyCodes.DOWN]: playerActions.NEXT_VARIATION,
 
     //Setup tool selection
-    [keyCodes.B]: playerActions.SELECT_BLACK_SETUP_TOOL,
-    [keyCodes.W]: playerActions.SELECT_WHITE_SETUP_TOOL,
-    [keyCodes.X]: playerActions.SELECT_CLEAR_TOOL,
+    [keyCodes.B]: playerActions.USE_EDIT_TOOL_BLACKOOL,
+    [keyCodes.W]: playerActions.USE_EDIT_TOOL_WHITE,
+    [keyCodes.X]: playerActions.USE_EDIT_TOOL_CLEAR,
 
     //Markup tool selection
-    [keyCodes.T]: playerActions.SELECT_TRIANGLE_MARKUP_TOOL,
-    [keyCodes.C]: playerActions.SELECT_CIRCLE_MARKUP_TOOL,
-    [keyCodes.S]: playerActions.SELECT_SQUARE_MARKUP_TOOL,
-    [keyCodes.D]: playerActions.SELECT_DIAMOND_MARKUP_TOOL,
-    [keyCodes.M]: playerActions.SELECT_MARK_MARKUP_TOOL,
-    [keyCodes.H]: playerActions.SELECT_HAPPY_MARKUP_TOOL,
-    [keyCodes.J]: playerActions.SELECT_SAD_MARKUP_TOOL,
-    [keyCodes.L]: playerActions.SELECT_LETTER_MARKUP_TOOL,
-    [keyCodes.N]: playerActions.SELECT_NUMBER_MARKUP_TOOL,
+    [keyCodes.T]: playerActions.USE_EDIT_TOOL_TRIANGLE,
+    [keyCodes.C]: playerActions.USE_EDIT_TOOL_CIRCLE,
+    [keyCodes.S]: playerActions.USE_EDIT_TOOL_SQUARE,
+    [keyCodes.D]: playerActions.USE_EDIT_TOOL_DIAMOND,
+    [keyCodes.M]: playerActions.USE_EDIT_TOOL_MARK,
+    [keyCodes.H]: playerActions.USE_EDIT_TOOL_HAPPY,
+    [keyCodes.J]: playerActions.USE_EDIT_TOOL_SAD,
+    [keyCodes.L]: playerActions.USE_EDIT_TOOL_LETTER,
+    [keyCodes.N]: playerActions.USE_EDIT_TOOL_NUMBER,
   },
 
   //Mouse bindings

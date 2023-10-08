@@ -38,46 +38,46 @@
 
     <div id="editTools">
       <h2>Markup</h2>
-      <button class="btnSwitchMarkupTool icon" tool="circle" class="icon">
+      <button class="btnUseEditingTool icon" tool="circle" class="icon">
         <span class="material-symbols-outlined">circle</span>
       </button>
-      <button class="btnSwitchMarkupTool icon" tool="triangle" class="icon">
+      <button class="btnUseEditingTool icon" tool="triangle" class="icon">
         <span class="material-symbols-outlined">change_history</span>
       </button>
-      <button class="btnSwitchMarkupTool icon" tool="square" class="icon">
+      <button class="btnUseEditingTool icon" tool="square" class="icon">
         <span class="material-symbols-outlined">square</span>
       </button>
-      <button class="btnSwitchMarkupTool icon" tool="diamond" class="icon">
+      <button class="btnUseEditingTool icon" tool="diamond" class="icon">
         <span class="material-symbols-outlined">diamond</span>
       </button>
-      <button class="btnSwitchMarkupTool icon" tool="mark" class="icon">
+      <button class="btnUseEditingTool icon" tool="mark" class="icon">
         <span class="material-symbols-outlined">close</span>
       </button>
       <br>
-      <button class="btnSwitchMarkupTool icon" tool="letter" class="icon">
+      <button class="btnUseEditingTool icon" tool="letter" class="icon">
         <span class="material-symbols-outlined">abc</span>
       </button>
-      <button class="btnSwitchMarkupTool icon" tool="number" class="icon">
+      <button class="btnUseEditingTool icon" tool="number" class="icon">
         <span class="material-symbols-outlined">123</span>
       </button>
-      <button class="btnSwitchMarkupTool icon" tool="happy" class="icon">
+      <button class="btnUseEditingTool icon" tool="happy" class="icon">
         <span class="material-symbols-outlined">sentiment_satisfied</span>
       </button>
-      <button class="btnSwitchMarkupTool icon" tool="sad" class="icon">
+      <button class="btnUseEditingTool icon" tool="sad" class="icon">
         <span class="material-symbols-outlined">sentiment_dissatisfied</span>
       </button>
-      <button class="btnSwitchMarkupTool icon" tool="clear" class="icon" title="Clear">
+      <button class="btnUseEditingTool icon" tool="clear" class="icon" title="Clear">
         <span class="material-symbols-outlined">ink_eraser</span>
       </button>
 
       <h2>Setup</h2>
-      <button class="btnSwitchSetupTool icon" tool="black" class="icon" title="Black stone">
+      <button class="btnUseEditingTool icon" tool="black" class="icon" title="Black stone">
         <span class="material-symbols-outlined">trip_origin</span>
       </button>
-      <button class="btnSwitchSetupTool icon" tool="white" class="icon" title="White stone">
+      <button class="btnUseEditingTool icon" tool="white" class="icon" title="White stone">
         <span class="material-symbols-outlined">fiber_manual_record</span>
       </button>
-      <button class="btnSwitchSetupTool icon" tool="clear" class="icon" title="Clear">
+      <button class="btnUseEditingTool icon" tool="clear" class="icon" title="Clear">
         <span class="material-symbols-outlined">ink_eraser</span>
       </button>
     </div>
@@ -144,7 +144,7 @@
 import Board from '../src/classes/board.js'
 import Player from '../src/classes/player.js'
 import {setDebug} from '../src/helpers/util.js'
-import {playerModes, playerTools, markupTools, setupTools} from '../src/constants/player.js'
+import {playerModes, editingTools} from '../src/constants/player.js'
 import {onClick, findByQuery, toggleHidden} from './demo.js'
 
 //Test data
@@ -219,22 +219,10 @@ onClick('.btnSwitchMode', btn => {
   player.switchMode(mode)
 })
 
-//Tool switching
-onClick('.btnSwitchTool', btn => {
+//Editing tool selection
+onClick('.btnUseEditingTool', btn => {
   const tool = btn.getAttribute('tool')
-  player.switchTool(tool)
-})
-
-//Markup tool switching
-onClick('.btnSwitchMarkupTool', btn => {
-  const tool = btn.getAttribute('tool')
-  player.switchMarkupTool(tool)
-})
-
-//Setup tool switching
-onClick('.btnSwitchSetupTool', btn => {
-  const tool = btn.getAttribute('tool')
-  player.switchSetupTool(tool)
+  player.useEditingTool(tool)
 })
 
 //Handler for mode changes

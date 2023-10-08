@@ -5,9 +5,7 @@ import {stoneColors} from '../../constants/stone.js'
 import {
   playerActions,
   playerModes,
-  playerTools,
-  markupTools,
-  setupTools,
+  editingTools,
 } from '../../constants/player.js'
 
 /**
@@ -18,19 +16,8 @@ export default class PlayerModeEdit extends PlayerMode {
   //Mode type
   mode = playerModes.EDIT
 
-  //Available tools in this mode
-  availableTools = [
-    playerTools.NONE,
-    playerTools.SETUP,
-    playerTools.MARKUP,
-  ]
-
-  //Set default tool
-  defaultTool = playerTools.SETUP
-
-  //Default markup and setup tools
-  markupTool = markupTools.TRIANGLE
-  setupTool = setupTools.BLACK
+  //Set default editing tool
+  tool = editingTools.TRIANGLE
 
   //Used markup labels
   usedMarkupLabels = []
@@ -67,8 +54,7 @@ export default class PlayerModeEdit extends PlayerMode {
     const {player, mode} = this
 
     //Extend player
-    player.extend('switchMarkupTool', mode)
-    player.extend('switchSetupTool', mode)
+    player.extend('useEditingTool', mode)
   }
 
   /**
@@ -108,7 +94,7 @@ export default class PlayerModeEdit extends PlayerMode {
   onClick(event) {
 
     //Get data
-    const {player, board} = this
+    const {board} = this
     const {x, y} = event.detail
 
     //Debug
@@ -120,18 +106,9 @@ export default class PlayerModeEdit extends PlayerMode {
       return
     }
 
-    //Clear hover layer
+    //Clear hover layer and edit spot
     this.clearHover()
-
-    //Markup tool active
-    if (player.isToolActive(playerTools.MARKUP)) {
-      this.setMarkup(x, y)
-    }
-
-    //Markup tool active
-    else if (player.isToolActive(playerTools.SETUP)) {
-      this.setSetup(x, y)
-    }
+    this.edit(x, y)
   }
 
   /**
@@ -178,7 +155,6 @@ export default class PlayerModeEdit extends PlayerMode {
     this.debug(`🎯 action ${action}`)
 
     //Get data
-    const {player} = this
     const {nativeEvent} = event.detail
 
     //Prevent default
@@ -186,128 +162,115 @@ export default class PlayerModeEdit extends PlayerMode {
 
     //Determine action
     switch (action) {
-
-      //Setup tool actions
-      case playerActions.SELECT_BLACK_SETUP_TOOL:
-        this.switchSetupTool(setupTools.BLACK)
+      case playerActions.USE_EDIT_TOOL_BLACK:
+        this.useEditingTool(editingTools.BLACK)
         break
-      case playerActions.SELECT_WHITE_SETUP_TOOL:
-        this.switchSetupTool(setupTools.WHITE)
+      case playerActions.USE_EDIT_TOOL_WHITE:
+        this.useEditingTool(editingTools.WHITE)
         break
-
-      //Shared between setup and markup tools
-      case playerActions.SELECT_CLEAR_TOOL:
-        if (player.isToolActive(playerTools.SETUP)) {
-          this.switchSetupTool(setupTools.CLEAR)
-        }
-        else if (player.isToolActive(playerTools.MARKUP)) {
-          this.switchMarkupTool(markupTools.CLEAR)
-        }
+      case playerActions.USE_EDIT_TOOL_CLEAR:
+        this.useEditingTool(editingTools.CLEAR)
         break
-
-      //Markup tool actions
-      case playerActions.SELECT_TRIANGLE_MARKUP_TOOL:
-        this.switchMarkupTool(markupTools.TRIANGLE)
+      case playerActions.USE_EDIT_TOOL_TRIANGLE:
+        this.useEditingTool(editingTools.TRIANGLE)
         break
-      case playerActions.SELECT_CIRCLE_MARKUP_TOOL:
-        this.switchMarkupTool(markupTools.CIRCLE)
+      case playerActions.USE_EDIT_TOOL_CIRCLE:
+        this.useEditingTool(editingTools.CIRCLE)
         break
-      case playerActions.SELECT_SQUARE_MARKUP_TOOL:
-        this.switchMarkupTool(markupTools.SQUARE)
+      case playerActions.USE_EDIT_TOOL_SQUARE:
+        this.useEditingTool(editingTools.SQUARE)
         break
-      case playerActions.SELECT_DIAMOND_MARKUP_TOOL:
-        this.switchMarkupTool(markupTools.DIAMOND)
+      case playerActions.USE_EDIT_TOOL_DIAMOND:
+        this.useEditingTool(editingTools.DIAMOND)
         break
-      case playerActions.SELECT_MARK_MARKUP_TOOL:
-        this.switchMarkupTool(markupTools.MARK)
+      case playerActions.USE_EDIT_TOOL_MARK:
+        this.useEditingTool(editingTools.MARK)
         break
-      case playerActions.SELECT_HAPPY_MARKUP_TOOL:
-        this.switchMarkupTool(markupTools.HAPPY)
+      case playerActions.USE_EDIT_TOOL_HAPPY:
+        this.useEditingTool(editingTools.HAPPY)
         break
-      case playerActions.SELECT_SAD_MARKUP_TOOL:
-        this.switchMarkupTool(markupTools.SAD)
+      case playerActions.USE_EDIT_TOOL_SAD:
+        this.useEditingTool(editingTools.SAD)
         break
-      case playerActions.SELECT_LETTER_MARKUP_TOOL:
-        this.switchMarkupTool(markupTools.LETTER)
+      case playerActions.USE_EDIT_TOOL_LETTER:
+        this.useEditingTool(editingTools.LETTER)
         break
-      case playerActions.SELECT_NUMBER_MARKUP_TOOL:
-        this.switchMarkupTool(markupTools.NUMBER)
+      case playerActions.USE_EDIT_TOOL_NUMBER:
+        this.useEditingTool(editingTools.NUMBER)
         break
     }
   }
 
   /**
-   * Set markup
+   * Edit a position
    */
-  setMarkup(x, y) {
+  edit(x, y) {
 
     //Get data
-    const {player, game, markupTool, usedMarkupLabels} = this
-    const type = this.getTypeForMarkupTool(markupTool)
+    const {player, game, tool} = this
 
-    //Debug
-    this.debug(`setting markup ${markupTool} at (${x},${y})`)
+    //Clear tool
+    if (tool === editingTools.CLEAR) {
 
-    //Already markup in place? Remove it first
-    if (game.hasMarkup(x, y)) {
-
-      //Check what markup there is
-      const markup = game.getMarkup(x, y)
-
-      //Label? Also remove from our labels list
-      if (markup.type === markupTypes.LABEL && markup.text) {
-        const i = usedMarkupLabels.indexOf(markup.text)
-        if (i !== -1) {
-          usedMarkupLabels.splice(i, 1)
-        }
-      }
-
-      //Remove markup
-      game.removeMarkup(x, y)
-
-      //Was existing markup of the same type?
-      if (markup.type === type) {
+      //Erase markup first
+      if (game.hasMarkup(x, y)) {
+        this.removeMarkup(x, y)
         player.processPosition()
         return
       }
-    }
 
-    //Not clearing
-    if (markupTool !== markupTools.CLEAR) {
-      const text = this.getText()
-      game.addMarkup(x, y, {type, text})
-    }
+      //Erase stone otherwise
+      else if (game.hasStone(x, y)) {
+        this.removeStone(x, y)
+        player.processPosition()
+        return
+      }
 
-    //Process position
-    player.processPosition()
-  }
-
-  /**
-   * Set setup
-   */
-  setSetup(x, y) {
-
-    //Get data
-    const {player, game, setupTool} = this
-    const color = this.getColorForSetupTool(setupTool)
-
-    //Debug
-    this.debug(`setup ${setupTool} at (${x},${y})`)
-
-    //Stone already in place of this same color
-    if (color && game.hasStone(x, y, color)) {
-      this.debug(`already have ${color} stone at (${x},${y})`)
+      //Nothing here
       return
     }
 
-    //Remove existing stone
-    if (game.hasStone(x, y)) {
-      game.removeStone(x, y)
+    //Get markup type and color
+    const type = this.getEditingMarkupType()
+    const color = this.getEditingColor()
+
+    //Set markup type
+    if (type) {
+
+      //Debug
+      this.debug(`setting 🔵 ${type} markup at (${x},${y})`)
+
+      //Already markup in place? Remove it first
+      //If it is the same type we're adding, we're done
+      if (game.hasMarkup(x, y)) {
+        const removed = this.removeMarkup(x, y)
+        if (removed.type === type) {
+          player.processPosition()
+          return
+        }
+      }
+
+      //Add markup
+      this.addMarkup(x, y, type)
     }
 
-    //Add stone unless clear tool was used
-    if (setupTool !== setupTools.CLEAR) {
-      game.addStone(x, y, color)
+    //Set stone
+    else if (color) {
+
+      //Debug
+      this.debug(
+        `setting ${color === stoneColors.WHITE ? '⚪️' : '⚫️'} stone at (${x},${y})`,
+      )
+
+      //Stone already in place of this same color
+      if (game.hasStone(x, y, color)) {
+        this.debug(`already have ${color} stone at (${x},${y})`)
+        return
+      }
+
+      //Remove existing stone and add new styone
+      this.removeStone(x, y)
+      this.addStone(x, y, color)
     }
 
     //Process position
@@ -315,22 +278,63 @@ export default class PlayerModeEdit extends PlayerMode {
   }
 
   /**
-   * Switch markup tool to use
+   * Helper to remove markup
    */
-  switchMarkupTool(markupTool) {
-    this.player.switchTool(playerTools.MARKUP)
-    this.markupTool = markupTool
-    this.debug(`${markupTool} markup tool activated`)
-    this.showHoverMarkup()
+  removeMarkup(x, y) {
+
+    //Get data
+    const {game} = this
+    if (!game.hasMarkup(x, y)) {
+      return
+    }
+
+    //Check what markup there is
+    const markup = game.getMarkup(x, y)
+    const {text} = markup
+
+    //Remove used markup label
+    this.removeUsedMarkupLabel(text)
+
+    //Remove markup and return removed markup
+    game.removeMarkup(x, y)
+    return markup
   }
 
   /**
-   * Switch setup tool to use
+   * Helper to remove a stone
    */
-  switchSetupTool(setupTool) {
-    this.player.switchTool(playerTools.SETUP)
-    this.setupTool = setupTool
-    this.debug(`${setupTool} setup tool activated`)
+  removeStone(x, y) {
+    const {game} = this
+    if (game.hasStone(x, y)) {
+      game.removeStone(x, y)
+    }
+  }
+
+  /**
+   * Helper to add markup
+   */
+  addMarkup(x, y, type) {
+    const {game} = this
+    const text = this.getText()
+    game.addMarkup(x, y, {type, text})
+    this.addUsedMarkupLabel(text)
+  }
+
+  /**
+   * Helper to add a stone
+   */
+  addStone(x, y, color) {
+    const {game} = this
+    game.addStone(x, y, color)
+  }
+
+  /**
+   * Switch editing tool to use
+   */
+  useEditingTool(tool) {
+    this.tool = tool
+    this.debug(`🪛 ${tool} tool activated`)
+    this.showHoverMarkup()
     this.showHoverStone()
   }
 
@@ -340,14 +344,14 @@ export default class PlayerModeEdit extends PlayerMode {
   showHoverStone() {
 
     //Check if anything to do
-    const {player, setupTool, currentHoverGrid} = this
-    if (!currentHoverGrid || !player.isToolActive(playerTools.SETUP)) {
+    const {currentHoverGrid} = this
+    if (!currentHoverGrid) {
       return
     }
 
     //Get data
     const {x, y} = currentHoverGrid
-    const color = this.getColorForSetupTool(setupTool)
+    const color = this.getEditingColor()
     if (!color) {
       return
     }
@@ -362,20 +366,21 @@ export default class PlayerModeEdit extends PlayerMode {
   showHoverMarkup() {
 
     //Check if anything to do
-    const {player, markupTool, currentHoverGrid} = this
-    if (!currentHoverGrid || !player.isToolActive(playerTools.MARKUP)) {
+    const {currentHoverGrid} = this
+    if (!currentHoverGrid) {
       return
     }
 
     //Get details
     const {x, y} = currentHoverGrid
-    const type = this.getTypeForMarkupTool(markupTool)
+    const type = this.getEditingMarkupType()
+    const text = this.getText()
     if (!type) {
       return
     }
 
     //Parent method
-    super.showHoverMarkup(x, y, type)
+    super.showHoverMarkup(x, y, type, text)
   }
 
   /**************************************************************************
@@ -386,11 +391,11 @@ export default class PlayerModeEdit extends PlayerMode {
    * Get text for markup
    */
   getText() {
-    const {markupTool} = this
-    if (markupTool === markupTools.LETTER) {
+    const {tool} = this
+    if (tool === editingTools.LETTER) {
       return this.getNextLetter()
     }
-    else if (markupTool === markupTools.NUMBER) {
+    else if (tool === editingTools.NUMBER) {
       return this.getNextNumber()
     }
   }
@@ -430,9 +435,6 @@ export default class PlayerModeEdit extends PlayerMode {
       i++
     }
 
-    //Flag as used
-    usedMarkupLabels.push(text)
-
     //Return text
     return text
   }
@@ -455,11 +457,31 @@ export default class PlayerModeEdit extends PlayerMode {
       text = String(num)
     }
 
-    //Flag as used
-    usedMarkupLabels.push(text)
-
     //Return
     return text
+  }
+
+  /**
+   * Add used markup label
+   */
+  addUsedMarkupLabel(text) {
+    if (text) {
+      this.usedMarkupLabels.push(text)
+    }
+  }
+
+  /**
+   * Remove used markup label
+   */
+  removeUsedMarkupLabel(text) {
+    if (!text) {
+      return
+    }
+    const {usedMarkupLabels} = this
+    const i = usedMarkupLabels.indexOf(text)
+    if (i !== -1) {
+      usedMarkupLabels.splice(i, 1)
+    }
   }
 
   /**
@@ -490,29 +512,31 @@ export default class PlayerModeEdit extends PlayerMode {
   }
 
   /**
-   * Get stone color for a given setup type
+   * Get stone color for a given editing tool
    */
-  getColorForSetupTool(tool) {
-    if (tool === setupTools.BLACK) {
+  getEditingColor() {
+    const {tool} = this
+    if (tool === editingTools.BLACK) {
       return stoneColors.BLACK
     }
-    else if (tool === setupTools.WHITE) {
+    else if (tool === editingTools.WHITE) {
       return stoneColors.WHITE
     }
   }
 
   /**
-   * Get markup type for a give nmarkup tool
+   * Get markup type for a given editing tool
    */
-  getTypeForMarkupTool(tool) {
+  getEditingMarkupType() {
+    const {tool} = this
     const label = [
-      markupTools.LETTER,
-      markupTools.NUMBER,
+      editingTools.LETTER,
+      editingTools.NUMBER,
     ]
     if (label.includes(tool)) {
       return markupTypes.LABEL
     }
-    else if (tool !== markupTools.CLEAR) {
+    else if (Object.values(markupTypes).includes(tool)) {
       return tool
     }
   }

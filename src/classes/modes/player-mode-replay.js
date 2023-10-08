@@ -5,7 +5,6 @@ import {markupTypes} from '../../constants/markup.js'
 import {
   mouseEvents,
   playerModes,
-  playerTools,
   playerActions,
 } from '../../constants/player.js'
 
@@ -16,15 +15,6 @@ export default class PlayerModeReplay extends PlayerMode {
 
   //Mode type
   mode = playerModes.REPLAY
-
-  //Available tools for this mode
-  availableTools = [
-    playerTools.NONE,
-    playerTools.MOVE,
-  ]
-
-  //Default tool
-  defaultTool = playerTools.MOVE
 
   //Auto play settings
   isAutoPlaying = false
@@ -250,11 +240,6 @@ export default class PlayerModeReplay extends PlayerMode {
     //Get data
     const {player, isAutoPlaying} = this
 
-    //Move tool not active? Switch first
-    if (!player.isToolActive(playerTools.MOVE)) {
-      player.switchTool(playerTools.MOVE)
-    }
-
     //Stop auto play
     if (isAutoPlaying) {
       this.stopAutoPlay()
@@ -276,11 +261,6 @@ export default class PlayerModeReplay extends PlayerMode {
 
     //Get data
     const {player, isAutoPlaying} = this
-
-    //Move tool not active? Switch first
-    if (!player.isToolActive(playerTools.MOVE)) {
-      player.switchTool(playerTools.MOVE)
-    }
 
     //Stop auto play
     if (isAutoPlaying) {
