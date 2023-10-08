@@ -26,10 +26,7 @@ export default {
     //Slate and shell stones
     slateShell: {
       color(stoneColor) {
-        if (stoneColor === stoneColors.BLACK) {
-          return '#111'
-        }
-        return '#cfcfca'
+        return (stoneColor === stoneColors.BLACK) ? '#111' : '#cfcfca'
       },
       shellStroke: 'rgba(128,128,150,0.15)',
       shellTypes: [
@@ -71,10 +68,7 @@ export default {
     //Glass stones
     glass: {
       color(stoneColor) {
-        if (stoneColor === stoneColors.BLACK) {
-          return '#111'
-        }
-        return '#cfcfca'
+        return (stoneColor === stoneColors.BLACK) ? '#111' : '#cfcfca'
       },
     },
 
@@ -84,10 +78,7 @@ export default {
         return Math.floor(cellSize / 2)
       },
       color(stoneColor) {
-        if (stoneColor === stoneColors.BLACK) {
-          return '#000'
-        }
-        return '#fff'
+        return (stoneColor === stoneColors.BLACK) ? '#000' : '#fff'
       },
       shadow: false,
       lineWidth: 1,
@@ -122,22 +113,17 @@ export default {
     captures: {
       shadow: false,
       alpha(stoneColor) {
-        if (stoneColor === stoneColors.BLACK) {
-          return 0.3
-        }
-        return 0.4
+        return (stoneColor === stoneColors.BLACK) ? 0.3 : 0.4
       },
     },
 
     //Hover stones (modifier style)
     hover: {
-      shadow: false,
-      alpha(stoneColor) {
-        if (stoneColor === stoneColors.BLACK) {
-          return 0.3
-        }
-        return 0.4
-      },
+      shadow: true,
+      alpha: 1,
+      // alpha(stoneColor) {
+      //   return (stoneColor === stoneColors.BLACK) ? 0.5 : 0.6
+      // },
     },
   },
 
