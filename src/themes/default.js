@@ -198,7 +198,9 @@ export default {
       type: markupTypes.LABEL,
       scale: 0.9,
       lineDash(stoneColor, cellSize) {
-        return '5,8' //TODO: bigger depending on cell size
+        const line = Math.max(1, Math.floor(cellSize / 16))
+        const dash = Math.max(1, Math.floor(cellSize / 8))
+        return [line, dash]
       },
       text(i) {
         return (i + 1) //Numbers

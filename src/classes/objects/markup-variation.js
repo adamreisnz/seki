@@ -54,7 +54,7 @@ export default class MarkupVariation extends MarkupCircle {
   getLineDash() {
     const {lineDash} = this
     if (Array.isArray(lineDash)) {
-      return
+      return lineDash
     }
     return lineDash ? lineDash.split(',') : null
   }
