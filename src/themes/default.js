@@ -197,9 +197,12 @@ export default {
     variation: {
       type: markupTypes.LABEL,
       scale: 0.9,
-      lineDash: '5,8',
+      lineDash(stoneColor, cellSize) {
+        return '5,8' //TODO: bigger depending on cell size
+      },
       text(i) {
-        return String.fromCharCode(65 + i)
+        return (i + 1) //Numbers
+        // return String.fromCharCode(65 + i) //Letters
       },
       color(stoneColor, isSelected) {
         const opacity = isSelected ? 1 : 0.75
