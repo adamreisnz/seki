@@ -1,5 +1,7 @@
 import {markupTypes} from './markup.js'
 import {setupTypes} from './setup.js'
+import audioMove from '../audio/move.wav'
+import audioCapture from '../audio/capture.wav'
 
 /**
  * Player modes
@@ -177,6 +179,12 @@ export const defaultPlayerConfig = {
     [mouseEvents.WHEEL_DOWN]: playerActions.NEXT_POSITION,
     [mouseEvents.WHEEL_LEFT]: playerActions.PREV_VARIATION,
     [mouseEvents.WHEEL_RIGHT]: playerActions.NEXT_VARIATION,
+  },
+
+  //Audio
+  audio: {
+    move: audioMove,
+    capture: audioCapture,
   },
 
   //Move and variation flags

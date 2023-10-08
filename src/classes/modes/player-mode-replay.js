@@ -510,6 +510,7 @@ export default class PlayerModeReplay extends PlayerMode {
   playMove(x, y) {
     const {player} = this
     player.play(x, y)
+    player.playSound('move')
   }
 
   /**

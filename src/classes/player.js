@@ -28,6 +28,7 @@ export default class Player extends Base {
   //Props
   board
   modeHandlers = {}
+  audioElements = {}
   activeMode
 
   //Mouse coordinates helper var
@@ -730,6 +731,9 @@ export default class Player extends Base {
     this.linkElement(element)
     this.addClass('seki-player')
 
+    //Create audio elements
+    this.createAudioElements()
+
     //Setup listeners
     this.setupDocumentListeners()
     this.setupElementListeners()
@@ -767,6 +771,37 @@ export default class Player extends Base {
    */
   linkElement(element) {
     this.element = element
+  }
+
+  /**
+   * Create audio elements
+   */
+  createAudioElements() {
+
+    //Get audio config
+    const audio = this.getConfig('audio')
+    const {element} = this
+
+    //Create audio elements
+    for (const key of Object.keys(audio)) {
+      if (!audio[key]) {
+        continue
+      }
+      const audioElement = document.createElement('audio')
+      audioElement.src = audio[key]
+      element.appendChild(audioElement)
+      this.audioElements[key] = audioElement
+    }
+  }
+
+  /**
+   * Play sound
+   */
+  playSound(type) {
+    const audioElement = this.audioElements[type]
+    if (audioElement) {
+      audioElement.play()
+    }
   }
 
   /**
