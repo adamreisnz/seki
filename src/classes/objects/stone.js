@@ -22,8 +22,8 @@ export default class Stone extends GridObject {
   //Props that can be set by theme
   themeProps = [
     'color',
-    'alpha',
     'scale',
+    'alpha',
     'shadow',
   ]
 
@@ -34,6 +34,21 @@ export default class Stone extends GridObject {
     super(board)
     this.stoneColor = stoneColor
     this.modifierStyle = modifierStyle
+  }
+
+  /**
+   * Get theme paths to check
+   */
+  getThemePaths(prop) {
+    const {style, modifierStyle} = this
+    const paths = [
+      `stone.${style}.${prop}`,
+      `stone.base.${prop}`,
+    ]
+    if (modifierStyle) {
+      paths.unshift(`stone.${modifierStyle}.${prop}`)
+    }
+    return paths
   }
 
   /**
@@ -59,41 +74,5 @@ export default class Stone extends GridObject {
 
     //Return cellsize and display color for child handlers
     return [displayColor, cellSize]
-  }
-
-  /**
-   * Load a single theme prop
-   */
-  loadThemeProp(prop, ...args) {
-    const value = this.getThemeProp(prop, ...args)
-    if (typeof value !== 'undefined') {
-      this[prop] = value
-    }
-  }
-
-  /**
-   * Get single theme property
-   */
-  getThemeProp(prop, ...args) {
-
-    //Get data
-    const {theme, style, modifierStyle} = this
-
-    //Modifier style present, try to use that
-    if (modifierStyle && theme.has(`stone.${modifierStyle}.${prop}`)) {
-      return theme.get(`stone.${modifierStyle}.${prop}`, ...args)
-    }
-
-    //Return main theme prop
-    return theme.get(`stone.${style}.${prop}`, ...args)
-  }
-
-  /**
-   * Get stone radius, with scaling applied
-   */
-  getRadius(color, cellSize) {
-    const {scale} = this
-    const radius = this.getThemeProp('radius', color, cellSize)
-    return Math.round(radius * (scale || 1))
   }
 }

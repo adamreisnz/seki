@@ -15,18 +15,22 @@ export default {
   //Stones
   stone: {
 
-    //Slate and shell stones
-    slateShell: {
+    //Base
+    base: {
       radius(stoneColor, cellSize) {
         return Math.floor(cellSize / 2) * 0.96
       },
+      shadow: true,
+    },
+
+    //Slate and shell stones
+    slateShell: {
       color(stoneColor) {
         if (stoneColor === stoneColors.BLACK) {
           return '#111'
         }
         return '#cfcfca'
       },
-      shadow: true,
       shellStroke: 'rgba(128,128,150,0.15)',
       shellTypes: [
         {
@@ -66,16 +70,12 @@ export default {
 
     //Glass stones
     glass: {
-      radius(stoneColor, cellSize) {
-        return Math.floor(cellSize / 2) * 0.96
-      },
       color(stoneColor) {
         if (stoneColor === stoneColors.BLACK) {
           return '#111'
         }
         return '#cfcfca'
       },
-      shadow: true,
     },
 
     //Mono stones
@@ -97,7 +97,6 @@ export default {
     //Stone shadows
     shadow: {
       color: 'rgba(40,30,20,0.6)',
-      scale: 1,
       size(cellSize) {
         //NOTE: Globally set on layer, hence no stone color here
         return Math.floor(cellSize / 100)
@@ -117,13 +116,11 @@ export default {
     points: {
       shadow: false,
       scale: 0.5,
-      alpha: 1,
     },
 
     //Captures (modifier style)
     captures: {
       shadow: false,
-      scale: 1,
       alpha(stoneColor) {
         if (stoneColor === stoneColors.BLACK) {
           return 0.3
@@ -135,7 +132,6 @@ export default {
     //Hover stones (modifier style)
     hover: {
       shadow: false,
-      scale: 1,
       alpha(stoneColor) {
         if (stoneColor === stoneColors.BLACK) {
           return 0.3
@@ -148,17 +144,24 @@ export default {
   //Markup
   markup: {
 
-    //Standard color
-    color(stoneColor) {
-      if (stoneColor === stoneColors.BLACK) {
-        return 'rgba(255,255,255,0.95)'
-      }
-      return 'rgba(0,0,0,0.95)'
-    },
-
-    //Line width
-    lineWidth(cellSize) {
-      return Math.max(1, Math.floor(cellSize / 16))
+    //Base
+    base: {
+      radius(stoneColor, cellSize) {
+        if (!cellSize) {
+          throw new Error('No cell size!')
+        }
+        return Math.floor(cellSize / 2)
+      },
+      color(stoneColor) {
+        if (stoneColor === stoneColors.BLACK) {
+          return 'rgba(255,255,255,0.95)'
+        }
+        return 'rgba(0,0,0,0.95)'
+      },
+      lineWidth(stoneColor, cellSize) {
+        return Math.max(1, Math.floor(cellSize / 16))
+      },
+      font: 'Helvetica',
     },
 
     //Triangle
@@ -202,11 +205,6 @@ export default {
     sad: {
       lineCap: 'round',
       scale: 0.85,
-    },
-
-    //Label
-    label: {
-      font: 'Helvetica',
     },
 
     //Variation markers

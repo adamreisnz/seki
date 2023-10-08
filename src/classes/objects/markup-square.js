@@ -14,27 +14,22 @@ export default class MarkupSquare extends Markup {
    */
   draw(context, x, y) {
 
+    //Load properties
+    this.loadProperties(x, y)
+
     //Parent draw
     super.draw(context, x, y)
 
     //Get data
-    const {board, theme} = this
-
-    //Get coordinates and stone radius
-    const absX = board.getAbsX(x)
-    const absY = board.getAbsY(y)
-    const radius = this.getRadius()
-    const color = this.getColor(x, y)
-
-    //Get theme variables
-    const lineWidth = this.getLineWidth()
-    const canvasTranslate = theme.canvasTranslate(lineWidth)
+    const {radius, color, lineWidth} = this
+    const absX = this.getAbsX(x)
+    const absY = this.getAbsY(y)
 
     //Determine delta
     const d = Math.round(radius * Math.cos(Math.PI / 4))
 
     //Prepare context
-    this.prepareContext(context, canvasTranslate)
+    this.prepareContext(context)
 
     //Configure context
     context.strokeStyle = color
@@ -51,6 +46,6 @@ export default class MarkupSquare extends Markup {
     context.stroke()
 
     //Restore context
-    this.restoreContext(context, canvasTranslate)
+    this.restoreContext(context)
   }
 }

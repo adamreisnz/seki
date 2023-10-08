@@ -13,7 +13,7 @@ export default class MarkupSelect extends Markup {
    * Get grid erase radius
    */
   getGridEraseRadius() {
-    return this.getRadius() * 1.25
+    return this.radius * 1.25
   }
 
   /**
@@ -21,24 +21,19 @@ export default class MarkupSelect extends Markup {
    */
   draw(context, x, y) {
 
+    //Load properties
+    this.loadProperties(x, y)
+
     //Parent draw
     super.draw(context, x, y)
 
     //Get data
-    const {board, theme} = this
-
-    //Get coordinates and stone radius
-    const absX = board.getAbsX(x)
-    const absY = board.getAbsY(y)
-    const radius = this.getRadius()
-    const color = this.getColor(x, y)
-
-    //Get theme variables
-    const lineWidth = this.getLineWidth()
-    const canvasTranslate = theme.canvasTranslate(lineWidth)
+    const {radius, color, lineWidth} = this
+    const absX = this.getAbsX(x)
+    const absY = this.getAbsY(y)
 
     //Prepare context
-    this.prepareContext(context, canvasTranslate)
+    this.prepareContext(context)
 
     //Configure context
     context.fillStyle = color
@@ -50,6 +45,6 @@ export default class MarkupSelect extends Markup {
     context.fill()
 
     //Restore context
-    this.restoreContext(context, canvasTranslate)
+    this.restoreContext(context)
   }
 }

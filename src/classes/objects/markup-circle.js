@@ -13,7 +13,7 @@ export default class MarkupCircle extends Markup {
    * Get grid erase radius
    */
   getGridEraseRadius() {
-    return this.getRadius() * 1.4
+    return this.radius * 1.4
   }
 
   /**
@@ -21,24 +21,19 @@ export default class MarkupCircle extends Markup {
    */
   draw(context, x, y) {
 
+    //Load properties
+    this.loadProperties(x, y)
+
     //Parent draw
     super.draw(context, x, y)
 
     //Get data
-    const {board, theme} = this
-
-    //Get coordinates and stone radius
-    const absX = board.getAbsX(x)
-    const absY = board.getAbsY(y)
-    const radius = this.getRadius()
-    const color = this.getColor(x, y)
-
-    //Get theme variables
-    const lineWidth = this.getLineWidth()
-    const canvasTranslate = theme.canvasTranslate(lineWidth)
+    const {radius, color, lineWidth} = this
+    const absX = this.getAbsX(x)
+    const absY = this.getAbsY(y)
 
     //Prepare context
-    this.prepareContext(context, canvasTranslate)
+    this.prepareContext(context)
 
     //Configure context
     context.strokeStyle = color
@@ -53,6 +48,6 @@ export default class MarkupCircle extends Markup {
     context.setLineDash([])
 
     //Restore context
-    this.restoreContext(context, canvasTranslate)
+    this.restoreContext(context)
   }
 }

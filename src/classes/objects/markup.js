@@ -1,123 +1,69 @@
 import GridObject from '../grid-object.js'
 import {boardLayerTypes} from '../../constants/board.js'
-import {swapColor} from '../../helpers/stone.js'
 
 /**
  * This class is used for drawing markup on the board
  */
 export default class Markup extends GridObject {
 
-  //NOTE: All possible properties are declared here, even if they don't apply
-  //to every child class. This is because of current implementation of public
-  //class fields, which sees the child class overwrite any properties that are
-  //set via setData() in the parent constructor.
-  //SEE: https://stackoverflow.com/questions/64357900/javascript-why-does-declaring-a-property-in-a-subclass-overwrite-the-same-prope
+  //Type
+  type = null
 
-  //Properties
-  type
+  //Theme prop default values
   color
-  lineWidth
-  lineCap
-  lineDash
-  scale
-  font
-  text
+  scale = 1
   alpha = 1
+  lineWidth = 1
 
-  //Variation markup
-  index = 0
-  showText
-  isSelected
+  //Props that can be set by theme
+  themeProps = [
+    'color',
+    'scale',
+    'alpha',
+    'lineWidth',
+  ]
 
   /**
-   * Constructor
+   * Get theme paths to check
    */
-  constructor(board, data) {
-
-    //Parent constructor
-    super(board)
-
-    //Set data
-    this.setData(data)
+  getThemePaths(prop) {
+    const {type} = this
+    return [
+      `markup.${type}.${prop}`,
+      `markup.base.${prop}`,
+    ]
   }
 
   /**
-   * Get markup radius, with appropriate scaling applied
+   * Load properties
    */
-  getRadius() {
+  loadProperties(x, y) {
 
     //Get data
-    const {board, theme, type} = this
-    const cellSize = board.getCellSize()
-    const radius = theme.get('stone.radius', cellSize)
-    const scale = this.scale || theme.get(`markup.${type}.scale`) || 1
+    const {board} = this
 
-    //No scaling factor
-    if (scale === 1) {
-      return radius
+    //Obtain cell size and stone color (which could be swapped)
+    const cellSize = board.getCellSize()
+    const stoneColor = this.getStoneColor(x, y)
+
+    //Load basic theme props
+    for (const prop of this.themeProps) {
+      this.loadThemeProp(prop, stoneColor, cellSize)
     }
 
-    //Scale
-    return Math.round(radius * scale)
+    //Now load radius and remember stone color
+    this.radius = this.getRadius(stoneColor, cellSize)
+    this.stoneColor = stoneColor
+
+    //Return cellsize and stone color for child handlers
+    return [stoneColor, cellSize]
   }
 
   /**
    * Get grid erase radius
    */
   getGridEraseRadius() {
-    return this.getRadius()
-  }
-
-  /**
-   * Get markup line width
-   */
-  getLineWidth() {
-    const {board, theme, lineWidth} = this
-    const cellSize = board.getCellSize()
-    return lineWidth || theme.get('markup.lineWidth', cellSize) || 1
-  }
-
-  /**
-   * Get markup line cap
-   */
-  getLineCap() {
-    const {theme, type, lineCap} = this
-    return lineCap || theme.get(`markup.${type}.lineCap`)
-  }
-
-  /**
-   * Get markup line dash
-   */
-  getLineDash() {
-
-    //Get data
-    const {theme, type, lineDash: preset} = this
-    const lineDash = preset || theme.get(`markup.${type}.lineDash`)
-
-    //Must be an array
-    if (Array.isArray(lineDash)) {
-      return lineDash
-    }
-
-    //Comma separated
-    return lineDash ? lineDash.split(',') : null
-  }
-
-  /**
-   * Get font
-   */
-  getFont() {
-    const {theme, font} = this
-    return font || theme.get('markup.label.font')
-  }
-
-  /**
-   * Get markup color
-   */
-  getColor(x, y) {
-    const {theme, color} = this
-    const stoneColor = this.getStoneColor(x, y)
-    return color || theme.get('markup.color', stoneColor)
+    return this.radius
   }
 
   /**
@@ -125,19 +71,21 @@ export default class Markup extends GridObject {
    */
   getStoneColor(x, y) {
 
-    //Get board
-    const {board} = this
+    //Get data
+    const {board, stoneColor} = this
 
-    //Check if there's a stone
-    const stone = board.get(boardLayerTypes.STONES, x, y)
-    if (stone) {
-      if (board.getConfig('swapColors')) {
-        return swapColor(stone.color)
-      }
-      return stone.color
+    //Fixed color or provided by constructor?
+    if (stoneColor) {
+      return board.getDisplayColor(stoneColor)
     }
 
-    //No stone
+    //Get stone on position
+    const stone = board.get(boardLayerTypes.STONES, x, y)
+    if (stone) {
+      return board.getDisplayColor(stone.stoneColor)
+    }
+
+    //No color
     return null
   }
 

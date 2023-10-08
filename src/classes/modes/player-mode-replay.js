@@ -397,7 +397,7 @@ export default class PlayerModeReplay extends PlayerMode {
 
       //Get data
       const {move} = variation
-      const {x, y, color} = move
+      const {x, y, color: stoneColor} = move
 
       //Not on top of stones (if displaying sibling variations)
       if (board.has(boardLayerTypes.STONES, x, y)) {
@@ -407,7 +407,7 @@ export default class PlayerModeReplay extends PlayerMode {
       //Construct data for factory
       const index = i
       const isSelected = node.isSelectedPath(variation)
-      const data = {index, color, showText, isSelected}
+      const data = {index, stoneColor, showText, isSelected}
 
       //Add to markers
       markers.push({x, y})

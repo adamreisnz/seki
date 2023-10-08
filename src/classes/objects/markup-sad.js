@@ -9,11 +9,29 @@ export default class MarkupSad extends Markup {
   //Type
   type = markupTypes.SAD
 
+  //Additional properties
+  lineCap
+
+  /**
+   * Load additional properties for this markup type
+   */
+  loadProperties(x, y) {
+
+    //Load parent properties
+    const args = super.loadProperties(x, y)
+
+    //Load additional properties
+    this.loadThemeProp('lineCap', ...args)
+
+    //Pass on args
+    return args
+  }
+
   /**
    * Get grid erase radius
    */
   getGridEraseRadius() {
-    return this.getRadius() * 0.8
+    return this.radius * 0.8
   }
 
   /**
@@ -21,22 +39,16 @@ export default class MarkupSad extends Markup {
    */
   draw(context, x, y) {
 
+    //Load properties
+    this.loadProperties(x, y)
+
     //Parent draw
     super.draw(context, x, y)
 
     //Get data
-    const {board, theme} = this
-
-    //Get coordinates and stone radius
-    const absX = board.getAbsX(x)
-    const absY = board.getAbsY(y)
-    const radius = this.getRadius()
-    const color = this.getColor(x, y)
-
-    //Get theme variables
-    const lineWidth = this.getLineWidth()
-    const lineCap = this.getLineCap()
-    const canvasTranslate = theme.canvasTranslate(lineWidth)
+    const {radius, color, lineWidth, lineCap} = this
+    const absX = this.getAbsX(x)
+    const absY = this.getAbsY(y)
 
     //Deltas
     const dEye = Math.round(radius * 0.36)
@@ -46,7 +58,7 @@ export default class MarkupSad extends Markup {
     const dyCp = 0
 
     //Prepare context
-    this.prepareContext(context, canvasTranslate)
+    this.prepareContext(context)
 
     //Configure context
     context.fillStyle = color
@@ -84,6 +96,6 @@ export default class MarkupSad extends Markup {
     context.stroke()
 
     //Restore context
-    this.restoreContext(context, canvasTranslate)
+    this.restoreContext(context)
   }
 }

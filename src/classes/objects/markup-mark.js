@@ -9,11 +9,22 @@ export default class MarkupMark extends Markup {
   //Type
   type = markupTypes.MARK
 
+  //Additional properties
+  lineCap
+
   /**
-   * Get grid erase radius
+   * Load additional properties for this stone type
    */
-  getGridEraseRadius() {
-    return this.getRadius()
+  loadProperties(x, y) {
+
+    //Load parent properties
+    const args = super.loadProperties(x, y)
+
+    //Load additional properties
+    this.loadThemeProp('lineCap', ...args)
+
+    //Pass on args
+    return args
   }
 
   /**
@@ -21,28 +32,22 @@ export default class MarkupMark extends Markup {
    */
   draw(context, x, y) {
 
+    //Load properties
+    this.loadProperties(x, y)
+
     //Parent draw
     super.draw(context, x, y)
 
     //Get data
-    const {board, theme} = this
-
-    //Get coordinates and stone radius
-    const absX = board.getAbsX(x)
-    const absY = board.getAbsY(y)
-    const radius = this.getRadius()
-    const color = this.getColor(x, y)
-
-    //Get theme variables
-    const lineWidth = this.getLineWidth()
-    const lineCap = this.getLineCap()
-    const canvasTranslate = theme.canvasTranslate(lineWidth)
+    const {radius, color, lineWidth, lineCap} = this
+    const absX = this.getAbsX(x)
+    const absY = this.getAbsY(y)
 
     //Determine delta
     const d = Math.round(radius * Math.cos(Math.PI / 4))
 
     //Prepare context
-    this.prepareContext(context, canvasTranslate)
+    this.prepareContext(context)
 
     //Configure context
     context.strokeStyle = color
@@ -58,6 +63,6 @@ export default class MarkupMark extends Markup {
     context.stroke()
 
     //Restore context
-    this.restoreContext(context, canvasTranslate)
+    this.restoreContext(context)
   }
 }

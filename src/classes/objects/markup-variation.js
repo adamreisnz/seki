@@ -9,11 +9,61 @@ export default class MarkupVariation extends MarkupCircle {
   //Type
   type = markupTypes.VARIATION
 
+  //Additional theme properties
+  lineDash
+  font
+
+  //Properties set via constructor
+  index = 0
+  stoneColor
+  showText
+  isSelected
+
+  /**
+   * Constructor
+   */
+  constructor(board, data) {
+    super(board)
+
+    //Set data attributes
+    this.index = data.index
+    this.stoneColor = data.stoneColor
+    this.showText = data.showText
+    this.isSelected = data.isSelected
+  }
+
+  /**
+   * Load additional properties for this markup type
+   */
+  loadProperties(x, y) {
+
+    //Load parent properties
+    const args = super.loadProperties(x, y)
+
+    //Load additional properties
+    this.loadThemeProp('font', ...args)
+    this.loadThemeProp('lineDash', ...args)
+
+    //Pass on args
+    return args
+  }
+
+  /**
+   * Get parsed line dash
+   */
+  getLineDash() {
+    const {lineDash} = this
+    if (Array.isArray(lineDash)) {
+      return
+    }
+    return lineDash ? lineDash.split(',') : null
+  }
+
   /**
    * Get grid erase radius
    */
   getGridEraseRadius() {
-    return this.getRadius() * 1.4
+    return this.radius * 1.4
   }
 
   /**
@@ -49,42 +99,31 @@ export default class MarkupVariation extends MarkupCircle {
    */
   draw(context, x, y) {
 
+    //Load properties
+    this.loadProperties(x, y)
+
     //Get line dash
     const lineDash = this.getLineDash()
-    context.setLineDash(lineDash || [])
 
     //Use parent method to draw circle
+    context.setLineDash(lineDash || [])
     super.draw(context, x, y)
-
-    //Reset line dash
     context.setLineDash([])
 
-    //Get data
-    const {board, theme, showText} = this
-
     //Not showing text, done (e.g. single move)
+    const {radius, color, font, showText} = this
     if (!showText) {
       return
     }
 
     //Get coordinates and stone radius
-    const absX = board.getAbsX(x)
-    const absY = board.getAbsY(y)
-    const radius = this.getRadius()
-    const color = this.getColor()
+    const absX = this.getAbsX(x)
+    const absY = this.getAbsY(y)
     const text = this.getText()
-
-    //Get theme variables
-    const font = this.getFont()
     const fontSize = this.determineFontSize(text, radius)
-    const lineWidth = this.getLineWidth()
-    const canvasTranslate = theme.canvasTranslate(lineWidth)
-
-    //Reset line dash
-    context.setLineDash([])
 
     //Prepare context
-    this.prepareContext(context, canvasTranslate)
+    this.prepareContext(context)
 
     //Configure context
     context.fillStyle = color
@@ -97,6 +136,6 @@ export default class MarkupVariation extends MarkupCircle {
     context.fillText(String(text), absX, absY, 2 * radius)
 
     //Restore context
-    this.restoreContext(context, canvasTranslate)
+    this.restoreContext(context)
   }
 }

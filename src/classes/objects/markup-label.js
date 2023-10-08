@@ -9,11 +9,40 @@ export default class MarkupLabel extends Markup {
   //Type
   type = markupTypes.LABEL
 
+  //Additional properties
+  font
+  text = '?'
+
+  /**
+   * Constructor
+   */
+  constructor(board, data) {
+    super(board)
+    if (data) {
+      this.text = data.text
+    }
+  }
+
+  /**
+   * Load additional properties for this markup type
+   */
+  loadProperties(x, y) {
+
+    //Load parent properties
+    const args = super.loadProperties(x, y)
+
+    //Load additional properties
+    this.loadThemeProp('font', ...args)
+
+    //Pass on args
+    return args
+  }
+
   /**
    * Get grid erase radius
    */
   getGridEraseRadius() {
-    return this.getRadius() * 0.8
+    return this.radius * 0.8
   }
 
   /**
@@ -42,26 +71,22 @@ export default class MarkupLabel extends Markup {
    */
   draw(context, x, y) {
 
+    //Load properties
+    this.loadProperties(x, y)
+
     //Parent draw
     super.draw(context, x, y)
 
     //Get data
-    const {board, theme} = this
-
-    //Get coordinates and stone radius
-    const absX = board.getAbsX(x)
-    const absY = board.getAbsY(y)
-    const radius = this.getRadius()
-    const color = this.getColor(x, y)
-    const text = this.getText()
-
-    //Get theme variables
-    const font = this.getFont()
+    const {radius, color, font, text} = this
+    const absX = this.getAbsX(x)
+    const absY = this.getAbsY(y)
     const fontSize = this.determineFontSize(text, radius)
-    const canvasTranslate = theme.canvasTranslate()
+
+    console.log(font, fontSize)
 
     //Prepare context
-    this.prepareContext(context, canvasTranslate)
+    this.prepareContext(context)
 
     //Configure context
     context.fillStyle = color
@@ -74,6 +99,6 @@ export default class MarkupLabel extends Markup {
     context.fillText(String(text), absX, absY, 2 * radius)
 
     //Restore context
-    this.restoreContext(context, canvasTranslate)
+    this.restoreContext(context)
   }
 }

@@ -7,22 +7,8 @@ export default class GridObject {
   /**
    * Constructor
    */
-  constructor(board, data) {
-
-    //Set board
+  constructor(board) {
     this.board = board
-
-    //Set properties from data
-    this.setData(data)
-  }
-
-  /**
-   * Set data
-   */
-  setData(data) {
-    if (data && typeof data === 'object') {
-      Object.assign(this, data)
-    }
   }
 
   /**
@@ -43,6 +29,45 @@ export default class GridObject {
   }
   getAbsY(y) {
     return this.board.getAbsY(y)
+  }
+
+  /**
+   * Load a single theme prop
+   */
+  loadThemeProp(prop, ...args) {
+    const value = this.getThemeProp(prop, ...args)
+    if (typeof value !== 'undefined') {
+      this[prop] = value
+    }
+  }
+
+  /**
+   * Get single theme property
+   */
+  getThemeProp(prop, ...args) {
+    const {theme} = this
+    const paths = this.getThemePaths(prop)
+    for (const path of paths) {
+      if (theme.has(path)) {
+        return theme.get(path, ...args)
+      }
+    }
+  }
+
+  /**
+   * Get theme paths to check
+   */
+  getThemePaths(prop) {
+    return [prop]
+  }
+
+  /**
+   * Get object radius, with scaling applied
+   */
+  getRadius(color, cellSize) {
+    const {scale} = this
+    const radius = this.getThemeProp('radius', color, cellSize)
+    return Math.round(radius * (scale || 1))
   }
 
   /**
