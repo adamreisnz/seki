@@ -124,7 +124,7 @@ export default class GridLayer extends BoardLayer {
 
     //Determine radius if not given
     if (!radius) {
-      radius = theme.get('stone.radius', cellSize)
+      radius = theme.get('stone.base.radius', cellSize)
     }
 
     //Get theme properties
@@ -153,7 +153,7 @@ export default class GridLayer extends BoardLayer {
     const absX = board.getAbsX(x)
     const absY = board.getAbsY(y)
     const cellSize = board.getCellSize()
-    const radius = theme.get('stone.radius', cellSize)
+    const radius = theme.get('stone.base.radius', cellSize)
 
     //Get theme properties
     const lineWidth = theme.get('grid.lineWidth', cellSize)

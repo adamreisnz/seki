@@ -87,7 +87,7 @@ export default class GridObject {
     const absX = board.getAbsX(x)
     const absY = board.getAbsY(y)
     const cellSize = board.getCellSize()
-    const radius = theme.get('stone.radius', cellSize)
+    const radius = theme.get('stone.base.radius', cellSize)
 
     //Clear rectangle the size of the stone radius
     context.clearRect(
