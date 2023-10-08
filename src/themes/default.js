@@ -193,6 +193,20 @@ export default {
       scale: 0.85,
     },
 
+    //Label
+    label: {
+      fontSize(text, stoneColor, cellSize) {
+        const len = String(text).length
+        if (len === 1) {
+          return Math.round(cellSize * 0.75)
+        }
+        else if (len === 2) {
+          return Math.round(cellSize * 0.6)
+        }
+        return Math.round(cellSize * 0.5)
+      },
+    },
+
     //Variation markers
     variation: {
       type: markupTypes.LABEL,
@@ -234,6 +248,16 @@ export default {
           return 'rgba(255,255,255,0.95)'
         }
         return 'rgba(0,0,0,0.95)'
+      },
+    },
+
+    //Move number
+    moveNumber: {
+      text(number) {
+        return number
+      },
+      fontSize(number, stoneColor, cellSize) {
+        return Math.round(cellSize * 0.4)
       },
     },
 

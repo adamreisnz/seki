@@ -10,6 +10,7 @@
 export default class GameNode {
 
   //Parent and children
+  root
   parent
   children = []
 
@@ -25,6 +26,9 @@ export default class GameNode {
         this[key] = data[key]
       }
     }
+
+    //Root node is ourselves unless we get attached to a parent
+    this.root = this
   }
 
   /**************************************************************************
@@ -151,6 +155,7 @@ export default class GameNode {
    */
   setParent(parent) {
     this.parent = parent
+    this.root = parent.root
   }
 
   /**
@@ -167,10 +172,12 @@ export default class GameNode {
   /**
    * Detach this node from its parent
    */
-  detach() {
+  detachFromParent() {
     const {parent} = this
     if (parent) {
       parent.removeChild(this)
+      this.parent = null
+      this.root = this
     }
   }
 
@@ -178,7 +185,7 @@ export default class GameNode {
    * Append this node to a parent node
    */
   appendToParent(node) {
-    this.detach()
+    this.detachFromParent()
     this.setParent(node)
     return node.addChild(this)
   }
@@ -187,7 +194,7 @@ export default class GameNode {
    * Append child node to this node.
    */
   appendChild(node) {
-    node.detach()
+    node.detachFromParent()
     node.setParent(this)
     return this.addChild(node)
   }
@@ -247,6 +254,41 @@ export default class GameNode {
     const n = move ? 1 : 0
     const p = parent ? parent.getMoveNumber() : 0
     return n + p
+  }
+
+  /**
+   * Get the move number since we
+   */
+  getVariationMoveNumber() {
+    const {parent, move} = this
+    if (!this.isVariationBranch()) {
+      return 0
+    }
+    const n = move ? 1 : 0
+    const p = parent ? parent.getVariationMoveNumber() : 0
+    return n + p
+  }
+
+  /**
+   * Check if we're on a variation branch
+   */
+  isVariationBranch() {
+
+    //Get parent
+    const {parent} = this
+
+    //If no parent, we're the root node of the main branch
+    if (!parent) {
+      return false
+    }
+
+    //If the parent is on a variation branch, we are too
+    if (parent.isVariationBranch()) {
+      return true
+    }
+
+    //Get our child index – if not zero, we're a variation branch
+    return parent.indexOf(this) > 0
   }
 
   /**
@@ -373,6 +415,13 @@ export default class GameNode {
       return false
     }
     return (typeof children[i] !== 'undefined')
+  }
+
+  /**
+   * Is main path
+   */
+  isMainPath() {
+    return (this.index === 0)
   }
 
   /**

@@ -20,4 +20,5 @@ export const markupTypes = {
   SELECT: 'select',
   VARIATION: 'variation',
   LAST_MOVE: 'lastMove',
+  MOVE_NUMBER: 'moveNumber',
 }

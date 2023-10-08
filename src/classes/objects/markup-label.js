@@ -11,14 +11,15 @@ export default class MarkupLabel extends Markup {
 
   //Additional properties
   font
-  text = '?'
+  fontSize
+  text = ''
 
   /**
    * Constructor
    */
   constructor(board, data) {
     super(board)
-    if (data) {
+    if (data && data.text) {
       this.text = data.text
     }
   }
@@ -30,9 +31,15 @@ export default class MarkupLabel extends Markup {
 
     //Load parent properties
     const args = super.loadProperties(x, y)
+    const {text} = this
 
     //Load additional properties
     this.loadThemeProp('font', ...args)
+
+    //Only if there is text
+    if (text) {
+      this.loadThemeProp('fontSize', text, ...args)
+    }
 
     //Pass on args
     return args
@@ -53,20 +60,6 @@ export default class MarkupLabel extends Markup {
   }
 
   /**
-   * Determine font size
-   */
-  determineFontSize(text, radius) {
-    const len = String(text).length
-    if (len === 1) {
-      return Math.round(radius * 1.5)
-    }
-    else if (len === 2) {
-      return Math.round(radius * 1.2)
-    }
-    return radius
-  }
-
-  /**
    * Draw
    */
   draw(context, x, y) {
@@ -78,10 +71,9 @@ export default class MarkupLabel extends Markup {
     super.draw(context, x, y)
 
     //Get data
-    const {radius, color, font, text} = this
+    const {radius, color, font, fontSize, text} = this
     const absX = this.getAbsX(x)
     const absY = this.getAbsY(y)
-    const fontSize = this.determineFontSize(text, radius)
 
     //Prepare context
     this.prepareContext(context)

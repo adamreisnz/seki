@@ -355,6 +355,7 @@ export default class PlayerModeReplay extends PlayerMode {
     const showNextMove = player.getConfig('showNextMove')
     const showVariations = player.getConfig('showVariations')
     const showSiblingVariations = player.getConfig('showSiblingVariations')
+    const numberVariationMoves = player.getConfig('numberVariationMoves')
 
     //Clear hover and last move markers
     this.clearHover()
@@ -380,6 +381,11 @@ export default class PlayerModeReplay extends PlayerMode {
     //Last move markup
     if (showLastMove) {
       this.addLastMoveMarker(node)
+    }
+
+    //Number variation moves
+    if (numberVariationMoves) {
+      this.numberVariationMoves(node)
     }
   }
 
@@ -453,6 +459,30 @@ export default class PlayerModeReplay extends PlayerMode {
     board
       .add(boardLayerTypes.MARKUP, x, y, MarkupFactory
         .create(markupTypes.LAST_MOVE, board))
+  }
+
+  /**
+   * Number variation moves
+   */
+  numberVariationMoves(node) {
+
+    //Get data
+    const number = node.getVariationMoveNumber()
+    if (!number) {
+      return
+    }
+
+    //Get data
+    const {board, markers} = this
+    const {x, y} = node.move
+
+    //Store
+    markers.push({x, y})
+
+    //Add to board
+    board
+      .add(boardLayerTypes.MARKUP, x, y, MarkupFactory
+        .create(markupTypes.MOVE_NUMBER, board, {number}))
   }
 
   /**

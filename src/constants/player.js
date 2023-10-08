@@ -185,6 +185,7 @@ export const defaultPlayerConfig = {
   showSolutions: false,
   showVariations: true,
   showSiblingVariations: false,
+  numberVariationMoves: true,
 
   //Number of moves to skip at a time
   numSkipMoves: 10,

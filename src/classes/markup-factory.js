@@ -9,6 +9,7 @@ import MarkupSad from './objects/markup-sad.js'
 import MarkupSelect from './objects/markup-select.js'
 import MarkupVariation from './objects/markup-variation.js'
 import MarkupLastMove from './objects/markup-last-move.js'
+import MarkupMoveNumber from './objects/markup-move-number.js'
 import {markupTypes} from '../constants/markup.js'
 
 /**
@@ -21,6 +22,8 @@ export default class MarkupFactory {
    */
   static getClass(type) {
     switch (type) {
+
+      //Drawable
       case markupTypes.CIRCLE:
         return MarkupCircle
       case markupTypes.SQUARE:
@@ -37,12 +40,18 @@ export default class MarkupFactory {
         return MarkupSad
       case markupTypes.LABEL:
         return MarkupLabel
+
+      //Special
       case markupTypes.SELECT:
         return MarkupSelect
       case markupTypes.VARIATION:
         return MarkupVariation
       case markupTypes.LAST_MOVE:
         return MarkupLastMove
+      case markupTypes.MOVE_NUMBER:
+        return MarkupMoveNumber
+
+      //Unknown
       default:
         throw new Error(`Unknown markup type type: ${type}`)
     }
