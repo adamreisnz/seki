@@ -83,8 +83,6 @@ export default class MarkupLabel extends Markup {
     const absY = this.getAbsY(y)
     const fontSize = this.determineFontSize(text, radius)
 
-    console.log(font, fontSize)
-
     //Prepare context
     this.prepareContext(context)
 
