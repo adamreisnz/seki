@@ -80,14 +80,13 @@ export default class GridObject {
    */
   erase(context, x, y) {
 
-    //Get data
-    const {board, theme} = this
+    //Load properties
+    this.loadProperties(x, y)
 
-    //Get coordinates and stone radius
-    const absX = board.getAbsX(x)
-    const absY = board.getAbsY(y)
-    const cellSize = board.getCellSize()
-    const radius = theme.get('stone.base.radius', cellSize)
+    //Get data
+    const {radius} = this
+    const absX = this.getAbsX(x)
+    const absY = this.getAbsY(y)
 
     //Clear rectangle the size of the stone radius
     context.clearRect(

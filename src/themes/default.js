@@ -249,6 +249,11 @@ export default {
   //Grid
   grid: {
 
+    //Cell radius
+    radius(cellSize) {
+      return Math.floor(cellSize / 2)
+    },
+
     //Line properties
     lineColor: 'rgba(60,40,15,.9)',
     lineWidth(cellSize) {

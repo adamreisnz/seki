@@ -218,20 +218,27 @@ export default class PlayerMode extends Base {
     //Redraw grid cell
     const {board} = this
 
+    console.log('redrawGridCell', x, y)
+
     //Falling outside of grid or already have a stone?
     if (!board || !board.isOnBoard(x, y)) {
+      console.log('not on board', x, y)
       return
     }
 
     //Stone here, not needed
     if (board.has(boardLayerTypes.STONES, x, y)) {
+      console.log('has stone', x, y)
       return
     }
 
     //Markup here, keep as is
     if (board.has(boardLayerTypes.MARKUP, x, y)) {
+      console.log('has markup', x, y)
       return
     }
+
+    console.log('redrawing!')
 
     //Redraw cell
     board
