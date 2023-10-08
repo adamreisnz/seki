@@ -1,105 +1,99 @@
 import GridObject from '../grid-object.js'
-import {stoneModifierTypes} from '../../constants/stone.js'
-import {swapColor} from '../../helpers/stone.js'
 
 /**
  * This class is used for drawing stones on the board
  */
 export default class Stone extends GridObject {
 
+  //Stone color and computed display color
+  stoneColor = null
+  displayColor = null
+
+  //Base style and modifier style (e.g. mini, hover, captured)
+  style = null
+  modifierStyle = null
+
+  //Theme prop default values
+  color = null
+  scale = 1
+  alpha = 1
+  shadow = false
+
+  //Props that can be set by theme
+  themeProps = [
+    'color',
+    'alpha',
+    'scale',
+    'shadow',
+  ]
+
   /**
    * Constructor
    */
-  constructor(board, color, data) {
-
-    //Parent constructor
+  constructor(board, stoneColor, modifierStyle) {
     super(board)
+    this.stoneColor = stoneColor
+    this.modifierStyle = modifierStyle
+  }
 
-    //Instantiate properties
-    this.color = color
-    this.scale = 1
-    this.alpha = 1
-    this.shadow = this.theme.get('stone.shadow')
+  /**
+   * Load properties
+   */
+  loadProperties() {
 
-    //Set properties from data
-    this.setData(data)
+    //Get data
+    const {board, stoneColor} = this
+
+    //Obtain cell size and stone color (which could be swapped)
+    const cellSize = board.getCellSize()
+    const displayColor = board.getDisplayColor(stoneColor)
+
+    //Load basic theme props
+    for (const prop of this.themeProps) {
+      this.loadThemeProp(prop, displayColor, cellSize)
+    }
+
+    //Now load radius and remember display color
+    this.radius = this.getRadius(displayColor, cellSize)
+    this.displayColor = displayColor
+
+    //Return cellsize and display color for child handlers
+    return [displayColor, cellSize]
+  }
+
+  /**
+   * Load a single theme prop
+   */
+  loadThemeProp(prop, ...args) {
+    const value = this.getThemeProp(prop, ...args)
+    if (typeof value !== 'undefined') {
+      this[prop] = value
+    }
+  }
+
+  /**
+   * Get single theme property
+   */
+  getThemeProp(prop, ...args) {
+
+    //Get data
+    const {theme, style, modifierStyle} = this
+
+    //Modifier style present, try to use that
+    if (modifierStyle && theme.has(`stone.${modifierStyle}.${prop}`)) {
+      return theme.get(`stone.${modifierStyle}.${prop}`, ...args)
+    }
+
+    //Return main theme prop
+    return theme.get(`stone.${style}.${prop}`, ...args)
   }
 
   /**
    * Get stone radius, with scaling applied
    */
-  getRadius() {
-
-    //Get data
-    const {board, theme, scale} = this
-    const cellSize = board.getCellSize()
-    const radius = theme.get('stone.radius', cellSize)
-
-    //No scaling factor
-    if (scale === 1) {
-      return radius
-    }
-
-    //Scale
-    return Math.round(radius * scale)
-  }
-
-  /**
-   * Get stone color, with multiplier applied
-   */
-  getColor() {
-
-    //Get data
-    const {board, color} = this
-
-    //Swap if needed
-    if (board.getConfig('swapColors')) {
-      return swapColor(color)
-    }
-    return color
-  }
-
-  /**
-   * Make a copy of this stone
-   */
-  getCopy() {
-
-    //Get data and create copy
-    const {board, scale, alpha, shadow} = this
-    const copy = new this.constructor(board)
-
-    //Copy properties
-    copy.scale = scale
-    copy.alpha = alpha
-    copy.shadow = shadow
-
-    //Return copy
-    return copy
-  }
-
-  /**
-   * Get modified copy of this stone (e.g. faded or mini)
-   */
-  getModifiedCopy(type) {
-
-    //Get data and create copy
-    const {board, theme, color} = this
-    const copy = new this.constructor(board)
-
-    //Validate type
-    if (!Object.values(stoneModifierTypes).includes(type)) {
-      throw new Error(`Invalid stone modifier type: ${type}`)
-    }
-
-    //Set color
-    copy.color = color
-
-    //Set themed properties
-    copy.shadow = theme.get(`stone.${type}.shadow`)
-    copy.scale = theme.get(`stone.${type}.scale`)
-    copy.alpha = theme.get(`stone.${type}.alpha`, color)
-
-    //Return copy
-    return copy
+  getRadius(color, cellSize) {
+    const {scale} = this
+    const radius = this.getThemeProp('radius', color, cellSize)
+    return Math.round(radius * (scale || 1))
   }
 }

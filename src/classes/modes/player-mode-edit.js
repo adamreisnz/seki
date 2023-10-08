@@ -23,7 +23,6 @@ export default class PlayerModeEdit extends PlayerMode {
     playerTools.NONE,
     playerTools.SETUP,
     playerTools.MARKUP,
-    playerTools.SCORE,
   ]
 
   //Set default tool
@@ -99,8 +98,8 @@ export default class PlayerModeEdit extends PlayerMode {
     const {keyCode} = event.detail.nativeEvent
     const action = player.getActionForKeyCode(keyCode)
 
-    //Perform action
-    this.performAction(action, event)
+    //Process action
+    this.processAction(action, event)
   }
 
   /**
@@ -166,9 +165,9 @@ export default class PlayerModeEdit extends PlayerMode {
    ***/
 
   /**
-   * Perform a bound action
+   * Process a bound action
    */
-  performAction(action, event) {
+  processAction(action, event) {
 
     //No action
     if (!action) {
@@ -176,7 +175,7 @@ export default class PlayerModeEdit extends PlayerMode {
     }
 
     //Debug
-    this.debug(`performing action ${action}`)
+    this.debug(`🎯 action ${action}`)
 
     //Get data
     const {player} = this

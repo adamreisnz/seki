@@ -142,23 +142,6 @@ export default class Markup extends GridObject {
   }
 
   /**
-   * Make a copy of this markup
-   */
-  getCopy() {
-
-    //Get data and create copy
-    const {board, type, alpha} = this
-    const copy = new this.constructor(board)
-
-    //Copy properties
-    copy.type = type
-    copy.alpha = alpha
-
-    //Return copy
-    return copy
-  }
-
-  /**
    * Draw
    */
   draw(context, x, y) {

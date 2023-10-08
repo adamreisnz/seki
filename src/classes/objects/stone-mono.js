@@ -1,20 +1,32 @@
 import Stone from './stone.js'
+import {stoneStyles} from '../../constants/stone.js'
 
 /**
  * Mono stone class
  */
 export default class StoneMono extends Stone {
 
+  //Style
+  style = stoneStyles.MONO
+
+  //Other theme props
+  lineWidth = 1
+  lineColor
+
   /**
-   * Constructor
+   * Load additional properties for this stone type
    */
-  constructor(board, color, data) {
+  loadProperties() {
 
-    //Parent constructor
-    super(board, color, data)
+    //Load parent properties
+    const args = super.loadProperties()
 
-    //Don't draw shadows
-    this.shadow = false
+    //Load additional properties
+    this.loadThemeProp('lineWidth', ...args)
+    this.loadThemeProp('lineColor', ...args)
+
+    //Pass on args
+    return args
   }
 
   /**
@@ -22,27 +34,19 @@ export default class StoneMono extends Stone {
    */
   draw(context, x, y) {
 
+    //Load properties
+    this.loadProperties()
+
     //Get data
-    const {board, theme} = this
-
-    //Get coordinates and stone radius
-    const absX = board.getAbsX(x)
-    const absY = board.getAbsY(y)
-    const radius = this.getRadius()
-    const color = this.getColor()
-
-    //Get theme variables
-    const cellSize = board.getCellSize()
-    const lineWidth = theme.get('stone.mono.lineWidth', cellSize) || 1
-    const fillStyle = theme.get('stone.mono.color', color)
-    const strokeStyle = theme.get('stone.mono.lineColor', color)
-    const canvasTranslate = theme.canvasTranslate()
+    const {radius, color, lineWidth, lineColor} = this
+    const absX = this.getAbsX(x)
+    const absY = this.getAbsY(y)
 
     //Prepare context
-    this.prepareContext(context, canvasTranslate)
+    this.prepareContext(context)
 
     //Configure context
-    context.fillStyle = fillStyle
+    context.fillStyle = color
 
     //Draw stone
     context.beginPath()
@@ -58,12 +62,12 @@ export default class StoneMono extends Stone {
 
     //Configure context
     context.lineWidth = lineWidth
-    context.strokeStyle = strokeStyle
+    context.strokeStyle = lineColor
 
     //Draw outline
     context.stroke()
 
     //Restore context
-    this.restoreContext(context, canvasTranslate)
+    this.restoreContext(context)
   }
 }

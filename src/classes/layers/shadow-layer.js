@@ -30,9 +30,9 @@ export default class ShadowLayer extends BoardLayer {
       return
     }
 
-    //Get shadowsize from theme
+    //Get shadow size from theme
     const cellSize = board.getCellSize()
-    const shadowSize = theme.get('shadow.size', cellSize)
+    const shadowSize = theme.get('stone.shadow.size', cellSize)
 
     //Apply shadow transformation
     context.setTransform(1, 0, 0, 1, shadowSize, shadowSize)

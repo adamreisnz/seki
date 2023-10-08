@@ -61,14 +61,7 @@ export default class PlayerModePlay extends PlayerMode {
    * On grid enter
    */
   onGridEnter(event) {
-
-    //Get data
-    const {player} = this
-
-    //Move tool active
-    if (player.isToolActive(playerTools.MOVE)) {
-      this.showHoverStone(event)
-    }
+    this.showHoverStone(event)
   }
 
   /**

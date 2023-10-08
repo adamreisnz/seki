@@ -1,30 +1,29 @@
 import Stone from './stone.js'
-import {stoneColors} from '../../constants/stone.js'
+import {stoneStyles, stoneColors} from '../../constants/stone.js'
 
 /**
  * Glass stone class
  */
 export default class StoneGlass extends Stone {
 
+  //Style
+  style = stoneStyles.GLASS
+
   /**
    * Draw glass stones
    */
   draw(context, x, y) {
 
+    //Load properties
+    this.loadProperties()
+
     //Get data
-    const {board, theme} = this
-
-    //Get coordinates and stone radius
-    const absX = board.getAbsX(x)
-    const absY = board.getAbsY(y)
-    const radius = this.getRadius()
-    const color = this.getColor()
-
-    //Get theme variables
-    const canvasTranslate = theme.canvasTranslate()
+    const {radius, color} = this
+    const absX = this.getAbsX(x)
+    const absY = this.getAbsY(y)
 
     //Prepare context
-    this.prepareContext(context, canvasTranslate)
+    this.prepareContext(context)
 
     //Begin path
     context.beginPath()
@@ -60,6 +59,6 @@ export default class StoneGlass extends Stone {
     context.fill()
 
     //Restore context
-    this.restoreContext(context, canvasTranslate)
+    this.restoreContext(context)
   }
 }

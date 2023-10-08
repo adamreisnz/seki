@@ -14,14 +14,8 @@ export default class StonesLayer extends BoardLayer {
    * Add a single stone
    */
   add(x, y, stone) {
-
-    //Add to stones layer
     super.add(x, y, stone)
-
-    //Create shadow copy
-    const shadow = this.createStoneShadow(stone)
-
-    //Also add to shadows layer
+    const shadow = StoneFactory.createShadow(stone)
     this.board.add(boardLayerTypes.SHADOW, x, y, shadow)
   }
 
@@ -29,11 +23,7 @@ export default class StonesLayer extends BoardLayer {
    * Remove a single stone
    */
   remove(x, y) {
-
-    //Remove from stones layer
     super.remove(x, y)
-
-    //Also remove from shadows layer
     this.board.remove(boardLayerTypes.SHADOW, x, y)
   }
 
@@ -50,7 +40,7 @@ export default class StonesLayer extends BoardLayer {
 
     //Create copy of grid with stone shadows
     const shadows = grid
-      .map(stone => this.createStoneShadow(stone))
+      .map(stone => StoneFactory.createShadow(stone))
 
     //Set on shadow grid
     this.board.setAll(boardLayerTypes.SHADOW, shadows)
@@ -66,12 +56,5 @@ export default class StonesLayer extends BoardLayer {
 
     //Parent method
     super.removeAll()
-  }
-
-  /**
-   * Create stone shadow
-   */
-  createStoneShadow(stone) {
-    return StoneFactory.createShadowCopy(stone)
   }
 }

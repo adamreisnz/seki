@@ -3,6 +3,7 @@ import BoardLayerFactory from './board-layer-factory.js'
 import StoneFactory from './stone-factory.js'
 import MarkupFactory from './markup-factory.js'
 import Theme from './theme.js'
+import {swapColor} from '../helpers/stone.js'
 import {
   defaultBoardConfig,
   boardLayerTypes,
@@ -313,6 +314,16 @@ export default class Board extends Base {
     this.redraw()
   }
 
+  /**
+   * Get display color for a stone
+   */
+  getDisplayColor(color) {
+    if (this.getConfig('swapColors')) {
+      return swapColor(color)
+    }
+    return color
+  }
+
   /*****************************************************************************
    * Object handling
    ***/
@@ -418,7 +429,7 @@ export default class Board extends Base {
 
     //Get theme
     const {theme} = this
-    const style = theme.get('stone.style')
+    const style = theme.get('board.stoneStyle')
 
     //Transform stones grid into actual stone instances of given style
     const stones = position.stones

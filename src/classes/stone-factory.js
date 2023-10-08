@@ -27,16 +27,23 @@ export default class StoneFactory {
   /**
    * Create stone
    */
-  static create(style, color, board, data, ...args) {
+  static create(style, color, board) {
     const StoneClass = this.getClass(style)
-    return new StoneClass(board, color, data, ...args)
+    return new StoneClass(board, color)
   }
 
   /**
-   * Get shadow copy
+   * Create modified copy of existing stone
    */
-  static createShadowCopy(stone) {
-    const {board, shadow, scale, alpha} = stone
-    return new StoneShadow(board, {shadow, scale, alpha})
+  static createCopy(stone, modifierStyle) {
+    const {board, stoneColor} = stone
+    return new stone.constructor(board, stoneColor, modifierStyle)
+  }
+
+  /**
+   * Get shadow object for stone
+   */
+  static createShadow(stone) {
+    return new StoneShadow(stone)
   }
 }

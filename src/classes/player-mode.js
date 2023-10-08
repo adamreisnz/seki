@@ -2,7 +2,7 @@ import Base from './base.js'
 import StoneFactory from './stone-factory.js'
 import MarkupFactory from './markup-factory.js'
 import {boardLayerTypes} from '../constants/board.js'
-import {stoneModifierTypes} from '../constants/stone.js'
+import {stoneModifierStyles} from '../constants/stone.js'
 
 /**
  * Base player mode class
@@ -166,18 +166,14 @@ export default class PlayerMode extends Base {
     //Get style
     const style = board.theme.get('stone.style')
 
-    //Create stone
-    const stone = StoneFactory
-      .create(style, color, board)
-      .getModifiedCopy(stoneModifierTypes.HOVER)
-
-    //Create shadow copy
-    const shadow = StoneFactory
-      .createShadowCopy(stone)
+    //Create stone and shadow
+    const stone = StoneFactory.create(style, color, board)
+    const copy = StoneFactory.createCopy(stone, stoneModifierStyles.HOVER)
+    const shadow = StoneFactory.createShadow(copy)
 
     //Add to board
     board.eraseLayer(boardLayerTypes.HOVER)
-    board.add(boardLayerTypes.HOVER, x, y, [shadow, stone])
+    board.add(boardLayerTypes.HOVER, x, y, [shadow, copy])
   }
 
   /**

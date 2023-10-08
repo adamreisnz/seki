@@ -1,4 +1,4 @@
-import {stoneColors} from '../constants/stone.js'
+import {stoneColors, stoneStyles} from '../constants/stone.js'
 import {markupTypes} from '../constants/markup.js'
 
 /**
@@ -8,31 +8,27 @@ export default {
 
   //Board
   board: {
-
-    //Board margin factor
     margin: 0.25,
+    stoneStyle: stoneStyles.SLATE_SHELL,
   },
 
   //Stones
   stone: {
 
-    //Stone style can be shell, glass, mono, or specify a custom handler service
-    style: 'shell',
-    shadow: true,
-    radius(cellSize) {
-      return Math.floor(cellSize / 2) * 0.96
-    },
-
-    //Shell stones
-    shell: {
+    //Slate and shell stones
+    slateShell: {
+      radius(stoneColor, cellSize) {
+        return Math.floor(cellSize / 2) * 0.96
+      },
       color(stoneColor) {
         if (stoneColor === stoneColors.BLACK) {
           return '#111'
         }
         return '#cfcfca'
       },
-      stroke: 'rgba(128,128,150,0.15)',
-      types: [
+      shadow: true,
+      shellStroke: 'rgba(128,128,150,0.15)',
+      shellTypes: [
         {
           lines: [
             0.10, 0.12, 0.11, 0.10,
@@ -68,11 +64,24 @@ export default {
       ],
     },
 
+    //Glass stones
+    glass: {
+      radius(stoneColor, cellSize) {
+        return Math.floor(cellSize / 2) * 0.96
+      },
+      color(stoneColor) {
+        if (stoneColor === stoneColors.BLACK) {
+          return '#111'
+        }
+        return '#cfcfca'
+      },
+      shadow: true,
+    },
+
     //Mono stones
     mono: {
-      lineWidth: 1,
-      lineColor() {
-        return '#000'
+      radius(stoneColor, cellSize) {
+        return Math.floor(cellSize / 2)
       },
       color(stoneColor) {
         if (stoneColor === stoneColors.BLACK) {
@@ -80,17 +89,39 @@ export default {
         }
         return '#fff'
       },
+      shadow: false,
+      lineWidth: 1,
+      lineColor: '#000',
     },
 
-    //Mini stones
-    mini: {
+    //Stone shadows
+    shadow: {
+      color: 'rgba(40,30,20,0.6)',
+      scale: 1,
+      size(cellSize) {
+        //NOTE: Globally set on layer, hence no stone color here
+        return Math.floor(cellSize / 100)
+      },
+      blur(stoneColor, cellSize) {
+        return cellSize / 15
+      },
+      offsetX(stoneColor, cellSize) {
+        return Math.ceil(cellSize / 20)
+      },
+      offsetY(stoneColor, cellSize) {
+        return Math.ceil(cellSize / 20)
+      },
+    },
+
+    //Points (modifier style)
+    points: {
       shadow: false,
       scale: 0.5,
       alpha: 1,
     },
 
-    //Captured stones
-    captured: {
+    //Captures (modifier style)
+    captures: {
       shadow: false,
       scale: 1,
       alpha(stoneColor) {
@@ -101,35 +132,16 @@ export default {
       },
     },
 
-    //Hover stones
+    //Hover stones (modifier style)
     hover: {
       shadow: false,
       scale: 1,
-    },
-  },
-
-  //Shadows
-  shadow: {
-
-    //Shadow gradient colors
-    color: 'rgba(40,30,20,0.6)',
-
-    //Shadow size
-    size(cellSize) {
-      return Math.floor(cellSize / 100)
-    },
-
-    //Shadow blur size
-    blur(cellSize) {
-      return cellSize / 15
-    },
-
-    //Shadow offset
-    offsetX(cellSize) {
-      return Math.ceil(cellSize / 20)
-    },
-    offsetY(cellSize) {
-      return Math.ceil(cellSize / 20)
+      alpha(stoneColor) {
+        if (stoneColor === stoneColors.BLACK) {
+          return 0.3
+        }
+        return 0.4
+      },
     },
   },
 

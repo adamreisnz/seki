@@ -1,7 +1,8 @@
 import Stone from './stone.js'
-import {stoneColors} from '../../constants/stone.js'
+import {stoneStyles, stoneColors} from '../../constants/stone.js'
 
-//Random shell seed
+//Random shell seed (needs to be global otherwise stones will
+//be different each time they're drawn)
 const seed = Math.ceil(Math.random() * 9999999)
 
 /**
@@ -9,49 +10,64 @@ const seed = Math.ceil(Math.random() * 9999999)
  */
 export default class StoneSlateShell extends Stone {
 
+  //Style
+  style = stoneStyles.SLATE_SHELL
+
+  //Additional properties
+  shellTypes
+  shellStroke
+
+  /**
+   * Load additional properties for this stone type
+   */
+  loadProperties() {
+
+    //Load parent properties
+    const args = super.loadProperties()
+
+    //Load additional properties
+    this.loadThemeProp('shellTypes', ...args)
+    this.loadThemeProp('shellStroke', ...args)
+
+    //Pass on args
+    return args
+  }
+
   /**
    * Draw slate and shell stones
    */
   draw(context, x, y) {
 
-    //Get data
-    const {theme} = this
-    const color = this.getColor()
-    const canvasTranslate = theme.canvasTranslate()
-
-    //Prepare context
-    this.prepareContext(context, canvasTranslate)
+    //Load properties and prepare context
+    this.loadProperties()
+    this.prepareContext(context)
 
     //Draw stone
-    if (color === stoneColors.WHITE) {
-      this.drawShellStone(context, x, y, color)
+    if (this.displayColor === stoneColors.WHITE) {
+      this.drawShellStone(context, x, y)
     }
     else {
-      this.drawSlateStone(context, x, y, color)
+      this.drawSlateStone(context, x, y)
     }
 
     //Restore context
-    this.restoreContext(context, canvasTranslate)
+    this.restoreContext(context)
   }
 
   /**
    * Draw slate stone
    */
-  drawSlateStone(context, x, y, color) {
+  drawSlateStone(context, x, y) {
 
     //Get data
-    const {board, theme} = this
-
-    //Coordinates
-    const absX = board.getAbsX(x)
-    const absY = board.getAbsY(y)
-    const radius = this.getRadius()
-    const fillStyle = theme.get('stone.shell.color', color)
+    const {color, radius} = this
+    const absX = this.getAbsX(x)
+    const absY = this.getAbsY(y)
 
     //Draw stone
     context.beginPath()
     context.arc(absX, absY, Math.max(0, radius - 0.5), 0, 2 * Math.PI, true)
-    context.fillStyle = fillStyle
+    context.fillStyle = color
     context.fill()
 
     //Add radial gradient
@@ -89,20 +105,12 @@ export default class StoneSlateShell extends Stone {
   /**
    * Draw shell stone
    */
-  drawShellStone(context, x, y, color) {
+  drawShellStone(context, x, y) {
 
     //Get data
-    const {board, theme} = this
-
-    //Coordinates
-    const absX = board.getAbsX(x)
-    const absY = board.getAbsY(y)
-    const radius = this.getRadius()
-
-    //Get theme vars
-    const fillStyle = theme.get('stone.shell.color', color)
-    const shellTypes = theme.get('stone.shell.types')
-    const strokeStyle = theme.get('stone.shell.stroke')
+    const {board, color, radius, shellTypes} = this
+    const absX = this.getAbsX(x)
+    const absY = this.getAbsY(y)
 
     //Get random shell type
     const len = shellTypes.length
@@ -116,13 +124,11 @@ export default class StoneSlateShell extends Stone {
     //Draw stone
     context.beginPath()
     context.arc(absX, absY, Math.max(0, radius - 0.5), 0, 2 * Math.PI, true)
-    context.fillStyle = fillStyle
+    context.fillStyle = color
     context.fill()
 
     //Draw shell pattern
-    this.drawShellPattern(
-      context, style, absX, absY, radius, angle, strokeStyle,
-    )
+    this.drawShellPattern(context, style, absX, absY, angle)
 
     //Add radial gradient
     context.beginPath()
@@ -145,7 +151,7 @@ export default class StoneSlateShell extends Stone {
   /**
    * Helper to draw a shell pattern
    */
-  drawShellPattern(context, style, x, y, radius, angle, strokeStyle) {
+  drawShellPattern(context, style, x, y, angle) {
 
     //Get lines from style
     const {lines} = style
@@ -158,9 +164,7 @@ export default class StoneSlateShell extends Stone {
     for (let i = 0; i < lines.length; i++) {
       startAngle += lines[i]
       endAngle -= lines[i]
-      this.drawShellLine(
-        context, style, x, y, radius, startAngle, endAngle, strokeStyle,
-      )
+      this.drawShellLine(context, style, x, y, startAngle, endAngle)
     }
   }
 
@@ -168,26 +172,27 @@ export default class StoneSlateShell extends Stone {
    * Helper to draw a shell line
    */
   drawShellLine(
-    context, style, x, y, radius, startAngle, endAngle, strokeStyle,
+    context, style, x, y, startAngle, endAngle,
   ) {
 
     //Get data
+    const {radius, shellStroke} = this
     const {thickness, factor} = style
 
     //Initialize
     context.shadowBlur = 2
-    context.strokeStyle = strokeStyle
+    context.strokeStyle = shellStroke
     context.lineWidth = (radius / 30) * thickness
     context.beginPath()
 
     //Lower radius
-    radius -= Math.max(1, context.lineWidth)
+    const r = radius - Math.max(1, context.lineWidth)
 
     //Determine coordinates
-    const x1 = x + radius * Math.cos(startAngle * Math.PI)
-    const y1 = y + radius * Math.sin(startAngle * Math.PI)
-    const x2 = x + radius * Math.cos(endAngle * Math.PI)
-    const y2 = y + radius * Math.sin(endAngle * Math.PI)
+    const x1 = x + r * Math.cos(startAngle * Math.PI)
+    const y1 = y + r * Math.sin(startAngle * Math.PI)
+    const x2 = x + r * Math.cos(endAngle * Math.PI)
+    const y2 = y + r * Math.sin(endAngle * Math.PI)
 
     //Math magic
     let m, angle
@@ -204,7 +209,7 @@ export default class StoneSlateShell extends Stone {
     }
 
     //Curvature factor
-    const c = factor * radius
+    const c = factor * r
     const dx = Math.sin(angle) * c
     const dy = Math.cos(angle) * c
 

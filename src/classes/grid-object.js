@@ -36,6 +36,16 @@ export default class GridObject {
   }
 
   /**
+   * Get absolute coordinates for a grid position
+   */
+  getAbsX(x) {
+    return this.board.getAbsX(x)
+  }
+  getAbsY(y) {
+    return this.board.getAbsY(y)
+  }
+
+  /**
    * Draw
    */
   draw(/*context, x, y*/) {}
@@ -74,10 +84,11 @@ export default class GridObject {
   /**
    * Helper to prepare a context for drawing
    */
-  prepareContext(context, canvasTranslate) {
+  prepareContext(context) {
 
     //Get data
-    const {alpha} = this
+    const {theme, alpha} = this
+    const canvasTranslate = theme.canvasTranslate()
 
     //Translate canvas
     context.translate(canvasTranslate, canvasTranslate)
@@ -91,10 +102,11 @@ export default class GridObject {
   /**
    * Helper to restore context state after drawing
    */
-  restoreContext(context, canvasTranslate) {
+  restoreContext(context) {
 
     //Get data
-    const {alpha} = this
+    const {theme, alpha} = this
+    const canvasTranslate = theme.canvasTranslate()
 
     //Reset transparency
     if (alpha && alpha < 1) {

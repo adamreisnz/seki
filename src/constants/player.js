@@ -7,8 +7,9 @@ import {setupTypes} from './setup.js'
 export const playerModes = {
   STATIC: 'static',
   REPLAY: 'replay',
-  EDIT: 'edit',
   PLAY: 'play',
+  EDIT: 'edit',
+  SCORE: 'score',
   SOLVE: 'solve',
 }
 
@@ -18,7 +19,6 @@ export const playerModes = {
 export const playerTools = {
   NONE: 'none',
   MOVE: 'move',
-  SCORE: 'score',
   MARKUP: 'markup',
   SETUP: 'setup',
 }

@@ -11,16 +11,17 @@ export const stoneColors = {
  * Stone styles
  */
 export const stoneStyles = {
-  SLATE_SHELL: 'slateshell',
+  SLATE_SHELL: 'slateShell',
   GLASS: 'glass',
   MONO: 'mono',
+  SHADOW: 'shadow',
 }
 
 /**
- * Stone modifier types
+ * Stone modifier styles
  */
-export const stoneModifierTypes = {
-  CAPTURED: 'captured',
+export const stoneModifierStyles = {
+  CAPTURES: 'captures',
+  POINTS: 'points',
   HOVER: 'hover',
-  MINI: 'mini',
 }

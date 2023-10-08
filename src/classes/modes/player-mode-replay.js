@@ -49,6 +49,8 @@ export default class PlayerModeReplay extends PlayerMode {
       keydown: 'onKeyDown',
       click: 'onClick',
       wheel: 'onMouseWheel',
+      gridEnter: 'onGridEnter',
+      gridLeave: 'onGridLeave',
       positionUpdate: 'onPositionUpdate',
       gameLoad: 'onGameLoad',
     })
@@ -114,7 +116,7 @@ export default class PlayerModeReplay extends PlayerMode {
     const action = player.getActionForKeyCode(keyCode)
 
     //Perform action
-    this.performAction(action, event)
+    this.processAction(action, event)
   }
 
   /**
@@ -132,13 +134,13 @@ export default class PlayerModeReplay extends PlayerMode {
     //Wheeling up
     if (nativeEvent.deltaY < 0) {
       const action = player.getActionForMouseEvent(mouseEvents.WHEEL_UP)
-      this.performAction(action, event)
+      this.processAction(action, event)
     }
 
     //Wheeling down
     else if (nativeEvent.deltaY > 0) {
       const action = player.getActionForMouseEvent(mouseEvents.WHEEL_DOWN)
-      this.performAction(action, event)
+      this.processAction(action, event)
     }
   }
 
@@ -148,7 +150,7 @@ export default class PlayerModeReplay extends PlayerMode {
   onClick(event) {
 
     //Get data
-    const {player, board, game} = this
+    const {board, game} = this
     const {x, y} = event.detail
 
     //Debug
@@ -163,22 +165,12 @@ export default class PlayerModeReplay extends PlayerMode {
     //Clear hover
     this.clearHover()
 
-    //Move tool active
-    if (player.isToolActive(playerTools.MOVE)) {
-      if (game.isMoveVariation(x, y)) {
-        this.selectMoveVariation(x, y)
-      }
-      else {
-        this.playMove(x, y)
-      }
+    //Clicked on move variation, select that variation
+    if (game.isMoveVariation(x, y)) {
+      this.selectMoveVariation(x, y)
     }
-
-    //Score tool active
-    else if (player.isToolActive(playerTools.SCORE)) {
-      //TODO: Refactor later
-      //Mark the clicked item and score the current game position
-      // GameScorer.mark(event.x, event.y)
-      // this.scoreGame()
+    else {
+      this.playMove(x, y)
     }
   }
 
@@ -196,14 +188,28 @@ export default class PlayerModeReplay extends PlayerMode {
     this.stopAutoPlay()
   }
 
+  /**
+   * On grid enter
+   */
+  onGridEnter(event) {
+    this.showHoverStone(event)
+  }
+
+  /**
+   * On grid leave
+   */
+  onGridLeave() {
+    this.clearHover()
+  }
+
   /**************************************************************************
    * Actions
    ***/
 
   /**
-   * Perform a bound action
+   * Process a bound action
    */
-  performAction(action, event) {
+  processAction(action, event) {
 
     //No action
     if (!action) {
@@ -211,7 +217,7 @@ export default class PlayerModeReplay extends PlayerMode {
     }
 
     //Debug
-    this.debug(`performing action ${action}`)
+    this.debug(`🎯 action ${action}`)
 
     //Get data
     const {nativeEvent} = event.detail
@@ -456,9 +462,6 @@ export default class PlayerModeReplay extends PlayerMode {
       return
     }
 
-    //Debug
-    this.debug(`adding last move marker`)
-
     //Get data
     const {board, markers} = this
     const {x, y} = node.move
@@ -480,9 +483,6 @@ export default class PlayerModeReplay extends PlayerMode {
     //Get data
     const {board, markers} = this
 
-    //Debug
-    this.debug(`clearing ${markers.length} markers`)
-
     //Remove markers
     markers.forEach(({x, y}) => board.remove(boardLayerTypes.MARKUP, x, y))
     this.markers = []
@@ -494,5 +494,19 @@ export default class PlayerModeReplay extends PlayerMode {
   playMove(x, y) {
     const {player} = this
     player.play(x, y)
+  }
+
+  /**
+   * Show hover stone
+   */
+  showHoverStone(event) {
+
+    //Get data
+    const {game} = this
+    const {x, y} = event.detail
+    const color = game.getTurn()
+
+    //Parent method
+    super.showHoverStone(x, y, color)
   }
 }

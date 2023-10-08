@@ -1,6 +1,7 @@
 import BoardLayer from '../board-layer.js'
+import StoneFactory from '../stone-factory.js'
 import {boardLayerTypes} from '../../constants/board.js'
-import {stoneModifierTypes} from '../../constants/stone.js'
+import {stoneModifierStyles} from '../../constants/stone.js'
 
 /**
  * Score layer
@@ -74,14 +75,16 @@ export default class ScoreLayer extends BoardLayer {
     //Draw captures first
     for (const entry of captures) {
       const {x, y, value: stone} = entry
-      const capture = stone.getModifiedCopy(stoneModifierTypes.CAPTURED)
+      const capture = StoneFactory
+        .createCopy(stone, stoneModifierStyles.CAPTURES)
       capture.draw(context, x, y)
     }
 
     //Draw points on top of it
     for (const entry of points) {
       const {x, y, value: stone} = entry
-      const point = stone.getModifiedCopy(stoneModifierTypes.MINI)
+      const point = StoneFactory
+        .createCopy(stone, stoneModifierStyles.POINTS)
       point.draw(context, x, y)
     }
   }
