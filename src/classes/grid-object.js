@@ -62,12 +62,21 @@ export default class GridObject {
   }
 
   /**
-   * Get object radius, with scaling applied
+   * Get object draw radius, with scaling applied
    */
   getRadius(color, cellSize) {
     const {scale} = this
     const radius = this.getThemeProp('radius', color, cellSize)
     return Math.round(radius * (scale || 1))
+  }
+
+  /**
+   * Get object erase radius, always full grid square
+   */
+  getEraseRadius() {
+    const {board, theme} = this
+    const cellSize = board.getCellSize()
+    return theme.get('grid.radius', cellSize)
   }
 
   /**
@@ -84,7 +93,7 @@ export default class GridObject {
     this.loadProperties(x, y)
 
     //Get data
-    const {radius} = this
+    const radius = this.getEraseRadius()
     const absX = this.getAbsX(x)
     const absY = this.getAbsY(y)
 

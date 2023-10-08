@@ -12,6 +12,8 @@ export default class MarkupVariation extends MarkupCircle {
   //Additional theme properties
   lineDash
   font
+  fontSize
+  text = ''
 
   //Properties set via constructor
   index = 0
@@ -39,10 +41,16 @@ export default class MarkupVariation extends MarkupCircle {
 
     //Load parent properties
     const args = super.loadProperties(x, y)
+    const {index, stoneColor, isSelected} = this
 
     //Load additional properties
     this.loadThemeProp('font', ...args)
+    this.loadThemeProp('fontSize', ...args)
     this.loadThemeProp('lineDash', ...args)
+
+    //Load color with specific args
+    this.loadThemeProp('color', stoneColor, isSelected)
+    this.loadThemeProp('text', index || 0)
 
     //Pass on args
     return args
@@ -67,34 +75,6 @@ export default class MarkupVariation extends MarkupCircle {
   }
 
   /**
-   * Determine font size
-   */
-  determineFontSize(text, radius) {
-    //NOTE: Same size irrespective of text length, it is assumed you won't
-    //be displaying more than 26 variations in one position.
-    return Math.round(radius * 1.5) * 0.85
-  }
-
-  /**
-   * Get markup color
-   */
-  getColor() {
-    const {theme, color, isSelected} = this
-    return theme.get('markup.variation.color', color, isSelected)
-  }
-
-  /**
-   * Get markup text
-   */
-  getText() {
-    const {theme, index, showText} = this
-    if (!showText) {
-      return ''
-    }
-    return theme.get('markup.variation.text', index || 0)
-  }
-
-  /**
    * Draw
    */
   draw(context, x, y) {
@@ -111,7 +91,7 @@ export default class MarkupVariation extends MarkupCircle {
     context.setLineDash([])
 
     //Not showing text, done (e.g. single move)
-    const {radius, color, font, showText} = this
+    const {radius, color, font, fontSize, text, showText} = this
     if (!showText) {
       return
     }
@@ -119,8 +99,6 @@ export default class MarkupVariation extends MarkupCircle {
     //Get coordinates and stone radius
     const absX = this.getAbsX(x)
     const absY = this.getAbsY(y)
-    const text = this.getText()
-    const fontSize = this.determineFontSize(text, radius)
 
     //Prepare context
     this.prepareContext(context)

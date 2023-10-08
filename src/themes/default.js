@@ -206,6 +206,9 @@ export default {
         return (i + 1) //Numbers
         // return String.fromCharCode(65 + i) //Letters
       },
+      fontSize(stoneColor, cellSize) {
+        return Math.floor(cellSize * 0.6)
+      },
       color(stoneColor, isSelected) {
         const opacity = isSelected ? 1 : 0.75
         if (stoneColor === stoneColors.WHITE) {
