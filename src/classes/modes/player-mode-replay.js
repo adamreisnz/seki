@@ -508,7 +508,16 @@ export default class PlayerModeReplay extends PlayerMode {
    * Play a move
    */
   playMove(x, y) {
+
+    //Get player
     const {player} = this
+
+    //Not allowed
+    if (!player.getConfig('allowMovesInReplayMode')) {
+      return
+    }
+
+    //Play move
     const outcome = player.playMove(x, y)
     if (outcome.isValid) {
       player.playSound('move')
@@ -520,8 +529,13 @@ export default class PlayerModeReplay extends PlayerMode {
    */
   showHoverStone(event) {
 
+    //Check if needed
+    const {player, game} = this
+    if (!player.getConfig('allowMovesInReplayMode')) {
+      return
+    }
+
     //Get data
-    const {game} = this
     const {x, y} = event.detail
     const color = game.getTurn()
 

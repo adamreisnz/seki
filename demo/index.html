@@ -136,9 +136,10 @@
     <h2>Other</h2>
     <button id="toggleSwapColors">Swap colors</button>
     <button id="toggleCoordinates">Toggle coordinates</button>
-    <button id="toggleNextMove">Toggle next move</button>
-    <button id="toggleVariations">Toggle variations</button>
+    <button id="toggleShowNextMove">Toggle next move indicator</button>
+    <button id="toggleShowVariations">Toggle variations</button>
     <button id="toggleRememberVariationPath">Toggle remember variation path</button>
+    <button id="toggleAllowMovesInReplayMode">Toggle allow moves in replay mode</button>
   </info>
 </div>
 <script type="module">
@@ -183,9 +184,10 @@ onClick('#loadBlank', () => {
 })
 
 //Toggles
-onClick('#toggleNextMove', () => player.toggleConfig('showNextMove'))
-onClick('#toggleVariations', () => player.toggleConfig('showVariations'))
+onClick('#toggleShowNextMove', () => player.toggleConfig('showNextMove'))
+onClick('#toggleShowVariations', () => player.toggleConfig('showVariations'))
 onClick('#toggleRememberVariationPath', () => player.toggleConfig('rememberVariationPaths'))
+onClick('#toggleAllowMovesInReplayMode', () => player.toggleConfig('allowMovesInReplayMode'))
 onClick('#toggleCoordinates', () => player.board.toggleCoordinates())
 onClick('#toggleSwapColors', () => player.board.toggleSwapColors())
 

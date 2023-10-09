@@ -195,6 +195,7 @@ export const defaultPlayerConfig = {
   showSiblingVariations: false,
   numberVariationMoves: true,
   rememberVariationPaths: true,
+  allowMovesInReplayMode: true,
 
   //Number of moves to skip at a time
   numSkipMoves: 10,
