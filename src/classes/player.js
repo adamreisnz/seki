@@ -4,8 +4,6 @@ import Game from './game.js'
 import GameScorer from './game-scorer.js'
 import EventHandler from './event-handler.js'
 import PlayerModeFactory from './player-mode-factory.js'
-import {boardLayerTypes} from '../constants/board.js'
-import {markupTypes} from '../constants/markup.js'
 import {
   getPixelRatio,
   addClass,
@@ -82,8 +80,8 @@ export default class Player extends Base {
     //Get newly created game
     const {game} = this
 
-    //Go to first move
-    game.first()
+    //Go to first position
+    game.goToFirstPosition()
 
     //Reset board
     board.reset()
@@ -342,8 +340,8 @@ export default class Player extends Base {
     this.loadConfigFromGame(game)
     this.triggerEvent('gameLoad', {game})
 
-    //Go to first move
-    game.first()
+    //Go to first position
+    game.goToFirstPosition()
 
     //Board present?
     if (this.board) {
@@ -387,7 +385,7 @@ export default class Player extends Base {
   /**
    * Go to the next position
    */
-  next(i) {
+  goToNextPosition(i) {
 
     //At restricted end node
     if (this.isAtRestrictedEndNode()) {
@@ -395,14 +393,14 @@ export default class Player extends Base {
     }
 
     //Go to next position
-    this.game.next(i)
+    this.game.goToNextPosition(i)
     this.processPosition()
   }
 
   /**
-   * Go back to the previous position
+   * Go to the previous position
    */
-  previous() {
+  goToPreviousPosition() {
 
     //At restricted start node
     if (this.isAtRestrictedStartNode()) {
@@ -410,102 +408,73 @@ export default class Player extends Base {
     }
 
     //Go to previous position
-    this.game.previous()
+    this.game.goToPreviousPosition()
     this.processPosition()
   }
 
   /**
    * Go to the last position
    */
-  last() {
-    this.game.last()
+  goToLastPosition() {
+    this.game.goToLastPosition()
     this.processPosition()
   }
 
   /**
    * Go to the first position
    */
-  first() {
-    this.game.first()
-    this.processPosition()
-  }
-
-  /**
-   * Skip forward
-   */
-  skipForward(num) {
-    num = num || this.getConfig('numSkipMoves')
-    this.game.skipForward(num)
-    this.processPosition()
-  }
-
-  /**
-   * Skip back
-   */
-  skipBack(num) {
-    num = num || this.getConfig('numSkipMoves')
-    this.game.skipBack(num)
-    this.processPosition()
-  }
-
-  /**
-   * Go to a specific move number, tree path or named node
-   */
-  goto(target) {
-
-    //Must have target
-    if (!target) {
-      return
-    }
-
-    //Go to target
-    this.game.goto(target)
+  goToFirstPosition() {
+    this.game.goToFirstPosition()
     this.processPosition()
   }
 
   /**
    * Go to the previous fork
    */
-  previousFork() {
-    this.game.previousFork()
+  goToPreviousFork() {
+    this.game.goToPreviousFork()
     this.processPosition()
   }
 
   /**
    * Go to the next fork
    */
-  nextFork() {
-    this.game.nextFork()
+  goToNextFork() {
+    this.game.goToNextFork()
     this.processPosition()
   }
 
   /**
    * Go to the next position with a comment
    */
-  nextComment() {
-
-    //At restricted end node
-    if (this.isAtRestrictedEndNode()) {
-      return
-    }
-
-    //Go to next commented position
-    this.game.nextComment()
+  goToNextComment() {
+    this.game.goToNextComment()
     this.processPosition()
   }
 
   /**
    * Go back to the previous position with a comment
    */
-  previousComment() {
+  goToPreviousComment() {
+    this.game.goToPreviousComment()
+    this.processPosition()
+  }
 
-    //At restricted start node
-    if (this.isAtRestrictedStartNode()) {
-      return
-    }
+  /**
+   * Go forward a number of positions
+   */
+  goForwardNumPositions(num) {
+    num = num || this.getConfig('numSkipMoves')
+    this.game.goForwardNumPositions(num)
+    this.processPosition()
+  }
 
-    //Go to previous commented position
-    this.game.previousComment()
+  /**
+   * Go backward a number of positions
+   */
+  goBackNumPositions(num) {
+    num = num || this.getConfig('numSkipMoves')
+    this.game.goBackNumPositions(num)
     this.processPosition()
   }
 
@@ -528,10 +497,23 @@ export default class Player extends Base {
   /**
    * Play a move
    */
-  play(x, y) {
-    if (this.game.play(x, y)) {
+  playMove(x, y) {
+    const outcome = this.game.playMove(x, y)
+    if (outcome.isValid) {
       this.processPosition()
     }
+    return outcome
+  }
+
+  /**
+   * Play a pass move
+   */
+  passMove(x, y) {
+    const outcome = this.game.passMove(x, y)
+    if (outcome.isValid) {
+      this.processPosition()
+    }
+    return outcome
   }
 
   /**
@@ -573,10 +555,10 @@ export default class Player extends Base {
     this.debug('processing position')
 
     //Get current node and game position
-    const node = this.game.getNode()
+    const node = this.game.getCurrentNode()
     const path = this.game.getPath()
     const position = this.game.getPosition()
-    const pathChanged = !path.compare(this.path)
+    const pathChanged = !path.isSameAs(this.path)
 
     //Update and redraw board
     this.updateBoard(position, pathChanged)
@@ -604,31 +586,6 @@ export default class Player extends Base {
     if (node.move && node.move.pass) {
       this.triggerEvent('pass', {node})
     }
-  }
-
-  /**
-   * Show move numbers
-   */
-  showMoveNumbers(fromMove, toMove) {
-
-    //Use sensible defaults if no from/to moves given
-    fromMove = fromMove || 1
-    toMove = toMove || this.game.getMoveNumber()
-
-    //Get nodes for these moves
-    let nodes = this.game.getMoveNodes(fromMove, toMove)
-    let move = fromMove
-
-    //Loop nodes
-    for (const node of nodes) {
-      this.board.add(boardLayerTypes.MARKUP, node.move.x, node.move.y, {
-        type: markupTypes.LABEL,
-        text: move++,
-      })
-    }
-
-    //Redraw board markup
-    this.board.redraw(boardLayerTypes.MARKUP)
   }
 
   /*****************************************************************************

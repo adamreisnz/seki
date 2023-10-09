@@ -302,16 +302,8 @@ export default class GameNode {
    */
   hasMoveVariation(x, y) {
     const {children} = this
-    return children.some(child => child.hasMove(x, y))
-  }
-
-  /**
-   * Get the move child node for the given coordinates
-   */
-  getMoveVariation(x, y) {
-    const {children} = this
     return children
-      .findIndex(child => child.hasMove(x, y))
+      .some(child => child.hasMove(x, y))
   }
 
   /**
@@ -321,6 +313,15 @@ export default class GameNode {
     const {children} = this
     return children
       .some(child => child.hasMove(x, y))
+  }
+
+  /**
+   * Get the move child node index for the given coordinates
+   */
+  getMoveVariationIndex(x, y) {
+    const {children} = this
+    return children
+      .findIndex(child => child.hasMove(x, y))
   }
 
   /**
@@ -353,6 +354,31 @@ export default class GameNode {
   }
 
   /**
+   * Find a named node in ourselves or our children
+   */
+  findNamedNode(name, path) {
+
+    //That's us!
+    if (this.name === name) {
+      return this
+    }
+
+    //Get children
+    const {children} = this
+
+    //Check all child variations
+    for (let i = 0; i < children.length; i++) {
+      const node = children[i].findNamedNode(name, path)
+      if (node) {
+        if (path) {
+          path.advance(i)
+        }
+        return node
+      }
+    }
+  }
+
+  /**
    * Check if we have comments in this node
    */
   hasComments() {
@@ -378,6 +404,28 @@ export default class GameNode {
    */
   getPathIndex() {
     return this.index
+  }
+
+  /**
+   * Increment path index
+   */
+  incrementPathIndex() {
+    const {children, index} = this
+    const next = index + 1
+    if (next < children.length && children[next]) {
+      this.index = next
+    }
+  }
+
+  /**
+   * Decrement path index
+   */
+  decrementPathIndex() {
+    const {children, index} = this
+    const prev = index - 1
+    if (prev >= 0 && children[prev]) {
+      this.index = prev
+    }
   }
 
   /**
@@ -415,6 +463,19 @@ export default class GameNode {
   }
 
   /**
+   * Get array of all path nodes from this node onwards
+   */
+  getPathNodes() {
+    const nodes = []
+    let node = this
+    while (node) {
+      nodes.push(node)
+      node = node.getPathNode()
+    }
+    return nodes
+  }
+
+  /**
    * Make this node the path node on its parent
    */
   setAsParentPathNode() {
@@ -430,28 +491,6 @@ export default class GameNode {
   isSelectedPath(child) {
     const {children, index} = this
     return (child === children[index])
-  }
-
-  /**
-   * Select next path if possible
-   */
-  selectNextPath() {
-    const {children, index} = this
-    const next = index + 1
-    if (next < children.length && children[next]) {
-      this.index = next
-    }
-  }
-
-  /**
-   * Select previous path if possible
-   */
-  selectPreviousPath() {
-    const {children, index} = this
-    const prev = index - 1
-    if (prev >= 0 && children[prev]) {
-      this.index = prev
-    }
   }
 
   /**************************************************************************
@@ -527,6 +566,13 @@ export default class GameNode {
     return markup
       .some(entry => entry.coords
         .some(coord => coord.x === x && coord.y === y))
+  }
+
+  /**
+   * Check if we have markup instructions in this node
+   */
+  hasMarkupInstructions() {
+    return Array.isArray(this.markup)
   }
 
   /**************************************************************************
@@ -616,5 +662,19 @@ export default class GameNode {
     return setup
       .some(entry => entry.coords
         .some(coord => coord.x === x && coord.y === y))
+  }
+
+  /**
+   * Check if we have setup instructions in this node
+   */
+  hasSetupInstructions() {
+    return Array.isArray(this.setup)
+  }
+
+  /**
+   * Check if we have a turn indicator
+   */
+  hasTurnIndicator() {
+    return (typeof this.turn !== 'undefined')
   }
 }

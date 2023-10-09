@@ -134,10 +134,11 @@
     </div>
 
     <h2>Other</h2>
+    <button id="toggleSwapColors">Swap colors</button>
     <button id="toggleCoordinates">Toggle coordinates</button>
     <button id="toggleNextMove">Toggle next move</button>
     <button id="toggleVariations">Toggle variations</button>
-    <button id="toggleSwapColors">Swap colors</button>
+    <button id="toggleRememberVariationPath">Toggle remember variation path</button>
   </info>
 </div>
 <script type="module">
@@ -184,20 +185,21 @@ onClick('#loadBlank', () => {
 //Toggles
 onClick('#toggleNextMove', () => player.toggleConfig('showNextMove'))
 onClick('#toggleVariations', () => player.toggleConfig('showVariations'))
+onClick('#toggleRememberVariationPath', () => player.toggleConfig('rememberVariationPaths'))
 onClick('#toggleCoordinates', () => player.board.toggleCoordinates())
 onClick('#toggleSwapColors', () => player.board.toggleSwapColors())
 
 //Navigation
-onClick('#firstMove', () => player.first())
-onClick('#skipBack', () => player.skipBack())
-onClick('#prevMove', () => player.previous())
-onClick('#nextMove', () => player.next())
-onClick('#skipForward', () => player.skipForward())
-onClick('#lastMove', () => player.last())
-onClick('#prevFork', () => player.previousFork())
-onClick('#nextFork', () => player.nextFork())
-onClick('#prevComment', () => player.previousComment())
-onClick('#nextComment', () => player.nextComment())
+onClick('#firstMove', () => player.goToFirstPosition())
+onClick('#skipBack', () => player.goBackNumPositions())
+onClick('#prevMove', () => player.goToPreviousPosition())
+onClick('#nextMove', () => player.goToNextPosition())
+onClick('#skipForward', () => player.goForwardNumPositions())
+onClick('#lastMove', () => player.goToLastPosition())
+onClick('#prevFork', () => player.goToPreviousFork())
+onClick('#nextFork', () => player.goToNextFork())
+onClick('#prevComment', () => player.goToPreviousComment())
+onClick('#nextComment', () => player.goToNextComment())
 onClick('#prevVariation', () => player.selectPreviousVariation())
 onClick('#nextVariation', () => player.selectNextVariation())
 

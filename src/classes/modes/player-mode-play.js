@@ -71,7 +71,10 @@ export default class PlayerModePlay extends PlayerMode {
    */
   playMove(x, y) {
     const {player} = this
-    player.play(x, y)
+    const outcome = player.playMove(x, y)
+    if (outcome.isValid) {
+      player.playSound('move')
+    }
   }
 
   /**

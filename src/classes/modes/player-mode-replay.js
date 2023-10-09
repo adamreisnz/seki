@@ -238,15 +238,19 @@ export default class PlayerModeReplay extends PlayerMode {
   goToNextPosition() {
 
     //Get data
-    const {player, isAutoPlaying} = this
+    const {player, game, isAutoPlaying} = this
+
+    //If we're remembering chosen variations, get the variation index
+    const remember = player.getConfig('rememberVariationPaths')
+    const i = remember ? game.getCurrentPathIndex() : 0
 
     //Stop auto play
     if (isAutoPlaying) {
       this.stopAutoPlay()
     }
 
-    //Go to next move
-    player.next()
+    //Go to next position
+    player.goToNextPosition(i)
 
     //Start auto play again
     if (isAutoPlaying) {
@@ -267,8 +271,8 @@ export default class PlayerModeReplay extends PlayerMode {
       this.stopAutoPlay()
     }
 
-    //Go to previous move
-    player.previous()
+    //Go to previous position
+    player.goToPreviousPosition()
 
     //Start auto play again
     if (isAutoPlaying) {
@@ -312,8 +316,8 @@ export default class PlayerModeReplay extends PlayerMode {
     this.isAutoPlaying = true
     this.autoPlayInterval = setInterval(() => {
 
-      //Advance to the next node
-      player.next()
+      //Advance to the next position
+      player.goToNextPosition()
 
       //Ran out of children?
       if (!game.node.hasChildren()) {
@@ -378,8 +382,6 @@ export default class PlayerModeReplay extends PlayerMode {
       this.addMoveVariationMarkers(node, false)
     }
 
-    console.log(node.isVariationBranch())
-
     //Number variation moves
     if (numberVariationMoves && node.isVariationBranch()) {
       this.numberVariationMoves(node)
@@ -434,10 +436,10 @@ export default class PlayerModeReplay extends PlayerMode {
 
     //Get data
     const {player, game} = this
-    const i = game.getMoveVariation(x, y)
+    const i = game.getMoveVariationIndex(x, y)
 
     //Follow a move variation
-    player.next(i)
+    player.goToNextPosition(i)
   }
 
   /**
@@ -471,8 +473,6 @@ export default class PlayerModeReplay extends PlayerMode {
     //Get variation nodes
     const {board, markers} = this
     const nodes = node.getVariationMoveNodes()
-
-    console.log(nodes)
 
     //Loop each
     nodes.forEach((node, i) => {
@@ -509,8 +509,10 @@ export default class PlayerModeReplay extends PlayerMode {
    */
   playMove(x, y) {
     const {player} = this
-    player.play(x, y)
-    player.playSound('move')
+    const outcome = player.playMove(x, y)
+    if (outcome.isValid) {
+      player.playSound('move')
+    }
   }
 
   /**

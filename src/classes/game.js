@@ -1,5 +1,6 @@
 import merge from 'deepmerge'
 import Base from './base.js'
+import {ErrorOutcome, ValidOutcome} from './outcomes.js'
 import GamePath from './game-path.js'
 import GameNode from './game-node.js'
 import GamePosition from './game-position.js'
@@ -26,11 +27,17 @@ import {
  * positions. These changes can then be fed to the board, to add or remove stones and markup.
  * The class also keeps a stack of all board positions in memory and can validate moves to make
  * sure they are not repeating or suicide.
+ *
+ * - A game position is a snapshot of stones and markup on the board at a point in time
+ * - The position stack is an array of all traversed game positions
+ * - The game path is a simple record of which variation was selected at each fork,
+ *   and what move we're at
+ * - The current node points at the current node in the game tree
  */
 export default class Game extends Base {
 
-  //History stack
-  history = []
+  //Positions stack
+  positions = []
 
   /**
    * Constructor
@@ -50,18 +57,15 @@ export default class Game extends Base {
 
     //The rood node and pointer to the current node
     this.root = new GameNode()
-    this.node = this.root
-
-    //Game path
     this.path = new GamePath()
+    this.node = this.root
 
     //Settings
     this.allowSuicide = false
-    this.rememberPath = true
     this.checkRepeat = checkRepeatTypes.KO
 
-    //Initialize history
-    this.initializeHistory()
+    //Initialize position stack
+    this.initialisePositionStack()
   }
 
   /**
@@ -90,39 +94,21 @@ export default class Game extends Base {
   }
 
   /**************************************************************************
-   * Virtuals
-   ***/
-
-  /**
-   * Getter returns the last position from the stack
-   */
-  get position() {
-    return this.history[this.history.length - 1]
-  }
-
-  /**
-   * Setter adds a new position to the stack
-   */
-  set position(newPosition) {
-    this.history[this.history.length] = newPosition
-  }
-
-  /**************************************************************************
    * Game information & rules getters/setters
    ***/
-
-  /**
-   * Get a generic game info property
-   */
-  getInfo(path, defaultValue) {
-    return get(this.info, path, defaultValue)
-  }
 
   /**
    * Set a generic game info property
    */
   setInfo(path, value) {
     set(this.info, path, value)
+  }
+
+  /**
+   * Get a generic game info property
+   */
+  getInfo(path, defaultValue) {
+    return get(this.info, path, defaultValue)
   }
 
   /**
@@ -163,8 +149,7 @@ export default class Game extends Base {
    */
   getKomi() {
     const {defaultKomi} = this.config
-    const komi = this.getInfo('rules.komi', defaultKomi)
-    return parseFloat(komi)
+    return this.getInfo('rules.komi', defaultKomi)
   }
 
   /**
@@ -178,47 +163,188 @@ export default class Game extends Base {
    * Get the game handicap
    */
   getHandicap() {
-    const handicap = this.getInfo('rules.handicap', 0)
-    return parseInt(handicap)
+    return this.getInfo('rules.handicap', 0)
   }
 
-  /*****************************************************************************
-   * Node and position getters
+  /**
+   * Set allow suicide
+   */
+  setAllowSuicide(allowSuicide) {
+    this.allowSuicide = allowSuicide
+  }
+
+  /**
+   * Set check repeat
+   */
+  setCheckRepeat(checkRepeat) {
+    this.checkRepeat = checkRepeat
+  }
+
+  /**************************************************************************
+   * Turn and capture count
    ***/
 
   /**
-   * Get current node
+   * Set the player turn for the current position
    */
-  getNode() {
-    return this.node
+  setTurn(color) {
+    const {position} = this
+    if (position) {
+      position.setTurn(color)
+    }
   }
 
   /**
-   * Get nodes array for currently remembered path
+   * Get the player turn for this position
    */
-  getNodes() {
+  getTurn() {
+    const {position} = this
+    if (position) {
+      return position.getTurn()
+    }
+    return stoneColors.BLACK
+  }
 
-    //Initialize node to process
-    let node = this.root
-    const nodes = [node]
+  /**
+   * Get the total capture count up to the current position
+   */
+  getCaptureCount() {
 
-    //Process children
-    while (node) {
-      node = node.getPathNode()
-      if (node) {
-        nodes.push(node)
+    //Initialize
+    const {positions} = this
+    const captures = {}
+    const colors = [
+      stoneColors.BLACK,
+      stoneColors.WHITE,
+    ]
+
+    //Loop all positions
+    for (const position of positions) {
+      for (const color of colors) {
+        captures[color] ??= 0
+        captures[color] += position.getCaptureCount(color)
       }
     }
 
-    //Return nodes
-    return nodes
+    //Return
+    return captures
+  }
+
+  /*****************************************************************************
+   * Position handling
+   ***/
+
+  /**
+   * Getter returns the last position from the stack
+   */
+  get position() {
+    const {positions} = this
+    return positions[positions.length - 1]
   }
 
   /**
-   * Check if a node is the root node
+   * Setter adds a new position to the stack
    */
-  isRootNode(node) {
-    return this.root === node
+  set position(newPosition) {
+    const {positions} = this
+    positions[positions.length] = newPosition
+  }
+
+  /**
+   * Initialise the position stack
+   */
+  initialisePositionStack() {
+
+    //Already at beginning?
+    const {positions} = this
+    if (positions.length === 1) {
+      return
+    }
+
+    //Create new blank game position
+    const position = new GamePosition()
+    const {width, height} = this.getBoardSize()
+
+    //Clear positions stack push the position
+    positions.length = 0
+    positions.push(position)
+
+    //Set board size if we have the info
+    if (width && height) {
+      positions[0].setSize(width, height)
+    }
+  }
+
+  /**
+   * Add position to stack
+   */
+  addPositionToStack(newPosition) {
+    this.positions.push(newPosition)
+  }
+
+  /**
+   * Remove last position from stack
+   */
+  removeLastPositionFromStack() {
+    if (this.positions.length > 0) {
+      return this.positions.pop()
+    }
+  }
+
+  /**
+   * Replace the current position in the stack
+   */
+  replaceLastPositionInStack(newPosition) {
+    if (newPosition) {
+      this.positions.pop()
+      this.positions.push(newPosition)
+    }
+  }
+
+  /**
+   * Check if a given position is repeating within this game
+   */
+  isRepeatingPosition(checkPosition) {
+
+    //Get data
+    const {checkRepeat, positions} = this
+    let stop
+
+    //Check for ko only? (Last two positions)
+    if (checkRepeat === checkRepeatTypes.KO && (positions.length - 2) >= 0) {
+      stop = positions.length - 2
+    }
+
+    //Check all positions?
+    else if (checkRepeat === checkRepeatTypes.ALL) {
+      stop = 0
+    }
+
+    //Not repeating
+    else {
+      return false
+    }
+
+    //Loop positions to check
+    for (let i = positions.length - 2; i >= stop; i--) {
+      if (checkPosition.isSameAs(positions[i])) {
+        return true
+      }
+    }
+
+    //Not repeating
+    return false
+  }
+
+  /*****************************************************************************
+   * Node and position handling
+   ***/
+
+  /**
+   * Get the current node
+   */
+  getCurrentNode() {
+    return this.node
   }
 
   /**
@@ -229,75 +355,17 @@ export default class Game extends Base {
   }
 
   /**
-   * Get the root node
+   * Get root node
    */
   getRootNode() {
     return this.root
   }
 
   /**
-   * Get the current node
+   * Check if a node is the root node
    */
-  getCurrentNode() {
-    return this.node
-  }
-
-  /**
-   * Get node for a certain move
-   */
-  getMoveNode(move) {
-    const nodes = this.getMoveNodes(move, move)
-    return nodes.length ? nodes[0] : null
-  }
-
-  /**
-   * Get move nodes restricted by given move numbers
-   */
-  getMoveNodes(fromMove, toMove) {
-
-    //Get all nodes for the current path
-    const nodes = this.getNodes()
-
-    //Use sensible defaults if no from/to moves given
-    fromMove = fromMove || 1
-    toMove = toMove || nodes.length
-
-    //Filter
-    return nodes.filter(function(node) {
-      if (node.isMove()) {
-        const move = node.getMoveNumber()
-        return (move >= fromMove && move <= toMove)
-      }
-      return false
-    })
-  }
-
-  /**
-   * Get current move number
-   */
-  getMoveNumber() {
-    if (this.node) {
-      return this.node.getMoveNumber()
-    }
-    return 0
-  }
-
-  /**
-   * Get the number of moves in the main branch
-   */
-  getMoveCount() {
-    const moveNodes = this.getMoveNodes()
-    return moveNodes.length
-  }
-
-  /**
-   * Get the move variation for given coordinates
-   */
-  getMoveVariation(x, y) {
-    if (this.node) {
-      return this.node.getMoveVariation(x, y)
-    }
-    return -1
+  isRootNode(node) {
+    return this.root === node
   }
 
   /**
@@ -310,18 +378,15 @@ export default class Game extends Base {
   /**
    * Get the game path
    */
-  getPath(clone) {
-    if (clone) {
-      return this.path.clone()
-    }
+  getPath() {
     return this.path
   }
 
   /**
-   * Clone the current game path
+   * Find a node by name
    */
-  clonePath() {
-    return this.path.clone()
+  findNodeByName(name) {
+    return this.root.findNodeByName(name)
   }
 
   /**
@@ -331,64 +396,100 @@ export default class Game extends Base {
     return GamePath.findNode(nodeName, this.root)
   }
 
-  /**
-   * Get the player turn for this position
-   */
-  getTurn() {
-
-    //Must have a position
-    if (!this.history.length) {
-      return stoneColors.BLACK
-    }
-
-    //Get from position
-    return this.position.getTurn()
-  }
-
-  /**
-   * Set the player turn for the current position
-   */
-  setTurn(color) {
-
-    //Must have a position
-    if (!this.history.length) {
-      return
-    }
-
-    //Set in position
-    this.position.setTurn(color)
-  }
-
-  /**
-   * Get the total capture count up to the current position
-   */
-  getCaptureCount() {
-
-    //Initialize
-    let captures = {}
-    captures[stoneColors.BLACK] = 0
-    captures[stoneColors.WHITE] = 0
-
-    //Loop all positions and increment capture count
-    for (let i = 0; i < this.history.length; i++) {
-      captures[stoneColors.BLACK] +=
-        this.history[i].getCaptureCount(stoneColors.BLACK)
-      captures[stoneColors.WHITE] +=
-        this.history[i].getCaptureCount(stoneColors.WHITE)
-    }
-
-    //Return
-    return captures
-  }
-
-  /*****************************************************************************
-   * Checkers
+  /**************************************************************************
+   * Move number and named node handling
    ***/
 
   /**
-   * Check if coordinates are on the board
+   * Get current move number
    */
-  isOnBoard(x, y) {
+  getCurrentMoveNumber() {
+    this.node.getMoveNumber()
+  }
+
+  /**
+   * Get path index of current node
+   */
+  getCurrentPathIndex() {
+    return this.node.getPathIndex()
+  }
+
+  /**
+   * Get current node name
+   */
+  getCurrentNodeName() {
+    return this.node.name
+  }
+
+  /**
+   * Get the number of moves in the main branch
+   */
+  getTotalNumberOfMoves() {
+    let node = this.root
+    let m = 0
+    while (node) {
+      if (node.isMove()) {
+        m++
+      }
+      node = node.getPathNode()
+    }
+    return m
+  }
+
+  /**
+   * Get node for a certain move number
+   */
+  findNodeForMoveNumber(number) {
+    let node = this.root
+    let m = 0
+    while (node) {
+      if (node.isMove()) {
+        m++
+        if (m === number) {
+          return node
+        }
+      }
+      node = node.getPathNode()
+    }
+  }
+
+  /**
+   * Find named node
+   */
+  findNamedNode(name) {
+    return this.root.findNamedNode(name)
+  }
+
+  /**
+   * Get game path to a given move number
+   */
+  getPathToMoveNumber(number) {
+    const path = new GamePath()
+    path.setMove(number)
+    return path
+  }
+
+  /**
+   * Get path to named node
+   */
+  getPathToNamedNode(name) {
+    const {root} = this
+    const path = new GamePath()
+    const node = root.findNamedNode(name, path)
+    return node ? path : null
+  }
+
+  /*****************************************************************************
+   * Coordinate checkers
+   ***/
+
+  /**
+   * Check if coordinates are valid
+   *
+   * NOTE: This checks against game info, as opposed to an actual board object,
+   * because this class can be used independently of the board class.
+   */
+  isValidCoordinate(x, y) {
     const {width, height} = this.getBoardSize()
     return (x >= 0 && y >= 0 && x < width && y < height)
   }
@@ -397,112 +498,78 @@ export default class Game extends Base {
    * Check if given coordinates are one of the next child node coordinates
    */
   isMoveVariation(x, y) {
-    if (this.node) {
-      return this.node.isMoveVariation(x, y)
-    }
-    return false
+    this.node.isMoveVariation(x, y)
   }
 
   /**
-   * Check if a given position is repeating within this game
+   * Get move variation index
    */
-  isRepeatingPosition(checkPosition) {
-
-    //Get data
-    const {checkRepeat, history} = this
-    let stop
-
-    //Check for ko only? (Last two positions)
-    if (checkRepeat === checkRepeatTypes.KO && (history.length - 2) >= 0) {
-      stop = history.length - 2
-    }
-
-    //Check all history?
-    else if (checkRepeat === checkRepeatTypes.ALL) {
-      stop = 0
-    }
-
-    //Not repeating
-    else {
-      return false
-    }
-
-    //Loop history of positions to check
-    for (let i = history.length - 2; i >= stop; i--) {
-      if (checkPosition.isSameAs(history[i])) {
-        return true
-      }
-    }
-
-    //Not repeating
-    return false
+  getMoveVariationIndex(x, y) {
+    return this.node.getMoveVariationIndex(x, y)
   }
+
+  /**************************************************************************
+   * Move and setup placement validation
+   ***/
 
   /**
    * Wrapper for validateMove() returning a boolean and catching any errors
    */
   isValidMove(x, y, color) {
-    const [newPosition] = this.validateMove(x, y, color)
-    return !!newPosition
+    const position = this.position.clone()
+    const [isValid] = this.validateMove(position, x, y, color)
+    return isValid
   }
 
   /**
-   * Check if a move is valid. If valid, the new game position object is returned.
-   * You can supply a pre-created position to use, or the current position is cloned.
+   * Check if a move is valid against a given position
    */
-  validateMove(x, y, color, newPosition) {
+  validateMove(position, x, y, color) {
 
     //Get data
-    const {position, allowSuicide, checkRepeat} = this
+    const {allowSuicide, checkRepeat} = this
 
     //Check coordinates validity
-    if (!this.isOnBoard(x, y)) {
-      return [null, `Position (${x},${y}) is out of bounds`]
+    if (!this.isValidCoordinate(x, y)) {
+      return new ErrorOutcome(`Position (${x},${y}) is out of bounds`)
     }
 
     //Something already here?
     if (position.stones.has(x, y)) {
-      return [null, `Position (${x},${y}) already has a stone`]
+      return new ErrorOutcome(`Position (${x},${y}) already has a stone`)
     }
 
     //Set color of move to make
-    color = color || position.getTurn()
+    if (typeof color === 'undefined') {
+      color = position.getTurn()
+    }
 
-    //Determine position to use and place the new stone
-    newPosition = newPosition || position.clone()
-    newPosition.stones.set(x, y, color)
+    //Place the new stone
+    position.stones.set(x, y, color)
 
     //Capture adjacent stones if possible
-    const captures = newPosition.captureAdjacent(x, y)
+    const captures = position.captureAdjacent(x, y)
 
     //No captures occurred? Check if the move we're making is a suicide move
     if (!captures) {
-
-      //No liberties for the group we've just created?
-      if (!newPosition.hasLiberties(x, y)) {
-
-        //Capture the group if it's allowed
+      if (!position.hasLiberties(x, y)) {
         if (allowSuicide) {
-          newPosition.captureGroup(x, y)
+          position.captureGroup(x, y)
         }
-
-        //Invalid move
         else {
-          return [null, `Move on (${x},${y}) is suicide`]
+          return new ErrorOutcome(`Move on (${x},${y}) is suicide`)
         }
       }
     }
 
-    //Check history for repeating moves
-    if (checkRepeat && this.isRepeatingPosition(newPosition)) {
-      return [null, `Move on (${x},${y}) creates a repeating position`]
+    //Check position stack for repeating moves
+    if (checkRepeat && this.isRepeatingPosition(position)) {
+      return new ErrorOutcome(`Move on (${x},${y}) creates a repeating position`)
     }
 
     //Switch turn
-    newPosition.switchTurn()
-
-    //Move is valid
-    return [newPosition]
+    position.switchTurn()
+    return new ValidOutcome()
   }
 
   /**
@@ -514,7 +581,7 @@ export default class Game extends Base {
     const {position} = this
 
     //Check coordinates validity
-    if (!this.isOnBoard(x, y)) {
+    if (!this.isValidCoordinate(x, y)) {
       return [null, `Position (${x},${y}) is out of bounds`]
     }
 
@@ -638,7 +705,7 @@ export default class Game extends Base {
     if (typeof newNodeIndex !== 'undefined') {
       this.debug(`new node was created with index ${newNodeIndex}`)
       this.handleNewSetupNodeCreation(newNodeIndex)
-      this.replacePosition(newPosition)
+      this.replaceLastPositionInStack(newPosition)
       return
     }
 
@@ -683,7 +750,7 @@ export default class Game extends Base {
 
     //Replace current position
     this.handleNewSetupNodeCreation(newNodeIndex)
-    this.replacePosition(newPosition)
+    this.replaceLastPositionInStack(newPosition)
   }
 
   /**
@@ -715,43 +782,42 @@ export default class Game extends Base {
       return
     }
 
-    //Clone our position
-    this.pushPosition()
-
     //Advance path to the added node index
     this.node = this.node.getChild(i)
     this.path.advance(i)
+
+    //Clone our position
+    const position = this.position.clone()
+    this.addPositionToStack(position)
   }
 
   /*****************************************************************************
-   * Move handling
+   * Playing a move or passing
    ***/
 
   /**
-   * Play move
+   * Play a move
    */
-  play(x, y, color) {
+  playMove(x, y) {
 
-    //Color defaults to player's current turn color
-    color = color || this.position.getTurn()
+    //Get color
+    const color = this.position.getTurn()
 
     //Already have a variation here? Just advance position
     if (this.node.hasMoveVariation(x, y)) {
-      const i = this.node.getMoveVariation(x, y)
-      return this.next(i)
+      const i = this.node.getMoveVariationIndex(x, y)
+      return this.goToNextPosition(i)
     }
 
     //Validate move and get new position
-    const [newPosition, reason] = this.validateMove(x, y, color)
+    const newPosition = this.position.clone()
+    const outcome = this.validateMove(newPosition, x, y, color)
 
     //Invalid move
-    if (!newPosition) {
-      this.warn(reason)
-      return false
+    if (!outcome.isValid) {
+      this.warn(outcome.reason)
+      return outcome
     }
-
-    //Push new position
-    this.pushPosition(newPosition)
 
     //Create new move node
     const node = new GameNode({
@@ -768,29 +834,27 @@ export default class Game extends Base {
     this.path.advance(i)
 
     //Valid move
-    return true
+    this.addPositionToStack(newPosition)
+    return new ValidOutcome()
   }
 
   /**
-   * Play pass
+   * Pass move
    */
-  pass(color) {
+  passMove() {
 
-    //Color defaults to current turn
-    color = color || this.position.getTurn()
+    //Get color
+    const color = this.position.getTurn()
 
     //Initialize new position and switch the turn
     const newPosition = this.position.clone()
     newPosition.switchTurn()
 
-    //Push new position
-    this.pushPosition(newPosition)
-
     //Create new move node
     const node = new GameNode({
       move: {
-        pass: true,
         color,
+        pass: true,
       },
     })
 
@@ -802,6 +866,10 @@ export default class Game extends Base {
     //Advance path to the added node index
     this.node = node
     this.path.advance(i)
+
+    //Add new position to stack
+    this.addPositionToStack(newPosition)
+    return new ValidOutcome()
   }
 
   /*****************************************************************************
@@ -811,160 +879,82 @@ export default class Game extends Base {
   /**
    * Go to the next position
    */
-  next(i) {
-
-    //Object (node) given as parameter? Find index
-    if (typeof i === 'object') {
-      i = this.node.getChild(i)
+  goToNextPosition(i) {
+    if (this.goToNextNode(i)) {
+      return this.processCurrentNode()
     }
-
-    //Go to the next node
-    if (this.nextNode(i)) {
-
-      //If an invalid move is detected, we can't go on
-      try {
-        this.executeNode()
-        return true
-      }
-      catch (error) {
-        this.previousNode()
-        throw error
-      }
-    }
-
-    //Didn't go to next position
-    return false
+    return new ErrorOutcome(`No next position`)
   }
 
   /**
    * Go to the previous position
    */
-  previous() {
-
-    //Go to the previous node
-    if (this.previousNode()) {
-      this.popPosition()
-      return true
+  goToPreviousPosition() {
+    if (this.goToPreviousNode()) {
+      return new ValidOutcome()
     }
-
-    //Didn't go to previous position
-    return false
+    return new ErrorOutcome(`No previous position`)
   }
 
   /**
    * Go to the last position
    */
-  last() {
-
-    //Keep going to the next node until we reach the end
-    while (this.nextNode()) {
-
-      //If an invalid move is detected, we can't go on
-      try {
-        this.executeNode()
-      }
-      catch (error) {
-        this.previousNode()
-        throw error
-      }
+  goToLastPosition() {
+    while (this.goToNextNode()) {
+      this.processCurrentNode()
     }
   }
 
   /**
    * Go to the first position
    */
-  first() {
-
-    //Go to the first node
-    this.firstNode()
-
-    //Create the initial position, clone it and parse the current node
-    this.initializeHistory()
-    this.executeNode()
+  goToFirstPosition() {
+    this.goToFirstNode()
+    this.processCurrentNode()
   }
 
   /**
-   * Skip forward a number of positions
+   * Go to specific move number
    */
-  skipForward(num) {
-    for (let i = 0; i < num; i++) {
-      if (!this.next()) {
-        return
-      }
+  goToMoveNumber(number) {
+
+    //Already here
+    if (this.getCurrentMoveNumber() === number) {
+      return
     }
+
+    //Get path to the named node
+    const path = this.getPathToMoveNumber(name)
+    this.goToPath(path)
   }
 
   /**
-   * Skip backwards a number of positions
+   * Go to specific named node
    */
-  skipBack(num) {
-    for (let i = 0; i < num; i++) {
-      if (!this.previous()) {
-        return
-      }
+  goToNamedNode(name) {
+
+    //Already here
+    if (this.getCurrentNodeName() === name) {
+      return
     }
+
+    //Get path to the named node
+    const path = this.getPathToNamedNode(name)
+    this.goToPath(path)
   }
 
   /**
-   * Go to position specified by a path object, a numeric move numer, or a node name string
+   * Go to position indicated by given path
    */
-  goto(target) {
+  goToPath(path) {
 
-    //Must have a tree
-    if (this.root === null) {
+    //No path or already here?
+    if (!path || this.path.isSameAs(path)) {
       return
     }
 
-    //Nothing given?
-    if (typeof target === 'undefined') {
-      return
-    }
-
-    //Function given? Call now
-    if (typeof target === 'function') {
-      target = this.target()
-    }
-
-    //Initialize path
-    let path
-
-    //Simple move number? Convert to path object
-    if (typeof target === 'number') {
-      path = this.path.clone()
-      path.setMove(target)
-    }
-
-    //String? Named node
-    else if (typeof target === 'string') {
-
-      //Already here?
-      if (this.node.name === target) {
-        return
-      }
-
-      //Find path to node
-      path = this.getPathToNode(target)
-      if (path === null) {
-        return
-      }
-    }
-
-    //Otherwise assume path object
-    else {
-      path = target
-    }
-
-    //Already here?
-    if (this.path.compare(path)) {
-      return
-    }
-
-    //Go to the first node
-    this.firstNode()
-
-    //Create the initial position, clone it and parse the current node
-    this.initializeHistory()
-    this.pushPosition(this.executeNode())
+    //Go to the first position
+    this.goToFirstPosition()
 
     //Loop path
     const n = path.getMoveNumber()
@@ -972,17 +962,14 @@ export default class Game extends Base {
 
       //Try going to the next node
       const i = path.indexAtMove(m)
-      if (!this.nextNode(i)) {
+      if (!this.goToNextNode(i)) {
         break
       }
 
-      //If an invalid move is detected, we can't go on
-      try {
-        this.executeNode()
-      }
-      catch (error) {
-        this.previousNode()
-        throw error
+      //Execute node and break if invalid
+      const outcome = this.processCurrentNode()
+      if (!outcome.isValid) {
+        break
       }
     }
   }
@@ -990,22 +977,13 @@ export default class Game extends Base {
   /**
    * Go to the next fork
    */
-  nextFork() {
-
-    //Keep going to the next node until we reach one with multiple children
-    while (this.nextNode()) {
-
-      //If an invalid move is detected, we can't go on
-      try {
-        this.executeNode()
+  goToNextFork() {
+    while (this.goToNextNode()) {
+      const outcome = this.processCurrentNode()
+      if (!outcome.isValid) {
+        break
       }
-      catch (error) {
-        this.previousNode()
-        throw error
-      }
-
-      //Have multiple children?
-      if (this.node.children.length > 1) {
+      if (this.node.hasMultipleChildren()) {
         break
       }
     }
@@ -1014,12 +992,9 @@ export default class Game extends Base {
   /**
    * Go to the previous fork
    */
-  previousFork() {
-
-    //Loop until we find a node with more than one child
-    while (this.previousNode()) {
-      this.popPosition()
-      if (this.node.children.length > 1) {
+  goToPreviousFork() {
+    while (this.goToPreviousNode()) {
+      if (this.node.hasMultipleChildren()) {
         break
       }
     }
@@ -1028,21 +1003,12 @@ export default class Game extends Base {
   /**
    * Go to the next move with comments
    */
-  nextComment() {
-
-    //Keep going to the next node until we find one with comments
-    while (this.nextNode()) {
-
-      //If an invalid move is detected, we can't go on
-      try {
-        this.executeNode()
+  goToNextComment() {
+    while (this.goToNextNode()) {
+      const outcome = this.processCurrentNode()
+      if (!outcome.isValid) {
+        break
       }
-      catch (error) {
-        this.previousNode()
-        throw error
-      }
-
-      //Comments found?
       if (this.node.hasComments()) {
         break
       }
@@ -1052,17 +1018,32 @@ export default class Game extends Base {
   /**
    * Go to the previous move with comments
    */
-  previousComment() {
-
-    //Go back until we find a node with comments
-    while (this.previousNode()) {
-
-      //Pop the position
-      this.popPosition()
-
-      //Comments found?
+  goToPreviousComment() {
+    while (this.goToPreviousNode()) {
       if (this.node.hasComments()) {
         break
+      }
+    }
+  }
+
+  /**
+   * Go forward a number of positions
+   */
+  goForwardNumPositions(num) {
+    for (let i = 0; i < num; i++) {
+      if (!this.goToNextPosition()) {
+        return
+      }
+    }
+  }
+
+  /**
+   * Go backward a number of positions
+   */
+  goBackNumPositions(num) {
+    for (let i = 0; i < num; i++) {
+      if (!this.goToPreviousPosition()) {
+        return
       }
     }
   }
@@ -1104,32 +1085,7 @@ export default class Game extends Base {
     //Restore state
     // this.load(state.jgf)
     //TODO load doesn't exist anymore
-    this.goto(state.path)
-  }
-
-  /**************************************************************************
-   * Configuration
-   ***/
-
-  /**
-   * Set allow suicide
-   */
-  setAllowSuicide(allowSuicide) {
-    this.allowSuicide = allowSuicide
-  }
-
-  /**
-   * Set remember path
-   */
-  setRememberPath(rememberPath) {
-    this.rememberPath = rememberPath
-  }
-
-  /**
-   * Set check repeat
-   */
-  setCheckRepeat(checkRepeat) {
-    this.checkRepeat = checkRepeat
+    this.goToPath(state.path)
   }
 
   /*****************************************************************************
@@ -1140,22 +1096,20 @@ export default class Game extends Base {
    * Select next variation
    */
   selectNextVariation() {
-    const {node} = this
-    node.selectNextPath()
+    this.node.incrementPathIndex()
   }
 
   /**
    * Select previous variation
    */
   selectPreviousVariation() {
-    const {node} = this
-    node.selectPreviousPath()
+    this.node.decrementPathIndex()
   }
 
   /**
-   * Navigate to the next node
+   * Go to the next node
    */
-  nextNode(variationIndex) {
+  goToNextNode(i) {
 
     //Get data
     const {node} = this
@@ -1165,9 +1119,10 @@ export default class Game extends Base {
       return false
     }
 
-    //Get path index
-    const i = node.isValidPathIndex(variationIndex) ?
-      variationIndex : node.getPathIndex()
+    //Validate index
+    if (!node.isValidPathIndex(i)) {
+      i = 0
+    }
 
     //Advance path and set pointer of current node
     //TODO create helper for this as it's repeated often
@@ -1177,9 +1132,9 @@ export default class Game extends Base {
   }
 
   /**
-   * Navigate to the previous node
+   * Go to the previous node
    */
-  previousNode() {
+  goToPreviousNode() {
 
     //Get data
     const {node} = this
@@ -1192,13 +1147,16 @@ export default class Game extends Base {
     //Retreat path and set pointer to current node
     this.path.retreat()
     this.node = node.getParent()
+
+    //Remove last position from stack
+    this.removeLastPositionFromStack()
     return true
   }
 
   /**
-   * Navigate to the first node
+   * Go to the first node
    */
-  firstNode() {
+  goToFirstNode() {
 
     //Reset path and point to root
     this.path.reset()
@@ -1213,85 +1171,13 @@ export default class Game extends Base {
 
     //Set turn
     this.setTurn(turn)
+    this.initialisePositionStack()
   }
-
-  /*****************************************************************************
-   * Position history helpers
-   ***/
-
-  /**
-   * Clear the position history and initialize with a blank position
-   */
-  initializeHistory() {
-
-    //Already at beginning?
-    const {history} = this
-    if (history.length === 1) {
-      return
-    }
-
-    //Create new blank game position
-    const position = new GamePosition()
-    const {width, height} = this.getBoardSize()
-
-    //Clear positions stack push the position
-    history.length = 0
-    history.push(position)
-
-    //Set board size if we have the info
-    if (width && height) {
-      history[0].setSize(width, height)
-    }
-  }
-
-  /**
-   * Add position to stack. If position isn't specified current position is
-   * cloned and stacked. Pointer of actual position is moved to the new position.
-   */
-  pushPosition(newPosition) {
-
-    //Position not given?
-    if (!newPosition) {
-      newPosition = this.position.clone()
-    }
-
-    //Push
-    this.history.push(newPosition)
-    return newPosition
-  }
-
-  /**
-   * Remove current position from stack
-   */
-  popPosition() {
-
-    //Nothing left?
-    if (this.history.length === 0) {
-      return null
-    }
-
-    //Get old position
-    return this.history.pop()
-  }
-
-  /**
-   * Replace the current position in the stack
-   */
-  replacePosition(newPosition) {
-    if (newPosition) {
-      this.history.pop()
-      this.history.push(newPosition)
-    }
-  }
-
-  /*****************************************************************************
-   * Execution helpers
-   ***/
 
   /**
    * Execute the current node
    */
-  executeNode() {
+  processCurrentNode(revertPositionOnFail = true) {
 
     //Get data
     const {node, position} = this
@@ -1302,28 +1188,37 @@ export default class Game extends Base {
     //Initialize new position
     const newPosition = position.clone()
 
-    //Handle moves
-    if (node.isMove()) {
-      if (node.move.pass) {
-        newPosition.setTurn(-node.move.color)
-      }
-      else {
-        this.validateMove(
-          node.move.x,
-          node.move.y,
-          node.move.color,
-          newPosition,
-        )
+    //Pass move
+    if (node.isPassMove()) {
+      newPosition.switchTurn()
+    }
+
+    //Play move
+    if (node.isPlayMove()) {
+      const {x, y, color} = node.move
+      const outcome = this.validateMove(newPosition, x, y, color)
+
+      //New position is not valid
+      if (!outcome.isValid) {
+
+        //Revert position on failure?
+        if (revertPositionOnFail) {
+          this.goToPreviousNode()
+        }
+
+        //Return failure reason
+        this.warn(outcome.reason)
+        return outcome
       }
     }
 
     //Handle turn instructions
-    if (node.turn) {
+    if (node.hasTurnIndicator()) {
       newPosition.setTurn(node.turn)
     }
 
     //Handle setup instructions
-    if (node.setup) {
+    if (node.hasSetupInstructions()) {
       for (const setup of node.setup) {
         const {type, coords} = setup
         for (const coord of coords) {
@@ -1339,7 +1234,7 @@ export default class Game extends Base {
     }
 
     //Handle markup
-    if (node.markup) {
+    if (node.hasMarkupInstructions()) {
       for (const markup of node.markup) {
         const {type, coords} = markup
         for (const coord of coords) {
@@ -1349,8 +1244,9 @@ export default class Game extends Base {
       }
     }
 
-    //Push the new position into the history now
-    this.pushPosition(newPosition)
+    //Add position to stack
+    this.addPositionToStack(newPosition)
+    return new ValidOutcome()
   }
 
   /**************************************************************************

@@ -1,6 +1,6 @@
 import Grid from './grid.js'
 import {stoneColors} from '../constants/stone.js'
-import {swapColor} from '../helpers/stone.js'
+import {swapColor, isValidColor} from '../helpers/stone.js'
 
 /**
  * This class represents a single game position. It keeps track of the stones
@@ -135,13 +135,20 @@ export default class GamePosition {
    */
   captureAdjacent(x, y, friendlyColor) {
 
+    //Validate color
+    if (friendlyColor && !isValidColor(friendlyColor)) {
+      throw new Error(`Invalid color: ${friendlyColor}`)
+    }
+
     //Validate boundaries
     if (!this.stones.isOnGrid(x, y)) {
       return false
     }
 
     //Use color of stone present if none given
-    friendlyColor = friendlyColor || this.stones.get(x, y)
+    if (typeof friendlyColor === 'undefined') {
+      friendlyColor = this.stones.get(x, y)
+    }
 
     //Can't capture empty spots
     if (!friendlyColor) {
@@ -217,13 +224,20 @@ export default class GamePosition {
    */
   captureGroup(x, y, enemyColor) {
 
+    //Validate color
+    if (enemyColor && !isValidColor(enemyColor)) {
+      throw new Error(`Invalid color: ${enemyColor}`)
+    }
+
     //Validate boundaries
     if (!this.stones.isOnGrid(x, y)) {
       return false
     }
 
     //If no group color was given, use what's on the position
-    enemyColor = enemyColor || this.stones.get(x, y)
+    if (typeof enemyColor === 'undefined') {
+      enemyColor = this.stones.get(x, y)
+    }
 
     //Stone at position does not match the given group color? Can't capture it
     if (this.stones.get(x, y) !== enemyColor) {
@@ -268,6 +282,9 @@ export default class GamePosition {
    * Set captures for a color (expects array with capture object coordinates)
    */
   setCaptures(color, captures) {
+    if (!isValidColor(color)) {
+      throw new Error(`Invalid color: ${color}`)
+    }
     this.captures[color] = captures
   }
 
@@ -275,6 +292,9 @@ export default class GamePosition {
    * Get captures for a color
    */
   getCaptures(color) {
+    if (!isValidColor(color)) {
+      throw new Error(`Invalid color: ${color}`)
+    }
     return this.captures[color] || []
   }
 
@@ -282,6 +302,9 @@ export default class GamePosition {
    * Get the capture count for a color (= the number of captures of the enemy color)
    */
   getCaptureCount(color) {
+    if (!isValidColor(color)) {
+      throw new Error(`Invalid color: ${color}`)
+    }
     const otherColor = swapColor(color)
     return this.captures[otherColor].length
   }
@@ -294,6 +317,9 @@ export default class GamePosition {
    * Set color for whose move it is at this position
    */
   setTurn(color) {
+    if (!isValidColor(color)) {
+      throw new Error(`Invalid color: ${color}`)
+    }
     this.turn = color
   }
 

@@ -121,7 +121,7 @@ export default class GamePath {
   /**
    * Compare to another path
    */
-  compare(otherPath) {
+  isSameAs(otherPath) {
 
     //Invalid object?
     if (
@@ -169,52 +169,5 @@ export default class GamePath {
 
     //Return
     return newPath
-  }
-
-  /**
-   * Static helper to find node name recursively
-   */
-  static findNodeName(node, nodeName, path) {
-
-    //Found in this node?
-    if (node.name && node.name === nodeName) {
-      return true
-    }
-
-    //Loop children
-    for (let i = 0; i < node.children.length; i++) {
-      const child = node.children[i]
-
-      //Advance path
-      path.advance(i)
-
-      //Found in child node?
-      if (this.findNodeName(child, nodeName, path)) {
-        return true
-      }
-
-      //Not found in this child node, retreat path
-      path.retreat()
-    }
-
-    //Not found
-    return false
-  }
-
-  /**
-   * Static helper to create a path object to reach a certain node
-   */
-  static findNode(nodeName, rootNode) {
-
-    //Create new instance
-    const path = new GamePath()
-
-    //Find the node name
-    if (this.findNodeName(rootNode, nodeName, path)) {
-      return path
-    }
-
-    //Not found
-    return null
   }
 }
