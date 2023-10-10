@@ -1,10 +1,11 @@
 import {defineConfig} from 'vite'
 
 export default defineConfig({
-  publicDir: 'public',
+  publicPath: './src/public',
   root: './src',
   build: {
-    outDir: 'dist',
+    outDir: '../dist',
+    emptyOutDir: true,
+    assetsInlineLimit: 0,
   },
-  plugins: [],
 })
