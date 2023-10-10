@@ -110,9 +110,9 @@ export default class Game extends Base {
   }
 
   /**
-   * Set the board size
+   * Set the grid size
    */
-  setBoardSize(width, height) {
+  setGridSize(width, height) {
     if (width && height && width !== height) {
       this.setInfo('board.width', parseInt(width))
       this.setInfo('board.height', parseInt(height))
@@ -125,14 +125,21 @@ export default class Game extends Base {
   /**
    * Get the board size
    */
-  getBoardSize() {
+  getGridSize() {
+
+    //Get from game info
     const size = this.getInfo('board.size')
     const width = this.getInfo('board.width')
     const height = this.getInfo('board.height')
+
+    //Check available dimensions
     if (width && height) {
       return {width, height}
     }
-    return {width: size, height: size}
+    else if (size) {
+      return {width: size, height: size}
+    }
+    return {width: 19, height: 19}
   }
 
   /**
@@ -253,24 +260,17 @@ export default class Game extends Base {
    */
   initialisePositionStack() {
 
-    //Already at beginning?
-    const {positions} = this
-    if (positions.length === 1) {
-      return
-    }
-
     //Create new blank game position
-    const position = new GamePosition()
-    const {width, height} = this.getBoardSize()
+    const {positions} = this
+    const {width, height} = this.getGridSize()
+    const position = new GamePosition(width, height)
+
+    //Debug
+    this.debug(`initialising position stack at ${width}x${height}`)
 
     //Clear positions stack push the position
     positions.length = 0
     positions.push(position)
-
-    //Set board size if we have the info
-    if (width && height) {
-      positions[0].setSize(width, height)
-    }
   }
 
   /**
@@ -297,6 +297,13 @@ export default class Game extends Base {
       this.positions.pop()
       this.positions.push(newPosition)
     }
+  }
+
+  /**
+   * Clear the position stack
+   */
+  clearPositionStack() {
+    this.positions = []
   }
 
   /**
@@ -488,7 +495,7 @@ export default class Game extends Base {
    * because this class can be used independently of the board class.
    */
   isValidCoordinate(x, y) {
-    const {width, height} = this.getBoardSize()
+    const {width, height} = this.getGridSize()
     return (x >= 0 && y >= 0 && x < width && y < height)
   }
 
@@ -546,10 +553,10 @@ export default class Game extends Base {
     position.stones.set(x, y, color)
 
     //Capture adjacent stones if possible
-    const captures = position.captureAdjacent(x, y)
+    const hadCaptures = position.captureAdjacent(x, y)
 
     //No captures occurred? Check if the move we're making is a suicide move
-    if (!captures) {
+    if (!hadCaptures) {
       if (!position.hasLiberties(x, y)) {
         if (allowSuicide) {
           position.captureGroup(x, y)
@@ -588,10 +595,10 @@ export default class Game extends Base {
     newPosition.stones.set(x, y, color)
 
     //Capture adjacent stones if possible
-    const captures = newPosition.captureAdjacent(x, y)
+    const hadCaptures = newPosition.captureAdjacent(x, y)
 
     //No captures occurred? Check if the move we're making is a suicide move
-    if (!captures) {
+    if (!hadCaptures) {
 
       //No liberties for the group we've just created? Capture it
       if (!newPosition.hasLiberties(x, y)) {

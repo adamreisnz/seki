@@ -148,8 +148,8 @@ export default class ConvertFromJgf extends Converter {
     const width = get(jgf, 'board.width')
     const height = get(jgf, 'board.height')
 
-    //Set board size
-    game.setBoardSize(width || size, height)
+    //Set grid size
+    game.setGridSize(width || size, height)
   }
 
   /**

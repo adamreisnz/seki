@@ -336,7 +336,7 @@ export default class ConvertFromSgf extends Converter {
    */
   parseSize(game, node, key, values) {
     const [width, height] = values[0].split(':')
-    game.setBoardSize(width, height)
+    game.setGridSize(width, height)
   }
 
   /**
