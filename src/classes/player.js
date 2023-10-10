@@ -740,7 +740,7 @@ export default class Player extends Base {
     const {element} = this
 
     //Create audio elements
-    for (const key of Object.keys(audio)) {
+    for (const key in audio) {
       if (!audio[key]) {
         continue
       }

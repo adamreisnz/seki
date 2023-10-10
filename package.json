@@ -45,7 +45,7 @@
   "scripts": {
     "watch": "parcel watch",
     "build": "parcel build",
-    "demo": "parcel serve demo/index.html --open",
+    "demo": "rm -rf .parcel-cache && parcel serve demo/index.html --open",
     "postversion": "git push && npm publish"
   },
   "dependencies": {
