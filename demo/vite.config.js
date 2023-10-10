@@ -8,4 +8,8 @@ export default defineConfig({
     emptyOutDir: true,
     assetsInlineLimit: 0,
   },
+  esbuild: {
+    minifyIdentifiers: false,
+    keepNames: true,
+  },
 })
