@@ -1,4 +1,4 @@
-import PlayerMode from '../player-mode.js'
+import PlayerMode from './player-mode.js'
 import {playerModes} from '../../constants/player.js'
 
 /**

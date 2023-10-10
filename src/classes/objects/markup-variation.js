@@ -10,14 +10,13 @@ export default class MarkupVariation extends MarkupCircle {
   type = markupTypes.VARIATION
 
   //Additional theme properties
-  lineDash
   font
   fontSize
   text = ''
 
   //Properties set via constructor
   index = 0
-  stoneColor
+  displayColor
   showText
   isSelected
 
@@ -29,7 +28,7 @@ export default class MarkupVariation extends MarkupCircle {
 
     //Set data attributes
     this.index = data.index
-    this.stoneColor = data.stoneColor
+    this.displayColor = data.displayColor
     this.showText = data.showText
     this.isSelected = data.isSelected
   }
@@ -41,30 +40,18 @@ export default class MarkupVariation extends MarkupCircle {
 
     //Load parent properties
     const args = super.loadProperties(x, y)
-    const {index, stoneColor, isSelected} = this
+    const {index, isSelected} = this
 
     //Load additional properties
     this.loadThemeProp('font', ...args)
     this.loadThemeProp('fontSize', ...args)
-    this.loadThemeProp('lineDash', ...args)
 
     //Load color with specific args
-    this.loadThemeProp('color', stoneColor, isSelected)
+    this.loadThemeProp('color', ...args, isSelected)
     this.loadThemeProp('text', index || 0)
 
     //Pass on args
     return args
-  }
-
-  /**
-   * Get parsed line dash
-   */
-  getLineDash() {
-    const {lineDash} = this
-    if (Array.isArray(lineDash)) {
-      return lineDash
-    }
-    return lineDash ? lineDash.split(',') : null
   }
 
   /**
@@ -79,16 +66,8 @@ export default class MarkupVariation extends MarkupCircle {
    */
   draw(context, x, y) {
 
-    //Load properties
-    this.loadProperties(x, y)
-
-    //Get line dash
-    const lineDash = this.getLineDash()
-
-    //Use parent method to draw circle
-    context.setLineDash(lineDash || [])
+    //Use parent method
     super.draw(context, x, y)
-    context.setLineDash([])
 
     //Not showing text, done (e.g. single move)
     const {radius, color, font, fontSize, text, showText} = this

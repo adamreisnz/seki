@@ -1,4 +1,4 @@
-import GridObject from '../grid-object.js'
+import GridObject from './grid-object.js'
 
 /**
  * This class is used for drawing stones on the board
@@ -65,14 +65,14 @@ export default class Stone extends GridObject {
 
     //Load basic theme props
     for (const prop of this.themeProps) {
-      this.loadThemeProp(prop, displayColor, cellSize)
+      this.loadThemeProp(prop, cellSize, displayColor)
     }
 
     //Now load radius and remember display color
-    this.radius = this.getRadius(displayColor, cellSize)
+    this.radius = this.getRadius(cellSize, displayColor)
     this.displayColor = displayColor
 
     //Return cellsize and display color for child handlers
-    return [displayColor, cellSize]
+    return [cellSize, displayColor]
   }
 }

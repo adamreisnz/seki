@@ -21,9 +21,6 @@ export default class MarkupSelect extends Markup {
    */
   draw(context, x, y) {
 
-    //Load properties
-    this.loadProperties(x, y)
-
     //Parent draw
     super.draw(context, x, y)
 

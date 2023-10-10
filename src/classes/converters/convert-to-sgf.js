@@ -1,4 +1,4 @@
-import Convert from '../convert.js'
+import Converter from './converter.js'
 import Game from '../game.js'
 import {markupTypes} from '../../constants/markup.js'
 import {
@@ -32,7 +32,7 @@ const nodeParsingMap = {
 /**
  * Converter to SGF
  */
-export default class ConvertToSgf extends Convert {
+export default class ConvertToSgf extends Converter {
 
   /**
    * Convert Seki game object to SGF

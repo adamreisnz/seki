@@ -1,5 +1,5 @@
-import Grid from './grid.js'
-import {getPixelRatio} from '../helpers/util.js'
+import Grid from '../grid.js'
+import {getPixelRatio} from '../../helpers/util.js'
 
 /**
  * This class represents a layer on the board and is the base class

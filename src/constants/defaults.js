@@ -1,10 +1,146 @@
-import {stoneColors, stoneStyles} from '../constants/stone.js'
-import {markupTypes} from '../constants/markup.js'
+import {appName, appVersion} from './app.js'
+import {keyCodes, mouseEvents} from './common.js'
+import {gameTypes} from './game.js'
+import {jgfVersion} from './jgf.js'
+import {playerModes, playerActions} from './player.js'
+import {markupTypes} from './markup.js'
+import {stoneColors, stoneStyles} from './stone.js'
 
-/**
- * Default theme
-*/
-export default {
+//Default game info
+export const defaultGameInfo = {
+  record: {
+    version: jgfVersion,
+    charset: 'UTF-8',
+    generator: `${appName} v${appVersion}`,
+  },
+  game: {
+    type: gameTypes.GO,
+  },
+  players: [
+    {
+      color: stoneColors.BLACK,
+      name: 'Black',
+    },
+    {
+      color: stoneColors.WHITE,
+      name: 'White',
+    },
+  ],
+  board: {
+    size: 19,
+  },
+  rules: {
+    komi: 0,
+    handicap: 0,
+  },
+}
+
+//Default board configuration
+export const defaultBoardConfig = {
+
+  //Width and height
+  size: 19,
+
+  //Grid cut-off sides
+  cutoff: {
+    top: false,
+    bottom: false,
+    left: false,
+    right: false,
+  },
+
+  //Section of board to display
+  section: {
+    top: 0,
+    bottom: 0,
+    left: 0,
+    right: 0,
+  },
+
+  //Flags
+  showCoordinates: true,
+  swapColors: false,
+}
+
+//Default player configuration
+export const defaultPlayerConfig = {
+
+  //Available modes
+  availableModes: [
+    playerModes.STATIC,
+    playerModes.PLAY,
+    playerModes.REPLAY,
+    playerModes.EDIT,
+    playerModes.SOLVE,
+  ],
+
+  //Initial mode
+  initialMode: playerModes.REPLAY,
+
+  //Key bindings
+  keyBindings: {
+
+    //General
+    [keyCodes.ESC]: playerActions.CANCEL_ACTION,
+
+    //Navigation
+    [keyCodes.LEFT]: playerActions.PREV_POSITION,
+    [keyCodes.RIGHT]: playerActions.NEXT_POSITION,
+    [keyCodes.UP]: playerActions.PREV_VARIATION,
+    [keyCodes.DOWN]: playerActions.NEXT_VARIATION,
+
+    //Setup tool selection
+    [keyCodes.B]: playerActions.USE_EDIT_TOOL_BLACKOOL,
+    [keyCodes.W]: playerActions.USE_EDIT_TOOL_WHITE,
+    [keyCodes.X]: playerActions.USE_EDIT_TOOL_CLEAR,
+
+    //Markup tool selection
+    [keyCodes.T]: playerActions.USE_EDIT_TOOL_TRIANGLE,
+    [keyCodes.C]: playerActions.USE_EDIT_TOOL_CIRCLE,
+    [keyCodes.S]: playerActions.USE_EDIT_TOOL_SQUARE,
+    [keyCodes.D]: playerActions.USE_EDIT_TOOL_DIAMOND,
+    [keyCodes.M]: playerActions.USE_EDIT_TOOL_MARK,
+    [keyCodes.H]: playerActions.USE_EDIT_TOOL_HAPPY,
+    [keyCodes.J]: playerActions.USE_EDIT_TOOL_SAD,
+    [keyCodes.L]: playerActions.USE_EDIT_TOOL_LETTER,
+    [keyCodes.N]: playerActions.USE_EDIT_TOOL_NUMBER,
+  },
+
+  //Mouse bindings
+  mouseBindings: {
+    [mouseEvents.WHEEL_UP]: playerActions.PREV_POSITION,
+    [mouseEvents.WHEEL_DOWN]: playerActions.NEXT_POSITION,
+    [mouseEvents.WHEEL_LEFT]: playerActions.PREV_VARIATION,
+    [mouseEvents.WHEEL_RIGHT]: playerActions.NEXT_VARIATION,
+  },
+
+  //Audio
+  audio: {
+    move: null,
+    capture: null,
+  },
+
+  //Flags
+  swapColors: false,
+  showLastMove: true,
+  showNextMove: false,
+  showCoordinates: true,
+  showSolutions: false,
+  showVariations: true,
+  showSiblingVariations: false,
+  numberVariationMoves: true,
+  rememberVariationPaths: true,
+  allowMovesInReplayMode: true,
+
+  //Number of moves to skip at a time
+  numSkipMoves: 10,
+
+  //Allow player configuration settigns to be loaded from game records
+  allowPlayerConfig: true,
+}
+
+//Default theme
+export const defaultTheme = {
 
   //Board
   board: {
@@ -17,7 +153,7 @@ export default {
 
     //Base
     base: {
-      radius(stoneColor, cellSize) {
+      radius(cellSize) {
         return Math.floor(cellSize / 2) * 0.96
       },
       shadow: true,
@@ -25,7 +161,7 @@ export default {
 
     //Slate and shell stones
     slateShell: {
-      color(stoneColor) {
+      color(cellSize, stoneColor) {
         return (stoneColor === stoneColors.BLACK) ? '#111' : '#cfcfca'
       },
       shellStroke: 'rgba(128,128,150,0.15)',
@@ -67,17 +203,17 @@ export default {
 
     //Glass stones
     glass: {
-      color(stoneColor) {
+      color(cellSize, stoneColor) {
         return (stoneColor === stoneColors.BLACK) ? '#111' : '#cfcfca'
       },
     },
 
     //Mono stones
     mono: {
-      radius(stoneColor, cellSize) {
+      radius(cellSize) {
         return Math.floor(cellSize / 2)
       },
-      color(stoneColor) {
+      color(cellSize, stoneColor) {
         return (stoneColor === stoneColors.BLACK) ? '#000' : '#fff'
       },
       shadow: false,
@@ -92,13 +228,13 @@ export default {
         //NOTE: Globally set on layer, hence no stone color here
         return Math.floor(cellSize / 100)
       },
-      blur(stoneColor, cellSize) {
+      blur(cellSize) {
         return cellSize / 15
       },
-      offsetX(stoneColor, cellSize) {
+      offsetX(cellSize) {
         return Math.ceil(cellSize / 20)
       },
-      offsetY(stoneColor, cellSize) {
+      offsetY(cellSize) {
         return Math.ceil(cellSize / 20)
       },
     },
@@ -112,7 +248,7 @@ export default {
     //Captures (modifier style)
     captures: {
       shadow: false,
-      alpha(stoneColor) {
+      alpha(cellSize, stoneColor) {
         return (stoneColor === stoneColors.BLACK) ? 0.3 : 0.4
       },
     },
@@ -121,7 +257,7 @@ export default {
     hover: {
       shadow: true,
       alpha: 1,
-      // alpha(stoneColor) {
+      // alpha(cellSize, stoneColor) {
       //   return (stoneColor === stoneColors.BLACK) ? 0.5 : 0.6
       // },
     },
@@ -132,19 +268,19 @@ export default {
 
     //Base
     base: {
-      radius(stoneColor, cellSize) {
+      radius(cellSize) {
         if (!cellSize) {
           throw new Error('No cell size!')
         }
         return Math.floor(cellSize / 2)
       },
-      color(stoneColor) {
+      color(cellSize, stoneColor) {
         if (stoneColor === stoneColors.BLACK) {
           return 'rgba(255,255,255,0.95)'
         }
         return 'rgba(0,0,0,0.95)'
       },
-      lineWidth(stoneColor, cellSize) {
+      lineWidth(cellSize) {
         return Math.max(1, Math.floor(cellSize / 16))
       },
       font: 'Helvetica',
@@ -195,7 +331,7 @@ export default {
 
     //Label
     label: {
-      fontSize(text, stoneColor, cellSize) {
+      fontSize(text, cellSize) {
         const len = String(text).length
         if (len === 1) {
           return Math.round(cellSize * 0.75)
@@ -211,7 +347,7 @@ export default {
     variation: {
       type: markupTypes.LABEL,
       scale: 0.9,
-      lineDash(stoneColor, cellSize) {
+      lineDash(cellSize) {
         const line = Math.max(1, Math.floor(cellSize / 16))
         const dash = Math.max(1, Math.floor(cellSize / 8))
         return [line, dash]
@@ -221,10 +357,10 @@ export default {
         // return (i + 1) //Numbers
         return String.fromCharCode(65 + i) //Letters
       },
-      fontSize(stoneColor, cellSize) {
+      fontSize(cellSize) {
         return Math.floor(cellSize * 0.6)
       },
-      color(stoneColor, isSelected) {
+      color(cellSize, stoneColor, isSelected) {
         const opacity = isSelected ? 1 : 0.75
         if (stoneColor === stoneColors.WHITE) {
           return `rgba(255,255,255,${opacity})`
@@ -239,25 +375,12 @@ export default {
       scale: 0.55,
     },
 
-    //Next move marker
-    nextMove: {
-      type: markupTypes.CIRCLE,
-      scale: 0.9,
-      lineDash: '5,10',
-      color(stoneColor) {
-        if (stoneColor === stoneColors.WHITE) {
-          return 'rgba(255,255,255,0.95)'
-        }
-        return 'rgba(0,0,0,0.95)'
-      },
-    },
-
     //Move number
     moveNumber: {
       text(number) {
         return number
       },
-      fontSize(number, stoneColor, cellSize) {
+      fontSize(cellSize/*, stoneColor, number*/) {
         return Math.round(cellSize * 0.4)
       },
     },

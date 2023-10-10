@@ -64,9 +64,9 @@ export default class GridObject {
   /**
    * Get object draw radius, with scaling applied
    */
-  getRadius(color, cellSize) {
+  getRadius(cellSize, stoneColor) {
     const {scale} = this
-    const radius = this.getThemeProp('radius', color, cellSize)
+    const radius = this.getThemeProp('radius', cellSize, stoneColor)
     return Math.round(radius * (scale || 1))
   }
 

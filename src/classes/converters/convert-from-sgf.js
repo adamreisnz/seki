@@ -1,4 +1,4 @@
-import Convert from '../convert.js'
+import Converter from './converter.js'
 import Game from '../game.js'
 import GameNode from '../game-node.js'
 import {gameTypes} from '../../constants/game.js'
@@ -80,7 +80,7 @@ const parsingMap = {
 /**
  * Convert SGF file data into a seki game object
  */
-export default class ConvertFromSgf extends Convert {
+export default class ConvertFromSgf extends Converter {
 
   /**
    * Convert SGF string into a seki game object

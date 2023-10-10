@@ -1,8 +1,8 @@
-import Base from './base.js'
-import StoneFactory from './stone-factory.js'
-import MarkupFactory from './markup-factory.js'
-import {boardLayerTypes} from '../constants/board.js'
-import {stoneModifierStyles} from '../constants/stone.js'
+import Base from '../base.js'
+import StoneFactory from '../stone-factory.js'
+import MarkupFactory from '../markup-factory.js'
+import {boardLayerTypes} from '../../constants/board.js'
+import {stoneModifierStyles} from '../../constants/stone.js'
 
 /**
  * Base player mode class

@@ -1,7 +1,7 @@
 import merge from 'deepmerge'
 import Base from './base.js'
 import {get, set} from '../helpers/object.js'
-import defaultTheme from '../themes/default.js'
+import {defaultTheme} from '../constants/defaults.js'
 
 /**
  * This class representes the theme of a Go board. It contains all tweakable

@@ -1,4 +1,4 @@
-import GridObject from '../grid-object.js'
+import GridObject from './grid-object.js'
 import {boardLayerTypes} from '../../constants/board.js'
 
 /**
@@ -48,15 +48,15 @@ export default class Markup extends GridObject {
 
     //Load basic theme props
     for (const prop of this.themeProps) {
-      this.loadThemeProp(prop, stoneColor, cellSize)
+      this.loadThemeProp(prop, cellSize, stoneColor)
     }
 
     //Now load radius and remember stone color
-    this.radius = this.getRadius(stoneColor, cellSize)
+    this.radius = this.getRadius(cellSize, stoneColor)
     this.stoneColor = stoneColor
 
     //Return cellsize and stone color for child handlers
-    return [stoneColor, cellSize]
+    return [cellSize, stoneColor]
   }
 
   /**
@@ -72,11 +72,11 @@ export default class Markup extends GridObject {
   getStoneColor(x, y) {
 
     //Get data
-    const {board, stoneColor} = this
+    const {board, displayColor} = this
 
-    //Fixed color or provided by constructor?
-    if (stoneColor) {
-      return board.getDisplayColor(stoneColor)
+    //Fixed display color?
+    if (displayColor) {
+      return board.getDisplayColor(displayColor)
     }
 
     //Get stone on position
@@ -93,6 +93,9 @@ export default class Markup extends GridObject {
    * Draw
    */
   draw(context, x, y) {
+
+    //Load properties
+    this.loadProperties(x, y)
 
     //Check if we clear the grid below us
     const {board} = this

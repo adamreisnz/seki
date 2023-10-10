@@ -4,8 +4,8 @@
   <title>Seki - Player demo</title>
   <meta charset="utf-8">
   <meta name="author" content="Adam Reis">
-  <link rel="stylesheet" type="text/css" media="screen" href="../src/css/seki.css">
-  <link rel="stylesheet" type="text/css" media="screen" href="demo.css">
+  <link rel="stylesheet" type="text/css" media="screen" href="./css/seki.css">
+  <link rel="stylesheet" type="text/css" media="screen" href="./css/demo.css">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
 </head>
 <body lang="en">
@@ -18,7 +18,7 @@
   <div class="right">
     <h2>Load</h2>
     <button id="loadBlank">Blank</button>
-    <button id="loadJgf">JGF</button>
+    <button id="loadDemo">Demo</button>
     <button id="loadSgf">SGF</button>
     <button id="loadGib">GIB</button>
 
@@ -85,13 +85,13 @@
     <div id="replayTools">
       <h2>Navigation</h2>
 
-      <button class="icon" id="firstMove" title="First move">
+      <button class="btnCommand icon" cmd="goToFirstPosition" title="First position">
         <span class="material-symbols-outlined">line_start_arrow</span>
       </button>
-      <button class="icon" id="skipBack" title="Skip back 10 moves">
+      <button class="btnCommand icon" cmd="goBackNumPositions" title="Skip back 10 positions">
         <span class="material-symbols-outlined">fast_rewind</span>
       </button>
-      <button class="icon" id="prevMove" title="Previous move">
+      <button class="btnCommand icon" cmd="goToPreviousPosition" title="Previous position">
         <span class="material-symbols-outlined">skip_previous</span>
       </button>
 
@@ -102,72 +102,96 @@
         <span class="material-symbols-outlined">stop</span>
       </button>
 
-      <button class="icon" id="nextMove" title="Next move">
+      <button class="btnCommand icon" cmd="goToNextPosition" title="Next position">
         <span class="material-symbols-outlined">skip_next</span>
       </button>
-      <button class="icon" id="skipForward" title="Skip forward 10 moves">
+      <button class="btnCommand icon" cmd="goForwardNumPositions" title="Skip forward 10 positions">
         <span class="material-symbols-outlined">fast_forward</span>
       </button>
-      <button class="icon" id="lastMove" title="Last move">
+      <button class="btnCommand icon" cmd="goToLastPosition" title="Last position">
         <span class="material-symbols-outlined">line_end_arrow</span>
       </button>
 
       <br>
-      <button class="icon" id="prevVariation" title="Previous variation">
+      <button class="btnCommand icon" cmd="selectPreviousVariation" title="Previous variation">
         <span class="material-symbols-outlined">expand_less</span>
       </button>
-      <button class="icon" id="nextVariation" title="Next variation">
+      <button class="btnCommand icon" cmd="selectNextVariation" title="Next variation">
         <span class="material-symbols-outlined">expand_more</span>
       </button>
-      <button class="icon" id="prevFork" title="Previous fork">
+      <button class="btnCommand icon" cmd="goToPreviousFork" title="Previous fork">
         <span class="material-symbols-outlined">fork_left</span>
       </button>
-      <button class="icon" id="nextFork" title="Next fork">
+      <button class="btnCommand icon" cmd="goToNextFork" title="Next fork">
         <span class="material-symbols-outlined">fork_right</span>
       </button>
-      <button class="icon" id="prevComment" title="Previous comment">
+      <button class="btnCommand icon" cmd="goToPreviousComment" title="Previous comment">
         <span class="material-symbols-outlined">comment</span>
       </button>
-      <button class="icon" id="nextComment" title="Next comment">
+      <button class="btnCommand icon" cmd="goToNextComment" title="Next comment">
         <span class="material-symbols-outlined">chat</span>
       </button>
     </div>
 
-    <h2>Other</h2>
-    <button id="toggleSwapColors">Swap colors</button>
-    <button id="toggleCoordinates">Toggle coordinates</button>
-    <button id="toggleShowNextMove">Toggle next move indicator</button>
-    <button id="toggleShowVariations">Toggle variations</button>
-    <button id="toggleRememberVariationPath">Toggle remember variation path</button>
-    <button id="toggleAllowMovesInReplayMode">Toggle allow moves in replay mode</button>
+    <h2>Options</h2>
+    <label class="lblToggleConfig" config="swapColors">
+      <input type="checkbox"> Swap colors
+    </label>
+    <label class="lblToggleConfig" config="showCoordinates">
+      <input type="checkbox"> Coordinates
+    </label>
+    <label class="lblToggleConfig" config="showLastMove">
+      <input type="checkbox"> Last move
+    </label>
+    <label class="lblToggleConfig" config="showNextMove">
+      <input type="checkbox"> Next move
+    </label>
+    <label class="lblToggleConfig" config="showVariations">
+      <input type="checkbox"> Variations
+    </label>
+    <label class="lblToggleConfig" config="rememberVariationPath">
+      <input type="checkbox"> Remember path taken
+    </label>
+    <label class="lblToggleConfig" config="allowMovesInReplayMode">
+      <input type="checkbox"> Allow moves in replay mode
+    </label>
   </info>
 </div>
 <script type="module">
-import Board from '../src/classes/board.js'
-import Player from '../src/classes/player.js'
-import {setDebug} from '../src/helpers/util.js'
-import {playerModes, editingTools} from '../src/constants/player.js'
-import {onClick, findByQuery, toggleHidden} from './demo.js'
+import {Board, Player, constants, helpers} from '../../src/index.js'
+import {onClick, findByQuery, toggleHidden} from './js/demo.js'
+
+//Audio
+import audioMove from './audio/move.wav'
+import audioCapture from './audio/capture.wav'
 
 //Test data
-import {jgf} from './data/jgf.js'
+import {demo} from './data/jgf.js'
 import {gib} from './data/gib.js'
 import {sgf} from './data/sgf.js'
 
+//Get constants
+const {playerModes, editingTools} = constants.player
+
 //Set debug mode
-setDebug(true)
+helpers.util.setDebug(true)
 
 //Find player element and instantiate player
 const playerElement = document.getElementById('player')
-const player = new Player()
+const player = new Player({
+  audio: {
+    move: audioMove,
+    capture: audioCapture,
+  }
+})
 
 //Bootstrap player and load JGF file
 player.bootstrap(playerElement)
-player.load(jgf)
+player.load(demo)
 
 //Data loading
-onClick('#loadJgf', () => {
-  player.load(jgf)
+onClick('#loadDemo', () => {
+  player.load(demo)
   player.switchMode(playerModes.REPLAY)
 })
 onClick('#loadSgf', () => {
@@ -180,41 +204,20 @@ onClick('#loadGib', () => {
 })
 onClick('#loadBlank', () => {
   player.reset()
-  player.switchMode(playerModes.PLAY)
+  player.switchMode(playerModes.REPLAY)
 })
 
-//Toggles
-onClick('#toggleShowNextMove', () => player.toggleConfig('showNextMove'))
-onClick('#toggleShowVariations', () => player.toggleConfig('showVariations'))
-onClick('#toggleRememberVariationPath', () => player.toggleConfig('rememberVariationPaths'))
-onClick('#toggleAllowMovesInReplayMode', () => player.toggleConfig('allowMovesInReplayMode'))
-onClick('#toggleCoordinates', () => player.board.toggleCoordinates())
-onClick('#toggleSwapColors', () => player.board.toggleSwapColors())
-
-//Navigation
-onClick('#firstMove', () => player.goToFirstPosition())
-onClick('#skipBack', () => player.goBackNumPositions())
-onClick('#prevMove', () => player.goToPreviousPosition())
-onClick('#nextMove', () => player.goToNextPosition())
-onClick('#skipForward', () => player.goForwardNumPositions())
-onClick('#lastMove', () => player.goToLastPosition())
-onClick('#prevFork', () => player.goToPreviousFork())
-onClick('#nextFork', () => player.goToNextFork())
-onClick('#prevComment', () => player.goToPreviousComment())
-onClick('#nextComment', () => player.goToNextComment())
-onClick('#prevVariation', () => player.selectPreviousVariation())
-onClick('#nextVariation', () => player.selectNextVariation())
-
-//Auto play
-onClick('#startAutoPlay', () => {
-  player.startAutoPlay()
-  toggleHidden('#startAutoPlay', true)
-  toggleHidden('#stopAutoPlay', false)
+//Commands
+onClick('.btnCommand', btn => {
+  const cmd = btn.getAttribute('cmd')
+  player[cmd]()
 })
-onClick('#stopAutoPlay', () => {
-  player.stopAutoPlay()
-  toggleHidden('#stopAutoPlay', true)
-  toggleHidden('#startAutoPlay', false)
+
+//Config toggles
+onClick('.lblToggleConfig', lbl => {
+  const key = lbl.getAttribute('config')
+  const input = lbl.querySelector('input')
+  player.toggleConfig(key, input.checked)
 })
 
 //Mode switching
@@ -229,6 +232,18 @@ onClick('.btnUseEditingTool', btn => {
   player.useEditingTool(tool)
 })
 
+//Auto play
+onClick('#startAutoPlay', () => {
+  player.startAutoPlay()
+  toggleHidden('#startAutoPlay', true)
+  toggleHidden('#stopAutoPlay', false)
+})
+onClick('#stopAutoPlay', () => {
+  player.stopAutoPlay()
+  toggleHidden('#stopAutoPlay', true)
+  toggleHidden('#startAutoPlay', false)
+})
+
 //Handler for mode changes
 const onModeChange = () => {
   const mode = player.getActiveMode()
@@ -241,6 +256,14 @@ const onModeChange = () => {
   toggleHidden('#replayTools', mode !== playerModes.REPLAY)
   toggleHidden('#editTools', mode !== playerModes.EDIT)
 }
+
+//Set checkboxes to initial toggle value
+findByQuery('.lblToggleConfig')
+  .forEach(lbl => {
+    const key = lbl.getAttribute('config')
+    const input = lbl.querySelector('input')
+    input.checked = player.getConfig(key)
+  })
 
 //Event handlers
 player.on('modeChange', onModeChange)

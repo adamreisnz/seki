@@ -10,7 +10,7 @@ import {
  * This class represents a static Go board, used for just rendering and
  * displaying a single board position
  */
-export default class StaticBoard extends Board {
+export default class BoardStatic extends Board {
 
   //Layer order for static boards
   layerOrder = [

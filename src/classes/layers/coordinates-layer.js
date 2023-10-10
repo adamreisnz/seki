@@ -1,4 +1,4 @@
-import BoardLayer from '../board-layer.js'
+import BoardLayer from './board-layer.js'
 import {boardLayerTypes} from '../../constants/board.js'
 import {coordinateGenerators} from '../../helpers/coordinates.js'
 

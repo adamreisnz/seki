@@ -12,14 +12,12 @@ import ConvertToJgf from './converters/convert-to-jgf.js'
 import ConvertToJson from './converters/convert-to-json.js'
 import ConvertToSgf from './converters/convert-to-sgf.js'
 import {set, get} from '../helpers/object.js'
-import {isValidColor} from '../helpers/stone.js'
+import {isValidColor} from '../helpers/color.js'
 import {stoneColors} from '../constants/stone.js'
 import {kifuFormats} from '../constants/app.js'
 import {setupTypes} from '../constants/setup.js'
-import {
-  defaultGameInfo,
-  checkRepeatTypes,
-} from '../constants/game.js'
+import {checkRepeatTypes} from '../constants/game.js'
+import {defaultGameInfo} from '../constants/defaults.js'
 
 /**
  * This class represents a game record or a game that is being played/edited. The class

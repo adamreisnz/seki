@@ -1,4 +1,4 @@
-import Convert from '../convert.js'
+import Converter from './converter.js'
 import Game from '../game.js'
 import GameNode from '../game-node.js'
 import {copy, get, set} from '../../helpers/object.js'
@@ -19,7 +19,7 @@ const skipPaths = [
 /**
  * Convert JGF data into a seki game object
  */
-export default class ConvertFromJgf extends Convert {
+export default class ConvertFromJgf extends Converter {
 
   /**
    * Convert JGF object into a Seki consumable format

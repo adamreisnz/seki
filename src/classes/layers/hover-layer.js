@@ -1,4 +1,4 @@
-import BoardLayer from '../board-layer.js'
+import BoardLayer from './board-layer.js'
 import {boardLayerTypes} from '../../constants/board.js'
 import Stone from '../objects/stone.js'
 import Markup from '../objects/markup.js'

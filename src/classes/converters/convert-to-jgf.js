@@ -1,4 +1,4 @@
-import Convert from '../convert.js'
+import Converter from './converter.js'
 import Game from '../game.js'
 import {copy, set} from '../../helpers/object.js'
 import {
@@ -9,7 +9,7 @@ import {
 /**
  * Converter to JGF
  */
-export default class ConvertToJgf extends Convert {
+export default class ConvertToJgf extends Converter {
 
   /**
    * Convert Seki game object to JGF

@@ -4,15 +4,13 @@ import Game from './game.js'
 import GameScorer from './game-scorer.js'
 import EventHandler from './event-handler.js'
 import PlayerModeFactory from './player-mode-factory.js'
+import {playerModes} from '../constants/player.js'
+import {defaultPlayerConfig} from '../constants/defaults.js'
 import {
   getPixelRatio,
   addClass,
   removeClass,
 } from '../helpers/util.js'
-import {
-  playerModes,
-  defaultPlayerConfig,
-} from '../constants/player.js'
 
 /**
  * This class brings the board to life and allows a user to interact with it.
@@ -160,18 +158,6 @@ export default class Player extends Base {
 
     //Load config
     this.loadConfig(config)
-  }
-
-  /**
-   * Set a config flag
-   */
-  setConfig(key, value) {
-
-    //Parent method
-    super.setConfig(key, value)
-
-    //Trigger event
-    this.triggerEvent('config', {key, value})
   }
 
   /*****************************************************************************
@@ -844,31 +830,12 @@ export default class Player extends Base {
   }
 
   /**
-   * Bind event listener to player
-   */
-  on(type, listener) {
-    this.addEventListener(type, listener)
-  }
-
-  /**
-   * Remove event listener from player
-   */
-  off(type, listener) {
-    this.removeEventListener(type, listener)
-  }
-
-  /**
    * Trigger an event
    */
   triggerEvent(type, detail) {
 
-    //Must have type
-    if (!type) {
-      return
-    }
-
     //Append grid coordinates for mouse events
-    if (type.match(/^mouse|click|hover/) && detail) {
+    if (type && detail && type.match(/^mouse|click|hover/)) {
       this.appendCoordinatesToEvent(detail)
     }
 
@@ -877,11 +844,8 @@ export default class Player extends Base {
       this.triggerGridEvent(detail)
     }
 
-    //Create new event
-    const event = new CustomEvent(type, {detail})
-
-    //Dispatch
-    this.dispatchEvent(event)
+    //Parent method
+    super.triggerEvent(type, detail)
   }
 
   /**
@@ -952,20 +916,35 @@ export default class Player extends Base {
    */
   setupOwnListeners() {
 
+    //These are passed on to the board
+    const boardConfig = [
+      'showCoordinates',
+      'swapColors',
+    ]
+
     //These need reprocessing
-    const needsRedraw = [
+    const needsProcessing = [
+      'showLastMove',
       'showNextMove',
       'showVariations',
+      'showSiblingVariations',
     ]
 
     //Config change
     this.on('config', event => {
 
       //Check what has changed
-      const {key} = event.detail
+      const {key, value} = event.detail
 
-      //Need to reprocess position?
-      if (needsRedraw.includes(key)) {
+      //Pass on to board
+      if (boardConfig.includes(key)) {
+        if (this.board) {
+          this.board.setConfig(key, value)
+        }
+      }
+
+      //Need to process position?
+      if (needsProcessing.includes(key)) {
         this.processPosition(true)
       }
     })

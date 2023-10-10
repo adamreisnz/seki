@@ -1,10 +1,10 @@
-import {appName, appVersion} from '../constants/app.js'
-import {flip} from '../helpers/object.js'
+import {appName, appVersion} from '../../constants/app.js'
+import {flip} from '../../helpers/object.js'
 
 /**
  * Base class for converters
  */
-export default class Convert {
+export default class Converter {
 
   /**
    * Get a mapped value

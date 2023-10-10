@@ -1,7 +1,5 @@
 import {stoneColors} from '../constants/stone.js'
-
-//Valid colors helper var
-export const validColors = Object.values(stoneColors)
+const validStoneColors = Object.values(stoneColors)
 
 /**
  * Swap a stone color
@@ -19,5 +17,5 @@ export function swapColor(color) {
  * Check if a color is valid
  */
 export function isValidColor(color) {
-  return validColors.includes(color)
+  return validStoneColors.includes(color)
 }

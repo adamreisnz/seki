@@ -36,8 +36,8 @@ export default class MarkupMoveNumber extends MarkupLabel {
     const {number} = this
 
     //Load additional properties
-    this.loadThemeProp('fontSize', number, ...args)
-    this.loadThemeProp('text', number, ...args)
+    this.loadThemeProp('fontSize', ...args, number)
+    this.loadThemeProp('text', number)
 
     //Pass on args
     return args

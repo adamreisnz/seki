@@ -3,11 +3,9 @@ import BoardLayerFactory from './board-layer-factory.js'
 import StoneFactory from './stone-factory.js'
 import MarkupFactory from './markup-factory.js'
 import Theme from './theme.js'
-import {swapColor} from '../helpers/stone.js'
-import {
-  defaultBoardConfig,
-  boardLayerTypes,
-} from '../constants/board.js'
+import {defaultBoardConfig} from '../constants/defaults.js'
+import {boardLayerTypes} from '../constants/board.js'
+import {swapColor} from '../helpers/color.js'
 import {
   throttle,
   getPixelRatio,
@@ -63,6 +61,9 @@ export default class Board extends Base {
     this.init()
     this.createLayers()
     this.initConfig(config)
+
+    //Create event listeners on ourselves
+    this.setupOwnListeners()
   }
 
   /**
@@ -296,22 +297,6 @@ export default class Board extends Base {
 
     //Redraw
     this.computeAndRedraw()
-  }
-
-  /**
-   * Toggle the coordinates
-   */
-  toggleCoordinates(show) {
-    this.toggleConfig('showCoordinates', show)
-    this.computeAndRedraw()
-  }
-
-  /**
-   * Swap colors on the board
-   */
-  toggleSwapColors(swapColors) {
-    this.toggleConfig('swapColors', swapColors)
-    this.redraw()
   }
 
   /**
@@ -879,5 +864,29 @@ export default class Board extends Base {
       width * pixelRatio,
       height * pixelRatio,
     )
+  }
+
+  /**
+   * Setup listeners on ourselves
+   */
+  setupOwnListeners() {
+
+    //These need a redraw
+    const needsRedraw = [
+      'showCoordinates',
+      'swapColors',
+    ]
+
+    //Config change
+    this.on('config', event => {
+
+      //Check what has changed
+      const {key} = event.detail
+
+      //Need to reprocess position?
+      if (needsRedraw.includes(key)) {
+        this.computeAndRedraw()
+      }
+    })
   }
 }

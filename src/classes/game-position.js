@@ -1,6 +1,6 @@
 import Grid from './grid.js'
 import {stoneColors} from '../constants/stone.js'
-import {swapColor, isValidColor} from '../helpers/stone.js'
+import {swapColor, isValidColor} from '../helpers/color.js'
 
 /**
  * This class represents a single game position. It keeps track of the stones

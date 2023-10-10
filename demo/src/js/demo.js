@@ -1,6 +1,4 @@
-import {
-  toggleClass as uToggleClass,
-} from '../src/helpers/util.js'
+import {helpers} from '../../../src/index.js'
 
 /**
  * Find elements by query
@@ -36,7 +34,7 @@ export function findByClass(className) {
  */
 export function toggleHidden(query, value) {
   const elements = findByQuery(query)
-  uToggleClass(elements, 'hidden', value)
+  helpers.util.toggleClass(elements, 'hidden', value)
 }
 
 /**

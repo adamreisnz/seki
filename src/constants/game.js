@@ -1,10 +1,5 @@
-import {stoneColors} from './stone.js'
-import {appName, appVersion} from './app.js'
-import {jgfVersion} from './jgf.js'
 
-/**
- * Game types
- */
+//Game types
 export const gameTypes = {
   GO: 'go',
   OTHELLO: 'othello',
@@ -16,9 +11,7 @@ export const gameTypes = {
   UNKNOWN: 'unknown',
 }
 
-/**
- * Possible score states
- */
+//Possible score states
 export const scoreState = {
   UNKNOWN: 0,
   BLACK_STONE: 1,
@@ -28,41 +21,8 @@ export const scoreState = {
   NEUTRAL: 3,
 }
 
-/**
- * Repeating positions check types
- */
+//Repeating positions check types
 export const checkRepeatTypes = {
   KO: 'ko',
   ALL: 'all',
-}
-
-/**
- * Default game info
- */
-export const defaultGameInfo = {
-  record: {
-    version: jgfVersion,
-    charset: 'UTF-8',
-    generator: `${appName} v${appVersion}`,
-  },
-  game: {
-    type: gameTypes.GO,
-  },
-  players: [
-    {
-      color: stoneColors.BLACK,
-      name: 'Black',
-    },
-    {
-      color: stoneColors.WHITE,
-      name: 'White',
-    },
-  ],
-  board: {
-    size: 19,
-  },
-  rules: {
-    komi: 0,
-    handicap: 0,
-  },
 }

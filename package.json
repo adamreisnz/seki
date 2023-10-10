@@ -30,28 +30,7 @@
     "sgf",
     "gib"
   ],
-  "browserslist": "> 0.5%, last 2 versions, not dead",
-  "engines": {
-    "node": ">=18"
-  },
-  "source": "src/index.js",
-  "module": "dist/seki.js",
-  "browser": "dist/seki-browser.js",
-  "targets": {
-    "browser": {
-      "includeNodeModules": true
-    }
-  },
-  "scripts": {
-    "watch": "parcel watch",
-    "build": "parcel build",
-    "demo": "rm -rf .parcel-cache && parcel serve demo/index.html --open",
-    "postversion": "git push && npm publish"
-  },
   "dependencies": {
     "deepmerge": "^4.3.1"
-  },
-  "devDependencies": {
-    "parcel": "^2.9.3"
   }
 }

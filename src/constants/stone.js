@@ -1,15 +1,11 @@
 
-/**
- * Stone colors
- */
+//Stone colors
 export const stoneColors = {
   BLACK: 'black',
   WHITE: 'white',
 }
 
-/**
- * Stone styles
- */
+//Stone styles
 export const stoneStyles = {
   SLATE_SHELL: 'slateShell',
   GLASS: 'glass',
@@ -17,9 +13,7 @@ export const stoneStyles = {
   SHADOW: 'shadow',
 }
 
-/**
- * Stone modifier styles
- */
+//Stone modifier styles
 export const stoneModifierStyles = {
   CAPTURES: 'captures',
   POINTS: 'points',

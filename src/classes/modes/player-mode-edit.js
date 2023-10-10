@@ -1,4 +1,4 @@
-import PlayerMode from '../player-mode.js'
+import PlayerMode from './player-mode.js'
 import {aCharUc, aCharLc} from '../../constants/common.js'
 import {markupTypes} from '../../constants/markup.js'
 import {stoneColors} from '../../constants/stone.js'

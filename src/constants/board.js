@@ -1,7 +1,5 @@
 
-/**
- * Sides
- */
+//Board sides
 export const boardSides = {
   TOP: 'top',
   BOTTOM: 'bottom',
@@ -9,9 +7,7 @@ export const boardSides = {
   RIGHT: 'right',
 }
 
-/**
- * Board layer types
- */
+//Board layer types
 export const boardLayerTypes = {
   GRID: 'grid',
   COORDINATES: 'coordinates',
@@ -22,31 +18,3 @@ export const boardLayerTypes = {
   HOVER: 'hover',
 }
 
-/**
- * Default board configuration
- */
-export const defaultBoardConfig = {
-
-  //Width and height
-  size: 19,
-
-  //Grid cut-off sides
-  cutoff: {
-    top: false,
-    bottom: false,
-    left: false,
-    right: false,
-  },
-
-  //Section of board to display
-  section: {
-    top: 0,
-    bottom: 0,
-    left: 0,
-    right: 0,
-  },
-
-  //Flags
-  showCoordinates: true,
-  swapColors: false,
-}

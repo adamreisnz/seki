@@ -56,6 +56,7 @@ export default class Base extends EventTarget {
   setConfig(key, value) {
     this.config[key] = value
     this.debug(`config ${key} changed to`, value)
+    this.triggerEvent('config', {key, value})
   }
 
   /**
@@ -80,5 +81,38 @@ export default class Base extends EventTarget {
     for (const key in config) {
       this.setConfig(key, config[key])
     }
+  }
+
+  /**************************************************************************
+   * Event handling
+   ***/
+
+  /**
+   * Bind event listener
+   */
+  on(type, listener) {
+    this.addEventListener(type, listener)
+  }
+
+  /**
+   * Remove event listener
+   */
+  off(type, listener) {
+    this.removeEventListener(type, listener)
+  }
+
+  /**
+   * Trigger an event
+   */
+  triggerEvent(type, detail) {
+
+    //Must have type
+    if (!type) {
+      return
+    }
+
+    //Create new event and dispatch it
+    const event = new CustomEvent(type, {detail})
+    this.dispatchEvent(event)
   }
 }

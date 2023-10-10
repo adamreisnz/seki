@@ -9,6 +9,24 @@ export default class MarkupCircle extends Markup {
   //Type
   type = markupTypes.CIRCLE
 
+  //Additional theme properties
+  lineDash
+
+  /**
+   * Load additional properties for this markup type
+   */
+  loadProperties(x, y) {
+
+    //Load parent properties
+    const args = super.loadProperties(x, y)
+
+    //Load additional properties
+    this.loadThemeProp('lineDash', ...args)
+
+    //Pass on args
+    return args
+  }
+
   /**
    * Get grid erase radius
    */
@@ -17,18 +35,27 @@ export default class MarkupCircle extends Markup {
   }
 
   /**
+   * Get parsed line dash
+   */
+  getLineDash() {
+    const {lineDash} = this
+    if (Array.isArray(lineDash)) {
+      return lineDash
+    }
+    return lineDash ? lineDash.split(',') : null
+  }
+
+  /**
    * Draw
    */
   draw(context, x, y) {
-
-    //Load properties
-    this.loadProperties(x, y)
 
     //Parent draw
     super.draw(context, x, y)
 
     //Get data
     const {radius, color, lineWidth} = this
+    const lineDash = this.getLineDash()
     const absX = this.getAbsX(x)
     const absY = this.getAbsY(y)
 
@@ -36,6 +63,7 @@ export default class MarkupCircle extends Markup {
     this.prepareContext(context)
 
     //Configure context
+    context.setLineDash(lineDash || [])
     context.strokeStyle = color
     context.lineWidth = lineWidth
 

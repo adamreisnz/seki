@@ -1,12 +1,9 @@
-import PlayerMode from '../player-mode.js'
+import PlayerMode from './player-mode.js'
 import MarkupFactory from '../markup-factory.js'
 import {boardLayerTypes} from '../../constants/board.js'
 import {markupTypes} from '../../constants/markup.js'
-import {
-  mouseEvents,
-  playerModes,
-  playerActions,
-} from '../../constants/player.js'
+import {mouseEvents} from '../../constants/common.js'
+import {playerModes, playerActions} from '../../constants/player.js'
 
 /**
  * Replay game records with this mode
@@ -407,7 +404,7 @@ export default class PlayerModeReplay extends PlayerMode {
 
       //Get data
       const {move} = variation
-      const {x, y, color: stoneColor} = move
+      const {x, y, color: displayColor} = move
 
       //Not on top of stones (if displaying sibling variations)
       if (board.has(boardLayerTypes.STONES, x, y)) {
@@ -417,7 +414,7 @@ export default class PlayerModeReplay extends PlayerMode {
       //Construct data for factory
       const index = i
       const isSelected = node.isSelectedPath(variation)
-      const data = {index, stoneColor, showText, isSelected}
+      const data = {index, displayColor, showText, isSelected}
 
       //Add to markers
       markers.push({x, y})
@@ -498,10 +495,18 @@ export default class PlayerModeReplay extends PlayerMode {
 
     //Get data
     const {board, markers} = this
+    if (!board) {
+      return
+    }
 
     //Remove markers
     markers.forEach(({x, y}) => board.remove(boardLayerTypes.MARKUP, x, y))
     this.markers = []
+
+    //Redraw grid layer to fill in erased gaps
+    board
+      .getLayer(boardLayerTypes.GRID)
+      .redraw()
   }
 
   /**
