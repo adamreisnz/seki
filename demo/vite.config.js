@@ -7,6 +7,9 @@ export default defineConfig({
     outDir: '../dist',
     emptyOutDir: true,
     assetsInlineLimit: 0,
+    rollupOptions: {
+      external: 'deepmerge',
+    },
   },
   esbuild: {
     minifyIdentifiers: false,
