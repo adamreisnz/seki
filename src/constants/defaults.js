@@ -90,20 +90,20 @@ export const defaultPlayerConfig = {
     [keyCodes.DOWN]: playerActions.NEXT_VARIATION,
 
     //Setup tool selection
-    [keyCodes.B]: playerActions.USE_EDIT_TOOL_BLACKOOL,
+    [keyCodes.Q]: playerActions.USE_EDIT_TOOL_BLACK,
     [keyCodes.W]: playerActions.USE_EDIT_TOOL_WHITE,
-    [keyCodes.X]: playerActions.USE_EDIT_TOOL_CLEAR,
+    [keyCodes.E]: playerActions.USE_EDIT_TOOL_CLEAR,
 
     //Markup tool selection
-    [keyCodes.T]: playerActions.USE_EDIT_TOOL_TRIANGLE,
-    [keyCodes.C]: playerActions.USE_EDIT_TOOL_CIRCLE,
+    [keyCodes.A]: playerActions.USE_EDIT_TOOL_TRIANGLE,
     [keyCodes.S]: playerActions.USE_EDIT_TOOL_SQUARE,
     [keyCodes.D]: playerActions.USE_EDIT_TOOL_DIAMOND,
-    [keyCodes.M]: playerActions.USE_EDIT_TOOL_MARK,
+    [keyCodes.F]: playerActions.USE_EDIT_TOOL_CIRCLE,
+    [keyCodes.G]: playerActions.USE_EDIT_TOOL_MARK,
     [keyCodes.H]: playerActions.USE_EDIT_TOOL_HAPPY,
     [keyCodes.J]: playerActions.USE_EDIT_TOOL_SAD,
+    [keyCodes.K]: playerActions.USE_EDIT_TOOL_NUMBER,
     [keyCodes.L]: playerActions.USE_EDIT_TOOL_LETTER,
-    [keyCodes.N]: playerActions.USE_EDIT_TOOL_NUMBER,
   },
 
   //Mouse bindings

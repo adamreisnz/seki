@@ -2,6 +2,7 @@ import PlayerMode from './player-mode.js'
 import {aCharUc, aCharLc} from '../../constants/common.js'
 import {markupTypes} from '../../constants/markup.js'
 import {stoneColors} from '../../constants/stone.js'
+import {boardLayerTypes} from '../../constants/board.js'
 import {
   playerActions,
   playerModes,
@@ -215,6 +216,7 @@ export default class PlayerModeEdit extends PlayerMode {
       //Erase markup first
       if (game.hasMarkup(x, y)) {
         this.removeMarkup(x, y)
+        this.redrawGridCell(x, y)
         player.processPosition()
         return
       }
@@ -283,7 +285,7 @@ export default class PlayerModeEdit extends PlayerMode {
   removeMarkup(x, y) {
 
     //Get data
-    const {game} = this
+    const {game, board} = this
     if (!game.hasMarkup(x, y)) {
       return
     }
@@ -295,8 +297,13 @@ export default class PlayerModeEdit extends PlayerMode {
     //Remove used markup label
     this.removeUsedMarkupLabel(text)
 
-    //Remove markup and return removed markup
+    //Remove markup from game and board and return removed markup
     game.removeMarkup(x, y)
+    board
+      .getLayer(boardLayerTypes.MARKUP)
+      .remove(x, y)
+
+    //Return removed markup
     return markup
   }
 
