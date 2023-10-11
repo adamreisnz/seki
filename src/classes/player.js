@@ -44,9 +44,6 @@ export default class Player extends Base {
     //Initialise
     this.init()
     this.initConfig(config)
-
-    //Create event listeners on ourselves
-    this.setupOwnListeners()
   }
 
   /**
@@ -82,8 +79,10 @@ export default class Player extends Base {
     game.goToFirstPosition()
 
     //Reset board
-    board.reset()
-    board.loadConfigFromGame(game)
+    if (board) {
+      board.reset()
+      board.loadConfigFromGame(game)
+    }
   }
 
   /**
@@ -373,6 +372,11 @@ export default class Player extends Base {
    */
   goToNextPosition(i) {
 
+    //No next position
+    if (!this.game.hasNextPosition()) {
+      return
+    }
+
     //At restricted end node
     if (this.isAtRestrictedEndNode()) {
       return
@@ -388,6 +392,11 @@ export default class Player extends Base {
    */
   goToPreviousPosition() {
 
+    //No previous position
+    if (!this.game.hasPreviousPosition()) {
+      return
+    }
+
     //At restricted start node
     if (this.isAtRestrictedStartNode()) {
       return
@@ -402,6 +411,13 @@ export default class Player extends Base {
    * Go to the last position
    */
   goToLastPosition() {
+
+    //Already at last position
+    if (!this.game.hasNextPosition()) {
+      return
+    }
+
+    //Go to last position
     this.game.goToLastPosition()
     this.processPosition()
   }
@@ -410,6 +426,13 @@ export default class Player extends Base {
    * Go to the first position
    */
   goToFirstPosition() {
+
+    //Already at first position
+    if (!this.game.hasPreviousPosition()) {
+      return
+    }
+
+    //Go to first position
     this.game.goToFirstPosition()
     this.processPosition()
   }
@@ -535,37 +558,34 @@ export default class Player extends Base {
   /**
    * Process a new game position
    */
-  processPosition(redraw) {
+  processPosition() {
 
-    //Debug
-    this.debug('processing position')
-
-    //Get current node and game position
-    const node = this.game.getCurrentNode()
+    //Check if path changed
     const path = this.game.getPath()
-    const position = this.game.getPosition()
     const pathChanged = !path.isSameAs(this.path)
 
-    //Update and redraw board
-    this.updateBoard(position, pathChanged)
-    if (redraw) {
-      this.redrawBoard()
+    //No change
+    if (!pathChanged) {
+      return
     }
 
-    //Trigger event
-    this.triggerEvent('positionUpdate', {node})
+    //Debug
+    this.debug('path changed')
 
-    //Path change?
-    if (pathChanged) {
+    //Get node and position
+    const position = this.game.getPosition()
+    const node = this.game.getCurrentNode()
 
-      //Copy new path and triggerEvent path change
-      this.path = path.clone()
-      this.triggerEvent('pathChange', {node})
+    //Update board
+    this.updateBoard(position)
 
-      //Named node reached? Trigger event
-      if (node.name) {
-        this.triggerEvent(`namedNode`, {node})
-      }
+    //Copy new path and trigger path change event
+    this.path = path.clone()
+    this.triggerEvent('pathChange', {node})
+
+    //Named node reached?
+    if (node.name) {
+      this.triggerEvent(`namedNode`, {node})
     }
 
     //Passed?
@@ -641,18 +661,10 @@ export default class Player extends Base {
   /**
    * Update the board
    */
-  updateBoard(position, pathChanged) {
-    if (this.board) {
-      this.board.updatePosition(position, pathChanged)
-    }
-  }
-
-  /**
-   * Redraw the board
-   */
-  redrawBoard() {
-    if (this.board) {
-      this.board.redraw()
+  updateBoard(position) {
+    const {board} = this
+    if (board) {
+      board.updatePosition(position)
     }
   }
 
@@ -702,8 +714,9 @@ export default class Player extends Base {
     //Create board
     const board = new Board()
 
-    //Bootstrap it
+    //Bootstrap it and link it to the player
     board.bootstrap(boardElement, element)
+    board.linkPlayer(this)
 
     //Set board
     this.setBoard(board)
@@ -909,46 +922,5 @@ export default class Player extends Base {
     if (nativeEvent.drag) {
       detail.drag = nativeEvent.drag
     }
-  }
-
-  /**
-   * Setup listeners on ourselves
-   */
-  setupOwnListeners() {
-
-    //These are passed on to the board
-    const boardConfig = [
-      'showCoordinates',
-      'swapColors',
-    ]
-
-    //These need reprocessing
-    const needsProcessing = [
-      'showLastMove',
-      'showNextMove',
-      'showVariations',
-      'showSiblingVariations',
-      'showAllMoveNumbers',
-      'showVariationMoveNumbers',
-    ]
-
-    //Config change
-    this.on('config', event => {
-
-      //Check what has changed
-      const {key, value} = event.detail
-
-      //Pass on to board
-      if (boardConfig.includes(key)) {
-        if (this.board) {
-          this.board.setConfig(key, value)
-        }
-      }
-
-      //Need to process position?
-      if (needsProcessing.includes(key)) {
-        this.processPosition(true)
-      }
-    })
   }
 }

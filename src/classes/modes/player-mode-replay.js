@@ -38,8 +38,9 @@ export default class PlayerModeReplay extends PlayerMode {
       wheel: 'onMouseWheel',
       gridEnter: 'onGridEnter',
       gridLeave: 'onGridLeave',
-      positionUpdate: 'onPositionUpdate',
+      pathChange: 'onPathChange',
       gameLoad: 'onGameLoad',
+      config: 'onPathChange',
     })
   }
 
@@ -164,7 +165,7 @@ export default class PlayerModeReplay extends PlayerMode {
   /**
    * Position update event
    */
-  onPositionUpdate() {
+  onPathChange() {
     this.renderMarkers()
   }
 
@@ -281,16 +282,16 @@ export default class PlayerModeReplay extends PlayerMode {
    * Select next variation
    */
   selectNextVariation() {
-    this.debug(`selecting next variation`)
     this.player.selectNextVariation()
+    this.renderMarkers()
   }
 
   /**
    * Select previous variation
    */
   selectPreviousVariation() {
-    this.debug(`selecting previous variation`)
     this.player.selectPreviousVariation()
+    this.renderMarkers()
   }
 
   /**

@@ -428,7 +428,7 @@ export const defaultTheme = {
     star: {
 
       //Color and radius
-      color: 'rgba(60,40,15,.9)',
+      color: 'rgba(60,40,15,1)',
       radius(cellSize) {
         if (cellSize > 50) {
           return Math.floor((cellSize / 16) + 1)

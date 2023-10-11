@@ -62,8 +62,8 @@ export default class Board extends Base {
     this.createLayers()
     this.initConfig(config)
 
-    //Create event listeners on ourselves
-    this.setupOwnListeners()
+    //Create config event listeners
+    this.setupConfigListeners()
   }
 
   /**
@@ -397,7 +397,7 @@ export default class Board extends Base {
   /**
    * Update the board with a new position
    */
-  updatePosition(position, pathChanged) {
+  updatePosition(position) {
 
     //Debug
     this.debug('updating position')
@@ -407,10 +407,8 @@ export default class Board extends Base {
       this.setSize(position.width, position.height)
     }
 
-    //Remove markup if path changed
-    if (pathChanged) {
-      this.removeAll(boardLayerTypes.MARKUP)
-    }
+    //Remove markup
+    this.removeAll(boardLayerTypes.MARKUP)
 
     //Get theme
     const {theme} = this
@@ -867,9 +865,9 @@ export default class Board extends Base {
   }
 
   /**
-   * Setup listeners on ourselves
+   * Setup config change listeners
    */
-  setupOwnListeners() {
+  setupConfigListeners() {
 
     //These need a redraw
     const needsRedraw = [
@@ -886,6 +884,33 @@ export default class Board extends Base {
       //Need to reprocess position?
       if (needsRedraw.includes(key)) {
         this.computeAndRedraw()
+      }
+    })
+  }
+
+  /**
+   * Link to player
+   */
+  linkPlayer(player) {
+
+    //Link player
+    this.player = player
+
+    //Config to pass from player to board
+    const boardConfig = [
+      'showCoordinates',
+      'swapColors',
+    ]
+
+    //Set up event listener
+    player.on('config', event => {
+
+      //Check what has changed
+      const {key, value} = event.detail
+
+      //Pass on to board
+      if (boardConfig.includes(key)) {
+        this.setConfig(key, value)
       }
     })
   }

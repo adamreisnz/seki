@@ -881,6 +881,36 @@ export default class Game extends Base {
    ***/
 
   /**
+   * Check if there is a next position
+   */
+  hasNextPosition() {
+    const {node} = this
+    return node.hasChildren()
+  }
+
+  /**
+   * Check if there is a previous position
+   */
+  hasPreviousPosition() {
+    const {root, node} = this
+    return (root !== node)
+  }
+
+  /**
+   * Is at first position
+   */
+  isAtFirstPosition() {
+    return !this.hasPreviousPosition()
+  }
+
+  /**
+   * Is at last position
+   */
+  isAtLastPosition() {
+    return !this.hasNextPosition()
+  }
+
+  /**
    * Go to the next position
    */
   goToNextPosition(i) {
