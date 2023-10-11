@@ -533,13 +533,13 @@ export default class PlayerModeReplay extends PlayerMode {
     }
 
     //Remove markers
-    markers.forEach(({x, y}) => board.remove(boardLayerTypes.MARKUP, x, y))
-    this.markers = []
+    markers.forEach(({x, y}) => {
+      board.remove(boardLayerTypes.MARKUP, x, y)
+      this.redrawGridCell(x, y)
+    })
 
-    //Redraw grid layer to fill in erased gaps
-    board
-      .getLayer(boardLayerTypes.GRID)
-      .redraw()
+    //Reset markers array
+    this.markers = []
   }
 
   /**

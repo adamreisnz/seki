@@ -407,9 +407,6 @@ export default class Board extends Base {
       this.setSize(position.width, position.height)
     }
 
-    //Remove markup
-    this.removeAll(boardLayerTypes.MARKUP)
-
     //Get theme
     const {theme} = this
     const style = theme.get('board.stoneStyle')
@@ -423,6 +420,9 @@ export default class Board extends Base {
     const markup = position.markup
       .map(({type, text}) => MarkupFactory
         .create(type, this, {text}))
+
+    //Redraw gird
+    this.redrawLayer(boardLayerTypes.GRID)
 
     //Set new stones and markup grids
     this.setAll(boardLayerTypes.STONES, stones)

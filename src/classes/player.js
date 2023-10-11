@@ -1,7 +1,6 @@
 import Base from './base.js'
 import Board from './board.js'
 import Game from './game.js'
-import GameScorer from './game-scorer.js'
 import EventHandler from './event-handler.js'
 import PlayerModeFactory from './player-mode-factory.js'
 import {playerModes} from '../constants/player.js'
@@ -332,7 +331,7 @@ export default class Player extends Base {
     if (this.board) {
       this.board.removeAll()
       this.board.loadConfigFromGame(game)
-      this.processPosition()
+      this.processPathChange()
     }
   }
 
@@ -359,7 +358,7 @@ export default class Player extends Base {
     //Update board
     if (this.board) {
       this.board.removeAll()
-      this.processPosition()
+      this.processPathChange()
     }
   }
 
@@ -384,7 +383,7 @@ export default class Player extends Base {
 
     //Go to next position
     this.game.goToNextPosition(i)
-    this.processPosition()
+    this.processPathChange()
   }
 
   /**
@@ -404,7 +403,7 @@ export default class Player extends Base {
 
     //Go to previous position
     this.game.goToPreviousPosition()
-    this.processPosition()
+    this.processPathChange()
   }
 
   /**
@@ -419,7 +418,7 @@ export default class Player extends Base {
 
     //Go to last position
     this.game.goToLastPosition()
-    this.processPosition()
+    this.processPathChange()
   }
 
   /**
@@ -434,7 +433,7 @@ export default class Player extends Base {
 
     //Go to first position
     this.game.goToFirstPosition()
-    this.processPosition()
+    this.processPathChange()
   }
 
   /**
@@ -442,7 +441,7 @@ export default class Player extends Base {
    */
   goToPreviousFork() {
     this.game.goToPreviousFork()
-    this.processPosition()
+    this.processPathChange()
   }
 
   /**
@@ -450,7 +449,7 @@ export default class Player extends Base {
    */
   goToNextFork() {
     this.game.goToNextFork()
-    this.processPosition()
+    this.processPathChange()
   }
 
   /**
@@ -458,7 +457,7 @@ export default class Player extends Base {
    */
   goToNextComment() {
     this.game.goToNextComment()
-    this.processPosition()
+    this.processPathChange()
   }
 
   /**
@@ -466,7 +465,7 @@ export default class Player extends Base {
    */
   goToPreviousComment() {
     this.game.goToPreviousComment()
-    this.processPosition()
+    this.processPathChange()
   }
 
   /**
@@ -475,7 +474,7 @@ export default class Player extends Base {
   goForwardNumPositions(num) {
     num = num || this.getConfig('numSkipMoves')
     this.game.goForwardNumPositions(num)
-    this.processPosition()
+    this.processPathChange()
   }
 
   /**
@@ -484,7 +483,7 @@ export default class Player extends Base {
   goBackNumPositions(num) {
     num = num || this.getConfig('numSkipMoves')
     this.game.goBackNumPositions(num)
-    this.processPosition()
+    this.processPathChange()
   }
 
   /**
@@ -492,7 +491,7 @@ export default class Player extends Base {
    */
   selectNextVariation() {
     this.game.selectNextVariation()
-    this.processPosition()
+    this.processPathChange()
   }
 
   /**
@@ -500,7 +499,7 @@ export default class Player extends Base {
    */
   selectPreviousVariation() {
     this.game.selectPreviousVariation()
-    this.processPosition()
+    this.processPathChange()
   }
 
   /**
@@ -509,7 +508,7 @@ export default class Player extends Base {
   playMove(x, y) {
     const outcome = this.game.playMove(x, y)
     if (outcome.isValid) {
-      this.processPosition()
+      this.processPathChange()
     }
     return outcome
   }
@@ -520,7 +519,7 @@ export default class Player extends Base {
   passMove(x, y) {
     const outcome = this.game.passMove(x, y)
     if (outcome.isValid) {
-      this.processPosition()
+      this.processPathChange()
     }
     return outcome
   }
@@ -556,28 +555,39 @@ export default class Player extends Base {
   }
 
   /**
-   * Process a new game position
+   * Process current game position
    */
   processPosition() {
+
+    //Get position
+    const position = this.game.getPosition()
+
+    //Update board
+    this.updateBoard(position)
+  }
+
+  /**
+   * Process path change
+   */
+  processPathChange() {
 
     //Check if path changed
     const path = this.game.getPath()
     const pathChanged = !path.isSameAs(this.path)
 
-    //No change
+    //Path didn't change
     if (!pathChanged) {
       return
     }
 
+    //Get data
+    const node = this.game.getCurrentNode()
+
     //Debug
     this.debug('path changed')
 
-    //Get node and position
-    const position = this.game.getPosition()
-    const node = this.game.getCurrentNode()
-
-    //Update board
-    this.updateBoard(position)
+    //Process static position
+    this.processPosition()
 
     //Copy new path and trigger path change event
     this.path = path.clone()
@@ -609,27 +619,27 @@ export default class Player extends Base {
   /**
    * Score the current game position
    */
-  scoreGame() {
+  // scoreGame() {
 
-    //Get game and create new came scorer
-    const {game} = this
-    const scorer = new GameScorer(game)
+  //   //Get game and create new came scorer
+  //   const {game} = this
+  //   const scorer = new GameScorer(game)
 
-    //Calculate score
-    scorer.calculate()
+  //   //Calculate score
+  //   scorer.calculate()
 
-    //Get score, points and captures
-    const score = scorer.getScore()
-    const points = scorer.getPoints()
-    const captures = scorer.getCaptures()
+  //   //Get score, points and captures
+  //   const score = scorer.getScore()
+  //   const points = scorer.getPoints()
+  //   const captures = scorer.getCaptures()
 
-    //Remove all markup, and set captures and points
-    this.board.layers.markup.removeAll()
-    this.board.layers.score.setAll(points, captures)
+  //   //Remove all markup, and set captures and points
+  //   this.board.layers.markup.removeAll()
+  //   this.board.layers.score.setAll(points, captures)
 
-    //Broadcast score
-    this.triggerEvent('score', {score})
-  }
+  //   //Broadcast score
+  //   this.triggerEvent('score', {score})
+  // }
 
   /*****************************************************************************
    * Board handling
