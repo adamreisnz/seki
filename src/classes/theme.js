@@ -1,6 +1,5 @@
-import merge from 'deepmerge'
 import Base from './base.js'
-import {get, set} from '../helpers/object.js'
+import {get, set, merge} from '../helpers/object.js'
 import {defaultTheme} from '../constants/defaults.js'
 
 /**
@@ -32,14 +31,14 @@ export default class Theme extends Base {
    * Initialise config
    */
   initConfig(config) {
-    this.config = merge.all([defaultTheme, config || {}])
+    this.config = merge(defaultTheme, config || {})
   }
 
   /**
    * Reset to defaults
    */
   resetToDefaults() {
-    this.config = merge.all([defaultTheme, {}])
+    this.initConfig()
   }
 
   /**

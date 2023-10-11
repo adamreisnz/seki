@@ -1,12 +1,12 @@
-import merge from 'deepmerge'
 import {getDebug} from '../helpers/util.js'
+import {merge} from '../helpers/object.js'
 
 /**
  * Base class for player, board and theme classes
  */
 export default class Base extends EventTarget {
 
-  /**************************************************************************
+  /*************************d*************************************************
    * Debugging and error handling
    ***/
 
@@ -36,8 +36,7 @@ export default class Base extends EventTarget {
    * Init config
    */
   initConfig(config, defaultConfig) {
-    this.config = merge.all([defaultConfig, config || {}])
-    this.debug(`config initialised`)
+    this.config = merge(defaultConfig, config)
   }
 
   /**

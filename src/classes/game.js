@@ -1,4 +1,3 @@
-import merge from 'deepmerge'
 import Base from './base.js'
 import {ErrorOutcome, ValidOutcome} from './outcomes.js'
 import GamePath from './game-path.js'
@@ -11,7 +10,7 @@ import ConvertFromGib from './converters/convert-from-gib.js'
 import ConvertToJgf from './converters/convert-to-jgf.js'
 import ConvertToJson from './converters/convert-to-json.js'
 import ConvertToSgf from './converters/convert-to-sgf.js'
-import {set, get} from '../helpers/object.js'
+import {set, get, merge} from '../helpers/object.js'
 import {isValidColor} from '../helpers/color.js'
 import {stoneColors} from '../constants/stone.js'
 import {kifuFormats} from '../constants/app.js'
@@ -51,7 +50,7 @@ export default class Game extends Base {
   init() {
 
     //Info properties
-    this.info = merge.all([defaultGameInfo, {}])
+    this.info = merge(defaultGameInfo, {})
 
     //The rood node and pointer to the current node
     this.root = new GameNode()
