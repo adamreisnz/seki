@@ -126,9 +126,10 @@ export const defaultPlayerConfig = {
   showNextMove: false,
   showCoordinates: true,
   showSolutions: false,
+  showAllMoveNumbers: false,
+  showVariationMoveNumbers: true,
   showVariations: true,
   showSiblingVariations: false,
-  numberVariationMoves: true,
   rememberVariationPaths: true,
   allowMovesInReplayMode: true,
 

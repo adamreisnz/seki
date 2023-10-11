@@ -356,7 +356,8 @@ export default class PlayerModeReplay extends PlayerMode {
     const showNextMove = player.getConfig('showNextMove')
     const showVariations = player.getConfig('showVariations')
     const showSiblingVariations = player.getConfig('showSiblingVariations')
-    const numberVariationMoves = player.getConfig('numberVariationMoves')
+    const showAllMoveNumbers = player.getConfig('showAllMoveNumbers')
+    const showVariationMoveNumbers = player.getConfig('showVariationMoveNumbers')
 
     //Clear hover and last move markers
     this.clearHover()
@@ -379,8 +380,13 @@ export default class PlayerModeReplay extends PlayerMode {
       this.addMoveVariationMarkers(node, false)
     }
 
+    //Show all move numbers
+    if (showAllMoveNumbers) {
+      this.numberAllMoves(node)
+    }
+
     //Number variation moves
-    if (numberVariationMoves && node.isVariationBranch()) {
+    else if (showVariationMoveNumbers && node.isVariationBranch()) {
       this.numberVariationMoves(node)
     }
 
@@ -470,6 +476,32 @@ export default class PlayerModeReplay extends PlayerMode {
     //Get variation nodes
     const {board, markers} = this
     const nodes = node.getVariationMoveNodes()
+
+    //Loop each
+    nodes.forEach((node, i) => {
+
+      //Get node data
+      const {x, y} = node.move
+      const number = i + 1
+
+      //Store
+      markers.push({x, y})
+
+      //Add to board
+      board
+        .add(boardLayerTypes.MARKUP, x, y, MarkupFactory
+          .create(markupTypes.MOVE_NUMBER, board, {number}))
+    })
+  }
+
+  /**
+   * Number all moves
+   */
+  numberAllMoves(node) {
+
+    //Get variation nodes
+    const {board, markers} = this
+    const nodes = node.getAllMoveNodes()
 
     //Loop each
     nodes.forEach((node, i) => {

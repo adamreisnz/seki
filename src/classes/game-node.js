@@ -256,11 +256,25 @@ export default class GameNode {
    */
   getVariationMoveNodes(arr = []) {
     const {parent, variationRoot} = this
-    if (variationRoot) {
+    if (variationRoot && this.isMove()) {
       arr.unshift(this)
     }
     if (parent) {
       return parent.getVariationMoveNodes(arr)
+    }
+    return arr
+  }
+
+  /**
+   * Get array of move nodes up to the root node
+   */
+  getAllMoveNodes(arr = []) {
+    const {parent} = this
+    if (this.isMove()) {
+      arr.unshift(this)
+    }
+    if (parent) {
+      return parent.getAllMoveNodes(arr)
     }
     return arr
   }

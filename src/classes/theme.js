@@ -76,6 +76,7 @@ export default class Theme extends Base {
   /**
    * To combat 2d canvas blurry lines, we translate the canvas prior to drawing elements.
    * See: http://www.mobtowers.com/html5-canvas-crisp-lines-every-time/
+   * Anno 2023 this still appears to be needed for non retina displays
    */
   canvasTranslate(lineWidth) {
 

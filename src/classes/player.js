@@ -928,6 +928,8 @@ export default class Player extends Base {
       'showNextMove',
       'showVariations',
       'showSiblingVariations',
+      'showAllMoveNumbers',
+      'showVariationMoveNumbers',
     ]
 
     //Config change

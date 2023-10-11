@@ -14,7 +14,7 @@ rules:
     - unix
   max-len:
     - warn
-    - code: 80
+    - code: 82
       tabWidth: 2
       ignoreComments: true
       ignoreUrls: true
