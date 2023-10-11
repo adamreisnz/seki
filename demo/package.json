@@ -16,6 +16,7 @@
     "buildpreview": "vite build && vite preview --open"
   },
   "devDependencies": {
+    "deepmerge": "^4.3.1",
     "vite": "^4.4.11"
   }
 }
