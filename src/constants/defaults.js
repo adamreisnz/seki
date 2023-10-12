@@ -94,8 +94,7 @@ export const defaultPlayerConfig = {
     [keyCodes.DOWN]: playerActions.NEXT_VARIATION,
 
     //Setup tool selection
-    [keyCodes.Q]: playerActions.USE_EDIT_TOOL_BLACK,
-    [keyCodes.W]: playerActions.USE_EDIT_TOOL_WHITE,
+    [keyCodes.W]: playerActions.USE_EDIT_TOOL_STONE,
     [keyCodes.E]: playerActions.USE_EDIT_TOOL_CLEAR,
 
     //Markup tool selection

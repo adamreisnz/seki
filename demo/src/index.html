@@ -17,146 +17,160 @@
     </div>
   </div>
   <div class="right">
-
-    <h2>File</h2>
-    <button class="btnCommand icon" cmd="reset" title="New file">
-      <span class="material-symbols-outlined">note</span>
+    <button id="menu" title="Menu">
+      <span class="material-symbols-outlined">menu</span>
     </button>
-    <button class="btnCommand icon" cmd="openFile" title="Open file">
-      <span class="material-symbols-outlined">upload</span>
+    <!-- <button id="fullscreen" title="Full screen">
+      <span class="material-symbols-outlined">open_in_full</span>
+    </button> -->
+    <button class="btnSwitchMode" mode="edit" title="Edit">
+      <span class="material-symbols-outlined">edit</span>
     </button>
-    <button class="btnCommand icon" cmd="downloadFile" title="Download file">
-      <span class="material-symbols-outlined">download</span>
+    <button class="btnSwitchMode" mode="replay" title="Play">
+      <span class="material-symbols-outlined">fiber_smart_record</span>
     </button>
 
-    <div id="editTools">
-      <h2>Tools</h2>
-      <button class="btnSwitchMode icon" mode="replay" title="Play">
-        <span class="material-symbols-outlined">fiber_smart_record</span>
-      </button>
-      <button class="btnUseEditingTool icon" tool="black" class="icon" title="Black stone">
-        <span class="material-symbols-outlined">trip_origin</span>
-      </button>
-      <button class="btnUseEditingTool icon" tool="white" class="icon" title="White stone">
-        <span class="material-symbols-outlined">fiber_manual_record</span>
-      </button>
-      <button class="btnUseEditingTool icon" tool="clear" class="icon" title="Clear">
-        <span class="material-symbols-outlined">ink_eraser</span>
-      </button>
-      <!-- <button class="btnCommand icon" cmd="reset" title="Clear board">
-        <span class="material-symbols-outlined">border_clear</span>
-      </button> -->
 
-      <h2>Markup</h2>
-      <button class="btnUseEditingTool icon" tool="circle" class="icon">
-        <span class="material-symbols-outlined">circle</span>
-      </button>
-      <button class="btnUseEditingTool icon" tool="triangle" class="icon">
-        <span class="material-symbols-outlined">change_history</span>
-      </button>
-      <button class="btnUseEditingTool icon" tool="square" class="icon">
-        <span class="material-symbols-outlined">square</span>
-      </button>
-      <button class="btnUseEditingTool icon" tool="diamond" class="icon">
-        <span class="material-symbols-outlined">diamond</span>
-      </button>
-      <button class="btnUseEditingTool icon" tool="mark" class="icon">
-        <span class="material-symbols-outlined">close</span>
-      </button>
-      <br>
-      <button class="btnUseEditingTool icon" tool="letter" class="icon">
-        <span class="material-symbols-outlined">abc</span>
-      </button>
-      <button class="btnUseEditingTool icon" tool="number" class="icon">
-        <span class="material-symbols-outlined">123</span>
-      </button>
-      <button class="btnUseEditingTool icon" tool="happy" class="icon">
-        <span class="material-symbols-outlined">sentiment_satisfied</span>
-      </button>
-      <button class="btnUseEditingTool icon" tool="sad" class="icon">
-        <span class="material-symbols-outlined">sentiment_dissatisfied</span>
-      </button>
-      <button class="btnUseEditingTool icon" tool="clear" class="icon" title="Clear">
-        <span class="material-symbols-outlined">ink_eraser</span>
-      </button>
+    <div id="menuDropdown" class="dropdown hidden">
+      <menu>
+        <li class="btnCommand item" cmd="reset">
+          <span class="icon material-symbols-outlined">note</span>
+          New file
+        </li>
+        <li class="btnCommand item" cmd="openFile">
+          <span class="icon material-symbols-outlined">upload</span>
+          Open file
+        </li>
+        <li class="btnCommand item" cmd="downloadFile">
+          <span class="icon material-symbols-outlined">download</span>
+          Download
+        </li>
+        <li id="settings" class="item">
+          <span class="icon material-symbols-outlined">tune</span>
+          Settings
+        </li>
+      </menu>
+    </div>
+    <div id="settingsDropdown" class="dropdown hidden">
+      <div class="settings">
+        <label class="lblToggleConfig" config="showCoordinates">
+          <input type="checkbox"> Show coordinates
+        </label>
+        <label class="lblToggleConfig" config="showLastMove">
+          <input type="checkbox"> Show last move
+        </label>
+        <label class="lblToggleConfig" config="showNextMove">
+          <input type="checkbox"> Show next move
+        </label>
+        <label class="lblToggleConfig" config="showAllMoveNumbers">
+          <input type="checkbox"> Show all move numbers
+        </label>
+        <label class="lblToggleConfig" config="showVariationMoveNumbers">
+          <input type="checkbox"> Show variation move numbers
+        </label>
+        <label class="lblToggleConfig" config="showVariations">
+          <input type="checkbox"> Show variations
+        </label>
+        <label class="lblToggleConfig" config="rememberVariationPath">
+          <input type="checkbox"> Remember path taken
+        </label>
+        <label class="lblToggleConfig" config="swapColors">
+          <input type="checkbox"> Swap colors
+        </label>
+      </div>
     </div>
 
     <div id="replayTools">
-      <h2>Tools</h2>
-      <button class="btnSwitchMode icon" icon mode="edit" title="Edit">
-        <span class="material-symbols-outlined">edit</span>
-      </button>
-      <button class="icon" id="startAutoPlay" title="Start auto play">
+      <button id="startAutoPlay" title="Start auto play">
         <span class="material-symbols-outlined">autoplay</span>
       </button>
-      <button class="icon" id="stopAutoPlay" title="Stop auto play">
+      <button id="stopAutoPlay" title="Stop auto play">
         <span class="material-symbols-outlined">autostop</span>
       </button>
-
-      <h2>Navigation</h2>
-      <button class="btnCommand icon" cmd="goToFirstPosition" title="Go to first position">
-        <span class="material-symbols-outlined">first_page</span>
-      </button>
-      <button class="btnCommand icon" cmd="goBackNumPositions" title="Go back 10 positions">
-        <span class="material-symbols-outlined">replay_10</span>
-      </button>
-      <button class="btnCommand icon" cmd="goToPreviousPosition" title="Go to previous position">
+      <br>
+      <br>
+      <button class="btnCommand" cmd="goToPreviousPosition" title="Go to previous position">
         <span class="material-symbols-outlined">navigate_before</span>
       </button>
-      <button class="btnCommand icon" cmd="goToNextPosition" title="Go to next position">
+      <button class="btnCommand" cmd="goToNextPosition" title="Go to next position">
         <span class="material-symbols-outlined">navigate_next</span>
       </button>
-      <button class="btnCommand icon" cmd="goForwardNumPositions" title="Go forward 10 positions">
+      <br>
+      <button class="btnCommand" cmd="goBackNumPositions" title="Go back 10 positions">
+        <span class="material-symbols-outlined">replay_10</span>
+      </button>
+      <button class="btnCommand" cmd="goForwardNumPositions" title="Go forward 10 positions">
         <span class="material-symbols-outlined">forward_10</span>
       </button>
-      <button class="btnCommand icon" cmd="goToLastPosition" title="Go to last position">
+      <br>
+      <button class="btnCommand" cmd="goToFirstPosition" title="Go to first position">
+        <span class="material-symbols-outlined">first_page</span>
+      </button>
+      <button class="btnCommand" cmd="goToLastPosition" title="Go to last position">
         <span class="material-symbols-outlined">last_page</span>
       </button>
       <br>
-      <button class="btnCommand icon" cmd="goToPreviousFork" title="Previous fork">
+      <button class="btnCommand" cmd="goToPreviousFork" title="Previous fork">
         <span class="material-symbols-outlined">fork_left</span>
       </button>
-      <button class="btnCommand icon" cmd="goToNextFork" title="Next fork">
+      <button class="btnCommand" cmd="goToNextFork" title="Next fork">
         <span class="material-symbols-outlined">fork_right</span>
       </button>
-      <button class="btnCommand icon" cmd="goToPreviousComment" title="Previous comment">
+      <br>
+      <button class="btnCommand" cmd="goToPreviousComment" title="Previous comment">
         <span class="material-symbols-outlined">comment</span>
       </button>
-      <button class="btnCommand icon" cmd="goToNextComment" title="Next comment">
+      <button class="btnCommand" cmd="goToNextComment" title="Next comment">
         <span class="material-symbols-outlined">chat</span>
       </button>
-
     </div>
 
-    <h2>Options</h2>
-    <label class="lblToggleConfig" config="swapColors">
-      <input type="checkbox"> Swap colors
-    </label>
-    <label class="lblToggleConfig" config="showCoordinates">
-      <input type="checkbox"> Coordinates
-    </label>
-    <label class="lblToggleConfig" config="showLastMove">
-      <input type="checkbox"> Last move
-    </label>
-    <label class="lblToggleConfig" config="showNextMove">
-      <input type="checkbox"> Next move
-    </label>
-    <label class="lblToggleConfig" config="showAllMoveNumbers">
-      <input type="checkbox"> All move numbers
-    </label>
-    <label class="lblToggleConfig" config="showVariationMoveNumbers">
-      <input type="checkbox"> Variation move numbers
-    </label>
-    <label class="lblToggleConfig" config="showVariations">
-      <input type="checkbox"> Variations
-    </label>
-    <label class="lblToggleConfig" config="rememberVariationPath">
-      <input type="checkbox"> Remember path taken
-    </label>
-    <label class="lblToggleConfig" config="allowMovesInReplayMode">
-      <input type="checkbox"> Allow moves in replay mode
-    </label>
-  </info>
+    <div id="editTools">
+      <button class="btnUseEditingTool" tool="stone" title="Place stone [W]">
+        <span class="material-symbols-outlined">fiber_manual_record</span>
+      </button>
+      <button class="btnUseEditingTool" tool="clear" title="Clear [E]">
+        <span class="material-symbols-outlined">ink_eraser</span>
+      </button>
+      <br>
+      <br>
+
+      <button class="btnUseEditingTool" tool="triangle" title="Triangle [A]">
+        <span class="material-symbols-outlined">change_history</span>
+      </button>
+      </button><button class="btnUseEditingTool" tool="square" title="Square [S]">
+        <span class="material-symbols-outlined">square</span>
+      </button>
+      <br>
+      <button class="btnUseEditingTool" tool="circle" title="Circle [F]">
+        <span class="material-symbols-outlined">circle</span>
+      </button>
+      <button class="btnUseEditingTool" tool="diamond" title="Diamond [D]">
+        <span class="material-symbols-outlined">diamond</span>
+      </button>
+      <br>
+      <button class="btnUseEditingTool" tool="number" title="Number [K]">
+        <span class="material-symbols-outlined">123</span>
+      </button>
+      <button class="btnUseEditingTool" tool="letter" title="Letter [L]">
+        <span class="material-symbols-outlined">abc</span>
+      </button>
+      <br>
+      <button class="btnUseEditingTool" tool="happy" title="Happy [H]">
+        <span class="material-symbols-outlined">sentiment_satisfied</span>
+      </button>
+      <button class="btnUseEditingTool" tool="sad" title="Sad [J]">
+        <span class="material-symbols-outlined">sentiment_dissatisfied</span>
+      </button>
+      <br>
+      <button class="btnUseEditingTool" tool="mark" title="Mark [G]">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+      <button id="removeAllMarkup" title="Remove all markup">
+        <span class="material-symbols-outlined">delete_sweep</span>
+      </button>
+    </div>
+  </div>
 </div>
 <script type="module">
 import {Board, Player, constants, helpers} from '../../src/index.js'
@@ -184,8 +198,18 @@ const player = new Player({
 //Bootstrap player
 player.bootstrap(playerElement)
 
+//Menu
+onClick('#menu', () => {
+  toggleHidden('#settingsDropdown', true)
+  toggleHidden('#menuDropdown')
+})
+onClick('#settings', () => {
+  toggleHidden('#settingsDropdown', false)
+})
+
 //Commands
 onClick('.btnCommand', btn => {
+  toggleHidden('#menuDropdown', true)
   const cmd = btn.getAttribute('cmd')
   player[cmd]()
 })
@@ -199,26 +223,38 @@ onClick('.lblToggleConfig', lbl => {
 
 //Mode switching
 onClick('.btnSwitchMode', btn => {
+  toggleHidden('#menuDropdown', true)
   const mode = btn.getAttribute('mode')
   player.switchMode(mode)
 })
 
 //Editing tool selection
 onClick('.btnUseEditingTool', btn => {
+  toggleHidden('#menuDropdown', true)
   const tool = btn.getAttribute('tool')
   player.useEditingTool(tool)
 })
 
 //Auto play
 onClick('#startAutoPlay', () => {
+  toggleHidden('#menuDropdown', true)
   player.startAutoPlay()
   toggleHidden('#startAutoPlay', true)
   toggleHidden('#stopAutoPlay', false)
 })
 onClick('#stopAutoPlay', () => {
+  toggleHidden('#menuDropdown', true)
   player.stopAutoPlay()
   toggleHidden('#stopAutoPlay', true)
   toggleHidden('#startAutoPlay', false)
+})
+
+//Remove all markup
+onClick('#removeAllMarkup', () => {
+  toggleHidden('#menuDropdown', true)
+  player.board
+    .getLayer(constants.board.boardLayerTypes.MARKUP)
+    .removeAll()
 })
 
 //Handler for mode changes

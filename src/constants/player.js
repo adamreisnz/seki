@@ -35,6 +35,7 @@ export const editingTools = {
   BLACK: setupTypes.BLACK,
   WHITE: setupTypes.WHITE,
   CLEAR: setupTypes.CLEAR,
+  STONE: 'stone',
 }
 
 /**
@@ -52,6 +53,7 @@ export const playerActions = {
   NEXT_VARIATION: 'nextVariation',
 
   //Setup tool selection
+  USE_EDIT_TOOL_STONE: 'useEditToolStone',
   USE_EDIT_TOOL_BLACK: 'useEditToolBlack',
   USE_EDIT_TOOL_WHITE: 'useEditToolWhite',
   USE_EDIT_TOOL_CLEAR: 'useEditToolClear',

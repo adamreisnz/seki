@@ -18,7 +18,7 @@ export default class PlayerModeEdit extends PlayerMode {
   mode = playerModes.EDIT
 
   //Set default editing tool
-  tool = editingTools.TRIANGLE
+  tool = editingTools.STONE
 
   //Used markup labels
   usedMarkupLabels = []
@@ -163,6 +163,9 @@ export default class PlayerModeEdit extends PlayerMode {
 
     //Determine action
     switch (action) {
+      case playerActions.USE_EDIT_TOOL_STONE:
+        this.useEditingTool(editingTools.STONE)
+        break
       case playerActions.USE_EDIT_TOOL_BLACK:
         this.useEditingTool(editingTools.BLACK)
         break
@@ -339,6 +342,18 @@ export default class PlayerModeEdit extends PlayerMode {
    * Switch editing tool to use
    */
   useEditingTool(tool) {
+
+    //Special stone tool case
+    if (tool === editingTools.STONE) {
+      if (this.tool === editingTools.BLACK) {
+        tool = editingTools.WHITE
+      }
+      else {
+        tool = editingTools.BLACK
+      }
+    }
+
+    //Set tool
     this.tool = tool
     this.debug(`🪛 ${tool} tool activated`)
     this.showHoverMarkup()
