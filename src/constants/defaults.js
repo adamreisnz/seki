@@ -284,7 +284,7 @@ export const defaultTheme = {
       lineWidth(cellSize) {
         return Math.max(1, Math.floor(cellSize / 16))
       },
-      font: 'Helvetica',
+      font: 'Arial',
     },
 
     //Triangle
@@ -382,7 +382,7 @@ export const defaultTheme = {
         return number
       },
       fontSize(cellSize/*, stoneColor, number*/) {
-        return Math.round(cellSize * 0.4)
+        return Math.round(cellSize * 0.5)
       },
     },
 
@@ -488,25 +488,23 @@ export const defaultTheme = {
 
     //Vertical coordinates
     vertical: {
-      color: 'rgba(101,69,37,0.5)',
-      font: 'Helvetica',
-      style: 'bold',
+      color: 'rgba(101,69,37,0.9)',
+      font: 'Arial',
       type: 'numbers',
       inverse: true,
       size() {
-        return (ch, cellSize) => Math.floor((cellSize * 0.3) + 3) + 'px'
+        return (ch, cellSize) => Math.floor((cellSize * 0.4) + 3) + 'px'
       },
     },
 
     //Horizontal coordinates
     horizontal: {
-      color: 'rgba(101,69,37,0.5)',
-      font: 'Helvetica',
-      style: 'bold',
+      color: 'rgba(101,69,37,0.9)',
+      font: 'Arial',
       type: 'letters',
       inverse: false,
       size() {
-        return (ch, cellSize) => Math.floor((cellSize * 0.3) + 3) + 'px'
+        return (ch, cellSize) => Math.floor((cellSize * 0.4) + 3) + 'px'
       },
     },
   },
