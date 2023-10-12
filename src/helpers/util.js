@@ -79,6 +79,39 @@ export function toggleClass(element, className, value) {
 }
 
 /**************************************************************************
+ * File handling
+ ***/
+
+/**
+ * Open file
+ */
+export function openFile(accept = `.jgf,.sgf,.gib`) {
+  return new Promise((resolve) => {
+    const input = document.createElement('input')
+    input.type = 'file'
+    input.accept = accept
+    input.onchange = () => {
+      const files = Array.from(input.files)
+      if (files.length) {
+        resolve(files[0])
+      }
+    }
+    input.click()
+  })
+}
+
+/**
+ * Download file
+ */
+export function downloadFile(data, name, type) {
+  const link = document.createElement('a')
+  link.href = `data:text/${type};charset=utf-8,${encodeURI(data)}`
+  link.target = '_blank'
+  link.download = `${name}.${type}`
+  link.click()
+}
+
+/**************************************************************************
  * Debugging
  ***/
 
@@ -112,4 +145,11 @@ export function throttle(fn, delay) {
     clearTimeout(t)
     t = setTimeout(() => fn(...args), delay)
   }
+}
+
+export function dateString(date = new Date()) {
+  const day = date.getDate()
+  const month = date.getMonth() + 1
+  const year = date.getFullYear()
+  return `${year}-${month}-${day}`
 }

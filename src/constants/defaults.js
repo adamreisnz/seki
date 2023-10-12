@@ -5,6 +5,7 @@ import {jgfVersion} from './jgf.js'
 import {playerModes, playerActions} from './player.js'
 import {markupTypes} from './markup.js'
 import {stoneColors, stoneStyles} from './stone.js'
+import {dateString} from '../helpers/util.js'
 
 //Default game info
 export const defaultGameInfo = {
@@ -15,6 +16,9 @@ export const defaultGameInfo = {
   },
   game: {
     type: gameTypes.GO,
+    dates: [
+      dateString(),
+    ],
   },
   players: [
     {

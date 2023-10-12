@@ -5,10 +5,13 @@ import EventHandler from './event-handler.js'
 import PlayerModeFactory from './player-mode-factory.js'
 import {playerModes} from '../constants/player.js'
 import {defaultPlayerConfig} from '../constants/defaults.js'
+import {kifuFormats} from '../constants/app.js'
 import {
   getPixelRatio,
   addClass,
   removeClass,
+  openFile,
+  downloadFile,
 } from '../helpers/util.js'
 
 /**
@@ -62,7 +65,7 @@ export default class Player extends Base {
   /**
    * Reset
    */
-  reset() {
+  reset(mode) {
 
     //Get board and game
     const {board, config} = this
@@ -71,16 +74,19 @@ export default class Player extends Base {
     this.init()
     this.initConfig(config)
 
-    //Get newly created game
+    //Get newly created game and go to first position
     const {game} = this
-
-    //Go to first position
     game.goToFirstPosition()
 
     //Reset board
     if (board) {
       board.reset()
       board.loadConfigFromGame(game)
+    }
+
+    //Mode given? Switch to it
+    if (mode && !this.isModeActive(mode)) {
+      this.switchMode(mode)
     }
   }
 
@@ -309,12 +315,42 @@ export default class Player extends Base {
    ***/
 
   /**
+   * Open file
+   */
+  async openFile(mode) {
+
+    //Load file
+    const file = await openFile()
+    const data = await file.text()
+    const {name} = file
+
+    //Trigger event and load data
+    this.triggerEvent('fileOpen', {file, name, data})
+    this.load(data, mode)
+  }
+
+  /**
+   * Download file
+   */
+  downloadFile(format = kifuFormats.SGF) {
+
+    //Get game info
+    const {game} = this
+    const data = game.toData(format)
+    const name = game.getFileName()
+
+    //Download file
+    downloadFile(data, name, format)
+  }
+
+  /**
    * Load game data
    */
-  load(data) {
+  load(data, mode) {
 
     //Create new game
     const game = Game.fromData(data)
+    const {board} = this
 
     //Set
     this.game = game
@@ -328,10 +364,15 @@ export default class Player extends Base {
     game.goToFirstPosition()
 
     //Board present?
-    if (this.board) {
-      this.board.removeAll()
-      this.board.loadConfigFromGame(game)
+    if (board) {
+      board.removeAll()
+      board.loadConfigFromGame(game)
       this.processPathChange()
+    }
+
+    //Mode given? Switch to it
+    if (mode && !this.isModeActive(mode)) {
+      this.switchMode(mode)
     }
   }
 

@@ -15,7 +15,6 @@ const gameInfoConversionMap = {
   'record.generator': 'convertGenerator',
   'game.type': 'convertGameType',
   'game.dates': 'convertDates',
-  settings: 'convertVariationSettings',
 }
 
 //Node parsing map
@@ -45,7 +44,10 @@ export default class ConvertToSgf extends Converter {
     }
 
     //Initialize sgf root properties object
-    const root = {}
+    const root = {
+      FF: 4,
+      CA: 'UTF-8',
+    }
 
     //Loop SGF game info map
     for (const key in sgfGameInfoMap) {
@@ -53,6 +55,11 @@ export default class ConvertToSgf extends Converter {
       //Get prop and value
       const prop = sgfGameInfoMap[key]
       const value = game.getInfo(prop)
+
+      //No value
+      if (typeof value === 'undefined') {
+        continue
+      }
 
       //Parser present?
       if (gameInfoConversionMap[prop]) {
@@ -75,14 +82,17 @@ export default class ConvertToSgf extends Converter {
 
     //Append
     for (const key in root) {
+      sgf += `\n`
       sgf += this.makeSgfGroup(key, root[key])
     }
 
     //Append game tree
-    sgf += this.parseTree(game.tree)
+    console.log(game.root)
+    sgf += `\n;`
+    sgf += this.parseNode(game.root)
 
     //Return
-    return `(\n;${sgf})`
+    return `(;${sgf}\n)`
   }
 
   /**
@@ -90,8 +100,6 @@ export default class ConvertToSgf extends Converter {
    */
   appendGenerator(root) {
     root.AP = this.getGeneratorSignature()
-    root.CA = 'UTF-8'
-    root.FF = 4
   }
 
   /**
@@ -164,39 +172,36 @@ export default class ConvertToSgf extends Converter {
    ***/
 
   /**
-   * Helper to convert a tree to SGF
+   * Parse a node
    */
-  parseTree(tree) {
+  parseNode(node) {
 
     //Initialize
     let sgf = ''
 
-    //Loop nodes in the tree
-    for (const node of tree) {
+    //Loop node properties
+    for (const key in node) {
+      if (nodeParsingMap[key]) {
+        sgf += this[nodeParsingMap[key]](node[key])
+      }
+    }
 
+    //Multiple children
+    if (node.hasMultipleChildren()) {
+      for (const child of node.children) {
+        sgf += '(\n;'
+        sgf += this.parseNode(child)
+        sgf += '\n)'
+      }
+    }
+
+    //Just one child
+    else if (node.hasChildren()) {
       //Already have content? Add separator
       if (sgf !== '') {
         sgf += '\n;'
       }
-
-      //Array? That means a variation
-      if (Array.isArray(node)) {
-        for (const n of node) {
-          sgf += '(\n;'
-          sgf += this.parseTree(n)
-          sgf += '\n)'
-        }
-
-        //Continue
-        continue
-      }
-
-      //Loop node properties
-      for (const key in node) {
-        if (nodeParsingMap[key]) {
-          sgf += this[nodeParsingMap[key]](node[key])
-        }
-      }
+      sgf += this.parseNode(node.getChild(), sgf)
     }
 
     //Return value
@@ -397,6 +402,11 @@ export default class ConvertToSgf extends Converter {
 
   /**
    * Settings parser
+   *
+   * NOTE: not used at the moment, as the settings are not always present in
+   * the game info, and there is no mechanism to get it out of the player.
+   * This is honestly also not really a setting that should be saved in a game
+   * record, but rather saved in the player/browser instead.
    */
   convertVariationSettings(settings) {
     return (

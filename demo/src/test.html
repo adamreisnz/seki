@@ -17,36 +17,26 @@
     </div>
   </div>
   <div class="right">
+    <h2>Load</h2>
+    <button id="loadDemo">Demo</button>
+    <button id="loadBlank">Blank</button>
+    <button id="loadFile">File</button>
 
-    <h2>File</h2>
-    <button class="btnCommand icon" cmd="reset" title="New file">
-      <span class="material-symbols-outlined">note</span>
+    <h2>Mode</h2>
+    <button class="btnSwitchMode icon" mode="static" title="View only">
+      <span class="material-symbols-outlined">visibility_lock</span>
     </button>
-    <button class="btnCommand icon" cmd="openFile" title="Open file">
-      <span class="material-symbols-outlined">upload</span>
+    <button class="btnSwitchMode icon" mode="replay" title="Replay">
+      <span class="material-symbols-outlined">fiber_smart_record</span>
     </button>
-    <button class="btnCommand icon" cmd="downloadFile" title="Download file">
-      <span class="material-symbols-outlined">download</span>
+    <button class="btnSwitchMode icon" icon mode="edit" title="Edit">
+      <span class="material-symbols-outlined">edit</span>
+    </button>
+    <button class="btnSwitchMode icon" mode="solve" title="Solve">
+      <span class="material-symbols-outlined">lightbulb</span>
     </button>
 
     <div id="editTools">
-      <h2>Tools</h2>
-      <button class="btnSwitchMode icon" mode="replay" title="Play">
-        <span class="material-symbols-outlined">fiber_smart_record</span>
-      </button>
-      <button class="btnUseEditingTool icon" tool="black" class="icon" title="Black stone">
-        <span class="material-symbols-outlined">trip_origin</span>
-      </button>
-      <button class="btnUseEditingTool icon" tool="white" class="icon" title="White stone">
-        <span class="material-symbols-outlined">fiber_manual_record</span>
-      </button>
-      <button class="btnUseEditingTool icon" tool="clear" class="icon" title="Clear">
-        <span class="material-symbols-outlined">ink_eraser</span>
-      </button>
-      <!-- <button class="btnCommand icon" cmd="reset" title="Clear board">
-        <span class="material-symbols-outlined">border_clear</span>
-      </button> -->
-
       <h2>Markup</h2>
       <button class="btnUseEditingTool icon" tool="circle" class="icon">
         <span class="material-symbols-outlined">circle</span>
@@ -79,40 +69,56 @@
       <button class="btnUseEditingTool icon" tool="clear" class="icon" title="Clear">
         <span class="material-symbols-outlined">ink_eraser</span>
       </button>
+
+      <h2>Setup</h2>
+      <button class="btnUseEditingTool icon" tool="black" class="icon" title="Black stone">
+        <span class="material-symbols-outlined">trip_origin</span>
+      </button>
+      <button class="btnUseEditingTool icon" tool="white" class="icon" title="White stone">
+        <span class="material-symbols-outlined">fiber_manual_record</span>
+      </button>
+      <button class="btnUseEditingTool icon" tool="clear" class="icon" title="Clear">
+        <span class="material-symbols-outlined">ink_eraser</span>
+      </button>
     </div>
 
     <div id="replayTools">
-      <h2>Tools</h2>
-      <button class="btnSwitchMode icon" icon mode="edit" title="Edit">
-        <span class="material-symbols-outlined">edit</span>
+      <h2>Navigation</h2>
+
+      <button class="btnCommand icon" cmd="goToFirstPosition" title="First position">
+        <span class="material-symbols-outlined">line_start_arrow</span>
       </button>
-      <button class="icon" id="startAutoPlay" title="Start auto play">
-        <span class="material-symbols-outlined">autoplay</span>
+      <button class="btnCommand icon" cmd="goBackNumPositions" title="Skip back 10 positions">
+        <span class="material-symbols-outlined">fast_rewind</span>
       </button>
-      <button class="icon" id="stopAutoPlay" title="Stop auto play">
-        <span class="material-symbols-outlined">autostop</span>
+      <button class="btnCommand icon" cmd="goToPreviousPosition" title="Previous position">
+        <span class="material-symbols-outlined">skip_previous</span>
       </button>
 
-      <h2>Navigation</h2>
-      <button class="btnCommand icon" cmd="goToFirstPosition" title="Go to first position">
-        <span class="material-symbols-outlined">first_page</span>
+      <button class="icon" id="startAutoPlay" title="Start auto play">
+        <span class="material-symbols-outlined">play_arrow</span>
       </button>
-      <button class="btnCommand icon" cmd="goBackNumPositions" title="Go back 10 positions">
-        <span class="material-symbols-outlined">replay_10</span>
+      <button class="icon" id="stopAutoPlay" title="Stop auto play">
+        <span class="material-symbols-outlined">stop</span>
       </button>
-      <button class="btnCommand icon" cmd="goToPreviousPosition" title="Go to previous position">
-        <span class="material-symbols-outlined">navigate_before</span>
+
+      <button class="btnCommand icon" cmd="goToNextPosition" title="Next position">
+        <span class="material-symbols-outlined">skip_next</span>
       </button>
-      <button class="btnCommand icon" cmd="goToNextPosition" title="Go to next position">
-        <span class="material-symbols-outlined">navigate_next</span>
+      <button class="btnCommand icon" cmd="goForwardNumPositions" title="Skip forward 10 positions">
+        <span class="material-symbols-outlined">fast_forward</span>
       </button>
-      <button class="btnCommand icon" cmd="goForwardNumPositions" title="Go forward 10 positions">
-        <span class="material-symbols-outlined">forward_10</span>
+      <button class="btnCommand icon" cmd="goToLastPosition" title="Last position">
+        <span class="material-symbols-outlined">line_end_arrow</span>
       </button>
-      <button class="btnCommand icon" cmd="goToLastPosition" title="Go to last position">
-        <span class="material-symbols-outlined">last_page</span>
-      </button>
+
       <br>
+      <button class="btnCommand icon" cmd="selectPreviousVariation" title="Previous variation">
+        <span class="material-symbols-outlined">expand_less</span>
+      </button>
+      <button class="btnCommand icon" cmd="selectNextVariation" title="Next variation">
+        <span class="material-symbols-outlined">expand_more</span>
+      </button>
       <button class="btnCommand icon" cmd="goToPreviousFork" title="Previous fork">
         <span class="material-symbols-outlined">fork_left</span>
       </button>
@@ -125,7 +131,6 @@
       <button class="btnCommand icon" cmd="goToNextComment" title="Next comment">
         <span class="material-symbols-outlined">chat</span>
       </button>
-
     </div>
 
     <h2>Options</h2>
@@ -166,6 +171,9 @@ import {onClick, findByQuery, toggleHidden} from './js/demo.js'
 import audioMove from './audio/move.wav'
 import audioCapture from './audio/capture.wav'
 
+//Test data
+import {demo} from './data/jgf.js'
+
 //Get constants
 const {playerModes, editingTools} = constants.player
 
@@ -181,8 +189,23 @@ const player = new Player({
   }
 })
 
-//Bootstrap player
+//Bootstrap player and load JGF file
 player.bootstrap(playerElement)
+player.load(demo)
+
+//Data loading
+onClick('#loadDemo', () => {
+  player.load(demo, playerModes.REPLAY)
+})
+onClick('#loadBlank', () => {
+  player.reset(playerModes.REPLAY)
+})
+onClick('#loadFile', async () => {
+  const file = await helpers.util.openFile()
+  const {name} = file
+  const content = await file.text()
+  player.load(content, playerModes.REPLAY)
+})
 
 //Commands
 onClick('.btnCommand', btn => {
@@ -227,9 +250,7 @@ const onModeChange = () => {
 
   //Toggle mode buttons
   findByQuery('.btnSwitchMode')
-    .forEach(btn => {
-      toggleHidden(btn, btn.getAttribute('mode') === mode)
-    })
+    .forEach(btn => btn.disabled = btn.getAttribute('mode') === mode)
 
   //Toggle tools
   toggleHidden('#replayTools', mode !== playerModes.REPLAY)

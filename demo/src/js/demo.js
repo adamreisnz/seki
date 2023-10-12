@@ -32,8 +32,10 @@ export function findByClass(className) {
 /**
  * Toggle hidden class on element
  */
-export function toggleHidden(query, value) {
-  const elements = findByQuery(query)
+export function toggleHidden(elements, value) {
+  if (typeof elements === 'string') {
+    elements = findByQuery(elements)
+  }
   helpers.util.toggleClass(elements, 'hidden', value)
 }
 

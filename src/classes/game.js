@@ -1311,6 +1311,54 @@ export default class Game extends Base {
     return converter.convert(this)
   }
 
+  /**
+   * Convert file to given format
+   */
+  toData(format) {
+
+    //Use appropriate converter
+    switch (format) {
+      case kifuFormats.SGF:
+        return this.toSgf()
+      case kifuFormats.JGF:
+        return this.toJgf()
+      case kifuFormats.JSON:
+        return this.toJson()
+      default:
+        throw new Error(`Unsupported data format`)
+    }
+  }
+
+  /**
+   * Generate file name from game info
+   */
+  getFileName() {
+    console.log(this.info)
+
+    //Get info
+    const dates = this.getInfo('game.dates')
+    const players = this.getInfo('players')
+    const numMoves = this.getTotalNumberOfMoves()
+
+    //Ensure correct order of players
+    const black = players.find(player => player.color === stoneColors.BLACK)
+    const white = players.find(player => player.color === stoneColors.WHITE)
+
+    //Parse players
+    const playerInfo = [black, white]
+      .map(player => {
+        const {name, rank} = player
+        if (rank) {
+          return `${name} [${rank}]`
+        }
+        return name
+      })
+      .join(' vs ')
+
+    //Return filename
+    return `${dates[0]} ${numMoves > 0 ? `- ${numMoves}` : ''} - ${playerInfo}`
+  }
+
   /**************************************************************************
    * Static helpers to create game instances from different formats
    ***/
@@ -1432,7 +1480,7 @@ export default class Game extends Base {
       case kifuFormats.GIB:
         return this.fromGib(data)
       default:
-        throw new Error(`Unknown data format`)
+        throw new Error(`Unsupported data format`)
     }
   }
 }

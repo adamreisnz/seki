@@ -55,7 +55,7 @@ export default class ConvertToJgf extends Converter {
   addNodeToContainer(node, container) {
 
     //Variations node
-    if (this.isVariationNode(node)) {
+    if (node.hasMultipleChildren()) {
 
       //Create variations node and add to container
       const jgfVariationsNode = {variations: []}
@@ -117,12 +117,5 @@ export default class ConvertToJgf extends Converter {
     if (Array.isArray(node.score)) {
       jgfNode.score = node.score.map(entry => copy(entry))
     }
-  }
-
-  /**
-   * Check if a node is a variations node
-   */
-  isVariationNode(node) {
-    return (node && node.children.length > 1)
   }
 }
