@@ -53,28 +53,28 @@
     </div>
     <div id="settingsDropdown" class="dropdown hidden">
       <div class="settings">
-        <label class="lblToggleConfig" config="showCoordinates">
+        <label class="toggleConfig" config="showCoordinates">
           <input type="checkbox"> Show coordinates
         </label>
-        <label class="lblToggleConfig" config="showLastMove">
+        <label class="toggleConfig" config="showLastMove">
           <input type="checkbox"> Show last move
         </label>
-        <label class="lblToggleConfig" config="showNextMove">
+        <label class="toggleConfig" config="showNextMove">
           <input type="checkbox"> Show next move
         </label>
-        <label class="lblToggleConfig" config="showAllMoveNumbers">
+        <label class="toggleConfig" config="showAllMoveNumbers">
           <input type="checkbox"> Show all move numbers
         </label>
-        <label class="lblToggleConfig" config="showVariationMoveNumbers">
+        <label class="toggleConfig" config="showVariationMoveNumbers">
           <input type="checkbox"> Show variation move numbers
         </label>
-        <label class="lblToggleConfig" config="showVariations">
+        <label class="toggleConfig" config="showVariations">
           <input type="checkbox"> Show variations
         </label>
-        <label class="lblToggleConfig" config="rememberVariationPath">
+        <label class="toggleConfig" config="rememberVariationPath">
           <input type="checkbox"> Remember path taken
         </label>
-        <label class="lblToggleConfig" config="swapColors">
+        <label class="toggleConfig" config="swapColors">
           <input type="checkbox"> Swap colors
         </label>
       </div>
@@ -84,7 +84,7 @@
       <button id="startAutoPlay" title="Start auto play">
         <span class="material-symbols-outlined">autoplay</span>
       </button>
-      <button id="stopAutoPlay" title="Stop auto play">
+      <button id="stopAutoPlay" class="active" title="Stop auto play">
         <span class="material-symbols-outlined">autostop</span>
       </button>
       <br>
@@ -225,7 +225,7 @@ onClick('.btnCommand', btn => {
 })
 
 //Config toggles
-onClick('.lblToggleConfig', lbl => {
+onClick('.toggleConfig', lbl => {
   const key = lbl.getAttribute('config')
   const input = lbl.querySelector('input')
   player.toggleConfig(key, input.checked)
@@ -294,7 +294,7 @@ const onEditToolChange = (event) => {
 }
 
 //Set checkboxes to initial toggle value
-findByQuery('.lblToggleConfig')
+findByQuery('.toggleConfig')
   .forEach(lbl => {
     const key = lbl.getAttribute('config')
     const input = lbl.querySelector('input')
