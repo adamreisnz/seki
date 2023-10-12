@@ -3,6 +3,7 @@ import StoneFactory from '../stone-factory.js'
 import MarkupFactory from '../markup-factory.js'
 import {boardLayerTypes} from '../../constants/board.js'
 import {stoneModifierStyles} from '../../constants/stone.js'
+import {playerActions, playerModes} from '../../constants/player.js'
 
 /**
  * Base player mode class
@@ -139,6 +140,38 @@ export default class PlayerMode extends Base {
       const fn = eventListenersMap[key]
       player.off(key, bound[fn])
     }
+  }
+
+  /**
+   * Process action
+   */
+  processAction(action, event) {
+
+    //Debug
+    this.debug(`🎯 action ${action}`)
+
+    //Prevent default event
+    const {nativeEvent} = event.detail
+    nativeEvent.preventDefault()
+
+    //Get data
+    const {player} = this
+
+    //Determine action
+    switch (action) {
+      case playerActions.SET_MODE_REPLAY:
+        player.setMode(playerModes.REPLAY)
+        return true
+      case playerActions.SET_MODE_EDIT:
+        player.setMode(playerModes.EDIT)
+        return true
+      case playerActions.SET_MODE_PLAY:
+        player.setMode(playerModes.PLAY)
+        return true
+    }
+
+    //No action was performed
+    return false
   }
 
   /**************************************************************************

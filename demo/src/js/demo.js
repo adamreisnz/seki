@@ -40,6 +40,16 @@ export function toggleHidden(elements, value) {
 }
 
 /**
+ * Toggle active class on element
+ */
+export function toggleActive(elements, value) {
+  if (typeof elements === 'string') {
+    elements = findByQuery(elements)
+  }
+  helpers.util.toggleClass(elements, 'active', value)
+}
+
+/**
  * Add click handler
  */
 export function onClick(query, handler) {

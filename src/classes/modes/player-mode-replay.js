@@ -103,8 +103,10 @@ export default class PlayerModeReplay extends PlayerMode {
     const {keyCode} = event.detail.nativeEvent
     const action = player.getActionForKeyCode(keyCode)
 
-    //Perform action
-    this.processAction(action, event)
+    //Process action
+    if (action) {
+      this.processAction(action, event)
+    }
   }
 
   /**
@@ -122,13 +124,17 @@ export default class PlayerModeReplay extends PlayerMode {
     //Wheeling up
     if (nativeEvent.deltaY < 0) {
       const action = player.getActionForMouseEvent(mouseEvents.WHEEL_UP)
-      this.processAction(action, event)
+      if (action) {
+        this.processAction(action, event)
+      }
     }
 
     //Wheeling down
     else if (nativeEvent.deltaY > 0) {
       const action = player.getActionForMouseEvent(mouseEvents.WHEEL_DOWN)
-      this.processAction(action, event)
+      if (action) {
+        this.processAction(action, event)
+      }
     }
   }
 
@@ -199,35 +205,29 @@ export default class PlayerModeReplay extends PlayerMode {
    */
   processAction(action, event) {
 
-    //No action
-    if (!action) {
-      return
+    //Parent method
+    if (super.processAction(action, event)) {
+      return true
     }
-
-    //Debug
-    this.debug(`🎯 action ${action}`)
-
-    //Get data
-    const {nativeEvent} = event.detail
-
-    //Prevent default
-    nativeEvent.preventDefault()
 
     //Determine action
     switch (action) {
       case playerActions.NEXT_POSITION:
         this.goToNextPosition()
-        break
+        return true
       case playerActions.PREV_POSITION:
         this.goToPreviousPosition()
-        break
+        return true
       case playerActions.NEXT_VARIATION:
         this.selectNextVariation()
-        break
+        return true
       case playerActions.PREV_VARIATION:
         this.selectPreviousVariation()
-        break
+        return true
     }
+
+    //No action was performed
+    return false
   }
 
   /**

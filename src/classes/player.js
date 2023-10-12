@@ -86,7 +86,7 @@ export default class Player extends Base {
 
     //Mode given? Switch to it
     if (mode && !this.isModeActive(mode)) {
-      this.switchMode(mode)
+      this.setMode(mode)
     }
   }
 
@@ -144,7 +144,7 @@ export default class Player extends Base {
     const {initialMode} = this.config
 
     //Switch to the configured mode
-    this.switchMode(initialMode)
+    this.setMode(initialMode)
   }
 
   /**
@@ -228,7 +228,7 @@ export default class Player extends Base {
   /**
    * Switch the active player mode
    */
-  switchMode(mode) {
+  setMode(mode) {
 
     //Already active
     if (this.isModeActive(mode)) {
@@ -302,7 +302,7 @@ export default class Player extends Base {
     } = this.playerState
 
     //Restore
-    this.switchMode(mode)
+    this.setMode(mode)
     this.restrictedStartNode = restrictedStartNode
     this.restrictedEndNode = restrictedEndNode
 
@@ -372,7 +372,7 @@ export default class Player extends Base {
 
     //Mode given? Switch to it
     if (mode && !this.isModeActive(mode)) {
-      this.switchMode(mode)
+      this.setMode(mode)
     }
   }
 

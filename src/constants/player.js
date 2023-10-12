@@ -16,7 +16,7 @@ export const playerModes = {
 /**
  * Editing tools
  */
-export const editingTools = {
+export const editTools = {
 
   //Markup
   TRIANGLE: markupTypes.TRIANGLE,
@@ -46,6 +46,11 @@ export const playerActions = {
   //General
   CANCEL_ACTION: 'cancelAction',
 
+  //Mode selection
+  SET_MODE_REPLAY: 'setModeReplay',
+  SET_MODE_EDIT: 'setModeEdit',
+  SET_MODE_PLAY: 'setModePlay',
+
   //Position handling
   PREV_POSITION: 'prevPosition',
   NEXT_POSITION: 'nextPosition',
@@ -53,20 +58,20 @@ export const playerActions = {
   NEXT_VARIATION: 'nextVariation',
 
   //Setup tool selection
-  USE_EDIT_TOOL_STONE: 'useEditToolStone',
-  USE_EDIT_TOOL_BLACK: 'useEditToolBlack',
-  USE_EDIT_TOOL_WHITE: 'useEditToolWhite',
-  USE_EDIT_TOOL_CLEAR: 'useEditToolClear',
+  SET_EDIT_TOOL_STONE: 'useEditToolStone',
+  SET_EDIT_TOOL_BLACK: 'useEditToolBlack',
+  SET_EDIT_TOOL_WHITE: 'useEditToolWhite',
+  SET_EDIT_TOOL_CLEAR: 'useEditToolClear',
 
   //Markup tool selection
-  USE_EDIT_TOOL_TRIANGLE: 'useEditToolTriangle',
-  USE_EDIT_TOOL_CIRCLE: 'useEditToolCircle',
-  USE_EDIT_TOOL_SQUARE: 'useEditToolSquare',
-  USE_EDIT_TOOL_DIAMOND: 'useEditToolDiamond',
-  USE_EDIT_TOOL_MARK: 'useEditToolMark',
-  USE_EDIT_TOOL_HAPPY: 'useEditToolHappy',
-  USE_EDIT_TOOL_SAD: 'useEditToolSad',
-  USE_EDIT_TOOL_LETTER: 'useEditToolLetter',
-  USE_EDIT_TOOL_NUMBER: 'useEditToolNumber',
+  SET_EDIT_TOOL_TRIANGLE: 'useEditToolTriangle',
+  SET_EDIT_TOOL_CIRCLE: 'useEditToolCircle',
+  SET_EDIT_TOOL_SQUARE: 'useEditToolSquare',
+  SET_EDIT_TOOL_DIAMOND: 'useEditToolDiamond',
+  SET_EDIT_TOOL_MARK: 'useEditToolMark',
+  SET_EDIT_TOOL_HAPPY: 'useEditToolHappy',
+  SET_EDIT_TOOL_SAD: 'useEditToolSad',
+  SET_EDIT_TOOL_LETTER: 'useEditToolLetter',
+  SET_EDIT_TOOL_NUMBER: 'useEditToolNumber',
 }
 

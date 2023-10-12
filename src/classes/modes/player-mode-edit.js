@@ -6,7 +6,7 @@ import {boardLayerTypes} from '../../constants/board.js'
 import {
   playerActions,
   playerModes,
-  editingTools,
+  editTools,
 } from '../../constants/player.js'
 
 /**
@@ -18,7 +18,7 @@ export default class PlayerModeEdit extends PlayerMode {
   mode = playerModes.EDIT
 
   //Set default editing tool
-  tool = editingTools.STONE
+  tool = editTools.STONE
 
   //Used markup labels
   usedMarkupLabels = []
@@ -55,7 +55,7 @@ export default class PlayerModeEdit extends PlayerMode {
     const {player, mode} = this
 
     //Extend player
-    player.extend('useEditingTool', mode)
+    player.extend('setEditTool', mode)
   }
 
   /**
@@ -69,6 +69,9 @@ export default class PlayerModeEdit extends PlayerMode {
     //Find used markup labels
     this.resetUsedMarkupLabels()
     this.findUsedMarkupLabels()
+
+    //Set default tool
+    this.setEditTool(editTools.STONE)
   }
 
   /**************************************************************************
@@ -86,7 +89,9 @@ export default class PlayerModeEdit extends PlayerMode {
     const action = player.getActionForKeyCode(keyCode)
 
     //Process action
-    this.processAction(action, event)
+    if (action) {
+      this.processAction(action, event)
+    }
   }
 
   /**
@@ -147,62 +152,56 @@ export default class PlayerModeEdit extends PlayerMode {
    */
   processAction(action, event) {
 
-    //No action
-    if (!action) {
-      return
+    //Parent method
+    if (super.processAction(action, event)) {
+      return true
     }
-
-    //Debug
-    this.debug(`🎯 action ${action}`)
-
-    //Get data
-    const {nativeEvent} = event.detail
-
-    //Prevent default
-    nativeEvent.preventDefault()
 
     //Determine action
     switch (action) {
-      case playerActions.USE_EDIT_TOOL_STONE:
-        this.useEditingTool(editingTools.STONE)
-        break
-      case playerActions.USE_EDIT_TOOL_BLACK:
-        this.useEditingTool(editingTools.BLACK)
-        break
-      case playerActions.USE_EDIT_TOOL_WHITE:
-        this.useEditingTool(editingTools.WHITE)
-        break
-      case playerActions.USE_EDIT_TOOL_CLEAR:
-        this.useEditingTool(editingTools.CLEAR)
-        break
-      case playerActions.USE_EDIT_TOOL_TRIANGLE:
-        this.useEditingTool(editingTools.TRIANGLE)
-        break
-      case playerActions.USE_EDIT_TOOL_CIRCLE:
-        this.useEditingTool(editingTools.CIRCLE)
-        break
-      case playerActions.USE_EDIT_TOOL_SQUARE:
-        this.useEditingTool(editingTools.SQUARE)
-        break
-      case playerActions.USE_EDIT_TOOL_DIAMOND:
-        this.useEditingTool(editingTools.DIAMOND)
-        break
-      case playerActions.USE_EDIT_TOOL_MARK:
-        this.useEditingTool(editingTools.MARK)
-        break
-      case playerActions.USE_EDIT_TOOL_HAPPY:
-        this.useEditingTool(editingTools.HAPPY)
-        break
-      case playerActions.USE_EDIT_TOOL_SAD:
-        this.useEditingTool(editingTools.SAD)
-        break
-      case playerActions.USE_EDIT_TOOL_LETTER:
-        this.useEditingTool(editingTools.LETTER)
-        break
-      case playerActions.USE_EDIT_TOOL_NUMBER:
-        this.useEditingTool(editingTools.NUMBER)
-        break
+      case playerActions.SET_EDIT_TOOL_STONE:
+        this.setEditTool(editTools.STONE)
+        return true
+      case playerActions.SET_EDIT_TOOL_BLACK:
+        this.setEditTool(editTools.BLACK)
+        return true
+      case playerActions.SET_EDIT_TOOL_WHITE:
+        this.setEditTool(editTools.WHITE)
+        return true
+      case playerActions.SET_EDIT_TOOL_CLEAR:
+        this.setEditTool(editTools.CLEAR)
+        return true
+      case playerActions.SET_EDIT_TOOL_TRIANGLE:
+        this.setEditTool(editTools.TRIANGLE)
+        return true
+      case playerActions.SET_EDIT_TOOL_CIRCLE:
+        this.setEditTool(editTools.CIRCLE)
+        return true
+      case playerActions.SET_EDIT_TOOL_SQUARE:
+        this.setEditTool(editTools.SQUARE)
+        return true
+      case playerActions.SET_EDIT_TOOL_DIAMOND:
+        this.setEditTool(editTools.DIAMOND)
+        return true
+      case playerActions.SET_EDIT_TOOL_MARK:
+        this.setEditTool(editTools.MARK)
+        return true
+      case playerActions.SET_EDIT_TOOL_HAPPY:
+        this.setEditTool(editTools.HAPPY)
+        return true
+      case playerActions.SET_EDIT_TOOL_SAD:
+        this.setEditTool(editTools.SAD)
+        return true
+      case playerActions.SET_EDIT_TOOL_LETTER:
+        this.setEditTool(editTools.LETTER)
+        return true
+      case playerActions.SET_EDIT_TOOL_NUMBER:
+        this.setEditTool(editTools.NUMBER)
+        return true
     }
+
+    //No action was performed
+    return false
   }
 
   /**
@@ -214,7 +213,7 @@ export default class PlayerModeEdit extends PlayerMode {
     const {player, game, tool} = this
 
     //Clear tool
-    if (tool === editingTools.CLEAR) {
+    if (tool === editTools.CLEAR) {
 
       //Erase markup first
       if (game.hasMarkup(x, y)) {
@@ -341,23 +340,30 @@ export default class PlayerModeEdit extends PlayerMode {
   /**
    * Switch editing tool to use
    */
-  useEditingTool(tool) {
+  setEditTool(tool) {
 
     //Special stone tool case
-    if (tool === editingTools.STONE) {
-      if (this.tool === editingTools.BLACK) {
-        tool = editingTools.WHITE
+    if (tool === editTools.STONE) {
+      if (this.tool === editTools.BLACK) {
+        this.tool = editTools.WHITE
       }
       else {
-        tool = editingTools.BLACK
+        this.tool = editTools.BLACK
       }
+    }
+    else {
+      this.tool = tool
     }
 
     //Set tool
-    this.tool = tool
     this.debug(`🪛 ${tool} tool activated`)
+
+    //Show hover
     this.showHoverMarkup()
     this.showHoverStone()
+
+    //Trigger event
+    this.player.triggerEvent('editToolChange', {tool})
   }
 
   /**
@@ -414,10 +420,10 @@ export default class PlayerModeEdit extends PlayerMode {
    */
   getText() {
     const {tool} = this
-    if (tool === editingTools.LETTER) {
+    if (tool === editTools.LETTER) {
       return this.getNextLetter()
     }
-    else if (tool === editingTools.NUMBER) {
+    else if (tool === editTools.NUMBER) {
       return this.getNextNumber()
     }
   }
@@ -538,10 +544,10 @@ export default class PlayerModeEdit extends PlayerMode {
    */
   getEditingColor() {
     const {tool} = this
-    if (tool === editingTools.BLACK) {
+    if (tool === editTools.BLACK) {
       return stoneColors.BLACK
     }
-    else if (tool === editingTools.WHITE) {
+    else if (tool === editTools.WHITE) {
       return stoneColors.WHITE
     }
   }
@@ -552,8 +558,8 @@ export default class PlayerModeEdit extends PlayerMode {
   getEditingMarkupType() {
     const {tool} = this
     const label = [
-      editingTools.LETTER,
-      editingTools.NUMBER,
+      editTools.LETTER,
+      editTools.NUMBER,
     ]
     if (label.includes(tool)) {
       return markupTypes.LABEL

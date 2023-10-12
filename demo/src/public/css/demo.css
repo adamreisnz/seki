@@ -37,6 +37,9 @@ button:not([disabled]):hover {
   cursor: pointer;
   background: #555;
 }
+button.active, button.active:hover {
+  background: #777;
+}
 label {
   display: flex;
   align-items: center;

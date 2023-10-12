@@ -38,46 +38,46 @@
 
     <div id="editTools">
       <h2>Markup</h2>
-      <button class="btnUseEditingTool icon" tool="circle" class="icon">
+      <button class="btnUseEditTool icon" tool="circle" class="icon">
         <span class="material-symbols-outlined">circle</span>
       </button>
-      <button class="btnUseEditingTool icon" tool="triangle" class="icon">
+      <button class="btnUseEditTool icon" tool="triangle" class="icon">
         <span class="material-symbols-outlined">change_history</span>
       </button>
-      <button class="btnUseEditingTool icon" tool="square" class="icon">
+      <button class="btnUseEditTool icon" tool="square" class="icon">
         <span class="material-symbols-outlined">square</span>
       </button>
-      <button class="btnUseEditingTool icon" tool="diamond" class="icon">
+      <button class="btnUseEditTool icon" tool="diamond" class="icon">
         <span class="material-symbols-outlined">diamond</span>
       </button>
-      <button class="btnUseEditingTool icon" tool="mark" class="icon">
+      <button class="btnUseEditTool icon" tool="mark" class="icon">
         <span class="material-symbols-outlined">close</span>
       </button>
       <br>
-      <button class="btnUseEditingTool icon" tool="letter" class="icon">
+      <button class="btnUseEditTool icon" tool="letter" class="icon">
         <span class="material-symbols-outlined">abc</span>
       </button>
-      <button class="btnUseEditingTool icon" tool="number" class="icon">
+      <button class="btnUseEditTool icon" tool="number" class="icon">
         <span class="material-symbols-outlined">123</span>
       </button>
-      <button class="btnUseEditingTool icon" tool="happy" class="icon">
+      <button class="btnUseEditTool icon" tool="happy" class="icon">
         <span class="material-symbols-outlined">sentiment_satisfied</span>
       </button>
-      <button class="btnUseEditingTool icon" tool="sad" class="icon">
+      <button class="btnUseEditTool icon" tool="sad" class="icon">
         <span class="material-symbols-outlined">sentiment_dissatisfied</span>
       </button>
-      <button class="btnUseEditingTool icon" tool="clear" class="icon" title="Clear">
+      <button class="btnUseEditTool icon" tool="clear" class="icon" title="Clear">
         <span class="material-symbols-outlined">ink_eraser</span>
       </button>
 
       <h2>Setup</h2>
-      <button class="btnUseEditingTool icon" tool="black" class="icon" title="Black stone">
+      <button class="btnUseEditTool icon" tool="black" class="icon" title="Black stone">
         <span class="material-symbols-outlined">trip_origin</span>
       </button>
-      <button class="btnUseEditingTool icon" tool="white" class="icon" title="White stone">
+      <button class="btnUseEditTool icon" tool="white" class="icon" title="White stone">
         <span class="material-symbols-outlined">fiber_manual_record</span>
       </button>
-      <button class="btnUseEditingTool icon" tool="clear" class="icon" title="Clear">
+      <button class="btnUseEditTool icon" tool="clear" class="icon" title="Clear">
         <span class="material-symbols-outlined">ink_eraser</span>
       </button>
     </div>
@@ -175,7 +175,7 @@ import audioCapture from './audio/capture.wav'
 import {demo} from './data/jgf.js'
 
 //Get constants
-const {playerModes, editingTools} = constants.player
+const {playerModes, editTools} = constants.player
 
 //Set debug mode
 helpers.util.setDebug(true)
@@ -223,13 +223,13 @@ onClick('.lblToggleConfig', lbl => {
 //Mode switching
 onClick('.btnSwitchMode', btn => {
   const mode = btn.getAttribute('mode')
-  player.switchMode(mode)
+  player.setMode(mode)
 })
 
 //Editing tool selection
-onClick('.btnUseEditingTool', btn => {
+onClick('.btnUseEditTool', btn => {
   const tool = btn.getAttribute('tool')
-  player.useEditingTool(tool)
+  player.setEditTool(tool)
 })
 
 //Auto play

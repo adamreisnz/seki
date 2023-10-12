@@ -87,6 +87,10 @@ export const defaultPlayerConfig = {
     //General
     [keyCodes.ESC]: playerActions.CANCEL_ACTION,
 
+    //Mode selection
+    [keyCodes.R]: playerActions.SET_MODE_REPLAY,
+    [keyCodes.E]: playerActions.SET_MODE_EDIT,
+
     //Navigation
     [keyCodes.LEFT]: playerActions.PREV_POSITION,
     [keyCodes.RIGHT]: playerActions.NEXT_POSITION,
@@ -94,19 +98,19 @@ export const defaultPlayerConfig = {
     [keyCodes.DOWN]: playerActions.NEXT_VARIATION,
 
     //Setup tool selection
-    [keyCodes.W]: playerActions.USE_EDIT_TOOL_STONE,
-    [keyCodes.E]: playerActions.USE_EDIT_TOOL_CLEAR,
+    [keyCodes.Q]: playerActions.SET_EDIT_TOOL_STONE,
+    [keyCodes.W]: playerActions.SET_EDIT_TOOL_CLEAR,
 
     //Markup tool selection
-    [keyCodes.A]: playerActions.USE_EDIT_TOOL_TRIANGLE,
-    [keyCodes.S]: playerActions.USE_EDIT_TOOL_SQUARE,
-    [keyCodes.D]: playerActions.USE_EDIT_TOOL_DIAMOND,
-    [keyCodes.F]: playerActions.USE_EDIT_TOOL_CIRCLE,
-    [keyCodes.G]: playerActions.USE_EDIT_TOOL_MARK,
-    [keyCodes.H]: playerActions.USE_EDIT_TOOL_HAPPY,
-    [keyCodes.J]: playerActions.USE_EDIT_TOOL_SAD,
-    [keyCodes.K]: playerActions.USE_EDIT_TOOL_NUMBER,
-    [keyCodes.L]: playerActions.USE_EDIT_TOOL_LETTER,
+    [keyCodes.A]: playerActions.SET_EDIT_TOOL_TRIANGLE,
+    [keyCodes.S]: playerActions.SET_EDIT_TOOL_SQUARE,
+    [keyCodes.D]: playerActions.SET_EDIT_TOOL_DIAMOND,
+    [keyCodes.F]: playerActions.SET_EDIT_TOOL_CIRCLE,
+    [keyCodes.G]: playerActions.SET_EDIT_TOOL_MARK,
+    [keyCodes.H]: playerActions.SET_EDIT_TOOL_HAPPY,
+    [keyCodes.J]: playerActions.SET_EDIT_TOOL_SAD,
+    [keyCodes.K]: playerActions.SET_EDIT_TOOL_NUMBER,
+    [keyCodes.L]: playerActions.SET_EDIT_TOOL_LETTER,
   },
 
   //Mouse bindings

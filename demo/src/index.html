@@ -23,10 +23,10 @@
     <!-- <button id="fullscreen" title="Full screen">
       <span class="material-symbols-outlined">open_in_full</span>
     </button> -->
-    <button class="btnSwitchMode" mode="edit" title="Edit">
+    <button class="btnSwitchMode" mode="edit" title="Edit [E]">
       <span class="material-symbols-outlined">edit</span>
     </button>
-    <button class="btnSwitchMode" mode="replay" title="Play">
+    <button class="btnSwitchMode" mode="replay" title="Play [R]">
       <span class="material-symbols-outlined">fiber_smart_record</span>
     </button>
 
@@ -89,10 +89,10 @@
       </button>
       <br>
       <br>
-      <button class="btnCommand" cmd="goToPreviousPosition" title="Go to previous position">
+      <button class="btnCommand" cmd="goToPreviousPosition" title="Go back [←]">
         <span class="material-symbols-outlined">navigate_before</span>
       </button>
-      <button class="btnCommand" cmd="goToNextPosition" title="Go to next position">
+      <button class="btnCommand" cmd="goToNextPosition" title="Go forward [→]">
         <span class="material-symbols-outlined">navigate_next</span>
       </button>
       <br>
@@ -126,44 +126,44 @@
     </div>
 
     <div id="editTools">
-      <button class="btnUseEditingTool" tool="stone" title="Place stone [W]">
+      <button class="btnTool" tool="stone" title="Place stone [W]">
         <span class="material-symbols-outlined">fiber_manual_record</span>
       </button>
-      <button class="btnUseEditingTool" tool="clear" title="Clear [E]">
+      <button class="btnTool" tool="clear" title="Clear [E]">
         <span class="material-symbols-outlined">ink_eraser</span>
       </button>
       <br>
       <br>
 
-      <button class="btnUseEditingTool" tool="triangle" title="Triangle [A]">
+      <button class="btnTool" tool="triangle" title="Triangle [A]">
         <span class="material-symbols-outlined">change_history</span>
       </button>
-      </button><button class="btnUseEditingTool" tool="square" title="Square [S]">
+      </button><button class="btnTool" tool="square" title="Square [S]">
         <span class="material-symbols-outlined">square</span>
       </button>
       <br>
-      <button class="btnUseEditingTool" tool="circle" title="Circle [F]">
+      <button class="btnTool" tool="circle" title="Circle [F]">
         <span class="material-symbols-outlined">circle</span>
       </button>
-      <button class="btnUseEditingTool" tool="diamond" title="Diamond [D]">
+      <button class="btnTool" tool="diamond" title="Diamond [D]">
         <span class="material-symbols-outlined">diamond</span>
       </button>
       <br>
-      <button class="btnUseEditingTool" tool="number" title="Number [K]">
+      <button class="btnTool" tool="number" title="Number [K]">
         <span class="material-symbols-outlined">123</span>
       </button>
-      <button class="btnUseEditingTool" tool="letter" title="Letter [L]">
+      <button class="btnTool" tool="letter" title="Letter [L]">
         <span class="material-symbols-outlined">abc</span>
       </button>
       <br>
-      <button class="btnUseEditingTool" tool="happy" title="Happy [H]">
+      <button class="btnTool" tool="happy" title="Happy [H]">
         <span class="material-symbols-outlined">sentiment_satisfied</span>
       </button>
-      <button class="btnUseEditingTool" tool="sad" title="Sad [J]">
+      <button class="btnTool" tool="sad" title="Sad [J]">
         <span class="material-symbols-outlined">sentiment_dissatisfied</span>
       </button>
       <br>
-      <button class="btnUseEditingTool" tool="mark" title="Mark [G]">
+      <button class="btnTool" tool="mark" title="Mark [G]">
         <span class="material-symbols-outlined">close</span>
       </button>
       <button id="removeAllMarkup" title="Remove all markup">
@@ -173,15 +173,25 @@
   </div>
 </div>
 <script type="module">
-import {Board, Player, constants, helpers} from '../../src/index.js'
-import {onClick, findByQuery, toggleHidden} from './js/demo.js'
+import {
+  Board,
+  Player,
+  constants,
+  helpers
+} from '../../src/index.js'
+import {
+  onClick,
+  findByQuery,
+  toggleHidden,
+  toggleActive
+} from './js/demo.js'
 
 //Audio
 import audioMove from './audio/move.wav'
 import audioCapture from './audio/capture.wav'
 
 //Get constants
-const {playerModes, editingTools} = constants.player
+const {playerModes, editTools} = constants.player
 
 //Set debug mode
 helpers.util.setDebug(true)
@@ -225,14 +235,14 @@ onClick('.lblToggleConfig', lbl => {
 onClick('.btnSwitchMode', btn => {
   toggleHidden('#menuDropdown', true)
   const mode = btn.getAttribute('mode')
-  player.switchMode(mode)
+  player.setMode(mode)
 })
 
 //Editing tool selection
-onClick('.btnUseEditingTool', btn => {
+onClick('.btnTool', btn => {
   toggleHidden('#menuDropdown', true)
   const tool = btn.getAttribute('tool')
-  player.useEditingTool(tool)
+  player.setEditTool(tool)
 })
 
 //Auto play
@@ -272,6 +282,17 @@ const onModeChange = () => {
   toggleHidden('#editTools', mode !== playerModes.EDIT)
 }
 
+//Handler for edit tool changes
+const onEditToolChange = (event) => {
+  const {tool} = event.detail
+
+  //Toggle tool buttons
+  findByQuery('.btnTool')
+    .forEach(btn => {
+      toggleActive(btn, btn.getAttribute('tool') === tool)
+    })
+}
+
 //Set checkboxes to initial toggle value
 findByQuery('.lblToggleConfig')
   .forEach(lbl => {
@@ -282,6 +303,8 @@ findByQuery('.lblToggleConfig')
 
 //Event handlers
 player.on('modeChange', onModeChange)
+player.on('editToolChange', onEditToolChange)
+player.on('gameLoad', () => player.setMode(playerModes.REPLAY))
 
 //Init
 onModeChange()
