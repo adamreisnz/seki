@@ -31,15 +31,8 @@ button {
   background: #5d5f68;
   box-shadow: 1px 1px 5px rgba(0,0,0,.2);
 }
-button:disabled {
-  opacity: 0.5
-}
-button:not([disabled]):hover {
+button.active, button:hover {
   cursor: pointer;
-  background: #757a8b;
-  border-color: #757a8b;
-}
-button.active, button.active:hover {
   background: #757a8b;
   border-color: #757a8b;
 }
