@@ -17,7 +17,6 @@ button {
   justify-content: center;
   width: 2.75rem;
   height: 2.75rem;
-  border-radius: 3px;
   line-height: 1rem;
   vertical-align: middle;
   font-family: Helvetica, sans-serif;
@@ -25,20 +24,27 @@ button {
   padding: 0.75rem;
   margin-right: 0.25rem;
   margin-bottom: 0.75rem;
-  border: 1px solid #ccc;
+  border: 1px solid #636674;
+  border-radius: 8px;
   color: #fff;
   outline: none;
-  background: #444;
+  background: #5d5f68;
+  box-shadow: 1px 1px 5px rgba(0,0,0,.2);
 }
 button:disabled {
   opacity: 0.5
 }
 button:not([disabled]):hover {
   cursor: pointer;
-  background: #555;
+  background: #757a8b;
+  border-color: #757a8b;
 }
 button.active, button.active:hover {
-  background: #777;
+  background: #757a8b;
+  border-color: #757a8b;
+}
+button:active {
+  transform: translateX(1px) translateY(1px);
 }
 label {
   display: flex;
@@ -61,7 +67,7 @@ p {
 /* Demo layout */
 .main {
   display: flex;
-  padding: 1rem;
+  padding: 0.5rem;
   height: 100%;
 }
 .left {
@@ -69,7 +75,7 @@ p {
 }
 .right {
   min-width: 100px;
-  padding-left: 2rem;
+  padding-left: 1rem;
 }
 
 .menu {
