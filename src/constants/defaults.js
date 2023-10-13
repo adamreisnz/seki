@@ -278,13 +278,64 @@ export const defaultPlayerConfig = {
   allowPlayerConfig: true,
 }
 
+//Default star point locations
+export const defaultStarPoints = {
+  19: [
+    {x: 3, y: 3}, {x: 9, y: 3}, {x: 15, y: 3},
+    {x: 3, y: 9}, {x: 9, y: 9}, {x: 15, y: 9},
+    {x: 3, y: 15}, {x: 9, y: 15}, {x: 15, y: 15},
+  ],
+  13: [
+    {x: 3, y: 3}, {x: 9, y: 3},
+    {x: 3, y: 9}, {x: 9, y: 9},
+  ],
+  9: [
+    {x: 4, y: 4}, {x: 2, y: 2},
+    {x: 2, y: 6}, {x: 6, y: 2},
+    {x: 6, y: 6},
+  ],
+  5: [
+    {x: 3, y: 3},
+  ],
+}
+
 //Default theme
 export const defaultTheme = {
 
   //Board
   board: {
-    margin: 0.25,
+    margin: 0.25, //cells
+    borderWidth: 4, //px
     stoneStyle: stoneStyles.SLATE_SHELL,
+  },
+
+  //Coordinates
+  coordinates: {
+
+    //Board margin factor when showing coordinates
+    margin: 1.5, //cells
+
+    //Vertical coordinates
+    vertical: {
+      color: 'rgba(101,69,37,0.9)',
+      font: 'Arial',
+      type: 'numbers',
+      inverse: true,
+      size() {
+        return (ch, cellSize) => Math.floor((cellSize * 0.4) + 3) + 'px'
+      },
+    },
+
+    //Horizontal coordinates
+    horizontal: {
+      color: 'rgba(101,69,37,0.9)',
+      font: 'Arial',
+      type: 'letters',
+      inverse: false,
+      size() {
+        return (ch, cellSize) => Math.floor((cellSize * 0.4) + 3) + 'px'
+      },
+    },
   },
 
   //Stones
@@ -585,64 +636,10 @@ export const defaultTheme = {
 
       //Locations
       points(width, height) {
-
-        //19x19
-        if (width === height && width === 19) {
-          return [
-            { x: 3, y: 3 }, { x: 9, y: 3 }, { x: 15, y: 3 },
-            { x: 3, y: 9 }, { x: 9, y: 9 }, { x: 15, y: 9 },
-            { x: 3, y: 15 }, { x: 9, y: 15 }, { x: 15, y: 15 },
-          ]
+        if (width === height && defaultStarPoints[width]) {
+          return defaultStarPoints[width]
         }
-
-        //13x13
-        if (width === height && width === 13) {
-          return [
-            { x: 3, y: 3 }, { x: 9, y: 3 },
-            { x: 3, y: 9 }, { x: 9, y: 9 },
-          ]
-        }
-
-        //9x9
-        if (width === height && width === 9) {
-          return [
-            { x: 4, y: 4}, { x: 2, y: 2},
-            { x: 2, y: 6}, { x: 6, y: 2},
-            { x: 6, y: 6},
-          ]
-        }
-
-        //No star points
         return []
-      },
-    },
-  },
-
-  //Coordinates
-  coordinates: {
-
-    //Board margin factor when showing coordinates
-    margin: 1.5,
-
-    //Vertical coordinates
-    vertical: {
-      color: 'rgba(101,69,37,0.9)',
-      font: 'Arial',
-      type: 'numbers',
-      inverse: true,
-      size() {
-        return (ch, cellSize) => Math.floor((cellSize * 0.4) + 3) + 'px'
-      },
-    },
-
-    //Horizontal coordinates
-    horizontal: {
-      color: 'rgba(101,69,37,0.9)',
-      font: 'Arial',
-      type: 'letters',
-      inverse: false,
-      size() {
-        return (ch, cellSize) => Math.floor((cellSize * 0.4) + 3) + 'px'
       },
     },
   },
