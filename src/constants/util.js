@@ -3,23 +3,47 @@
 export const aCharUc = 65
 export const aCharLc = 97
 
+//Key values
+export const keyValues = {
+
+  //Whitespace keys
+  TAB: 'Tab',
+  ENTER: 'Enter',
+  SPACE: ' ',
+  BACKSPACE: 'Backspace',
+  DELETE: 'Delete',
+
+  //Navigation keys
+  ARROW_LEFT: 'ArrowLeft',
+  ARROW_RIGHT: 'ArrowRight',
+  ARROW_UP: 'ArrowUp',
+  ARROW_DOWN: 'ArrowDown',
+  HOME: 'Home',
+  END: 'End',
+  PAGE_UP: 'PageUp',
+  PAGE_DOWN: 'PageDown',
+
+  //Modifier keys
+  FN: 'Fn',
+  ALT: 'Alt',
+  CTRL: 'Control',
+  META: 'Meta',
+  SHIFT: 'Shift',
+
+  //Other
+  ESC: 'Escape',
+}
+
 //Keycodes
 export const keyCodes = {
+  TAB: 9,
+  ENTER: 13,
+  ESC: 27,
+  SPACE: 32,
   LEFT: 37,
   RIGHT: 39,
   UP: 38,
   DOWN: 40,
-  ESC: 27,
-  ENTER: 13,
-  SPACE: 32,
-  TAB: 9,
-  SHIFT: 16,
-  CTRL: 17,
-  ALT: 18,
-  HOME: 36,
-  END: 35,
-  PAGEUP: 33,
-  PAGEDOWN: 34,
   A: 65,
   B: 66,
   C: 67,

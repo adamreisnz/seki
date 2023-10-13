@@ -430,62 +430,6 @@ export default class Board extends Base {
   }
 
   /*****************************************************************************
-   * State handling
-   ***/
-
-  /**
-   * Get the board state (list of objects per layer)
-   */
-  getState() {
-
-    //Initialize
-    const state = {}
-
-    //Get state of each layer
-    this.layers.forEach((layer, type) => {
-      const grid = layer.getAll()
-      if (grid && !grid.isEmpty()) {
-        state[type] = grid
-      }
-    })
-
-    //Return state
-    return state
-  }
-
-  /**
-   * Get state of a specific layer
-   */
-  getLayerState(type) {
-    const layer = this.layers.get(type)
-    if (layer) {
-      return layer.getAll()
-    }
-  }
-
-  /**
-   * Restore the board state from given state object
-   */
-  restoreState(state) {
-    this.layers.forEach((layer, type) => {
-      layer.removeAll()
-      if (state[type]) {
-        layer.setAll(state[type])
-      }
-    })
-  }
-
-  /**
-   * Restore state of single layer
-   */
-  restoreLayerState(type, state) {
-    const layer = this.layers.get(type)
-    if (layer) {
-      layer.setAll(state)
-    }
-  }
-
-  /*****************************************************************************
    * Drawing control
    ***/
 

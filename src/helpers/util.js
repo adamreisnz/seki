@@ -1,3 +1,4 @@
+import {mouseEvents} from '../constants/util.js'
 
 /**************************************************************************
  * Dom
@@ -130,6 +131,42 @@ export function setDebug(debug) {
  */
 export function getDebug() {
   return debugFlag
+}
+
+/**************************************************************************
+ * Event handling
+ ***/
+
+/**
+ * Check if a mouse event matches a binding
+ */
+export function isMouseEvent(event, binding) {
+
+  //Get mouse event
+  const {mouseEvent} = binding
+
+  //Wheeling up
+  if (mouseEvent === mouseEvents.WHEEL_UP) {
+    return (event.deltaY < 0)
+  }
+
+  //Wheeling down
+  if (mouseEvent === mouseEvents.WHEEL_DOWN) {
+    return (event.deltaY > 0)
+  }
+}
+
+/**
+ * Check if a keydown event matches a binding
+ */
+export function isKeyDownEvent(event, binding) {
+  return (
+    event.key.toLowerCase() === binding.key.toLowerCase() &&
+    event.ctrlKey === Boolean(binding.ctrlKey) &&
+    event.shiftKey === Boolean(binding.shiftKey) &&
+    event.altKey === Boolean(binding.altKey) &&
+    event.metaKey === Boolean(binding.metaKey)
+  )
 }
 
 /**************************************************************************

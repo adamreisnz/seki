@@ -143,7 +143,7 @@ export default class PlayerMode extends Base {
   }
 
   /**
-   * Process action
+   * Process a global action
    */
   processAction(action, event) {
 
@@ -167,6 +167,12 @@ export default class PlayerMode extends Base {
         return true
       case playerActions.SET_MODE_PLAY:
         player.setMode(playerModes.PLAY)
+        return true
+      case playerActions.TOGGLE_MODE_EDIT:
+        player.toggleMode(playerModes.EDIT)
+        return true
+      case playerActions.TOGGLE_COORDINATES:
+        player.toggleConfig('showCoordinates')
         return true
     }
 

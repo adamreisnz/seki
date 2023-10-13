@@ -1,4 +1,4 @@
-import {aCharUc, aCharLc} from '../constants/common.js'
+import {aCharUc, aCharLc} from '../constants/util.js'
 
 //Kanji
 const kanjiCoordinates = [

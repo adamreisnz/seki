@@ -1,5 +1,5 @@
 import {appName, appVersion} from './app.js'
-import {keyCodes, mouseEvents} from './common.js'
+import {keyValues, mouseEvents} from './util.js'
 import {gameTypes} from './game.js'
 import {jgfVersion} from './jgf.js'
 import {playerModes, playerActions} from './player.js'
@@ -82,44 +82,155 @@ export const defaultPlayerConfig = {
   initialMode: playerModes.REPLAY,
 
   //Key bindings
-  keyBindings: {
+  keyBindings: [
 
     //General
-    [keyCodes.ESC]: playerActions.CANCEL_ACTION,
+    {
+      key: keyValues.ESC,
+      action: playerActions.CANCEL_ACTION,
+    },
 
     //Mode selection
-    [keyCodes.R]: playerActions.SET_MODE_REPLAY,
-    [keyCodes.E]: playerActions.SET_MODE_EDIT,
+    {
+      key: 'E',
+      action: playerActions.TOGGLE_MODE_EDIT,
+    },
+    {
+      key: 'M',
+      action: playerActions.SET_MODE_REPLAY,
+    },
 
     //Navigation
-    [keyCodes.LEFT]: playerActions.PREV_POSITION,
-    [keyCodes.RIGHT]: playerActions.NEXT_POSITION,
-    [keyCodes.UP]: playerActions.PREV_VARIATION,
-    [keyCodes.DOWN]: playerActions.NEXT_VARIATION,
+    {
+      key: keyValues.ARROW_LEFT,
+      action: playerActions.GO_TO_PREV_POSITION,
+    },
+    {
+      key: keyValues.ARROW_RIGHT,
+      action: playerActions.GO_TO_NEXT_POSITION,
+    },
+    {
+      key: keyValues.ARROW_UP,
+      action: playerActions.SELECT_PREV_VARIATION,
+    },
+    {
+      key: keyValues.ARROW_DOWN,
+      action: playerActions.SELECT_NEXT_VARIATION,
+    },
+    {
+      key: keyValues.ARROW_LEFT,
+      shiftKey: true,
+      action: playerActions.GO_BACK_NUM_POSITIONS,
+    },
+    {
+      key: keyValues.ARROW_RIGHT,
+      shiftKey: true,
+      action: playerActions.GO_FORWARD_NUM_POSITIONS,
+    },
+    {
+      key: keyValues.ARROW_LEFT,
+      metaKey: true,
+      action: playerActions.GO_TO_FIRST_POSITION,
+    },
+    {
+      key: keyValues.ARROW_RIGHT,
+      metaKey: true,
+      action: playerActions.GO_TO_LAST_POSITION,
+    },
+    {
+      key: keyValues.ARROW_LEFT,
+      altKey: true,
+      action: playerActions.GO_TO_PREV_FORK,
+    },
+    {
+      key: keyValues.ARROW_RIGHT,
+      altKey: true,
+      action: playerActions.GO_TO_NEXT_FORK,
+    },
+    {
+      key: keyValues.SPACE,
+      action: playerActions.TOGGLE_AUTO_PLAY,
+    },
 
-    //Setup tool selection
-    [keyCodes.Q]: playerActions.SET_EDIT_TOOL_STONE,
-    [keyCodes.W]: playerActions.SET_EDIT_TOOL_CLEAR,
+    //Coordinates visibility
+    {
+      key: 'C',
+      action: playerActions.TOGGLE_COORDINATES,
+    },
+
+    //Setup tools
+    {
+      key: 'S',
+      action: playerActions.SET_EDIT_TOOL_STONE,
+    },
+    {
+      key: 'X',
+      action: playerActions.SET_EDIT_TOOL_CLEAR,
+    },
+    {
+      key: 'X',
+      shiftKey: true,
+      action: playerActions.CLEAR_ALL_MARKUP,
+    },
 
     //Markup tool selection
-    [keyCodes.A]: playerActions.SET_EDIT_TOOL_TRIANGLE,
-    [keyCodes.S]: playerActions.SET_EDIT_TOOL_SQUARE,
-    [keyCodes.D]: playerActions.SET_EDIT_TOOL_DIAMOND,
-    [keyCodes.F]: playerActions.SET_EDIT_TOOL_CIRCLE,
-    [keyCodes.G]: playerActions.SET_EDIT_TOOL_MARK,
-    [keyCodes.H]: playerActions.SET_EDIT_TOOL_HAPPY,
-    [keyCodes.J]: playerActions.SET_EDIT_TOOL_SAD,
-    [keyCodes.K]: playerActions.SET_EDIT_TOOL_NUMBER,
-    [keyCodes.L]: playerActions.SET_EDIT_TOOL_LETTER,
-  },
+    {
+      key: '1',
+      action: playerActions.SET_EDIT_TOOL_TRIANGLE,
+    },
+    {
+      key: '2',
+      action: playerActions.SET_EDIT_TOOL_SQUARE,
+    },
+    {
+      key: '3',
+      action: playerActions.SET_EDIT_TOOL_CIRCLE,
+    },
+    {
+      key: '4',
+      action: playerActions.SET_EDIT_TOOL_DIAMOND,
+    },
+    {
+      key: '5',
+      action: playerActions.SET_EDIT_TOOL_LETTER,
+    },
+    {
+      key: '6',
+      action: playerActions.SET_EDIT_TOOL_NUMBER,
+    },
+    {
+      key: '7',
+      action: playerActions.SET_EDIT_TOOL_HAPPY,
+    },
+    {
+      key: '8',
+      action: playerActions.SET_EDIT_TOOL_SAD,
+    },
+    {
+      key: '9',
+      action: playerActions.SET_EDIT_TOOL_MARK,
+    },
+  ],
 
   //Mouse bindings
-  mouseBindings: {
-    [mouseEvents.WHEEL_UP]: playerActions.PREV_POSITION,
-    [mouseEvents.WHEEL_DOWN]: playerActions.NEXT_POSITION,
-    [mouseEvents.WHEEL_LEFT]: playerActions.PREV_VARIATION,
-    [mouseEvents.WHEEL_RIGHT]: playerActions.NEXT_VARIATION,
-  },
+  mouseBindings: [
+    {
+      mouseEvent: mouseEvents.WHEEL_UP,
+      action: playerActions.GO_TO_PREV_POSITION,
+    },
+    {
+      mouseEvent: mouseEvents.WHEEL_DOWN,
+      action: playerActions.GO_TO_NEXT_POSITION,
+    },
+    {
+      mouseEvent: mouseEvents.WHEEL_LEFT,
+      action: playerActions.SELECT_PREV_VARIATION,
+    },
+    {
+      mouseEvent: mouseEvents.WHEEL_RIGHT,
+      action: playerActions.SELECT_NEXT_VARIATION,
+    },
+  ],
 
   //Audio
   audio: {

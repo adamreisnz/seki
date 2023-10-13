@@ -1083,46 +1083,6 @@ export default class Game extends Base {
   }
 
   /*****************************************************************************
-   * State handling TODO
-   ***/
-
-  /**
-   * Get the game position state
-   */
-  getState() {
-
-    //Can only create when we have a path
-    if (!this.path) {
-      return null
-    }
-
-    //Create state
-    let state = {
-      jgf: this.jgf,
-      path: this.path.clone(),
-    }
-
-    //Return
-    return state
-  }
-
-  /**
-   * Restore the game state
-   */
-  restoreState(state) {
-
-    //Must have jgf and path
-    if (!state || !state.jgf || !state.path) {
-      return
-    }
-
-    //Restore state
-    // this.load(state.jgf)
-    //TODO load doesn't exist anymore
-    this.goToPath(state.path)
-  }
-
-  /*****************************************************************************
    * Node navigation helpers
    ***/
 

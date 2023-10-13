@@ -2,7 +2,6 @@ import PlayerMode from './player-mode.js'
 import MarkupFactory from '../markup-factory.js'
 import {boardLayerTypes} from '../../constants/board.js'
 import {markupTypes} from '../../constants/markup.js'
-import {mouseEvents} from '../../constants/common.js'
 import {playerModes, playerActions} from '../../constants/player.js'
 
 /**
@@ -15,7 +14,7 @@ export default class PlayerModeReplay extends PlayerMode {
 
   //Auto play settings
   isAutoPlaying = false
-  autoPlayInterval = null
+  autoPlayTimeout = null
 
   //Track last move and variation markers we've put on the board
   markers = []
@@ -82,13 +81,6 @@ export default class PlayerModeReplay extends PlayerMode {
     this.clearMarkers()
   }
 
-  /**
-   * Auto play delay setting
-   */
-  get autoPlayDelay() {
-    return this.player.getConfig('autoPlayDelay', 1000)
-  }
-
   /**************************************************************************
    * Event listeners
    ***/
@@ -100,8 +92,8 @@ export default class PlayerModeReplay extends PlayerMode {
 
     //Get data
     const {player} = this
-    const {keyCode} = event.detail.nativeEvent
-    const action = player.getActionForKeyCode(keyCode)
+    const {nativeEvent} = event.detail
+    const action = player.getActionForKeyDownEvent(nativeEvent)
 
     //Process action
     if (action) {
@@ -117,24 +109,14 @@ export default class PlayerModeReplay extends PlayerMode {
     //Get data
     const {player} = this
     const {nativeEvent} = event.detail
+    const action = player.getActionForMouseEvent(nativeEvent)
 
     //Clear hover
     this.clearHover()
 
-    //Wheeling up
-    if (nativeEvent.deltaY < 0) {
-      const action = player.getActionForMouseEvent(mouseEvents.WHEEL_UP)
-      if (action) {
-        this.processAction(action, event)
-      }
-    }
-
-    //Wheeling down
-    else if (nativeEvent.deltaY > 0) {
-      const action = player.getActionForMouseEvent(mouseEvents.WHEEL_DOWN)
-      if (action) {
-        this.processAction(action, event)
-      }
+    //Process action
+    if (action) {
+      this.processAction(action, event)
     }
   }
 
@@ -172,6 +154,21 @@ export default class PlayerModeReplay extends PlayerMode {
    * Position update event
    */
   onPathChange() {
+
+    //Get data
+    const {game, isAutoPlaying} = this
+
+    //Check if auto playing
+    if (isAutoPlaying) {
+      if (!game.hasNextPosition()) {
+        this.stopAutoPlay()
+      }
+      else {
+        this.queueNextAutoPlay()
+      }
+    }
+
+    //Render markers
     this.renderMarkers()
   }
 
@@ -210,72 +207,48 @@ export default class PlayerModeReplay extends PlayerMode {
       return true
     }
 
+    //Get player
+    const {player} = this
+
     //Determine action
     switch (action) {
-      case playerActions.NEXT_POSITION:
-        this.goToNextPosition()
+      case playerActions.GO_TO_NEXT_POSITION:
+        player.goToNextPosition()
         return true
-      case playerActions.PREV_POSITION:
-        this.goToPreviousPosition()
+      case playerActions.GO_TO_PREV_POSITION:
+        player.goToPreviousPosition()
         return true
-      case playerActions.NEXT_VARIATION:
+      case playerActions.GO_FORWARD_NUM_POSITIONS:
+        player.goForwardNumPositions()
+        return true
+      case playerActions.GO_BACK_NUM_POSITIONS:
+        player.goBackNumPositions()
+        return true
+      case playerActions.GO_TO_LAST_POSITION:
+        player.goToLastPosition()
+        return true
+      case playerActions.GO_TO_FIRST_POSITION:
+        player.goToFirstPosition()
+        return true
+      case playerActions.GO_TO_NEXT_FORK:
+        player.goToNextFork()
+        return true
+      case playerActions.GO_TO_PREV_FORK:
+        player.goToPreviousFork()
+        return true
+      case playerActions.SELECT_NEXT_VARIATION:
         this.selectNextVariation()
         return true
-      case playerActions.PREV_VARIATION:
+      case playerActions.SELECT_PREV_VARIATION:
         this.selectPreviousVariation()
+        return true
+      case playerActions.TOGGLE_AUTO_PLAY:
+        this.toggleAutoPlay()
         return true
     }
 
     //No action was performed
     return false
-  }
-
-  /**
-   * Go to next position
-   */
-  goToNextPosition() {
-
-    //Get data
-    const {player, game, isAutoPlaying} = this
-
-    //If we're remembering chosen variations, get the variation index
-    const remember = player.getConfig('rememberVariationPaths')
-    const i = remember ? game.getCurrentPathIndex() : 0
-
-    //Stop auto play
-    if (isAutoPlaying) {
-      this.stopAutoPlay()
-    }
-
-    //Go to next position
-    player.goToNextPosition(i)
-
-    //Start auto play again
-    if (isAutoPlaying) {
-      this.startAutoPlay()
-    }
-  }
-
-  /**
-   * To to previous position
-   */
-  goToPreviousPosition() {
-
-    //Get data
-    const {player, isAutoPlaying} = this
-
-    //Stop auto play
-    if (isAutoPlaying) {
-      this.stopAutoPlay()
-    }
-
-    //Go to previous position
-    player.goToPreviousPosition()
-
-    //Start auto play again
-    if (isAutoPlaying) {
-      this.startAutoPlay()
-    }
   }
 
   /**
@@ -295,33 +268,33 @@ export default class PlayerModeReplay extends PlayerMode {
   }
 
   /**
-   * Start auto play with a given delay
+   * Toggle auto play
    */
-  startAutoPlay(delay = this.autoPlayDelay) {
+  toggleAutoPlay() {
+    if (this.isAutoPlaying) {
+      this.stopAutoPlay()
+    }
+    else {
+      this.startAutoPlay()
+    }
+  }
+
+  /**
+   * Start auto play
+   */
+  startAutoPlay() {
 
     //Get data
-    const {player, game, isAutoPlaying} = this
-    if (isAutoPlaying) {
+    const {game, isAutoPlaying} = this
+
+    //Already auto playing or no next position?
+    if (isAutoPlaying || !game.hasNextPosition()) {
       return
     }
 
-    //No game, or no further moves
-    if (!game || !game.node.hasChildren()) {
-      return
-    }
-
-    //Create interval
+    //Toggle flag and queue next move
     this.isAutoPlaying = true
-    this.autoPlayInterval = setInterval(() => {
-
-      //Advance to the next position
-      player.goToNextPosition()
-
-      //Ran out of children?
-      if (!game.node.hasChildren()) {
-        this.stopAutoPlay()
-      }
-    }, delay)
+    this.queueNextAutoPlay()
   }
 
   /**
@@ -330,17 +303,32 @@ export default class PlayerModeReplay extends PlayerMode {
   stopAutoPlay() {
 
     //Get data
-    const {isAutoPlaying, autoPlayInterval} = this
-    if (!isAutoPlaying) {
-      return
-    }
+    const {autoPlayTimeout} = this
 
-    //Clear interval
-    clearInterval(autoPlayInterval)
+    //Clear timeout
+    clearTimeout(autoPlayTimeout)
 
     //Clear flags
-    this.autoPlayInterval = null
     this.isAutoPlaying = false
+    this.autoPlayTimeout = null
+  }
+
+  /**
+   * Queue next auto play move
+   */
+  queueNextAutoPlay() {
+
+    //Get data
+    const {player, autoPlayTimeout} = this
+    const autoPlayDelay = player.getConfig('autoPlayDelay', 1000)
+
+    //Clear any existing timeout
+    clearTimeout(autoPlayTimeout)
+
+    //Create timeout for next move
+    this.autoPlayTimeout = setTimeout(() => {
+      player.goToNextPosition()
+    }, autoPlayDelay)
   }
 
   /**

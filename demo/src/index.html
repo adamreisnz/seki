@@ -26,7 +26,7 @@
     <button class="btnSwitchMode" mode="edit" title="Edit [E]">
       <span class="material-symbols-outlined">edit</span>
     </button>
-    <button class="btnSwitchMode" mode="replay" title="Play [R]">
+    <button class="btnSwitchMode" mode="replay" title="Play [M]">
       <span class="material-symbols-outlined">fiber_smart_record</span>
     </button>
 
@@ -81,10 +81,10 @@
     </div>
 
     <div id="replayTools">
-      <button id="startAutoPlay" title="Start auto play">
+      <button id="startAutoPlay" title="Start auto play [space]">
         <span class="material-symbols-outlined">autoplay</span>
       </button>
-      <button id="stopAutoPlay" class="active" title="Stop auto play">
+      <button id="stopAutoPlay" class="active" title="Stop auto play [space]">
         <span class="material-symbols-outlined">autostop</span>
       </button>
       <br>
@@ -126,47 +126,47 @@
     </div>
 
     <div id="editTools">
-      <button class="btnTool" tool="stone" title="Place stone [Q]">
+      <button class="btnTool" tool="stone" title="Place stone [S]">
         <span class="material-symbols-outlined">fiber_manual_record</span>
       </button>
-      <button class="btnTool" tool="clear" title="Clear [W]">
+      <button class="btnTool" tool="clear" title="Clear [X]">
         <span class="material-symbols-outlined">ink_eraser</span>
       </button>
       <br>
       <br>
 
-      <button class="btnTool" tool="triangle" title="Triangle [A]">
+      <button class="btnTool" tool="triangle" title="Triangle [1]">
         <span class="material-symbols-outlined">change_history</span>
       </button>
-      </button><button class="btnTool" tool="square" title="Square [S]">
+      </button><button class="btnTool" tool="square" title="Square [2]">
         <span class="material-symbols-outlined">square</span>
       </button>
       <br>
-      <button class="btnTool" tool="circle" title="Circle [F]">
+      <button class="btnTool" tool="circle" title="Circle [3]">
         <span class="material-symbols-outlined">circle</span>
       </button>
-      <button class="btnTool" tool="diamond" title="Diamond [D]">
+      <button class="btnTool" tool="diamond" title="Diamond [4]">
         <span class="material-symbols-outlined">diamond</span>
       </button>
       <br>
-      <button class="btnTool" tool="number" title="Number [K]">
-        <span class="material-symbols-outlined">123</span>
-      </button>
-      <button class="btnTool" tool="letter" title="Letter [L]">
+      <button class="btnTool" tool="letter" title="Letter [5]">
         <span class="material-symbols-outlined">abc</span>
       </button>
+      <button class="btnTool" tool="number" title="Number [6]">
+        <span class="material-symbols-outlined">123</span>
+      </button>
       <br>
-      <button class="btnTool" tool="happy" title="Happy [H]">
+      <button class="btnTool" tool="happy" title="Happy [7]">
         <span class="material-symbols-outlined">sentiment_satisfied</span>
       </button>
-      <button class="btnTool" tool="sad" title="Sad [J]">
+      <button class="btnTool" tool="sad" title="Sad [8]">
         <span class="material-symbols-outlined">sentiment_dissatisfied</span>
       </button>
       <br>
-      <button class="btnTool" tool="mark" title="Mark [G]">
+      <button class="btnTool" tool="mark" title="Mark [9]">
         <span class="material-symbols-outlined">close</span>
       </button>
-      <button id="removeAllMarkup" title="Remove all markup">
+      <button id="clearAllMarkup" title="Remove all markup [SHIFT-X]">
         <span class="material-symbols-outlined">delete_sweep</span>
       </button>
     </div>
@@ -260,11 +260,9 @@ onClick('#stopAutoPlay', () => {
 })
 
 //Remove all markup
-onClick('#removeAllMarkup', () => {
+onClick('#clearAllMarkup', () => {
   toggleHidden('#menuDropdown', true)
-  player.board
-    .getLayer(constants.board.boardLayerTypes.MARKUP)
-    .removeAll()
+  player.clearAllMarkup()
 })
 
 //Handler for mode changes

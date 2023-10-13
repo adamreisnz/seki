@@ -12,6 +12,8 @@ import {
   removeClass,
   openFile,
   downloadFile,
+  isKeyDownEvent,
+  isMouseEvent,
 } from '../helpers/util.js'
 
 /**
@@ -28,6 +30,7 @@ export default class Player extends Base {
   modeHandlers = {}
   audioElements = {}
   activeMode
+  previousMode
 
   //Mouse coordinates helper var
   mouse = {
@@ -257,57 +260,25 @@ export default class Player extends Base {
     }
 
     //Set active mode
+    this.previousMode = this.activeMode
     this.activeMode = mode
     this.debug(`${mode} mode activated`)
     this.triggerEvent('modeChange', {mode})
-  }
-
-  /**************************************************************************
-   * State handling
-   ***/
-
-  /**
-   * Save the full player state
-   */
-  saveState() {
-
-    //Get data
-    const {mode, tool, restrictedStartNode, restrictedEndNode} = this
-
-    //Save player state
-    this.playerState = {
-      mode,
-      tool,
-      restrictedStartNode,
-      restrictedEndNode,
-    }
-
-    //Save game state
-    this.saveGameState()
+    return
   }
 
   /**
-   * Restore to the saved player state
+   * Toggle in and out of a mode (remembering the previous mode)
    */
-  restoreState() {
+  toggleMode(mode) {
 
-    //Must have player state
-    if (!this.playerState) {
-      return
+    //Compare against previous mode
+    if (this.activeMode !== mode) {
+      this.setMode(mode)
     }
-
-    //Get data
-    const {
-      mode, restrictedStartNode, restrictedEndNode,
-    } = this.playerState
-
-    //Restore
-    this.setMode(mode)
-    this.restrictedStartNode = restrictedStartNode
-    this.restrictedEndNode = restrictedEndNode
-
-    //Restore game state
-    this.restoreGameState()
+    else {
+      this.setMode(this.previousMode)
+    }
   }
 
   /*****************************************************************************
@@ -376,33 +347,6 @@ export default class Player extends Base {
     }
   }
 
-  /**
-   * Save the current state
-   */
-  saveGameState() {
-    this.gameState = this.game.getState()
-  }
-
-  /**
-   * Restore to the saved state
-   */
-  restoreGameState() {
-
-    //Must have saved state
-    if (!this.gameState) {
-      return
-    }
-
-    //Restore state
-    this.game.restoreState(this.gameState)
-
-    //Update board
-    if (this.board) {
-      this.board.removeAll()
-      this.processPathChange()
-    }
-  }
-
   /*****************************************************************************
    * Navigation
    ***/
@@ -410,7 +354,7 @@ export default class Player extends Base {
   /**
    * Go to the next position
    */
-  goToNextPosition(i) {
+  goToNextPosition() {
 
     //No next position
     if (!this.game.hasNextPosition()) {
@@ -421,6 +365,10 @@ export default class Player extends Base {
     if (this.isAtRestrictedEndNode()) {
       return
     }
+
+    //Check which path index to use
+    const remember = this.getConfig('rememberVariationPaths')
+    const i = remember ? this.game.getCurrentPathIndex() : 0
 
     //Go to next position
     this.game.goToNextPosition(i)
@@ -878,19 +826,38 @@ export default class Player extends Base {
   }
 
   /**
-   * Get action for given key code
+   * Get action for a key down event
    */
-  getActionForKeyCode(keyCode) {
-    const keyBindings = this.getConfig('keyBindings')
-    return keyBindings[keyCode]
+  getActionForKeyDownEvent(nativeEvent) {
+
+    //Debug
+    this.debug(`#️⃣ key ${nativeEvent.key}`)
+
+    //Find binding
+    const binding = this
+      .getConfig('keyBindings')
+      .find(binding => isKeyDownEvent(nativeEvent, binding))
+
+    //Return action if found
+    if (binding) {
+      return binding.action
+    }
   }
 
   /**
    * Get action for given mouse event
    */
-  getActionForMouseEvent(mouseEvent) {
-    const mouseBindings = this.getConfig('mouseBindings')
-    return mouseBindings[mouseEvent]
+  getActionForMouseEvent(nativeEvent) {
+
+    //Find binding
+    const binding = this
+      .getConfig('mouseBindings')
+      .find(binding => isMouseEvent(nativeEvent, binding))
+
+    //Return action if found
+    if (binding) {
+      return binding.action
+    }
   }
 
   /**

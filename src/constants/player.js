@@ -50,20 +50,29 @@ export const playerActions = {
   SET_MODE_REPLAY: 'setModeReplay',
   SET_MODE_EDIT: 'setModeEdit',
   SET_MODE_PLAY: 'setModePlay',
+  TOGGLE_MODE_EDIT: 'toggleModeEdit',
 
-  //Position handling
-  PREV_POSITION: 'prevPosition',
-  NEXT_POSITION: 'nextPosition',
-  PREV_VARIATION: 'prevVariation',
-  NEXT_VARIATION: 'nextVariation',
+  //Coordinates
+  TOGGLE_COORDINATES: 'toggleCoordinates',
 
-  //Setup tool selection
+  //Position handling & navigation
+  GO_TO_NEXT_POSITION: 'goToNextPosition',
+  GO_TO_PREV_POSITION: 'goToPrevPosition',
+  GO_TO_LAST_POSITION: 'goToLastPosition',
+  GO_TO_FIRST_POSITION: 'goToFirstPosition',
+  GO_FORWARD_NUM_POSITIONS: 'goForwardNumPositions',
+  GO_BACK_NUM_POSITIONS: 'goBackNumPositions',
+  GO_TO_NEXT_FORK: 'goToNextFork',
+  GO_TO_PREV_FORK: 'goToPrevFork',
+  SELECT_NEXT_VARIATION: 'selectNextVariation',
+  SELECT_PREV_VARIATION: 'selectPrevVariation',
+  TOGGLE_AUTO_PLAY: 'toggleAutoPlay',
+
+  //Editing
   SET_EDIT_TOOL_STONE: 'useEditToolStone',
   SET_EDIT_TOOL_BLACK: 'useEditToolBlack',
   SET_EDIT_TOOL_WHITE: 'useEditToolWhite',
   SET_EDIT_TOOL_CLEAR: 'useEditToolClear',
-
-  //Markup tool selection
   SET_EDIT_TOOL_TRIANGLE: 'useEditToolTriangle',
   SET_EDIT_TOOL_CIRCLE: 'useEditToolCircle',
   SET_EDIT_TOOL_SQUARE: 'useEditToolSquare',
@@ -73,5 +82,6 @@ export const playerActions = {
   SET_EDIT_TOOL_SAD: 'useEditToolSad',
   SET_EDIT_TOOL_LETTER: 'useEditToolLetter',
   SET_EDIT_TOOL_NUMBER: 'useEditToolNumber',
+  CLEAR_ALL_MARKUP: 'clearAllMarkup',
 }
 

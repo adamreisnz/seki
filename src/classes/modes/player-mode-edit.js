@@ -1,5 +1,5 @@
 import PlayerMode from './player-mode.js'
-import {aCharUc, aCharLc} from '../../constants/common.js'
+import {aCharUc, aCharLc} from '../../constants/util.js'
 import {markupTypes} from '../../constants/markup.js'
 import {stoneColors} from '../../constants/stone.js'
 import {boardLayerTypes} from '../../constants/board.js'
@@ -56,6 +56,7 @@ export default class PlayerModeEdit extends PlayerMode {
 
     //Extend player
     player.extend('setEditTool', mode)
+    player.extend('clearAllMarkup', mode)
   }
 
   /**
@@ -85,8 +86,8 @@ export default class PlayerModeEdit extends PlayerMode {
 
     //Get data
     const {player} = this
-    const {keyCode} = event.detail.nativeEvent
-    const action = player.getActionForKeyCode(keyCode)
+    const {nativeEvent} = event.detail
+    const action = player.getActionForKeyDownEvent(nativeEvent)
 
     //Process action
     if (action) {
@@ -197,6 +198,9 @@ export default class PlayerModeEdit extends PlayerMode {
         return true
       case playerActions.SET_EDIT_TOOL_NUMBER:
         this.setEditTool(editTools.NUMBER)
+        return true
+      case playerActions.CLEAR_ALL_MARKUP:
+        this.clearAllMarkup()
         return true
     }
 
@@ -409,6 +413,23 @@ export default class PlayerModeEdit extends PlayerMode {
 
     //Parent method
     super.showHoverMarkup(x, y, type, text)
+  }
+
+  /**
+   * Clear all markup
+   */
+  clearAllMarkup() {
+
+    //Get board
+    const {board} = this
+    if (!board) {
+      return
+    }
+
+    //Clear markup
+    board
+      .getLayer(boardLayerTypes.MARKUP)
+      .removeAll()
   }
 
   /**************************************************************************

@@ -79,6 +79,9 @@ export default class MarkupVariation extends MarkupCircle {
     const absX = this.getAbsX(x)
     const absY = this.getAbsY(y)
 
+    //Move slightly lower
+    const posY = Math.floor(absY + (fontSize / 10))
+
     //Prepare context
     this.prepareContext(context)
 
@@ -90,7 +93,7 @@ export default class MarkupVariation extends MarkupCircle {
 
     //Draw element
     context.beginPath()
-    context.fillText(String(text), absX, absY, 2 * radius)
+    context.fillText(String(text), absX, posY, 2 * radius)
 
     //Restore context
     this.restoreContext(context)

@@ -51,7 +51,6 @@ const helpers = {
 //Constants
 import * as app from './constants/app.js'
 import * as board from './constants/board.js'
-import * as common from './constants/common.js'
 import * as defaults from './constants/defaults.js'
 import * as game from './constants/game.js'
 import * as jgf from './constants/jgf.js'
@@ -61,12 +60,12 @@ import * as score from './constants/score.js'
 import * as setup from './constants/setup.js'
 import * as sgf from './constants/sgf.js'
 import * as stone from './constants/stone.js'
+import * as utilConstants from './constants/util.js'
 
 //Create convenience constants object
 const constants = {
   app,
   board,
-  common,
   defaults,
   game,
   jgf,
@@ -76,6 +75,7 @@ const constants = {
   setup,
   sgf,
   stone,
+  util: utilConstants,
 }
 
 //Export
