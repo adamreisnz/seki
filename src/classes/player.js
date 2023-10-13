@@ -5,7 +5,6 @@ import EventHandler from './event-handler.js'
 import PlayerModeFactory from './player-mode-factory.js'
 import {playerModes} from '../constants/player.js'
 import {defaultPlayerConfig} from '../constants/defaults.js'
-import {kifuFormats} from '../constants/app.js'
 import {
   getPixelRatio,
   addClass,
@@ -66,7 +65,7 @@ export default class Player extends Base {
   }
 
   /**
-   * Reset
+   * Reset player
    */
   reset(mode) {
 
@@ -286,6 +285,13 @@ export default class Player extends Base {
    ***/
 
   /**
+   * New file
+   */
+  newFile() {
+    this.reset(playerModes.REPLAY)
+  }
+
+  /**
    * Open file
    */
   async openFile(mode) {
@@ -303,7 +309,12 @@ export default class Player extends Base {
   /**
    * Download file
    */
-  downloadFile(format = kifuFormats.SGF) {
+  downloadFile(format) {
+
+    //Use default format
+    if (!format) {
+      format = this.getConfig('defaultKifuFormat')
+    }
 
     //Get game info
     const {game} = this

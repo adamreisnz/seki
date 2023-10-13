@@ -46,13 +46,18 @@ export const playerActions = {
   //General
   CANCEL_ACTION: 'cancelAction',
 
+  //File handling
+  NEW_FILE: 'newFile',
+  OPEN_FILE: 'openFile',
+  DOWNLOAD_FILE: 'downloadFile',
+
   //Mode selection
   SET_MODE_REPLAY: 'setModeReplay',
   SET_MODE_EDIT: 'setModeEdit',
   SET_MODE_PLAY: 'setModePlay',
   TOGGLE_MODE_EDIT: 'toggleModeEdit',
 
-  //Coordinates
+  //Board config
   TOGGLE_COORDINATES: 'toggleCoordinates',
 
   //Position handling & navigation

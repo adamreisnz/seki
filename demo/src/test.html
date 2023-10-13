@@ -201,10 +201,7 @@ onClick('#loadBlank', () => {
   player.reset(playerModes.REPLAY)
 })
 onClick('#loadFile', async () => {
-  const file = await helpers.util.openFile()
-  const {name} = file
-  const content = await file.text()
-  player.load(content, playerModes.REPLAY)
+  player.openFile(playerModes.REPLAY)
 })
 
 //Commands

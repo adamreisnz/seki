@@ -1,4 +1,4 @@
-import {appName, appVersion} from './app.js'
+import {appName, appVersion, kifuFormats} from './app.js'
 import {keyValues, mouseEvents} from './util.js'
 import {gameTypes} from './game.js'
 import {jgfVersion} from './jgf.js'
@@ -88,6 +88,23 @@ export const defaultPlayerConfig = {
     {
       key: keyValues.ESC,
       action: playerActions.CANCEL_ACTION,
+    },
+
+    //File handling
+    {
+      key: 'N',
+      shiftKey: true,
+      action: playerActions.NEW_FILE,
+    },
+    {
+      key: 'O',
+      shiftKey: true,
+      action: playerActions.OPEN_FILE,
+    },
+    {
+      key: 'D',
+      shiftKey: true,
+      action: playerActions.DOWNLOAD_FILE,
     },
 
     //Mode selection
@@ -253,6 +270,9 @@ export const defaultPlayerConfig = {
 
   //Number of moves to skip at a time
   numSkipMoves: 10,
+
+  //Default kifu format
+  defaultKifuFormat: kifuFormats.SGF,
 
   //Allow player configuration settigns to be loaded from game records
   allowPlayerConfig: true,

@@ -159,6 +159,19 @@ export default class PlayerMode extends Base {
 
     //Determine action
     switch (action) {
+
+      //File handling
+      case playerActions.NEW_FILE:
+        player.newFile()
+        return true
+      case playerActions.OPEN_FILE:
+        player.openFile()
+        return true
+      case playerActions.DOWNLOAD_FILE:
+        player.downloadFile()
+        return true
+
+      //Mode selection
       case playerActions.SET_MODE_REPLAY:
         player.setMode(playerModes.REPLAY)
         return true
@@ -171,8 +184,44 @@ export default class PlayerMode extends Base {
       case playerActions.TOGGLE_MODE_EDIT:
         player.toggleMode(playerModes.EDIT)
         return true
+
+      //Board config
       case playerActions.TOGGLE_COORDINATES:
         player.toggleConfig('showCoordinates')
+        return true
+
+      //Navigation
+      case playerActions.GO_TO_NEXT_POSITION:
+        player.setMode(playerModes.REPLAY)
+        player.goToNextPosition()
+        return true
+      case playerActions.GO_TO_PREV_POSITION:
+        player.setMode(playerModes.REPLAY)
+        player.goToPreviousPosition()
+        return true
+      case playerActions.GO_FORWARD_NUM_POSITIONS:
+        player.setMode(playerModes.REPLAY)
+        player.goForwardNumPositions()
+        return true
+      case playerActions.GO_BACK_NUM_POSITIONS:
+        player.setMode(playerModes.REPLAY)
+        player.goBackNumPositions()
+        return true
+      case playerActions.GO_TO_LAST_POSITION:
+        player.setMode(playerModes.REPLAY)
+        player.goToLastPosition()
+        return true
+      case playerActions.GO_TO_FIRST_POSITION:
+        player.setMode(playerModes.REPLAY)
+        player.goToFirstPosition()
+        return true
+      case playerActions.GO_TO_NEXT_FORK:
+        player.setMode(playerModes.REPLAY)
+        player.goToNextFork()
+        return true
+      case playerActions.GO_TO_PREV_FORK:
+        player.setMode(playerModes.REPLAY)
+        player.goToPreviousFork()
         return true
     }
 

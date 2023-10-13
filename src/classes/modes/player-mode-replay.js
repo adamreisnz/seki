@@ -207,35 +207,8 @@ export default class PlayerModeReplay extends PlayerMode {
       return true
     }
 
-    //Get player
-    const {player} = this
-
     //Determine action
     switch (action) {
-      case playerActions.GO_TO_NEXT_POSITION:
-        player.goToNextPosition()
-        return true
-      case playerActions.GO_TO_PREV_POSITION:
-        player.goToPreviousPosition()
-        return true
-      case playerActions.GO_FORWARD_NUM_POSITIONS:
-        player.goForwardNumPositions()
-        return true
-      case playerActions.GO_BACK_NUM_POSITIONS:
-        player.goBackNumPositions()
-        return true
-      case playerActions.GO_TO_LAST_POSITION:
-        player.goToLastPosition()
-        return true
-      case playerActions.GO_TO_FIRST_POSITION:
-        player.goToFirstPosition()
-        return true
-      case playerActions.GO_TO_NEXT_FORK:
-        player.goToNextFork()
-        return true
-      case playerActions.GO_TO_PREV_FORK:
-        player.goToPreviousFork()
-        return true
       case playerActions.SELECT_NEXT_VARIATION:
         this.selectNextVariation()
         return true
