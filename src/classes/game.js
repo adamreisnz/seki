@@ -152,7 +152,7 @@ export default class Game extends Base {
    * Get the game komi
    */
   getKomi() {
-    const {defaultKomi} = this.config
+    const {defaultKomi} = defaultGameInfo
     return this.getInfo('rules.komi', defaultKomi)
   }
 
@@ -168,6 +168,22 @@ export default class Game extends Base {
    */
   getHandicap() {
     return this.getInfo('rules.handicap', 0)
+  }
+
+  /**
+   * Get the black player
+   */
+  getBlackPlayer() {
+    const players = this.getInfo('players')
+    return players.find(player => player.color === stoneColors.BLACK)
+  }
+
+  /**
+   * Get the white player
+   */
+  getWhitePlayer() {
+    const players = this.getInfo('players')
+    return players.find(player => player.color === stoneColors.WHITE)
   }
 
   /**

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Seki - Player demo</title>
+  <title>Seki – Editor Demo</title>
   <meta charset="utf-8">
   <meta name="author" content="Adam Reis">
   <link rel="stylesheet" type="text/css" media="screen" href="css/seki.css">
@@ -13,163 +13,178 @@
 <div class="background"></div>
 <div class="main" id="app">
   <div class="left">
+
+  </div>
+  <div class="center">
     <div id="player">
       <div id="board"></div>
     </div>
   </div>
   <div class="right">
-    <button id="menu" title="Menu">
-      <span class="material-symbols-outlined">menu</span>
-    </button>
-    <!-- <button id="fullscreen" title="Full screen">
-      <span class="material-symbols-outlined">open_in_full</span>
-    </button> -->
-    <button class="btnSwitchMode" mode="edit" title="Edit [E]">
-      <span class="material-symbols-outlined">edit</span>
-    </button>
-    <button class="btnSwitchMode" mode="replay" title="Play [M]">
-      <span class="material-symbols-outlined">fiber_smart_record</span>
-    </button>
-
-
-    <div id="menuDropdown" class="dropdown hidden">
-      <menu>
-        <li class="btnCommand item" cmd="newFile" title="New file [shift-N]">
-          <span class="icon material-symbols-outlined">note</span>
-          New file
-        </li>
-        <li class="btnCommand item" cmd="openFile" title="Open file [shift-O]">
-          <span class="icon material-symbols-outlined">upload</span>
-          Open file
-        </li>
-        <li class="btnCommand item" cmd="downloadFile" title="Download file [shift-D]">
-          <span class="icon material-symbols-outlined">download</span>
-          Download
-        </li>
-        <li id="settings" class="item">
-          <span class="icon material-symbols-outlined">tune</span>
-          Settings
-        </li>
-      </menu>
-    </div>
-    <div id="settingsDropdown" class="dropdown hidden">
-      <div class="settings">
-        <label class="toggleConfig" config="showCoordinates">
-          <input type="checkbox"> Show coordinates
-        </label>
-        <label class="toggleConfig" config="showLastMove">
-          <input type="checkbox"> Show last move
-        </label>
-        <label class="toggleConfig" config="showNextMove">
-          <input type="checkbox"> Show next move
-        </label>
-        <label class="toggleConfig" config="showAllMoveNumbers">
-          <input type="checkbox"> Show all move numbers
-        </label>
-        <label class="toggleConfig" config="showVariationMoveNumbers">
-          <input type="checkbox"> Show variation move numbers
-        </label>
-        <label class="toggleConfig" config="showVariations">
-          <input type="checkbox"> Show variations
-        </label>
-        <label class="toggleConfig" config="rememberVariationPath">
-          <input type="checkbox"> Remember path taken
-        </label>
-        <label class="toggleConfig" config="swapColors">
-          <input type="checkbox"> Swap colors
-        </label>
+    <div class="info">
+      <div class="players">
+        <div class="player black">
+          <div class="name">
+            <div class="color black">黒</div>
+            <span id="playerBlackName">Black</span>
+          </div>
+          <div class="rank" id="playerBlackRank"></div>
+          <div class="score">
+            <div><span id="blackCaptures">0</span> captures</div>
+          </div>
+        </div>
+        <div class="player white">
+          <div class="name">
+            <div class="color white">白</div>
+            <span id="playerWhiteName">White</span>
+          </div>
+          <div class="rank" id="playerWhiteRank"></div>
+          <div class="score">
+            <div><span id="whiteCaptures">0</span> captures</div>
+            <div id="komi"></div>
+          </div>
+        </div>
       </div>
-    </div>
 
-    <div id="replayTools">
-      <button id="startAutoPlay" title="Start auto play [space]">
-        <span class="material-symbols-outlined">autoplay</span>
-      </button>
-      <button id="stopAutoPlay" class="active" title="Stop auto play [space]">
-        <span class="material-symbols-outlined">autostop</span>
-      </button>
-      <br>
-      <br>
-      <button class="btnCommand" cmd="goToPreviousPosition" title="Go back [←]">
-        <span class="material-symbols-outlined">navigate_before</span>
-      </button>
-      <button class="btnCommand" cmd="goToNextPosition" title="Go forward [→]">
-        <span class="material-symbols-outlined">navigate_next</span>
-      </button>
-      <br>
-      <button class="btnCommand" cmd="goBackNumPositions" title="Go back 10 positions">
-        <span class="material-symbols-outlined">replay_10</span>
-      </button>
-      <button class="btnCommand" cmd="goForwardNumPositions" title="Go forward 10 positions">
-        <span class="material-symbols-outlined">forward_10</span>
-      </button>
-      <br>
-      <button class="btnCommand" cmd="goToFirstPosition" title="Go to first position">
-        <span class="material-symbols-outlined">first_page</span>
-      </button>
-      <button class="btnCommand" cmd="goToLastPosition" title="Go to last position">
-        <span class="material-symbols-outlined">last_page</span>
-      </button>
-      <br>
-      <button class="btnCommand" cmd="goToPreviousFork" title="Previous fork">
-        <span class="material-symbols-outlined">fork_left</span>
-      </button>
-      <button class="btnCommand" cmd="goToNextFork" title="Next fork">
-        <span class="material-symbols-outlined">fork_right</span>
-      </button>
-      <br>
-      <button class="btnCommand" cmd="goToPreviousComment" title="Previous comment">
-        <span class="material-symbols-outlined">comment</span>
-      </button>
-      <button class="btnCommand" cmd="goToNextComment" title="Next comment">
-        <span class="material-symbols-outlined">chat</span>
-      </button>
-    </div>
+      <hr>
 
-    <div id="editTools">
-      <button class="btnTool" tool="stone" title="Place stone [S]">
-        <span class="material-symbols-outlined">fiber_manual_record</span>
-      </button>
-      <button class="btnTool" tool="clear" title="Clear [X]">
-        <span class="material-symbols-outlined">ink_eraser</span>
-      </button>
-      <br>
-      <br>
+      <div class="buttons utility">
+        <button class="btnCommand" cmd="newFile" title="New file [shift-N]">
+          <span class="icon material-symbols-outlined">note</span>
+        </button>
+        <button class="btnCommand" cmd="openFile" title="Open file [shift-O]">
+          <span class="icon material-symbols-outlined">upload</span>
+        </button>
+        <button class="btnCommand" cmd="downloadFile" title="Download file [shift-D]">
+          <span class="icon material-symbols-outlined">download</span>
+        </button>
+        <button id="settings">
+          <span class="icon material-symbols-outlined">tune</span>
+        </button>
+        <div id="settingsDropdown" class="dropdown hidden">
+          <div class="settings">
+            <label class="toggleConfig" config="showCoordinates">
+              <input type="checkbox"> Show coordinates
+            </label>
+            <label class="toggleConfig" config="showLastMove">
+              <input type="checkbox"> Show last move
+            </label>
+            <label class="toggleConfig" config="showNextMove">
+              <input type="checkbox"> Show next move
+            </label>
+            <label class="toggleConfig" config="showAllMoveNumbers">
+              <input type="checkbox"> Show all move numbers
+            </label>
+            <label class="toggleConfig" config="showVariationMoveNumbers">
+              <input type="checkbox"> Show variation move numbers
+            </label>
+            <label class="toggleConfig" config="showVariations">
+              <input type="checkbox"> Show variations
+            </label>
+            <label class="toggleConfig" config="rememberVariationPath">
+              <input type="checkbox"> Remember path taken
+            </label>
+            <label class="toggleConfig" config="swapColors">
+              <input type="checkbox"> Swap colors
+            </label>
+          </div>
+        </div>
+      </div>
 
-      <button class="btnTool" tool="triangle" title="Triangle [1]">
-        <span class="material-symbols-outlined">change_history</span>
-      </button>
-      </button><button class="btnTool" tool="square" title="Square [2]">
-        <span class="material-symbols-outlined">square</span>
-      </button>
-      <br>
-      <button class="btnTool" tool="circle" title="Circle [3]">
-        <span class="material-symbols-outlined">circle</span>
-      </button>
-      <button class="btnTool" tool="diamond" title="Diamond [4]">
-        <span class="material-symbols-outlined">diamond</span>
-      </button>
-      <br>
-      <button class="btnTool" tool="letter" title="Letter [5]">
-        <span class="material-symbols-outlined">abc</span>
-      </button>
-      <button class="btnTool" tool="number" title="Number [6]">
-        <span class="material-symbols-outlined">123</span>
-      </button>
-      <br>
-      <button class="btnTool" tool="happy" title="Happy [7]">
-        <span class="material-symbols-outlined">sentiment_satisfied</span>
-      </button>
-      <button class="btnTool" tool="sad" title="Sad [8]">
-        <span class="material-symbols-outlined">sentiment_dissatisfied</span>
-      </button>
-      <br>
-      <button class="btnTool" tool="mark" title="Mark [9]">
-        <span class="material-symbols-outlined">close</span>
-      </button>
-      <button id="clearAllMarkup" title="Remove all markup [SHIFT-X]">
-        <span class="material-symbols-outlined">delete_sweep</span>
-      </button>
+      <hr>
+
+      <div class="buttons editing">
+        <button id="playMoves" class="btnSwitchMode active" mode="replay" title="Play moves [M]">
+          <span class="material-symbols-outlined">fiber_smart_record</span>
+        </button>
+
+        <button class="btnTool" tool="stone" title="Place stone [S]">
+          <span class="material-symbols-outlined">fiber_manual_record</span>
+        </button>
+        <button class="btnTool" tool="clear" title="Clear [X]">
+          <span class="material-symbols-outlined">ink_eraser</span>
+        </button>
+        <button class="btnTool" tool="triangle" title="Triangle [1]">
+          <span class="material-symbols-outlined">change_history</span>
+        </button>
+        </button>
+        <button class="btnTool" tool="square" title="Square [2]">
+          <span class="material-symbols-outlined">square</span>
+        </button>
+        <button class="btnTool" tool="circle" title="Circle [3]">
+          <span class="material-symbols-outlined">circle</span>
+        </button>
+        <button class="btnTool" tool="diamond" title="Diamond [4]">
+          <span class="material-symbols-outlined">diamond</span>
+        </button>
+
+        <br>
+
+        <button class="btnTool" tool="letter" title="Letter [5]">
+          <span class="material-symbols-outlined">abc</span>
+        </button>
+        <button class="btnTool" tool="number" title="Number [6]">
+          <span class="material-symbols-outlined">123</span>
+        </button>
+        <button class="btnTool" tool="happy" title="Happy [7]">
+          <span class="material-symbols-outlined">sentiment_satisfied</span>
+        </button>
+        <button class="btnTool" tool="sad" title="Sad [8]">
+          <span class="material-symbols-outlined">sentiment_dissatisfied</span>
+        </button>
+        <button class="btnTool" tool="mark" title="Mark [9]">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+        <button id="clearAllMarkup" title="Remove all markup [SHIFT-X]">
+          <span class="material-symbols-outlined">delete_sweep</span>
+        </button>
+      </div>
+
+      <hr>
+
+      <div class="buttons navigation">
+        <button class="btnCommand" cmd="goToFirstPosition" title="Go to first position [cmd ←]">
+          <span class="material-symbols-outlined">first_page</span>
+        </button>
+        <button class="btnCommand" cmd="goBackNumPositions" title="Go back 10 positions [shift ←]">
+          <span class="material-symbols-outlined">replay_10</span>
+        </button>
+        <button class="btnCommand" cmd="goToPreviousPosition" title="Go back [←]">
+          <span class="material-symbols-outlined">navigate_before</span>
+        </button>
+
+        <button id="startAutoPlay" title="Start auto play [space]">
+          <span class="material-symbols-outlined">play_arrow</span>
+        </button>
+        <button id="stopAutoPlay" class="active" title="Stop auto play [space]">
+          <span class="material-symbols-outlined">stop</span>
+        </button>
+
+        <button class="btnCommand" cmd="goToNextPosition" title="Go forward [→]">
+          <span class="material-symbols-outlined">navigate_next</span>
+        </button>
+        <button class="btnCommand" cmd="goForwardNumPositions" title="Go forward 10 positions [shift →]">
+          <span class="material-symbols-outlined">forward_10</span>
+        </button>
+        <button class="btnCommand" cmd="goToLastPosition" title="Go to last position [cmd →]">
+          <span class="material-symbols-outlined">last_page</span>
+        </button>
+
+        <br>
+
+        <button class="btnCommand" cmd="goToPreviousFork" title="Go to previous fork [alt ←]">
+          <span class="material-symbols-outlined">fork_left</span>
+        </button>
+        <button class="btnCommand" cmd="goToNextFork" title="Go to next fork [alt →]">
+          <span class="material-symbols-outlined">fork_right</span>
+        </button>
+        <button class="btnCommand" cmd="goToPreviousComment" title="Go to previous comment">
+          <span class="material-symbols-outlined">comment</span>
+        </button>
+        <button class="btnCommand" cmd="goToNextComment" title="Go to next comment">
+          <span class="material-symbols-outlined">chat</span>
+        </button>
+      </div>
     </div>
   </div>
 </div>
@@ -184,7 +199,8 @@ import {
   onClick,
   findByQuery,
   toggleHidden,
-  toggleActive
+  toggleActive,
+  setText
 } from './js/demo.js'
 
 //Audio
@@ -209,20 +225,28 @@ const player = new Player({
 //Bootstrap player
 player.bootstrap(playerElement)
 
-//Menu
-onClick('#menu', () => {
-  toggleHidden('#settingsDropdown', true)
-  toggleHidden('#menuDropdown')
-})
+//Settings
 onClick('#settings', () => {
-  toggleHidden('#settingsDropdown', false)
+  toggleHidden('#settingsDropdown')
+})
+
+//Mode switching
+onClick('.btnSwitchMode', btn => {
+  const mode = btn.getAttribute('mode')
+  player.setMode(mode)
 })
 
 //Commands
 onClick('.btnCommand', btn => {
-  toggleHidden('#menuDropdown', true)
   const cmd = btn.getAttribute('cmd')
   player[cmd]()
+})
+
+//Edit tool selection
+onClick('.btnTool', btn => {
+  const tool = btn.getAttribute('tool')
+  player.setMode(playerModes.EDIT)
+  player.setEditTool(tool)
 })
 
 //Config toggles
@@ -232,54 +256,19 @@ onClick('.toggleConfig', lbl => {
   player.toggleConfig(key, input.checked)
 })
 
-//Mode switching
-onClick('.btnSwitchMode', btn => {
-  toggleHidden('#menuDropdown', true)
-  const mode = btn.getAttribute('mode')
-  player.setMode(mode)
-})
-
-//Editing tool selection
-onClick('.btnTool', btn => {
-  toggleHidden('#menuDropdown', true)
-  const tool = btn.getAttribute('tool')
-  player.setEditTool(tool)
-})
-
 //Auto play
 onClick('#startAutoPlay', () => {
-  toggleHidden('#menuDropdown', true)
   player.startAutoPlay()
-  toggleHidden('#startAutoPlay', true)
-  toggleHidden('#stopAutoPlay', false)
 })
 onClick('#stopAutoPlay', () => {
-  toggleHidden('#menuDropdown', true)
   player.stopAutoPlay()
-  toggleHidden('#stopAutoPlay', true)
-  toggleHidden('#startAutoPlay', false)
 })
 
 //Remove all markup
 onClick('#clearAllMarkup', () => {
-  toggleHidden('#menuDropdown', true)
+  player.setMode(playerModes.EDIT)
   player.clearAllMarkup()
 })
-
-//Handler for mode changes
-const onModeChange = () => {
-  const mode = player.getActiveMode()
-
-  //Toggle mode buttons
-  findByQuery('.btnSwitchMode')
-    .forEach(btn => {
-      toggleHidden(btn, btn.getAttribute('mode') === mode)
-    })
-
-  //Toggle tools
-  toggleHidden('#replayTools', mode !== playerModes.REPLAY)
-  toggleHidden('#editTools', mode !== playerModes.EDIT)
-}
 
 //Handler for edit tool changes
 const onEditToolChange = (event) => {
@@ -301,12 +290,35 @@ findByQuery('.toggleConfig')
   })
 
 //Event handlers
-player.on('modeChange', onModeChange)
+player.on('modeChange', () => {
+  toggleActive('#playMoves', player.isModeActive(playerModes.REPLAY))
+})
 player.on('editToolChange', onEditToolChange)
-player.on('gameLoad', () => player.setMode(playerModes.REPLAY))
+player.on('gameLoad', () => {
+  player.setMode(playerModes.REPLAY)
+  const {game} = player
+  const black = game.getBlackPlayer()
+  const white = game.getWhitePlayer()
+  const komi = game.getKomi()
+  const result = game.getInfo('game.result')
+  setText('#playerBlackName', black.name || 'Black')
+  setText('#playerWhiteName', white.name || 'White')
+  setText('#playerBlackRank', black.rank || '')
+  setText('#playerWhiteRank', white.rank || '')
+  if (komi) {
+    setText('#komi', `+${komi}`)
+  }
+  if (result) {
+    setText('#result', `${result}`)
+  }
+})
+player.on('autoPlayToggle', event => {
+  const {isAutoPlaying} = event.detail
+  toggleHidden('#startAutoPlay', isAutoPlaying)
+  toggleHidden('#stopAutoPlay', !isAutoPlaying)
+})
 
 //Init
-onModeChange()
 toggleHidden('#stopAutoPlay', true)
 </script>
 </body>

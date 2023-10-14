@@ -30,6 +30,15 @@ export function findByClass(className) {
 }
 
 /**
+ * Set text
+ */
+export function setText(query, text) {
+  findByQuery(query).forEach(element => {
+    element.textContent = text
+  })
+}
+
+/**
  * Toggle hidden class on element
  */
 export function toggleHidden(elements, value) {

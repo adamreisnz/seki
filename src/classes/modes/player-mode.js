@@ -60,6 +60,7 @@ export default class PlayerMode extends Base {
 
     //Set player class
     player.addClass(`seki-player-mode-${mode}`)
+    this.debug(`mode activated`)
   }
 
   /**
@@ -78,6 +79,7 @@ export default class PlayerMode extends Base {
 
     //Remove player class
     player.removeClass(`seki-player-mode-${mode}`)
+    this.debug(`mode deactivated`)
   }
 
   /**************************************************************************
@@ -89,7 +91,7 @@ export default class PlayerMode extends Base {
    */
   createBoundListeners(map) {
 
-    //No map  given
+    //No map given
     if (!map) {
       return
     }

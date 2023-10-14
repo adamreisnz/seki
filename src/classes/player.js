@@ -48,6 +48,18 @@ export default class Player extends Base {
     //Initialise
     this.init()
     this.initConfig(config)
+
+    // //Create mode handlers
+    // const modes = [
+    //   playerModes.REPLAY,
+    //   playerModes.EDIT,
+    //   playerModes.STATIC,
+    // ]
+
+    // //Instantiate
+    // for (const mode of modes) {
+    //   this.modeHandlers[mode] = PlayerModeFactory.create(mode, this)
+    // }
   }
 
   /**
@@ -261,7 +273,6 @@ export default class Player extends Base {
     //Set active mode
     this.previousMode = this.activeMode
     this.activeMode = mode
-    this.debug(`${mode} mode activated`)
     this.triggerEvent('modeChange', {mode})
     return
   }

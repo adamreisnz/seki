@@ -258,7 +258,7 @@ export default class PlayerModeReplay extends PlayerMode {
   startAutoPlay() {
 
     //Get data
-    const {game, isAutoPlaying} = this
+    const {player, game, isAutoPlaying} = this
 
     //Already auto playing or no next position?
     if (isAutoPlaying || !game.hasNextPosition()) {
@@ -268,6 +268,9 @@ export default class PlayerModeReplay extends PlayerMode {
     //Toggle flag and queue next move
     this.isAutoPlaying = true
     this.queueNextAutoPlay()
+
+    //Trigger event
+    player.triggerEvent('autoPlayToggle', {isAutoPlaying: true})
   }
 
   /**
@@ -276,7 +279,7 @@ export default class PlayerModeReplay extends PlayerMode {
   stopAutoPlay() {
 
     //Get data
-    const {autoPlayTimeout} = this
+    const {player, autoPlayTimeout} = this
 
     //Clear timeout
     clearTimeout(autoPlayTimeout)
@@ -284,6 +287,9 @@ export default class PlayerModeReplay extends PlayerMode {
     //Clear flags
     this.isAutoPlaying = false
     this.autoPlayTimeout = null
+
+    //Trigger event
+    player.triggerEvent('autoPlayToggle', {isAutoPlaying: false})
   }
 
   /**

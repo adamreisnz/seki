@@ -18,7 +18,7 @@ export default class PlayerModeEdit extends PlayerMode {
   mode = playerModes.EDIT
 
   //Set default editing tool
-  tool = editTools.STONE
+  tool = null
 
   //Used markup labels
   usedMarkupLabels = []
@@ -73,6 +73,18 @@ export default class PlayerModeEdit extends PlayerMode {
 
     //Set default tool
     this.setEditTool(editTools.STONE)
+  }
+
+  /**
+   * Deactivate this mode
+   */
+  deactivate() {
+
+    //Parent method
+    super.deactivate()
+
+    //Clear edit tool
+    this.setEditTool(null)
   }
 
   /**************************************************************************
