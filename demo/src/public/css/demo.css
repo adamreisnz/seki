@@ -21,7 +21,7 @@ html, body {
   background: url('../images/bg.jpg');
   background-size: cover;
   z-index: 1;
-  filter: blur(10px);
+  filter: blur(20px);
 }
 button {
   display: inline-flex;
