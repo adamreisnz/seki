@@ -1,3 +1,11 @@
+import {deepmerge} from './deepmerge.js'
+
+/**
+ * Merge implementation
+ */
+export function merge(...args) {
+  return deepmerge(...args)
+}
 
 /**
  * Copy a given value
@@ -68,34 +76,4 @@ export function set(obj, path, value) {
     }
     obj = obj[keys[i]]
   }
-}
-
-/**
- * Is object check
- */
-export function isObject(item) {
-  return (item && typeof item === 'object' && !Array.isArray(item))
-}
-
-/**
- * Deep merge
- */
-export function merge(target, source) {
-  const output = Object.assign({}, target)
-  if (isObject(target) && isObject(source)) {
-    Object.keys(source).forEach(key => {
-      if (isObject(source[key])) {
-        if (!(key in target)) {
-          Object.assign(output, { [key]: source[key] })
-        }
-        else {
-          output[key] = merge(target[key], source[key])
-        }
-      }
-      else {
-        Object.assign(output, { [key]: source[key] })
-      }
-    })
-  }
-  return output
 }
