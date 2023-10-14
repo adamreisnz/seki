@@ -10,6 +10,18 @@
 html, body {
   height: 100%;
   background: #333;
+  position: relative;
+}
+.background {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100vw;
+  height: 100vh;
+  background: url('../images/bg.jpg');
+  background-size: cover;
+  z-index: 1;
+  filter: blur(10px);
 }
 button {
   display: inline-flex;
@@ -24,17 +36,28 @@ button {
   padding: 0.75rem;
   margin-right: 0.25rem;
   margin-bottom: 0.75rem;
-  border: 1px solid #636674;
+  /* border: 1px solid #636674; */
+  border: 2px solid #ad8e4c;
+  border: 0;
   border-radius: 8px;
-  color: #fff;
+  /* color: #fff; */
+  color: rgba(68, 44, 20, 0.8);
   outline: none;
-  background: #5d5f68;
+  /* background: #5d5f68; */
+  background: #d6ae60;
+  background-size: 40%;
   box-shadow: 1px 1px 5px rgba(0,0,0,.2);
+  transition: all .2s ease;
+}
+button:hover {
+  cursor: pointer;
+  transform: scale(1.05);
 }
 button.active, button:hover {
-  cursor: pointer;
-  background: #8f95a9;
-  border-color: #8f95a9;
+  color: rgb(68, 44, 20);
+  background: #f3cf89;
+  /* background: #8f95a9;
+  border-color: #8f95a9; */
 }
 button:active {
   transform: translateX(1px) translateY(1px);
@@ -59,10 +82,12 @@ p {
 
 /* Demo layout */
 .main {
+  position: relative;
   display: flex;
   padding: 0.5rem;
   height: 100%;
   justify-content: center;
+  z-index: 2;
 }
 .left {
   aspect-ratio: 1 / 1;
