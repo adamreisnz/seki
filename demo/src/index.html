@@ -348,28 +348,38 @@ player.on('gameLoad', () => {
   setText('#playerWhiteName', white.name || 'White')
   setText('#playerBlackRank', black.rank || '')
   setText('#playerWhiteRank', white.rank || '')
-  if (komi) {
-    setText('#komi', `+${komi}`)
-  }
+  setText('#komi', komi ? `+${komi}` : '')
   if (result) {
     toggleHidden('#gameInfo', false)
     toggleHidden('#resultRow', false)
     setText('#result', result)
+  }
+  else {
+    toggleHidden('#resultRow', true)
   }
   if (name) {
     toggleHidden('#gameInfo', false)
     toggleHidden('#nameRow', false)
     setText('#name', name)
   }
+  else {
+    toggleHidden('#nameRow', true)
+  }
   if (dates && dates.length > 0) {
     toggleHidden('#gameInfo', false)
     toggleHidden('#dateRow', false)
     setText('#date', dates[0])
   }
+  else {
+    toggleHidden('#dateRow', true)
+  }
   if (rules.ruleSet) {
     toggleHidden('#gameInfo', false)
     toggleHidden('#rulesRow', false)
     setText('#rules', rules.ruleSet)
+  }
+  else {
+    toggleHidden('#rulesRow', true)
   }
   if (event) {
     const parts = [
@@ -382,6 +392,9 @@ player.on('gameLoad', () => {
       toggleHidden('#eventRow', false)
       setText('#event', parts.join(', '))
     }
+  }
+  else {
+    toggleHidden('#eventRow', true)
   }
 })
 player.on('autoPlayToggle', event => {
