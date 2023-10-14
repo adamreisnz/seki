@@ -45,21 +45,30 @@ export default class Player extends Base {
     //Parent constructor
     super()
 
+    //Create mode handlers
+    this.createModeHandlers()
+
     //Initialise
     this.init()
     this.initConfig(config)
+  }
 
-    // //Create mode handlers
-    // const modes = [
-    //   playerModes.REPLAY,
-    //   playerModes.EDIT,
-    //   playerModes.STATIC,
-    // ]
+  /**
+   * Create mode handlers
+   */
+  createModeHandlers() {
 
-    // //Instantiate
-    // for (const mode of modes) {
-    //   this.modeHandlers[mode] = PlayerModeFactory.create(mode, this)
-    // }
+    //Modes to set up
+    const modes = [
+      playerModes.STATIC,
+      playerModes.REPLAY,
+      playerModes.EDIT,
+    ]
+
+    //Instantiate
+    for (const mode of modes) {
+      this.modeHandlers[mode] = PlayerModeFactory.create(mode, this)
+    }
   }
 
   /**
