@@ -22,23 +22,24 @@
   </div>
   <div class="right">
     <div class="info">
-      <div class="players">
+
+      <div class="block players">
         <div class="player black">
-          <div class="name">
-            <div class="color black">黒</div>
-            <span id="playerBlackName">Black</span>
+          <div class="identity">
+            <div class="color black"></div>
+            <span class="name" id="playerBlackName">Black</span>
           </div>
-          <div class="rank" id="playerBlackRank"></div>
+          <div class="rank" id="playerBlackRank">&nbsp;</div>
           <div class="score">
             <div><span id="blackCaptures">0</span> captures</div>
           </div>
         </div>
         <div class="player white">
-          <div class="name">
-            <div class="color white">白</div>
-            <span id="playerWhiteName">White</span>
+          <div class="identity">
+            <div class="color white"></div>
+            <span class="name" id="playerWhiteName">White</span>
           </div>
-          <div class="rank" id="playerWhiteRank"></div>
+          <div class="rank" id="playerWhiteRank">&nbsp;</div>
           <div class="score">
             <div><span id="whiteCaptures">0</span> captures</div>
             <div id="komi"></div>
@@ -46,9 +47,30 @@
         </div>
       </div>
 
-      <hr>
+      <div class="block game hidden" id="gameInfo">
+        <div class="row hidden" id="nameRow">
+          <div class="label">Name</div>
+          <div class="value" id="name"></div>
+        </div>
+        <div class="row hidden" id="dateRow">
+          <div class="label">Date</div>
+          <div class="value" id="date"></div>
+        </div>
+        <div class="row hidden" id="eventRow">
+          <div class="label">Event</div>
+          <div class="value" id="event"></div>
+        </div>
+        <div class="row hidden" id="rulesRow">
+          <div class="label">Rules</div>
+          <div class="value" id="rules"></div>
+        </div>
+        <div class="row hidden" id="resultRow">
+          <div class="label">Result</div>
+          <div class="value" id="result"></div>
+        </div>
+      </div>
 
-      <div class="buttons utility">
+      <div class="block buttons utility">
         <button class="btnCommand" cmd="newFile" title="New file [shift-N]">
           <span class="icon material-symbols-outlined">note</span>
         </button>
@@ -91,9 +113,7 @@
         </div>
       </div>
 
-      <hr>
-
-      <div class="buttons editing">
+      <div class="block buttons editing">
         <button id="playMoves" class="btnSwitchMode active" mode="replay" title="Play moves [M]">
           <span class="material-symbols-outlined">fiber_smart_record</span>
         </button>
@@ -140,50 +160,50 @@
         </button>
       </div>
 
-      <hr>
+      <div class="block navigation">
+        <div class="buttons">
+          <button class="btnCommand" cmd="goToFirstPosition" title="Go to first position [cmd ←]">
+            <span class="material-symbols-outlined">first_page</span>
+          </button>
+          <button class="btnCommand" cmd="goBackNumPositions" title="Go back 10 positions [shift ←]">
+            <span class="material-symbols-outlined">replay_10</span>
+          </button>
+          <button class="btnCommand" cmd="goToPreviousPosition" title="Go back [←]">
+            <span class="material-symbols-outlined">navigate_before</span>
+          </button>
 
-      <div class="buttons navigation">
-        <button class="btnCommand" cmd="goToFirstPosition" title="Go to first position [cmd ←]">
-          <span class="material-symbols-outlined">first_page</span>
-        </button>
-        <button class="btnCommand" cmd="goBackNumPositions" title="Go back 10 positions [shift ←]">
-          <span class="material-symbols-outlined">replay_10</span>
-        </button>
-        <button class="btnCommand" cmd="goToPreviousPosition" title="Go back [←]">
-          <span class="material-symbols-outlined">navigate_before</span>
-        </button>
+          <button id="startAutoPlay" title="Start auto play [space]">
+            <span class="material-symbols-outlined">play_arrow</span>
+          </button>
+          <button id="stopAutoPlay" class="active" title="Stop auto play [space]">
+            <span class="material-symbols-outlined">stop</span>
+          </button>
 
-        <button id="startAutoPlay" title="Start auto play [space]">
-          <span class="material-symbols-outlined">play_arrow</span>
-        </button>
-        <button id="stopAutoPlay" class="active" title="Stop auto play [space]">
-          <span class="material-symbols-outlined">stop</span>
-        </button>
+          <button class="btnCommand" cmd="goToNextPosition" title="Go forward [→]">
+            <span class="material-symbols-outlined">navigate_next</span>
+          </button>
+          <button class="btnCommand" cmd="goForwardNumPositions" title="Go forward 10 positions [shift →]">
+            <span class="material-symbols-outlined">forward_10</span>
+          </button>
+          <button class="btnCommand" cmd="goToLastPosition" title="Go to last position [cmd →]">
+            <span class="material-symbols-outlined">last_page</span>
+          </button>
 
-        <button class="btnCommand" cmd="goToNextPosition" title="Go forward [→]">
-          <span class="material-symbols-outlined">navigate_next</span>
-        </button>
-        <button class="btnCommand" cmd="goForwardNumPositions" title="Go forward 10 positions [shift →]">
-          <span class="material-symbols-outlined">forward_10</span>
-        </button>
-        <button class="btnCommand" cmd="goToLastPosition" title="Go to last position [cmd →]">
-          <span class="material-symbols-outlined">last_page</span>
-        </button>
+          <br>
 
-        <br>
-
-        <button class="btnCommand" cmd="goToPreviousFork" title="Go to previous fork [alt ←]">
-          <span class="material-symbols-outlined">fork_left</span>
-        </button>
-        <button class="btnCommand" cmd="goToNextFork" title="Go to next fork [alt →]">
-          <span class="material-symbols-outlined">fork_right</span>
-        </button>
-        <button class="btnCommand" cmd="goToPreviousComment" title="Go to previous comment">
-          <span class="material-symbols-outlined">comment</span>
-        </button>
-        <button class="btnCommand" cmd="goToNextComment" title="Go to next comment">
-          <span class="material-symbols-outlined">chat</span>
-        </button>
+          <button class="btnCommand" cmd="goToPreviousFork" title="Go to previous fork [alt ←]">
+            <span class="material-symbols-outlined">fork_left</span>
+          </button>
+          <button class="btnCommand" cmd="goToNextFork" title="Go to next fork [alt →]">
+            <span class="material-symbols-outlined">fork_right</span>
+          </button>
+          <button class="btnCommand" cmd="goToPreviousComment" title="Go to previous comment">
+            <span class="material-symbols-outlined">comment</span>
+          </button>
+          <button class="btnCommand" cmd="goToNextComment" title="Go to next comment">
+            <span class="material-symbols-outlined">chat</span>
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -301,6 +321,11 @@ player.on('gameLoad', () => {
   const white = game.getWhitePlayer()
   const komi = game.getKomi()
   const result = game.getInfo('game.result')
+  const name = game.getInfo('game.name')
+  const dates = game.getInfo('game.dates')
+  const rules = game.getInfo('rules')
+  const event = game.getInfo('event')
+  const source = game.getInfo('source')
   setText('#playerBlackName', black.name || 'Black')
   setText('#playerWhiteName', white.name || 'White')
   setText('#playerBlackRank', black.rank || '')
@@ -309,7 +334,36 @@ player.on('gameLoad', () => {
     setText('#komi', `+${komi}`)
   }
   if (result) {
-    setText('#result', `${result}`)
+    toggleHidden('#gameInfo', false)
+    toggleHidden('#resultRow', false)
+    setText('#result', result)
+  }
+  if (name) {
+    toggleHidden('#gameInfo', false)
+    toggleHidden('#nameRow', false)
+    setText('#name', name)
+  }
+  if (dates && dates.length > 0) {
+    toggleHidden('#gameInfo', false)
+    toggleHidden('#dateRow', false)
+    setText('#date', dates[0])
+  }
+  if (rules.ruleSet) {
+    toggleHidden('#gameInfo', false)
+    toggleHidden('#rulesRow', false)
+    setText('#rules', rules.ruleSet)
+  }
+  if (event) {
+    const parts = [
+      event.name,
+      event.location,
+      event.round
+    ].filter(p => !!p)
+    if (parts.length > 0) {
+      toggleHidden('#gameInfo', false)
+      toggleHidden('#eventRow', false)
+      setText('#event', parts.join(', '))
+    }
   }
 })
 player.on('autoPlayToggle', event => {

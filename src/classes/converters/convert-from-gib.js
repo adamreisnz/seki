@@ -152,7 +152,7 @@ export default class ConvertFromGib extends Converter {
    */
   parseKomi(game, match) {
     const komi = match[1] / 10
-    game.setInfo('rules.komi', komi)
+    game.setKomi(komi)
   }
 
   /**
@@ -160,7 +160,7 @@ export default class ConvertFromGib extends Converter {
    */
   parseDate(game, match) {
     const date = `${match[1]}-${match[2]}-${match[3]}`
-    game.setInfo('game.date', date)
+    game.setInfo('game.dates', [date])
   }
 
   /**

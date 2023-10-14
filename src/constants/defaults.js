@@ -305,7 +305,7 @@ export const defaultTheme = {
   //Board
   board: {
     margin: 0.25, //cells
-    borderWidth: 4, //px
+    borderWidth: 0, //px
     stoneStyle: stoneStyles.SLATE_SHELL,
   },
 

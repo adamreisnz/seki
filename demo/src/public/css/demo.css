@@ -101,18 +101,48 @@ p {
   box-shadow: 1px 1px 5px rgba(0,0,0,.2);
   padding: 1rem;
 }
-.info hr {
-  margin: 1rem 0;
-  height: 0;
+.block {
+  padding: 1rem 0;
+  border-bottom: 1px solid rgba(68, 44, 20, 0.2);
+}
+.block:first-child {
+  padding-top: 0;
+}
+.block:last-child {
+  padding-bottom: 0;
   border: 0;
-  border-top: 1px solid rgba(68, 44, 20, 0.2);
 }
 .players {
   display: flex;
   justify-content: space-between;
 }
 .player {
+  position: relative;
   flex: 0 0 50%;
+  height: 5rem;
+  padding: 0.25rem;
+  border-radius: 14px;
+  background: #f3cf89;
+}
+.player:after {
+  position: absolute;
+  right: 0.5rem;
+  top: -0.5rem;
+  display: block;
+  font-size: 4rem;
+  opacity: 0.03;
+}
+.player.black {
+  margin-right: 0.25rem;
+}
+.player.black:after {
+  content: '黒';
+}
+.player.white:after {
+  content: '白';
+}
+.player.white {
+  margin-left: 0.25rem;
 }
 .player .color {
   display: inline-flex;
@@ -122,20 +152,27 @@ p {
   height: 1.5rem;
   border-radius: 50%;
   margin-right: 0.5rem;
+  box-shadow: 1px 1px 3px rgba(0,0,0,0.2);
 }
 .player .color.black {
-  background: #000;
-  color: rgba(255, 255, 255, 0.2);
+  background: #222;
+  /* color: rgba(255, 255, 255, 0.15); */
 }
 .player .color.white {
   background: #fff;
-  color: rgba(0, 0, 0, 0.07);
+  /* color: rgba(0, 0, 0, 0.075); */
 }
-.player .name {
+.player .identity {
   display: flex;
   align-items: center;
   height: 1.5rem;
   font-size: 1.1rem;
+}
+.player .name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 150px;
 }
 .player .rank {
   font-size: 0.8rem;
@@ -148,13 +185,37 @@ p {
   align-items: center;
   justify-content: space-between;
   padding-top: 1rem;
+  padding-left: 0.25rem;
+  padding-right: 0.25rem;
   font-size: 0.9rem;
 }
 .navigation {
   flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  margin-bottom: -1rem;
 }
 .buttons {
-  margin-bottom: -0.5rem;
+  padding-bottom: 0.5rem;
+}
+
+/* Game info */
+.game {
+  font-size: 0.9rem;
+}
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+.row:last-child {
+  margin: 0;
+}
+.row .label {
+  width: 100px;
+  opacity: 0.5;
 }
 
 /* Settings */

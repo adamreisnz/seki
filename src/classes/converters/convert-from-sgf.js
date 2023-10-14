@@ -352,7 +352,7 @@ export default class ConvertFromSgf extends Converter {
    */
   parseKomi(game, node, key, values) {
     const komi = values[0]
-    game.setInfo('rules.komi', komi)
+    game.setKomi(komi)
   }
 
   /**
@@ -360,7 +360,7 @@ export default class ConvertFromSgf extends Converter {
    */
   parseHandicap(game, node, key, values) {
     const handicap = values[0]
-    game.setInfo('rules.handicap', handicap)
+    game.setHandicap(handicap)
   }
 
   /**
