@@ -344,7 +344,7 @@ export const defaultTheme = {
     //Base
     base: {
       radius(cellSize) {
-        return Math.floor(cellSize / 2) * 0.96
+        return Math.floor(cellSize / 2) * 0.97
       },
       shadow: true,
     },
@@ -413,19 +413,20 @@ export const defaultTheme = {
 
     //Stone shadows
     shadow: {
-      color: 'rgba(40,30,20,0.6)',
+      color: 'rgba(30,20,10,0.55)',
+      scale: 0.97,
       size(cellSize) {
         //NOTE: Globally set on layer, hence no stone color here
         return Math.floor(cellSize / 100)
       },
       blur(cellSize) {
-        return cellSize / 15
+        return cellSize / 14
       },
       offsetX(cellSize) {
-        return Math.ceil(cellSize / 20)
+        return Math.ceil(cellSize / 18)
       },
       offsetY(cellSize) {
-        return Math.ceil(cellSize / 20)
+        return Math.ceil(cellSize / 18)
       },
     },
 
