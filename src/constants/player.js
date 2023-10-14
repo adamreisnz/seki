@@ -50,6 +50,7 @@ export const playerActions = {
   NEW_FILE: 'newFile',
   OPEN_FILE: 'openFile',
   DOWNLOAD_FILE: 'downloadFile',
+  LOAD_FILE_FROM_URL: 'loadFileFromUrl',
 
   //Mode selection
   SET_MODE_REPLAY: 'setModeReplay',

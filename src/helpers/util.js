@@ -84,6 +84,20 @@ export function toggleClass(element, className, value) {
  ***/
 
 /**
+ * Get URL
+ */
+export function getUrl() {
+  let url = prompt('Enter game URL')
+  if (url) {
+    const match = url.match(/https:\/\/online-go\.com\/game\/([0-9]+)/)
+    if (match) {
+      url = `https://online-go.com/api/v1/games/${match[1]}/sgf`
+    }
+  }
+  return url
+}
+
+/**
  * Open file
  */
 export function openFile(accept = `.jgf,.sgf,.gib`) {

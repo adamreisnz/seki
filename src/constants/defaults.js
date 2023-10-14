@@ -106,6 +106,11 @@ export const defaultPlayerConfig = {
       shiftKey: true,
       action: playerActions.DOWNLOAD_FILE,
     },
+    {
+      key: 'U',
+      shiftKey: true,
+      action: playerActions.LOAD_FILE_FROM_URL,
+    },
 
     //Mode selection
     {

@@ -10,6 +10,7 @@ import {
   addClass,
   removeClass,
   openFile,
+  getUrl,
   downloadFile,
   isKeyDownEvent,
   isMouseEvent,
@@ -314,7 +315,7 @@ export default class Player extends Base {
   /**
    * Open file
    */
-  async openFile(mode) {
+  async openFile() {
 
     //Load file
     const file = await openFile()
@@ -322,8 +323,23 @@ export default class Player extends Base {
     const {name} = file
 
     //Trigger event and load data
-    this.triggerEvent('fileOpen', {file, name, data})
-    this.load(data, mode)
+    this.triggerEvent('openFile', {file, name, data})
+    this.load(data)
+  }
+
+  /**
+   * Load file from URL
+   */
+  async loadFileFromUrl() {
+
+    //Load data
+    const url = getUrl()
+    const result = await fetch(url)
+    const data = await result.text()
+
+    //Trigger event and load data
+    this.triggerEvent('loadFileFromUrl', {url, data})
+    this.load(data)
   }
 
   /**
