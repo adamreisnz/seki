@@ -214,8 +214,14 @@ p {
   margin: 0;
 }
 .row .label {
-  width: 100px;
+  width: 70px;
   opacity: 0.5;
+}
+.row .value {
+  max-width: 290px;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
 }
 
 /* Settings */
