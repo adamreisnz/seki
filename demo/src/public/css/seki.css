@@ -11,7 +11,7 @@
   justify-content: center;
 }
 .seki-board {
-  position: absolute;
+  /* position: absolute; */
   visibility: hidden;
   left: 0;
   top: 0;

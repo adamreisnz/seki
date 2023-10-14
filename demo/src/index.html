@@ -12,17 +12,15 @@
 <body lang="en">
 <div class="background"></div>
 <div class="main" id="app">
-  <div class="left">
-
-  </div>
   <div class="center">
-    <div id="player">
-      <div id="board"></div>
+    <div class="wrapper">
+      <div id="player">
+        <div id="board"></div>
+      </div>
     </div>
   </div>
   <div class="right">
-    <div class="info">
-
+    <div class="panel">
       <div class="block players">
         <div class="player black">
           <div class="identity">
@@ -47,6 +45,106 @@
         </div>
       </div>
 
+      <div class="block utility">
+        <div class="buttons">
+          <button class="btnCommand" cmd="newFile" title="New file [shift-N]">
+            <span class="icon material-symbols-outlined">note</span>
+          </button>
+          <button class="btnCommand" cmd="openFile" title="Open file [shift-O]">
+            <span class="icon material-symbols-outlined">upload</span>
+          </button>
+          <button class="btnCommand" cmd="downloadFile" title="Download file [shift-D]">
+            <span class="icon material-symbols-outlined">download</span>
+          </button>
+          <button class="btnCommand" cmd="loadFileFromUrl" title="Load from URL [shift-U]">
+            <span class="icon material-symbols-outlined">http</span>
+          </button>
+          <button id="settings">
+            <span class="icon material-symbols-outlined">tune</span>
+          </button>
+          <div id="settingsDropdown" class="dropdown hidden">
+            <div class="settings">
+              <label class="toggleConfig" config="showCoordinates">
+                <input type="checkbox"> Show coordinates
+              </label>
+              <label class="toggleConfig" config="showLastMove">
+                <input type="checkbox"> Show last move
+              </label>
+              <label class="toggleConfig" config="showNextMove">
+                <input type="checkbox"> Show next move
+              </label>
+              <label class="toggleConfig" config="showAdvancedNavigation">
+                <input type="checkbox"> Show advanced navigation
+              </label>
+              <label class="toggleConfig" config="showAllMoveNumbers">
+                <input type="checkbox"> Show all move numbers
+              </label>
+              <label class="toggleConfig" config="showVariationMoveNumbers">
+                <input type="checkbox"> Show variation move numbers
+              </label>
+              <label class="toggleConfig" config="showVariations">
+                <input type="checkbox"> Show variations
+              </label>
+              <label class="toggleConfig" config="rememberVariationPath">
+                <input type="checkbox"> Remember path taken
+              </label>
+              <label class="toggleConfig" config="swapColors">
+                <input type="checkbox"> Swap colors
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="block editing">
+        <div class="buttons">
+          <button id="playMoves" class="btnSwitchMode active" mode="replay" title="Play moves [M]">
+            <span class="material-symbols-outlined">fiber_smart_record</span>
+          </button>
+
+          <button class="btnTool" tool="stone" title="Place stone [S]">
+            <span class="material-symbols-outlined">fiber_manual_record</span>
+          </button>
+          <button class="btnTool" tool="clear" title="Clear [X]">
+            <span class="material-symbols-outlined">ink_eraser</span>
+          </button>
+          <button class="btnTool" tool="triangle" title="Triangle [1]">
+            <span class="material-symbols-outlined">change_history</span>
+          </button>
+          </button>
+          <button class="btnTool" tool="square" title="Square [2]">
+            <span class="material-symbols-outlined">square</span>
+          </button>
+          <button class="btnTool" tool="circle" title="Circle [3]">
+            <span class="material-symbols-outlined">circle</span>
+          </button>
+          <button class="btnTool" tool="diamond" title="Diamond [4]">
+            <span class="material-symbols-outlined">diamond</span>
+          </button>
+
+          <br>
+
+          <button class="btnTool" tool="letter" title="Letter [5]">
+            <span class="material-symbols-outlined">abc</span>
+          </button>
+          <button class="btnTool" tool="number" title="Number [6]">
+            <span class="material-symbols-outlined">123</span>
+          </button>
+          <button class="btnTool" tool="happy" title="Happy [7]">
+            <span class="material-symbols-outlined">sentiment_satisfied</span>
+          </button>
+          <button class="btnTool" tool="sad" title="Sad [8]">
+            <span class="material-symbols-outlined">sentiment_dissatisfied</span>
+          </button>
+          <button class="btnTool" tool="mark" title="Mark [9]">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+          <button id="clearAllMarkup" title="Remove all markup [SHIFT-X]">
+            <span class="material-symbols-outlined">delete_sweep</span>
+          </button>
+        </div>
+      </div>
+
       <div class="block game hidden" id="gameInfo">
         <div class="row hidden" id="nameRow">
           <div class="label">Name</div>
@@ -68,99 +166,6 @@
           <div class="label">Result</div>
           <div class="value" id="result"></div>
         </div>
-      </div>
-
-      <div class="block buttons utility">
-        <button class="btnCommand" cmd="newFile" title="New file [shift-N]">
-          <span class="icon material-symbols-outlined">note</span>
-        </button>
-        <button class="btnCommand" cmd="openFile" title="Open file [shift-O]">
-          <span class="icon material-symbols-outlined">upload</span>
-        </button>
-        <button class="btnCommand" cmd="downloadFile" title="Download file [shift-D]">
-          <span class="icon material-symbols-outlined">download</span>
-        </button>
-        <button class="btnCommand" cmd="loadFileFromUrl" title="Load from URL [shift-U]">
-          <span class="icon material-symbols-outlined">http</span>
-        </button>
-        <button id="settings">
-          <span class="icon material-symbols-outlined">tune</span>
-        </button>
-        <div id="settingsDropdown" class="dropdown hidden">
-          <div class="settings">
-            <label class="toggleConfig" config="showCoordinates">
-              <input type="checkbox"> Show coordinates
-            </label>
-            <label class="toggleConfig" config="showLastMove">
-              <input type="checkbox"> Show last move
-            </label>
-            <label class="toggleConfig" config="showNextMove">
-              <input type="checkbox"> Show next move
-            </label>
-            <label class="toggleConfig" config="showAllMoveNumbers">
-              <input type="checkbox"> Show all move numbers
-            </label>
-            <label class="toggleConfig" config="showVariationMoveNumbers">
-              <input type="checkbox"> Show variation move numbers
-            </label>
-            <label class="toggleConfig" config="showVariations">
-              <input type="checkbox"> Show variations
-            </label>
-            <label class="toggleConfig" config="rememberVariationPath">
-              <input type="checkbox"> Remember path taken
-            </label>
-            <label class="toggleConfig" config="swapColors">
-              <input type="checkbox"> Swap colors
-            </label>
-          </div>
-        </div>
-      </div>
-
-      <div class="block buttons editing">
-        <button id="playMoves" class="btnSwitchMode active" mode="replay" title="Play moves [M]">
-          <span class="material-symbols-outlined">fiber_smart_record</span>
-        </button>
-
-        <button class="btnTool" tool="stone" title="Place stone [S]">
-          <span class="material-symbols-outlined">fiber_manual_record</span>
-        </button>
-        <button class="btnTool" tool="clear" title="Clear [X]">
-          <span class="material-symbols-outlined">ink_eraser</span>
-        </button>
-        <button class="btnTool" tool="triangle" title="Triangle [1]">
-          <span class="material-symbols-outlined">change_history</span>
-        </button>
-        </button>
-        <button class="btnTool" tool="square" title="Square [2]">
-          <span class="material-symbols-outlined">square</span>
-        </button>
-        <button class="btnTool" tool="circle" title="Circle [3]">
-          <span class="material-symbols-outlined">circle</span>
-        </button>
-        <button class="btnTool" tool="diamond" title="Diamond [4]">
-          <span class="material-symbols-outlined">diamond</span>
-        </button>
-
-        <br>
-
-        <button class="btnTool" tool="letter" title="Letter [5]">
-          <span class="material-symbols-outlined">abc</span>
-        </button>
-        <button class="btnTool" tool="number" title="Number [6]">
-          <span class="material-symbols-outlined">123</span>
-        </button>
-        <button class="btnTool" tool="happy" title="Happy [7]">
-          <span class="material-symbols-outlined">sentiment_satisfied</span>
-        </button>
-        <button class="btnTool" tool="sad" title="Sad [8]">
-          <span class="material-symbols-outlined">sentiment_dissatisfied</span>
-        </button>
-        <button class="btnTool" tool="mark" title="Mark [9]">
-          <span class="material-symbols-outlined">close</span>
-        </button>
-        <button id="clearAllMarkup" title="Remove all markup [SHIFT-X]">
-          <span class="material-symbols-outlined">delete_sweep</span>
-        </button>
       </div>
 
       <div class="block navigation">
@@ -194,16 +199,16 @@
 
           <br>
 
-          <button class="btnCommand" cmd="goToPreviousFork" title="Go to previous fork [alt ←]">
+          <button class="btnCommand advancedNav" cmd="goToPreviousFork" title="Go to previous fork [alt ←]">
             <span class="material-symbols-outlined">fork_left</span>
           </button>
-          <button class="btnCommand" cmd="goToNextFork" title="Go to next fork [alt →]">
+          <button class="btnCommand advancedNav" cmd="goToNextFork" title="Go to next fork [alt →]">
             <span class="material-symbols-outlined">fork_right</span>
           </button>
-          <button class="btnCommand" cmd="goToPreviousComment" title="Go to previous comment">
+          <button class="btnCommand advancedNav" cmd="goToPreviousComment" title="Go to previous comment">
             <span class="material-symbols-outlined">comment</span>
           </button>
-          <button class="btnCommand" cmd="goToNextComment" title="Go to next comment">
+          <button class="btnCommand advancedNav" cmd="goToNextComment" title="Go to next comment">
             <span class="material-symbols-outlined">chat</span>
           </button>
         </div>
@@ -317,6 +322,12 @@ player.on('modeChange', () => {
   toggleActive('#playMoves', player.isModeActive(playerModes.REPLAY))
 })
 player.on('editToolChange', onEditToolChange)
+player.on('config', event => {
+  const {key, value} = event.detail
+  if (key === 'showAdvancedNavigation') {
+    toggleHidden('.advancedNav', !value)
+  }
+})
 player.on('gameLoad', () => {
   player.setMode(playerModes.REPLAY)
   const {game} = player
@@ -377,6 +388,7 @@ player.on('autoPlayToggle', event => {
 
 //Init
 toggleHidden('#stopAutoPlay', true)
+toggleHidden('.advancedNav', !player.getConfig('showAdvancedNavigation'))
 </script>
 </body>
 </html>
