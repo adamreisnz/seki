@@ -87,7 +87,6 @@ export default class ConvertToSgf extends Converter {
     }
 
     //Append game tree
-    console.log(game.root)
     sgf += `\n;`
     sgf += this.parseNode(game.root)
 

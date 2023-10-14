@@ -737,11 +737,6 @@ export default class Board extends Base {
     const {container} = this.elements
     const borderWidth = theme.get('board.borderWidth', 0)
 
-    console.log({
-      availableWidth: container.clientWidth - (2 * borderWidth),
-      availableHeight: container.clientHeight - (2 * borderWidth),
-    })
-
     //Return size of canvas container
     return {
       availableWidth: container.clientWidth - (2 * borderWidth),

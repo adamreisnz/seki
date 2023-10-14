@@ -1309,7 +1309,6 @@ export default class Game extends Base {
    * Generate file name from game info
    */
   getFileName() {
-    console.log(this.info)
 
     //Get info
     const dates = this.getInfo('game.dates')

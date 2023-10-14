@@ -25,9 +25,11 @@
         <div class="player black">
           <div class="identity">
             <div class="color black"></div>
-            <span class="name" id="playerBlackName">Black</span>
+            <div class="nameAndRank">
+              <span class="name" id="playerBlackName">Black</span>
+              <span class="rank" id="playerBlackRank">&nbsp;</span>
+            </div>
           </div>
-          <div class="rank" id="playerBlackRank">&nbsp;</div>
           <div class="score">
             <div><span id="blackCaptures">0</span> captures</div>
           </div>
@@ -35,9 +37,11 @@
         <div class="player white">
           <div class="identity">
             <div class="color white"></div>
-            <span class="name" id="playerWhiteName">White</span>
+            <div class="nameAndRank">
+              <span class="name" id="playerWhiteName">White</span>
+              <span class="rank" id="playerWhiteRank">&nbsp;</span>
+            </div>
           </div>
-          <div class="rank" id="playerWhiteRank">&nbsp;</div>
           <div class="score">
             <div><span id="whiteCaptures">0</span> captures</div>
             <div id="komi"></div>
@@ -47,7 +51,7 @@
 
       <div class="block utility">
         <div class="buttons">
-          <button class="btnCommand" cmd="newFile" title="New file [shift-N]">
+          <button class="btnCommand" cmd="reset" title="New file [shift-N]">
             <span class="icon material-symbols-outlined">note</span>
           </button>
           <button class="btnCommand" cmd="openFile" title="Open file [shift-O]">

@@ -195,13 +195,13 @@ player.load(demo)
 
 //Data loading
 onClick('#loadDemo', () => {
-  player.load(demo, playerModes.REPLAY)
+  player.load(demo)
 })
 onClick('#loadBlank', () => {
-  player.reset(playerModes.REPLAY)
+  player.reset()
 })
 onClick('#loadFile', async () => {
-  player.openFile(playerModes.REPLAY)
+  player.openFile()
 })
 
 //Commands

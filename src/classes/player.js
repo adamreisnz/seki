@@ -50,7 +50,7 @@ export default class Player extends Base {
     this.createModeHandlers()
 
     //Initialise
-    this.init()
+    this.initGame()
     this.initConfig(config)
   }
 
@@ -73,45 +73,17 @@ export default class Player extends Base {
   }
 
   /**
-   * Initialization
+   * Initialise game
    */
-  init() {
+  initGame(game) {
 
     //Create new game and reset path
-    this.game = new Game()
+    this.game = game || new Game()
     this.path = null
 
     //Restricted nodes
     this.restrictedStartNode = null
     this.restrictedEndNode = null
-  }
-
-  /**
-   * Reset player
-   */
-  reset(mode) {
-
-    //Get board and game
-    const {board, config} = this
-
-    //Reset player but preserve config
-    this.init()
-    this.initConfig(config)
-
-    //Get newly created game and go to first position
-    const {game} = this
-    game.goToFirstPosition()
-
-    //Reset board
-    if (board) {
-      board.reset()
-      board.loadConfigFromGame(game)
-    }
-
-    //Mode given? Switch to it
-    if (mode && !this.isModeActive(mode)) {
-      this.setMode(mode)
-    }
   }
 
   /**
@@ -306,13 +278,6 @@ export default class Player extends Base {
    ***/
 
   /**
-   * New file
-   */
-  newFile() {
-    this.reset(playerModes.REPLAY)
-  }
-
-  /**
    * Open file
    */
   async openFile() {
@@ -364,15 +329,33 @@ export default class Player extends Base {
   /**
    * Load game data
    */
-  load(data, mode) {
+  load(data) {
 
     //Create new game
     const game = Game.fromData(data)
-    const {board} = this
 
-    //Set
-    this.game = game
-    this.path = null
+    //Init
+    this.initGame(game)
+    this.processLoadedGame()
+  }
+
+  /**
+   * Reset player
+   */
+  reset() {
+
+    //Reset game
+    this.initGame()
+    this.processLoadedGame()
+  }
+
+  /**
+   * Process loaded game
+   */
+  processLoadedGame() {
+
+    //Get game and board
+    const {game, board} = this
 
     //Load game config and trigger event
     this.loadConfigFromGame(game)
@@ -381,16 +364,11 @@ export default class Player extends Base {
     //Go to first position
     game.goToFirstPosition()
 
-    //Board present?
+    //Reset board
     if (board) {
-      board.removeAll()
+      board.reset()
       board.loadConfigFromGame(game)
       this.processPathChange()
-    }
-
-    //Mode given? Switch to it
-    if (mode && !this.isModeActive(mode)) {
-      this.setMode(mode)
     }
   }
 

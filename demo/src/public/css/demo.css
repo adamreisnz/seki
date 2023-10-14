@@ -132,8 +132,11 @@ p {
 .player {
   position: relative;
   flex: 0 0 calc(50% - 0.25rem);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
   height: 5rem;
-  padding: 0.25rem;
+  padding: 0.5rem;
   border-radius: 14px;
   background: #f3cf89;
 }
@@ -177,8 +180,10 @@ p {
 }
 .player .identity {
   display: flex;
-  align-items: center;
-  height: 1.5rem;
+}
+.player .nameAndRank {
+  display: flex;
+  flex-direction: column;
 }
 .player .name {
   overflow: hidden;
@@ -186,18 +191,20 @@ p {
   white-space: nowrap;
   max-width: 150px;
   font-size: 1rem;
+  height: 20px;
+  margin-top: -3px;
 }
 .player .rank {
   font-size: 0.8rem;
   opacity: 0.5;
-  margin-left: 2rem;
+  margin-bottom: 3px;
 }
 .player .score {
   flex: 0 0 50%;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding-top: 1rem;
+  padding-top: 0.5rem;
   padding-left: 0.25rem;
   padding-right: 0.25rem;
   font-size: 0.9rem;
@@ -212,6 +219,7 @@ p {
 /* Game info */
 .game {
   padding-top: 1rem;
+  padding-left: 0.25rem;
 }
 .row {
   display: flex;
