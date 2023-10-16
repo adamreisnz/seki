@@ -265,14 +265,14 @@ export default class PlayerMode extends Base {
   }
 
   /**
-   * Show hover markup
+   * Create hover markup for a given coordinate
    */
-  showHoverMarkup(x, y, type, text) {
+  createHoverMarkup(x, y, type, text) {
 
     //Get data
     const {board} = this
 
-    //Falling outside of grid or already have a stone?
+    //Falling outside of grid?
     if (!board || !board.isOnBoard(x, y)) {
       return
     }
@@ -282,7 +282,6 @@ export default class PlayerMode extends Base {
       .create(type, board, {text})
 
     //Add to board
-    board.removeAll(boardLayerTypes.HOVER)
     board.add(boardLayerTypes.HOVER, x, y, markup)
   }
 

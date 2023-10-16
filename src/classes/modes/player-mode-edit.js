@@ -114,7 +114,7 @@ export default class PlayerModeEdit extends PlayerMode {
 
     //Get data
     const {board} = this
-    const {x, y} = event.detail
+    const {x, y, drag} = event.detail
 
     //Debug
     this.debug(`click event at (${x},${y})`)
@@ -127,7 +127,7 @@ export default class PlayerModeEdit extends PlayerMode {
 
     //Clear hover layer and edit spot
     this.clearHover()
-    this.edit(x, y)
+    this.edit(x, y, drag)
   }
 
   /**
@@ -223,7 +223,7 @@ export default class PlayerModeEdit extends PlayerMode {
   /**
    * Edit a position
    */
-  edit(x, y) {
+  edit(x, y, drag) {
 
     //Get data
     const {player, game, tool} = this
@@ -410,21 +410,26 @@ export default class PlayerModeEdit extends PlayerMode {
   showHoverMarkup() {
 
     //Check if anything to do
-    const {currentHoverGrid} = this
-    if (!currentHoverGrid) {
+    const {currentHoverGrid, board} = this
+    if (!currentHoverGrid || !board) {
       return
     }
 
     //Get details
-    const {x, y} = currentHoverGrid
+    const {area} = currentHoverGrid
     const type = this.getEditingMarkupType()
     const text = this.getText()
     if (!type) {
       return
     }
 
-    //Parent method
-    super.showHoverMarkup(x, y, type, text)
+    //Remove all from board first and redraw grid
+    board.removeAll(boardLayerTypes.HOVER)
+
+    //Create hover markup for area
+    for (const {x, y} of area) {
+      this.createHoverMarkup(x, y, type, text)
+    }
   }
 
   /**

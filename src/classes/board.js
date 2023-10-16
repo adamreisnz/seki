@@ -570,32 +570,36 @@ export default class Board extends Base {
    * Convert grid coordinate to pixel coordinate
    */
   getAbsX(x) {
-    let offset = this.cutoffLeft ? 0.5 : 0
-    return this.drawMarginHor + Math.round((x + offset) * this.cellSize)
+    const {cutoffLeft, drawMarginHor, cellSize} = this
+    const offset = cutoffLeft ? 0.5 : 0
+    return drawMarginHor + Math.round((x + offset) * cellSize)
   }
 
   /**
    * Convert grid coordinate to pixel coordinate
    */
   getAbsY(y) {
-    let offset = this.cutoffTop ? 0.5 : 0
-    return this.drawMarginVer + Math.round((y + offset) * this.cellSize)
+    const {cutoffTop, drawMarginVer, cellSize} = this
+    const offset = cutoffTop ? 0.5 : 0
+    return drawMarginVer + Math.round((y + offset) * cellSize)
   }
 
   /**
    * Convert pixel coordinate to grid coordinate
    */
   getGridX(absX) {
-    let offset = this.cutoffLeft ? 0.5 : 0
-    return Math.round((absX - this.drawMarginHor) / this.cellSize - offset)
+    const {cutoffLeft, drawMarginHor, cellSize} = this
+    const offset = cutoffLeft ? 0.5 : 0
+    return Math.round((absX - drawMarginHor) / cellSize - offset)
   }
 
   /**
    * Convert pixel coordinate to grid coordinate
    */
   getGridY(absY) {
-    let offset = this.cutoffTop ? 0.5 : 0
-    return Math.round((absY - this.drawMarginVer) / this.cellSize - offset)
+    const {cutoffTop, drawMarginVer, cellSize} = this
+    const offset = cutoffTop ? 0.5 : 0
+    return Math.round((absY - drawMarginVer) / cellSize - offset)
   }
 
   /**

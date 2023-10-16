@@ -36,6 +36,7 @@ export default class Player extends Base {
   mouse = {
     lastX: -1,
     lastY: -1,
+    dragStart: null,
   }
 
   /**
@@ -898,9 +899,24 @@ export default class Player extends Base {
    */
   triggerEvent(type, detail) {
 
+    //No detail provided, just trigger
+    if (!detail) {
+      return super.triggerEvent(type)
+    }
+
     //Append grid coordinates for mouse events
-    if (type && detail && type.match(/^mouse|click|hover/)) {
+    if (type.match(/^mouse|click/)) {
       this.appendCoordinatesToEvent(detail)
+    }
+
+    //Start dragging
+    if (type === 'mousedown') {
+      this.startDragging(detail)
+    }
+
+    //Stop dragging
+    if (type === 'mouseup') {
+      this.stopDragging()
     }
 
     //Trigger grid entry/leave events
@@ -942,6 +958,23 @@ export default class Player extends Base {
   }
 
   /**
+   * Start dragging
+   */
+  startDragging(detail) {
+    const {x, y} = detail
+    if (this.board.isOnBoard(x, y)) {
+      this.mouse.dragStart = {x, y}
+    }
+  }
+
+  /**
+   * Stop dragging
+   */
+  stopDragging() {
+    this.mouse.dragStart = null
+  }
+
+  /**
    * Helper to append coordinates to a mouse event
    */
   appendCoordinatesToEvent(detail) {
@@ -954,6 +987,7 @@ export default class Player extends Base {
     if (!board || !nativeEvent) {
       detail.x = -1
       detail.y = -1
+      detail.area = []
       return
     }
 
@@ -966,12 +1000,43 @@ export default class Player extends Base {
     const absY = offsetY * pixelRatio
 
     //Append coords
-    detail.x = board.getGridX(absX)
-    detail.y = board.getGridY(absY)
+    const x = board.getGridX(absX)
+    const y = board.getGridY(absY)
+    const area = this.getDragArea(x, y)
 
-    //Did we drag?
-    if (nativeEvent.drag) {
-      detail.drag = nativeEvent.drag
+    //Append details
+    Object.assign(detail, {x, y, area})
+  }
+
+  /**
+   * Get drag area
+   */
+  getDragArea(x, y) {
+
+    //Get data
+    const {board, mouse} = this
+    const {dragStart} = mouse
+
+    //Not dragging
+    if (!dragStart) {
+      return [{x, y}]
     }
+
+    //Determine coordinates
+    const fromX = Math.max(0, Math.min(dragStart.x, x))
+    const toX = Math.min(board.width - 1, Math.max(dragStart.x, x))
+    const fromY = Math.max(0, Math.min(dragStart.y, y))
+    const toY = Math.min(board.height - 1, Math.max(dragStart.y, y))
+
+    //Create area
+    const area = []
+    for (let x = fromX; x <= toX; x++) {
+      for (let y = fromY; y <= toY; y++) {
+        area.push({x, y})
+      }
+    }
+
+    //Return area
+    return area
   }
 }
