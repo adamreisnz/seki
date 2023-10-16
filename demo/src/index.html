@@ -69,40 +69,9 @@
           <button id="showInfo" title="View game information">
             <span class="icon material-symbols-outlined">info</span>
           </button>
-          <button id="settings" title="Settings">
+          <button id="showSettings" title="Settings">
             <span class="icon material-symbols-outlined">tune</span>
           </button>
-          <div id="settingsDropdown" class="dropdown hidden">
-            <div class="settings">
-              <label class="toggleConfig" config="showCoordinates">
-                <input type="checkbox"> Show coordinates
-              </label>
-              <label class="toggleConfig" config="showLastMove">
-                <input type="checkbox"> Show last move
-              </label>
-              <label class="toggleConfig" config="showNextMove">
-                <input type="checkbox"> Show next move
-              </label>
-              <label class="toggleConfig" config="showAdvancedNavigation">
-                <input type="checkbox"> Show advanced navigation
-              </label>
-              <label class="toggleConfig" config="showAllMoveNumbers">
-                <input type="checkbox"> Show all move numbers
-              </label>
-              <label class="toggleConfig" config="showVariationMoveNumbers">
-                <input type="checkbox"> Show variation move numbers
-              </label>
-              <label class="toggleConfig" config="showVariations">
-                <input type="checkbox"> Show variations
-              </label>
-              <label class="toggleConfig" config="rememberVariationPath">
-                <input type="checkbox"> Remember path taken
-              </label>
-              <label class="toggleConfig" config="swapColors">
-                <input type="checkbox"> Swap colors
-              </label>
-            </div>
-          </div>
         </div>
       </div>
 
@@ -115,12 +84,8 @@
           <button class="btnTool" tool="stone" title="Place stone [S]">
             <span class="material-symbols-outlined">fiber_manual_record</span>
           </button>
-          <button class="btnTool" tool="clear" title="Clear [X]">
-            <span class="material-symbols-outlined">ink_eraser</span>
-          </button>
           <button class="btnTool" tool="triangle" title="Triangle [1]">
             <span class="material-symbols-outlined">change_history</span>
-          </button>
           </button>
           <button class="btnTool" tool="square" title="Square [2]">
             <span class="material-symbols-outlined">square</span>
@@ -131,27 +96,61 @@
           <button class="btnTool" tool="diamond" title="Diamond [4]">
             <span class="material-symbols-outlined">diamond</span>
           </button>
+          <button class="btnTool" tool="mark" title="Mark [5]">
+            <span class="material-symbols-outlined">close</span>
+          </button>
 
-          <br>
-
-          <button class="btnTool" tool="letter" title="Letter [5]">
+          <button class="btnTool" tool="letter" title="Letter [6]">
             <span class="material-symbols-outlined">abc</span>
           </button>
-          <button class="btnTool" tool="number" title="Number [6]">
+          <button class="btnTool" tool="number" title="Number [7]">
             <span class="material-symbols-outlined">123</span>
           </button>
-          <button class="btnTool" tool="happy" title="Happy [7]">
+          <button class="btnTool" tool="happy" title="Happy [8]">
             <span class="material-symbols-outlined">sentiment_satisfied</span>
           </button>
-          <button class="btnTool" tool="sad" title="Sad [8]">
+          <button class="btnTool" tool="sad" title="Sad [9]">
             <span class="material-symbols-outlined">sentiment_dissatisfied</span>
           </button>
-          <button class="btnTool" tool="mark" title="Mark [9]">
-            <span class="material-symbols-outlined">close</span>
+
+          <button class="btnTool" tool="clear" title="Clear [X]">
+            <span class="material-symbols-outlined">ink_eraser</span>
           </button>
           <button id="clearAllMarkup" title="Remove all markup [SHIFT-X]">
             <span class="material-symbols-outlined">delete_sweep</span>
           </button>
+        </div>
+      </div>
+
+      <div class="block hidden" id="settings">
+        <div class="settings">
+          <label class="toggleConfig" config="showCoordinates">
+            <input type="checkbox"> Show coordinates
+          </label>
+          <label class="toggleConfig" config="showLastMove">
+            <input type="checkbox"> Show last move
+          </label>
+          <label class="toggleConfig" config="showNextMove">
+            <input type="checkbox"> Show next move
+          </label>
+          <label class="toggleConfig" config="showAdvancedNavigation">
+            <input type="checkbox"> Show advanced navigation
+          </label>
+          <label class="toggleConfig" config="showAllMoveNumbers">
+            <input type="checkbox"> Show all move numbers
+          </label>
+          <label class="toggleConfig" config="showVariationMoveNumbers">
+            <input type="checkbox"> Show variation move numbers
+          </label>
+          <label class="toggleConfig" config="showVariations">
+            <input type="checkbox"> Show variations
+          </label>
+          <label class="toggleConfig" config="rememberVariationPath">
+            <input type="checkbox"> Remember path taken
+          </label>
+          <label class="toggleConfig" config="swapColors">
+            <input type="checkbox"> Swap colors
+          </label>
         </div>
       </div>
 
@@ -240,6 +239,7 @@ import {
   findByQuery,
   toggleHidden,
   toggleActive,
+  isActive,
   setText
 } from './js/demo.js'
 
@@ -266,15 +266,24 @@ const player = new Player({
 player.bootstrap(playerElement)
 
 //Settings
-onClick('#settings', () => {
-  toggleHidden('#settingsDropdown')
+onClick('#showSettings', btn => {
+  const active = isActive(btn)
+  console.log(active)
+  toggleActive('#showSettings', !active)
+  toggleHidden('#settings', active)
+  toggleActive('#showInfo', false)
+  toggleHidden('#gameInfo', true)
+  toggleHidden('#tools', !active)
 })
 
 //Game info
-onClick('#showInfo', () => {
-  toggleHidden('#gameInfo')
-  toggleHidden('#tools')
-  toggleActive('#showInfo')
+onClick('#showInfo', btn => {
+  const active = isActive(btn)
+  toggleActive('#showSettings', false)
+  toggleHidden('#settings', true)
+  toggleActive('#showInfo', !active)
+  toggleHidden('#gameInfo', active)
+  toggleHidden('#tools', !active)
 })
 
 //Mode switching

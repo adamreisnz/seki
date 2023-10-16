@@ -59,6 +59,13 @@ export function editClassList(element, action, ...args) {
 }
 
 /**
+ * Has class
+ */
+export function hasClass(element, className) {
+  return element.classList.contains(className)
+}
+
+/**
  * Add class
  */
 export function addClass(element, className) {

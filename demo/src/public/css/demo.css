@@ -28,7 +28,7 @@ html, body {
   background: #f3cf89;
   padding: 0.5rem;
   display: grid;
-  grid-template-columns: repeat(8, 1fr);
+  grid-template-columns: repeat(7, 1fr);
   /* grid-template-rows: 1fr; */
   grid-column-gap: 4px;
   grid-row-gap: 4px;
@@ -218,10 +218,10 @@ p {
 }
 
 /* Game info */
-.gameInfo {
+.gameInfo, .settings {
   border-radius: 8px;
   background: #f3cf89;
-  padding: 0.5rem;
+  padding: 1rem;
 }
 .row {
   display: flex;
@@ -239,25 +239,13 @@ p {
 }
 .row .value {
   font-size: 0.9rem;
-  max-width: 250px;
+  max-width: 235px;
   text-overflow: ellipsis;
   overflow: hidden;
   white-space: nowrap;
 }
 
 /* Settings */
-.settings {
-  padding: 1rem;
-}
-.dropdown {
-  position: absolute;
-  z-index: 9999;
-  background: #fff1d5;
-  border-radius: 3px;
-  box-shadow: 3px 3px 24px rgba(0, 0, 0, .2);
-  transition: all .2s ease;
-  margin-top: 2.5rem;
-}
 label {
   display: flex;
   align-items: center;

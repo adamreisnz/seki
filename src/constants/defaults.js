@@ -214,23 +214,23 @@ export const defaultPlayerConfig = {
     },
     {
       key: '5',
-      action: playerActions.SET_EDIT_TOOL_LETTER,
+      action: playerActions.SET_EDIT_TOOL_MARK,
     },
     {
       key: '6',
-      action: playerActions.SET_EDIT_TOOL_NUMBER,
+      action: playerActions.SET_EDIT_TOOL_LETTER,
     },
     {
       key: '7',
-      action: playerActions.SET_EDIT_TOOL_HAPPY,
+      action: playerActions.SET_EDIT_TOOL_NUMBER,
     },
     {
       key: '8',
-      action: playerActions.SET_EDIT_TOOL_SAD,
+      action: playerActions.SET_EDIT_TOOL_HAPPY,
     },
     {
       key: '9',
-      action: playerActions.SET_EDIT_TOOL_MARK,
+      action: playerActions.SET_EDIT_TOOL_SAD,
     },
   ],
 

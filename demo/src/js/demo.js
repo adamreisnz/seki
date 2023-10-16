@@ -59,6 +59,13 @@ export function toggleActive(elements, value) {
 }
 
 /**
+ * Check if element is active
+ */
+export function isActive(element) {
+  return helpers.util.hasClass(element, 'active')
+}
+
+/**
  * Add click handler
  */
 export function onClick(query, handler) {
