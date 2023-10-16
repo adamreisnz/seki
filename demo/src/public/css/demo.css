@@ -198,6 +198,7 @@ p {
   font-size: 0.8rem;
   opacity: 0.5;
   margin-bottom: 3px;
+  height: 1rem;
 }
 .player .score {
   flex: 0 0 50%;
@@ -217,14 +218,14 @@ p {
 }
 
 /* Game info */
-.game {
-  padding-top: 1rem;
-  padding-left: 0.25rem;
+.gameInfo {
+  border-radius: 8px;
+  background: #f3cf89;
+  padding: 0.5rem;
 }
 .row {
   display: flex;
   align-items: center;
-  /* justify-content: space-between; */
   margin-bottom: 0.5rem;
 }
 .row:last-child {
@@ -238,7 +239,7 @@ p {
 }
 .row .value {
   font-size: 0.9rem;
-  max-width: 270px;
+  max-width: 250px;
   text-overflow: ellipsis;
   overflow: hidden;
   white-space: nowrap;

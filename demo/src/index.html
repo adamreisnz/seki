@@ -27,7 +27,7 @@
             <div class="color black"></div>
             <div class="nameAndRank">
               <span class="name" id="playerBlackName">Black</span>
-              <span class="rank" id="playerBlackRank">&nbsp;</span>
+              <span class="rank" id="playerBlackRank"></span>
             </div>
           </div>
           <div class="score">
@@ -39,7 +39,7 @@
             <div class="color white"></div>
             <div class="nameAndRank">
               <span class="name" id="playerWhiteName">White</span>
-              <span class="rank" id="playerWhiteRank">&nbsp;</span>
+              <span class="rank" id="playerWhiteRank"></span>
             </div>
           </div>
           <div class="score">
@@ -54,16 +54,22 @@
           <button class="btnCommand" cmd="reset" title="New file [shift-N]">
             <span class="icon material-symbols-outlined">note</span>
           </button>
-          <button class="btnCommand" cmd="openFile" title="Open file [shift-O]">
-            <span class="icon material-symbols-outlined">upload</span>
+          <button class="btnCommand" cmd="openFile" title="Upload file from computer [shift-O]">
+            <span class="icon material-symbols-outlined">upload_file</span>
           </button>
-          <button class="btnCommand" cmd="downloadFile" title="Download file [shift-D]">
-            <span class="icon material-symbols-outlined">download</span>
+          <button class="btnCommand" cmd="loadFileFromUrl" title="Upload file from URL [shift-U]">
+            <span class="icon material-symbols-outlined">cloud_upload</span>
           </button>
-          <button class="btnCommand" cmd="loadFileFromUrl" title="Load from URL [shift-U]">
-            <span class="icon material-symbols-outlined">http</span>
+          <button class="btnCommand" cmd="downloadFile" title="Download file to computer [shift-D]">
+            <span class="icon material-symbols-outlined">download_for_offline</span>
           </button>
-          <button id="settings">
+          <!-- <button id="saveInCollection" title="Save file to your collection">
+            <span class="icon material-symbols-outlined">cloud_download</span>
+          </button> -->
+          <button id="showInfo" title="View game information">
+            <span class="icon material-symbols-outlined">info</span>
+          </button>
+          <button id="settings" title="Settings">
             <span class="icon material-symbols-outlined">tune</span>
           </button>
           <div id="settingsDropdown" class="dropdown hidden">
@@ -100,7 +106,7 @@
         </div>
       </div>
 
-      <div class="block editing">
+      <div class="block editing" id="tools">
         <div class="buttons">
           <button id="playMoves" class="btnSwitchMode active" mode="replay" title="Play moves [M]">
             <span class="material-symbols-outlined">fiber_smart_record</span>
@@ -149,26 +155,28 @@
         </div>
       </div>
 
-      <div class="block game hidden" id="gameInfo">
-        <div class="row hidden" id="nameRow">
-          <div class="label">Name</div>
-          <div class="value" id="name"></div>
-        </div>
-        <div class="row hidden" id="dateRow">
-          <div class="label">Date</div>
-          <div class="value" id="date"></div>
-        </div>
-        <div class="row hidden" id="eventRow">
-          <div class="label">Event</div>
-          <div class="value" id="event"></div>
-        </div>
-        <div class="row hidden" id="rulesRow">
-          <div class="label">Rules</div>
-          <div class="value" id="rules"></div>
-        </div>
-        <div class="row hidden" id="resultRow">
-          <div class="label">Result</div>
-          <div class="value" id="result"></div>
+      <div class="block hidden" id="gameInfo">
+        <div class="gameInfo">
+          <div class="row">
+            <div class="label">Name</div>
+            <div class="value" id="name"></div>
+          </div>
+          <div class="row">
+            <div class="label">Date</div>
+            <div class="value" id="date"></div>
+          </div>
+          <div class="row">
+            <div class="label">Event</div>
+            <div class="value" id="event"></div>
+          </div>
+          <div class="row">
+            <div class="label">Rules</div>
+            <div class="value" id="rules"></div>
+          </div>
+          <div class="row">
+            <div class="label">Result</div>
+            <div class="value" id="result"></div>
+          </div>
         </div>
       </div>
 
@@ -262,6 +270,13 @@ onClick('#settings', () => {
   toggleHidden('#settingsDropdown')
 })
 
+//Game info
+onClick('#showInfo', () => {
+  toggleHidden('#gameInfo')
+  toggleHidden('#tools')
+  toggleActive('#showInfo')
+})
+
 //Mode switching
 onClick('.btnSwitchMode', btn => {
   const mode = btn.getAttribute('mode')
@@ -349,38 +364,11 @@ player.on('gameLoad', () => {
   setText('#playerBlackRank', black.rank || '')
   setText('#playerWhiteRank', white.rank || '')
   setText('#komi', komi ? `+${komi}` : '')
-  if (result) {
-    toggleHidden('#gameInfo', false)
-    toggleHidden('#resultRow', false)
-    setText('#result', result)
-  }
-  else {
-    toggleHidden('#resultRow', true)
-  }
-  if (name) {
-    toggleHidden('#gameInfo', false)
-    toggleHidden('#nameRow', false)
-    setText('#name', name)
-  }
-  else {
-    toggleHidden('#nameRow', true)
-  }
-  if (dates && dates.length > 0) {
-    toggleHidden('#gameInfo', false)
-    toggleHidden('#dateRow', false)
-    setText('#date', dates[0])
-  }
-  else {
-    toggleHidden('#dateRow', true)
-  }
-  if (rules.ruleSet) {
-    toggleHidden('#gameInfo', false)
-    toggleHidden('#rulesRow', false)
-    setText('#rules', rules.ruleSet)
-  }
-  else {
-    toggleHidden('#rulesRow', true)
-  }
+  setText('#result', result || '')
+  setText('#name', name || '')
+  setText('#date', (dates && dates.length > 0) ? dates[0] : '')
+  setText('#rules', rules.ruleSet || '')
+  setText('#event', '')
   if (event) {
     const parts = [
       event.name,
@@ -388,13 +376,8 @@ player.on('gameLoad', () => {
       event.round
     ].filter(p => !!p)
     if (parts.length > 0) {
-      toggleHidden('#gameInfo', false)
-      toggleHidden('#eventRow', false)
       setText('#event', parts.join(', '))
     }
-  }
-  else {
-    toggleHidden('#eventRow', true)
   }
 })
 player.on('autoPlayToggle', event => {
