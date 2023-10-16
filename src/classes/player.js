@@ -713,12 +713,12 @@ export default class Player extends Base {
     //Create audio elements
     this.createAudioElements()
 
+    //Bootstrap board
+    this.bootstrapBoard()
+
     //Setup listeners
     this.setupDocumentListeners()
     this.setupElementListeners()
-
-    //Bootstrap board
-    this.bootstrapBoard(element)
   }
 
   /**
@@ -734,6 +734,9 @@ export default class Player extends Base {
     if (!boardElement) {
       return
     }
+
+    //Store
+    this.boardElement = boardElement
 
     //Create board
     const board = new Board()
@@ -828,8 +831,13 @@ export default class Player extends Base {
    */
   setupElementListeners() {
 
-    //Get element
-    const {element} = this
+    //Get board
+    const {board} = this
+    if (!board || !board.elements.board) {
+      return
+    }
+
+    //Get event types
     const eventTypes = [
       'click',
       'wheel',
@@ -840,7 +848,7 @@ export default class Player extends Base {
     ]
 
     //Create event handler
-    this.elementEventHandler = new EventHandler(element)
+    this.elementEventHandler = new EventHandler(board.elements.board)
 
     //Setup listeners
     for (const type of eventTypes) {
