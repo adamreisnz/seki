@@ -1,5 +1,5 @@
 import {getDebug} from '../helpers/util.js'
-import {merge} from '../helpers/object.js'
+import {merge, copy} from '../helpers/object.js'
 
 /**
  * Base class for player, board and theme classes
@@ -37,6 +37,13 @@ export default class Base extends EventTarget {
    */
   initConfig(config, defaultConfig) {
     this.config = merge(defaultConfig, config)
+  }
+
+  /**
+   * Get a copy of config
+   */
+  getConfigCopy() {
+    return copy(this.config)
   }
 
   /**

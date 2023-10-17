@@ -37,6 +37,7 @@ import * as color from './helpers/color.js'
 import * as coordinates from './helpers/coordinates.js'
 import * as grid from './helpers/grid.js'
 import * as object from './helpers/object.js'
+import * as storage from './helpers/storage.js'
 import * as util from './helpers/util.js'
 
 //Create convenience helpers object
@@ -45,6 +46,7 @@ const helpers = {
   coordinates,
   grid,
   object,
+  storage,
   util,
 }
 

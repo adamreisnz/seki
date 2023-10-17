@@ -262,6 +262,12 @@ const player = new Player({
   }
 })
 
+//Load config
+const config = helpers.storage.get('config')
+if (config) {
+  player.loadConfig(config)
+}
+
 //Bootstrap player
 player.bootstrap(playerElement)
 
@@ -356,6 +362,8 @@ player.on('config', event => {
   if (key === 'showAdvancedNavigation') {
     toggleHidden('.advancedNav', !value)
   }
+  const config = player.getConfigCopy()
+  helpers.storage.set('config', config)
 })
 player.on('gameLoad', () => {
   player.setMode(playerModes.REPLAY)
