@@ -222,15 +222,15 @@ export const defaultPlayerConfig = {
     },
     {
       key: '6',
-      action: playerActions.SET_EDIT_TOOL_MARK,
-    },
-    {
-      key: '7',
       action: playerActions.SET_EDIT_TOOL_HAPPY,
     },
     {
-      key: '8',
+      key: '7',
       action: playerActions.SET_EDIT_TOOL_SAD,
+    },
+    {
+      key: '8',
+      action: playerActions.SET_EDIT_TOOL_MARK,
     },
   ],
 

@@ -306,7 +306,12 @@ export default class Player extends Base {
   async loadFileFromUrl() {
 
     //Load data
-    const url = getUrl()
+    const url = getUrl('Enter OGS game URL')
+    if (!url) {
+      return
+    }
+
+    //Load URL
     const result = await fetch(url)
     const data = await result.text()
 

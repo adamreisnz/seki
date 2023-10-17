@@ -93,8 +93,8 @@ export function toggleClass(element, className, value) {
 /**
  * Get URL
  */
-export function getUrl() {
-  let url = prompt('Enter game URL')
+export function getUrl(text = 'Enter URL') {
+  let url = prompt(text)
   if (url) {
     const match = url.match(/https:\/\/online-go\.com\/game\/([0-9]+)/)
     if (match) {
