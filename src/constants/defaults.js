@@ -314,7 +314,7 @@ export const defaultTheme = {
   //Board
   board: {
     margin: 0.25, //cells
-    borderWidth: 0, //px
+    borderWidth: 8, //px
     stoneStyle: stoneStyles.SLATE_SHELL,
   },
 
@@ -322,7 +322,7 @@ export const defaultTheme = {
   coordinates: {
 
     //Board margin factor when showing coordinates
-    margin: 1.5, //cells
+    margin: 1.75, //cells
 
     //Vertical coordinates
     vertical: {
