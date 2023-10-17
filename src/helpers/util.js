@@ -195,6 +195,13 @@ export function isKeyDownEvent(event, binding) {
  ***/
 
 /**
+ * Random integer
+ */
+export function randomInt(min, max) {
+  return Math.floor(Math.random() * (max - min + 1) + min)
+}
+
+/**
  * Throttle a functino call
  */
 export function throttle(fn, delay) {
@@ -205,6 +212,9 @@ export function throttle(fn, delay) {
   }
 }
 
+/**
+ * Date string generator
+ */
 export function dateString(date = new Date()) {
   const day = date.getDate()
   const month = date.getMonth() + 1

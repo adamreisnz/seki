@@ -1,5 +1,6 @@
 import PlayerMode from './player-mode.js'
 import MarkupFactory from '../markup-factory.js'
+import {randomInt} from '../../helpers/util.js'
 import {boardLayerTypes} from '../../constants/board.js'
 import {markupTypes} from '../../constants/markup.js'
 import {playerModes, playerActions} from '../../constants/player.js'
@@ -519,9 +520,13 @@ export default class PlayerModeReplay extends PlayerMode {
     if (outcome.isValid) {
       player.playSound('move')
       if (game.position.hasCaptures()) {
-        setTimeout(() => {
-          player.playSound('capture')
-        }, 150)
+        const num = Math.min(game.position.getTotalCaptureCount(), 10)
+        for (let i = 0; i < num; i++) {
+          setTimeout(() => {
+            player.stopSound('capture')
+            player.playSound('capture')
+          }, 150 + randomInt(30, 90) * i)
+        }
       }
     }
   }

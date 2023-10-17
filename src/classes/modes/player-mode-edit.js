@@ -139,8 +139,8 @@ export default class PlayerModeEdit extends PlayerMode {
     const {board} = this
     const {nativeEvent, isDragging} = event.detail
 
-    //Only process if dragging
-    if (!isDragging) {
+    //Only process if dragging and using free draw tool
+    if (!isDragging || !this.isUsingDrawTool()) {
       return
     }
 
@@ -695,11 +695,19 @@ export default class PlayerModeEdit extends PlayerMode {
   }
 
   /**
-   * Check if using clear
+   * Check if using clear tool
    */
   isUsingClearTool() {
     const {tool} = this
     return tool === editTools.CLEAR
+  }
+
+  /**
+   * Check if using draw tool
+   */
+  isUsingDrawTool() {
+    const {tool} = this
+    return tool === editTools.DRAW
   }
 
   /**

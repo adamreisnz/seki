@@ -319,6 +319,16 @@ export default class GamePosition {
     return this.captures[otherColor].length
   }
 
+  /**
+   * Get total capture count for this position
+   */
+  getTotalCaptureCount() {
+    return (
+      this.captures[stoneColors.BLACK].length +
+      this.captures[stoneColors.WHITE].length
+    )
+  }
+
   /*****************************************************************************
    * Turn control
    ***/

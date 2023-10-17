@@ -803,7 +803,28 @@ export default class Player extends Base {
   playSound(type) {
     const audioElement = this.audioElements[type]
     if (audioElement) {
-      audioElement.play()
+      try {
+        audioElement.play()
+      }
+      catch (error) {
+        //Fall through
+      }
+    }
+  }
+
+  /**
+   * Stop sound
+   */
+  stopSound(type) {
+    const audioElement = this.audioElements[type]
+    if (audioElement) {
+      try {
+        audioElement.pause()
+        audioElement.currentTime = 0
+      }
+      catch (error) {
+        //Fall through
+      }
     }
   }
 
