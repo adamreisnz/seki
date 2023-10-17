@@ -586,13 +586,6 @@ export default class Board extends Base {
   }
 
   /**
-   * Redraw grid layer
-   */
-  redrawGridLayer() {
-    this.redrawLayer(boardLayerTypes.GRID)
-  }
-
-  /**
    * Redraw a grid cell if needed
    */
   redrawGridCell(x, y) {
