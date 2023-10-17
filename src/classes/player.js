@@ -32,9 +32,11 @@ export default class Player extends Base {
   activeMode
   previousMode
 
-  //Mouse coordinates helper vars
+  //Mouse event helper vars
   lastDetail = null
   dragDetail = null
+  isMouseDown = false
+  isDragging = false
 
   /**
    * Constructor
@@ -824,12 +826,18 @@ export default class Player extends Base {
     //Create event handler
     this.documentEventHandler = new EventHandler(document)
 
-    //Setup listeners
+    //Setup listeners that will be propagated
     for (const type of eventTypes) {
       this.documentEventHandler.on(type, (event) => {
         this.triggerEvent(type, {nativeEvent: event})
       })
     }
+
+    //Handle mouse up events that occurred outside of the board element
+    this.documentEventHandler.on('click', () => {
+      this.isMouseDown = false
+      this.isDragging = false
+    })
   }
 
   /**
@@ -914,13 +922,21 @@ export default class Player extends Base {
 
     //Start dragging
     if (type === 'mousedown') {
+      this.isMouseDown = true
       this.startDragging(detail)
+    }
+
+    //Check if dragging
+    if (type === 'mousemove' && this.isMouseDown) {
+      this.isDragging = true
     }
 
     //Stop dragging
     //NOTE: Not using mouseup as it will then not append
     //the correct grid area to the click event detail
     if (type === 'click') {
+      // this.isMouseDown = false
+      // this.isDragging = false
       this.stopDragging()
     }
 
@@ -945,10 +961,15 @@ export default class Player extends Base {
 
     //Get data
     const {lastDetail} = this
-    const {x, y} = detail
+    const {x, y, isDragging} = detail
 
-    //Last coordinates are the same? Ignore
-    if (lastDetail && lastDetail.x === x && lastDetail.y === y) {
+    //Last coordinates are the same? Ignore, unless we started dragging
+    if (
+      lastDetail &&
+      lastDetail.isDragging === isDragging &&
+      lastDetail.x === x &&
+      lastDetail.y === y
+    ) {
       return
     }
 
@@ -1000,7 +1021,7 @@ export default class Player extends Base {
   appendCoordinatesToEvent(detail) {
 
     //Get board
-    const {board} = this
+    const {board, isDragging} = this
     const {nativeEvent} = detail
 
     //Can only do this with a native mouse event
@@ -1025,7 +1046,7 @@ export default class Player extends Base {
     const area = this.getDragArea(x, y)
 
     //Append details
-    Object.assign(detail, {x, y, area})
+    Object.assign(detail, {x, y, area, isDragging})
   }
 
   /**
