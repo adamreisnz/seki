@@ -941,6 +941,15 @@ export default class Player extends Base {
   }
 
   /**
+   * Process an action (pass to mode handler)
+   */
+  processAction(action) {
+    this
+      .getCurrentModeHandler()
+      .processAction(action)
+  }
+
+  /**
    * Trigger an event
    */
   triggerEvent(type, detail) {

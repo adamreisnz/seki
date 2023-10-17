@@ -73,6 +73,10 @@ export const playerActions = {
   GO_TO_PREV_FORK: 'goToPrevFork',
   SELECT_NEXT_VARIATION: 'selectNextVariation',
   SELECT_PREV_VARIATION: 'selectPrevVariation',
+
+  //Auto play
+  START_AUTO_PLAY: 'startAutoPlay',
+  STOP_AUTO_PLAY: 'stopAutoPlay',
   TOGGLE_AUTO_PLAY: 'toggleAutoPlay',
 
   //Editing

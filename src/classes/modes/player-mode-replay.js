@@ -3,7 +3,7 @@ import MarkupFactory from '../markup-factory.js'
 import {randomInt} from '../../helpers/util.js'
 import {boardLayerTypes} from '../../constants/board.js'
 import {markupTypes} from '../../constants/markup.js'
-import {playerModes, playerActions} from '../../constants/player.js'
+import {playerModes} from '../../constants/player.js'
 
 /**
  * Replay game records with this mode
@@ -55,6 +55,7 @@ export default class PlayerModeReplay extends PlayerMode {
     //Extend player
     player.extend('startAutoPlay', mode)
     player.extend('stopAutoPlay', mode)
+    player.extend('toggleAutoPlay', mode)
   }
 
   /**
@@ -192,33 +193,6 @@ export default class PlayerModeReplay extends PlayerMode {
   /**************************************************************************
    * Actions
    ***/
-
-  /**
-   * Process a bound action
-   */
-  processAction(action, event) {
-
-    //Parent method
-    if (super.processAction(action, event)) {
-      return true
-    }
-
-    //Determine action
-    switch (action) {
-      case playerActions.SELECT_NEXT_VARIATION:
-        this.selectNextVariation()
-        return true
-      case playerActions.SELECT_PREV_VARIATION:
-        this.selectPreviousVariation()
-        return true
-      case playerActions.TOGGLE_AUTO_PLAY:
-        this.toggleAutoPlay()
-        return true
-    }
-
-    //No action was performed
-    return false
-  }
 
   /**
    * Select next variation

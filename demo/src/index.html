@@ -248,7 +248,11 @@ import audioMove from './audio/move.wav'
 import audioCapture from './audio/capture.wav'
 
 //Get constants
-const {playerModes, editTools} = constants.player
+const {
+  playerModes,
+  playerActions,
+  editTools
+} = constants.player
 
 //Set debug mode
 helpers.util.setDebug(true)
@@ -319,16 +323,15 @@ onClick('.toggleConfig', lbl => {
 
 //Auto play
 onClick('#startAutoPlay', () => {
-  player.startAutoPlay()
+  player.processAction(playerActions.START_AUTO_PLAY)
 })
 onClick('#stopAutoPlay', () => {
-  player.stopAutoPlay()
+  player.processAction(playerActions.STOP_AUTO_PLAY)
 })
 
 //Remove all markup
 onClick('#removeAllMarkup', () => {
-  player.setMode(playerModes.EDIT)
-  player.removeAllMarkup()
+  player.processAction(playerActions.REMOVE_ALL_MARKUP)
 })
 
 //Set checkboxes to initial toggle value

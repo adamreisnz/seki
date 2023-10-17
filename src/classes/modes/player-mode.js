@@ -2,7 +2,11 @@ import Base from '../base.js'
 import StoneFactory from '../stone-factory.js'
 import MarkupFactory from '../markup-factory.js'
 import {stoneModifierStyles} from '../../constants/stone.js'
-import {playerActions, playerModes} from '../../constants/player.js'
+import {
+  playerActions,
+  playerModes,
+  editTools,
+} from '../../constants/player.js'
 
 /**
  * Base player mode class
@@ -152,8 +156,10 @@ export default class PlayerMode extends Base {
     this.debug(`🎯 action ${action}`)
 
     //Prevent default event
-    const {nativeEvent} = event.detail
-    nativeEvent.preventDefault()
+    if (event) {
+      const {nativeEvent} = event.detail
+      nativeEvent.preventDefault()
+    }
 
     //Get data
     const {player} = this
@@ -226,6 +232,92 @@ export default class PlayerMode extends Base {
       case playerActions.GO_TO_PREV_FORK:
         player.setMode(playerModes.REPLAY)
         player.goToPreviousFork()
+        return true
+
+      //Variation selection
+      case playerActions.SELECT_NEXT_VARIATION:
+        player.setMode(playerModes.REPLAY)
+        player.selectNextVariation()
+        return true
+      case playerActions.SELECT_PREV_VARIATION:
+        player.setMode(playerModes.REPLAY)
+        player.selectPreviousVariation()
+        return true
+
+      //Auto play
+      case playerActions.START_AUTO_PLAY:
+        player.setMode(playerModes.REPLAY)
+        player.startAutoPlay()
+        return true
+      case playerActions.STOP_AUTO_PLAY:
+        player.setMode(playerModes.REPLAY)
+        player.stopAutoPlay()
+        return true
+      case playerActions.TOGGLE_AUTO_PLAY:
+        player.setMode(playerModes.REPLAY)
+        player.toggleAutoPlay()
+        return true
+
+      //Edit tools
+      case playerActions.SET_EDIT_TOOL_STONE:
+        player.setMode(playerModes.EDIT)
+        player.setEditTool(editTools.STONE)
+        return true
+      case playerActions.SET_EDIT_TOOL_BLACK:
+        player.setMode(playerModes.EDIT)
+        player.setEditTool(editTools.BLACK)
+        return true
+      case playerActions.SET_EDIT_TOOL_WHITE:
+        player.setMode(playerModes.EDIT)
+        player.setEditTool(editTools.WHITE)
+        return true
+      case playerActions.SET_EDIT_TOOL_CLEAR:
+        player.setMode(playerModes.EDIT)
+        player.setEditTool(editTools.CLEAR)
+        return true
+      case playerActions.SET_EDIT_TOOL_TRIANGLE:
+        player.setMode(playerModes.EDIT)
+        player.setEditTool(editTools.TRIANGLE)
+        return true
+      case playerActions.SET_EDIT_TOOL_CIRCLE:
+        player.setMode(playerModes.EDIT)
+        player.setEditTool(editTools.CIRCLE)
+        return true
+      case playerActions.SET_EDIT_TOOL_SQUARE:
+        player.setMode(playerModes.EDIT)
+        player.setEditTool(editTools.SQUARE)
+        return true
+      case playerActions.SET_EDIT_TOOL_DIAMOND:
+        player.setMode(playerModes.EDIT)
+        player.setEditTool(editTools.DIAMOND)
+        return true
+      case playerActions.SET_EDIT_TOOL_MARK:
+        player.setMode(playerModes.EDIT)
+        player.setEditTool(editTools.MARK)
+        return true
+      case playerActions.SET_EDIT_TOOL_HAPPY:
+        player.setMode(playerModes.EDIT)
+        player.setEditTool(editTools.HAPPY)
+        return true
+      case playerActions.SET_EDIT_TOOL_SAD:
+        player.setMode(playerModes.EDIT)
+        player.setEditTool(editTools.SAD)
+        return true
+      case playerActions.SET_EDIT_TOOL_LETTER:
+        player.setMode(playerModes.EDIT)
+        player.setEditTool(editTools.LETTER)
+        return true
+      case playerActions.SET_EDIT_TOOL_NUMBER:
+        player.setMode(playerModes.EDIT)
+        player.setEditTool(editTools.NUMBER)
+        return true
+      case playerActions.SET_EDIT_TOOL_DRAW:
+        player.setMode(playerModes.EDIT)
+        player.setEditTool(editTools.DRAW)
+        return true
+      case playerActions.REMOVE_ALL_MARKUP:
+        player.setMode(playerModes.EDIT)
+        player.removeAllMarkup()
         return true
     }
 

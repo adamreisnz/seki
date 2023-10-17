@@ -3,7 +3,6 @@ import {aCharUc, aCharLc} from '../../constants/util.js'
 import {markupTypes} from '../../constants/markup.js'
 import {stoneColors} from '../../constants/stone.js'
 import {
-  playerActions,
   playerModes,
   editTools,
 } from '../../constants/player.js'
@@ -71,9 +70,6 @@ export default class PlayerModeEdit extends PlayerMode {
     //Find used markup labels
     this.resetUsedMarkupLabels()
     this.findUsedMarkupLabels()
-
-    //Set default tool
-    this.setEditTool(editTools.STONE)
   }
 
   /**
@@ -201,69 +197,6 @@ export default class PlayerModeEdit extends PlayerMode {
   /**************************************************************************
    * Actions
    ***/
-
-  /**
-   * Process a bound action
-   */
-  processAction(action, event) {
-
-    //Parent method
-    if (super.processAction(action, event)) {
-      return true
-    }
-
-    //Determine action
-    switch (action) {
-      case playerActions.SET_EDIT_TOOL_STONE:
-        this.setEditTool(editTools.STONE)
-        return true
-      case playerActions.SET_EDIT_TOOL_BLACK:
-        this.setEditTool(editTools.BLACK)
-        return true
-      case playerActions.SET_EDIT_TOOL_WHITE:
-        this.setEditTool(editTools.WHITE)
-        return true
-      case playerActions.SET_EDIT_TOOL_CLEAR:
-        this.setEditTool(editTools.CLEAR)
-        return true
-      case playerActions.SET_EDIT_TOOL_TRIANGLE:
-        this.setEditTool(editTools.TRIANGLE)
-        return true
-      case playerActions.SET_EDIT_TOOL_CIRCLE:
-        this.setEditTool(editTools.CIRCLE)
-        return true
-      case playerActions.SET_EDIT_TOOL_SQUARE:
-        this.setEditTool(editTools.SQUARE)
-        return true
-      case playerActions.SET_EDIT_TOOL_DIAMOND:
-        this.setEditTool(editTools.DIAMOND)
-        return true
-      case playerActions.SET_EDIT_TOOL_MARK:
-        this.setEditTool(editTools.MARK)
-        return true
-      case playerActions.SET_EDIT_TOOL_HAPPY:
-        this.setEditTool(editTools.HAPPY)
-        return true
-      case playerActions.SET_EDIT_TOOL_SAD:
-        this.setEditTool(editTools.SAD)
-        return true
-      case playerActions.SET_EDIT_TOOL_LETTER:
-        this.setEditTool(editTools.LETTER)
-        return true
-      case playerActions.SET_EDIT_TOOL_NUMBER:
-        this.setEditTool(editTools.NUMBER)
-        return true
-      case playerActions.SET_EDIT_TOOL_DRAW:
-        this.setEditTool(editTools.DRAW)
-        return true
-      case playerActions.REMOVE_ALL_MARKUP:
-        this.removeAllMarkup()
-        return true
-    }
-
-    //No action was performed
-    return false
-  }
 
   /**
    * Edit a position
@@ -422,7 +355,7 @@ export default class PlayerModeEdit extends PlayerMode {
   setEditTool(tool) {
 
     //Get data
-    const {board} = this
+    const {board, currentGridDetail} = this
 
     //Special stone tool case
     if (tool === editTools.STONE) {
@@ -440,8 +373,15 @@ export default class PlayerModeEdit extends PlayerMode {
     //Set tool
     this.debug(`🪛 ${tool} tool activated`)
 
-    //Clear hover layer
+    //Clear hover layer and redraw grid
     board.clearHoverLayer()
+
+    //Currently over board? Redraw grid cell in case we
+    //switched from a markup tool to e.g. stone tool
+    if (currentGridDetail) {
+      const {x, y} = currentGridDetail
+      board.redrawGridCell(x, y)
+    }
 
     //Show hover, in case we're still over the board with mouse and
     //the tool changed via hotkey
