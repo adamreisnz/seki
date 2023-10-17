@@ -51,7 +51,7 @@ export default class CoordinatesLayer extends BoardLayer {
     const cellSize = board.getCellSize()
 
     //Get boundary coordinates
-    const xl = Math.ceil((drawMarginHor - cellSize / 2) / 2 + cellSize / 12)
+    const xl = Math.ceil((drawMarginHor - cellSize / 2) / 2 + cellSize / 15)
     const xr = drawWidth - xl
 
     //Get theme data
@@ -95,7 +95,7 @@ export default class CoordinatesLayer extends BoardLayer {
     const cellSize = board.getCellSize()
 
     //Get boundary coordinates
-    const yt = Math.ceil((drawMarginVer - cellSize / 2) / 2 + cellSize / 12)
+    const yt = Math.ceil((drawMarginVer - cellSize / 2) / 2 + cellSize / 15)
     const yb = drawHeight - yt
 
     //Get theme data
