@@ -138,6 +138,9 @@ export default class PlayerModeEdit extends PlayerMode {
     //Get event data
     const {isDragging} = event.detail
 
+    //Show eraser always
+    this.showHoverEraser()
+
     //Dragging? Use edit tool
     if (isDragging) {
       this.edit(event)
@@ -156,7 +159,7 @@ export default class PlayerModeEdit extends PlayerMode {
 
     //Get data
     const {board} = this
-    const {area} = event.detail
+    const {x, y} = event.detail
 
     //Clear current grid detail
     this.currentGridDetail = null
@@ -166,9 +169,9 @@ export default class PlayerModeEdit extends PlayerMode {
       board.clearHoverLayer()
     }
 
-    //If markup tool, clear area to properly redraw grid
+    //If markup tool, clear cell to properly redraw grid
     else {
-      board.clearHoverArea(area)
+      board.clearHoverCell(x, y)
     }
   }
 
@@ -248,6 +251,7 @@ export default class PlayerModeEdit extends PlayerMode {
     //Clear tool
     if (this.isUsingClearTool()) {
       this.eraseCell(x, y)
+      this.showHoverEraser()
     }
 
     //Markup tool
@@ -308,8 +312,13 @@ export default class PlayerModeEdit extends PlayerMode {
    * Remove stone
    */
   removeStone(x, y) {
-    const {game} = this
+
+    //Get data
+    const {game, board} = this
+
+    //Remove from game and board
     game.removeStone(x, y)
+    board.removeStone(x, y)
   }
 
   /**
@@ -343,7 +352,7 @@ export default class PlayerModeEdit extends PlayerMode {
   removeMarkup(x, y) {
 
     //Get data
-    const {game} = this
+    const {game, board} = this
 
     //No markup here
     if (!game.hasMarkup(x, y)) {
@@ -359,8 +368,9 @@ export default class PlayerModeEdit extends PlayerMode {
       this.removeUsedMarkupLabel(text)
     }
 
-    //Remove from game
+    //Remove from game and board
     game.removeMarkup(x, y)
+    board.removeMarkup(x, y)
   }
 
   /**
@@ -369,7 +379,7 @@ export default class PlayerModeEdit extends PlayerMode {
   removeAllMarkup() {
 
     //Get data
-    const {board, game} = this
+    const {game, board} = this
 
     //Reset used markup labels
     this.resetUsedMarkupLabels()
@@ -408,6 +418,7 @@ export default class PlayerModeEdit extends PlayerMode {
 
     //Show hover, in case we're still over the board with mouse and
     //the tool changed via hotkey
+    this.showHoverEraser()
     this.showHoverMarkup()
     this.showHoverStone()
 
@@ -441,7 +452,7 @@ export default class PlayerModeEdit extends PlayerMode {
     //Create hover stone
     const stone = this.createHoverStone(color)
 
-    //Set hover area
+    //Set hover
     board.setHoverCell(x, y, stone)
   }
 
@@ -457,7 +468,7 @@ export default class PlayerModeEdit extends PlayerMode {
     }
 
     //Get details
-    const {area} = currentGridDetail
+    const {x, y} = currentGridDetail
     const type = this.getEditingMarkupType()
     const text = this.getText()
     if (!type) {
@@ -467,8 +478,30 @@ export default class PlayerModeEdit extends PlayerMode {
     //Create markup
     const markup = this.createMarkup(type, {text})
 
-    //Set on hover area
-    board.setHoverArea(area, markup)
+    //Set hover
+    board.setHoverCell(x, y, markup)
+  }
+
+  /**
+   * Show hover eraser
+   */
+  showHoverEraser() {
+
+    //Check if anything to do
+    const {currentGridDetail, board} = this
+    if (!currentGridDetail || !this.isUsingClearTool()) {
+      return
+    }
+
+    //Get details
+    const {x, y} = currentGridDetail
+    const type = markupTypes.MARK
+
+    //Create markup
+    const markup = this.createMarkup(type)
+
+    //Set hover
+    board.setHoverCell(x, y, markup)
   }
 
   /**************************************************************************

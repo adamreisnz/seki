@@ -208,28 +208,28 @@ export const defaultPlayerConfig = {
       key: '3',
       action: playerActions.SET_EDIT_TOOL_CIRCLE,
     },
+    // {
+    //   key: '4',
+    //   action: playerActions.SET_EDIT_TOOL_DIAMOND,
+    // },
     {
       key: '4',
-      action: playerActions.SET_EDIT_TOOL_DIAMOND,
-    },
-    {
-      key: '5',
-      action: playerActions.SET_EDIT_TOOL_MARK,
-    },
-    {
-      key: '6',
       action: playerActions.SET_EDIT_TOOL_LETTER,
     },
     {
-      key: '7',
+      key: '5',
       action: playerActions.SET_EDIT_TOOL_NUMBER,
     },
     {
-      key: '8',
+      key: '6',
+      action: playerActions.SET_EDIT_TOOL_MARK,
+    },
+    {
+      key: '7',
       action: playerActions.SET_EDIT_TOOL_HAPPY,
     },
     {
-      key: '9',
+      key: '8',
       action: playerActions.SET_EDIT_TOOL_SAD,
     },
   ],
@@ -502,15 +502,15 @@ export const defaultTheme = {
       scale: 0.55,
     },
 
+    //Mark
+    mark: {
+      scale: 0.7,
+      lineCap: 'square',
+    },
+
     //Select
     select: {
       scale: 0.55,
-    },
-
-    //Mark
-    mark: {
-      lineCap: 'square',
-      scale: 0.7,
     },
 
     //Happy smiley
