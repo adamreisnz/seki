@@ -30,6 +30,7 @@ export default class Board extends Base {
     boardLayerTypes.STONES,
     boardLayerTypes.SCORE,
     boardLayerTypes.MARKUP,
+    boardLayerTypes.DRAW,
     boardLayerTypes.HOVER,
   ]
 
@@ -603,6 +604,32 @@ export default class Board extends Base {
     this
       .getLayer(boardLayerTypes.GRID)
       .redrawCell(x, y)
+  }
+
+  /**
+   * Free draw on board
+   */
+  freeDraw(x, y) {
+    this
+      .getLayer(boardLayerTypes.DRAW)
+      .drawLine(x, y)
+  }
+
+  /**
+   * Stop free draw
+   */
+  stopFreeDraw() {
+    this.getLayer(boardLayerTypes.DRAW)
+      .stopDrawing()
+  }
+
+  /**
+   * Erase free draw layer
+   */
+  eraseDrawLayer() {
+    this
+      .getLayer(boardLayerTypes.DRAW)
+      .erase()
   }
 
   /*****************************************************************************

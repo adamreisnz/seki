@@ -147,7 +147,10 @@ export default class PlayerModeReplay extends PlayerMode {
   onPathChange() {
 
     //Get data
-    const {game, isAutoPlaying} = this
+    const {game, board, isAutoPlaying} = this
+
+    //Erase draw layer
+    board.eraseDrawLayer()
 
     //Check if auto playing
     if (isAutoPlaying) {

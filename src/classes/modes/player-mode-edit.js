@@ -41,6 +41,7 @@ export default class PlayerModeEdit extends PlayerMode {
     this.createBoundListeners({
       keydown: 'onKeyDown',
       click: 'onClick',
+      mousemove: 'onMouseMove',
       gridEnter: 'onGridEnter',
       gridLeave: 'onGridLeave',
     })
@@ -116,6 +117,9 @@ export default class PlayerModeEdit extends PlayerMode {
     const {board} = this
     const {isDragging} = event.detail
 
+    //Stop free draw
+    board.stopFreeDraw()
+
     //Only process clicks if not dragging
     if (isDragging) {
       return
@@ -124,6 +128,25 @@ export default class PlayerModeEdit extends PlayerMode {
     //Clear hover layer
     board.clearHoverLayer()
     this.edit(event)
+  }
+
+  /**
+   * Mouse move handler
+   */
+  onMouseMove(event) {
+
+    //Get data
+    const {board} = this
+    const {nativeEvent, isDragging} = event.detail
+
+    //Only process if dragging
+    if (!isDragging) {
+      return
+    }
+
+    //Draw directly on drawing layer
+    const {offsetX, offsetY} = nativeEvent
+    board.freeDraw(offsetX, offsetY)
   }
 
   /**
@@ -229,6 +252,9 @@ export default class PlayerModeEdit extends PlayerMode {
         return true
       case playerActions.SET_EDIT_TOOL_NUMBER:
         this.setEditTool(editTools.NUMBER)
+        return true
+      case playerActions.SET_EDIT_TOOL_DRAW:
+        this.setEditTool(editTools.DRAW)
         return true
       case playerActions.REMOVE_ALL_MARKUP:
         this.removeAllMarkup()
@@ -387,6 +413,7 @@ export default class PlayerModeEdit extends PlayerMode {
     //Remove all from game and board
     game.removeAllMarkup()
     board.removeAllMarkup()
+    board.eraseDrawLayer()
   }
 
   /**

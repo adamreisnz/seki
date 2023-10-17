@@ -15,6 +15,7 @@ export const boardLayerTypes = {
   STONES: 'stones',
   SCORE: 'score',
   MARKUP: 'markup',
+  DRAW: 'draw',
   HOVER: 'hover',
 }
 

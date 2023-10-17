@@ -30,6 +30,7 @@ export const editTools = {
   SAD: markupTypes.SAD,
   LETTER: 'letter',
   NUMBER: 'number',
+  DRAW: 'draw',
 
   //Setup
   BLACK: setupTypes.BLACK,
@@ -75,19 +76,20 @@ export const playerActions = {
   TOGGLE_AUTO_PLAY: 'toggleAutoPlay',
 
   //Editing
-  SET_EDIT_TOOL_STONE: 'useEditToolStone',
-  SET_EDIT_TOOL_BLACK: 'useEditToolBlack',
-  SET_EDIT_TOOL_WHITE: 'useEditToolWhite',
-  SET_EDIT_TOOL_CLEAR: 'useEditToolClear',
-  SET_EDIT_TOOL_TRIANGLE: 'useEditToolTriangle',
-  SET_EDIT_TOOL_CIRCLE: 'useEditToolCircle',
-  SET_EDIT_TOOL_SQUARE: 'useEditToolSquare',
-  SET_EDIT_TOOL_DIAMOND: 'useEditToolDiamond',
-  SET_EDIT_TOOL_MARK: 'useEditToolMark',
-  SET_EDIT_TOOL_HAPPY: 'useEditToolHappy',
-  SET_EDIT_TOOL_SAD: 'useEditToolSad',
-  SET_EDIT_TOOL_LETTER: 'useEditToolLetter',
-  SET_EDIT_TOOL_NUMBER: 'useEditToolNumber',
+  SET_EDIT_TOOL_STONE: 'setEditToolStone',
+  SET_EDIT_TOOL_BLACK: 'setEditToolBlack',
+  SET_EDIT_TOOL_WHITE: 'setEditToolWhite',
+  SET_EDIT_TOOL_CLEAR: 'setEditToolClear',
+  SET_EDIT_TOOL_TRIANGLE: 'setEditToolTriangle',
+  SET_EDIT_TOOL_CIRCLE: 'setEditToolCircle',
+  SET_EDIT_TOOL_SQUARE: 'setEditToolSquare',
+  SET_EDIT_TOOL_DIAMOND: 'setEditToolDiamond',
+  SET_EDIT_TOOL_MARK: 'setEditToolMark',
+  SET_EDIT_TOOL_DRAW: 'setEditToolDraw',
+  SET_EDIT_TOOL_HAPPY: 'setEditToolHappy',
+  SET_EDIT_TOOL_SAD: 'setEditToolSad',
+  SET_EDIT_TOOL_LETTER: 'setEditToolLetter',
+  SET_EDIT_TOOL_NUMBER: 'setEditToolNumber',
   REMOVE_ALL_MARKUP: 'removeAllMarkup',
 }
 

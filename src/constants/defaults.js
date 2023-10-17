@@ -232,6 +232,10 @@ export const defaultPlayerConfig = {
       key: '8',
       action: playerActions.SET_EDIT_TOOL_MARK,
     },
+    {
+      key: '9',
+      action: playerActions.SET_EDIT_TOOL_DRAW,
+    },
   ],
 
   //Mouse bindings
@@ -596,6 +600,13 @@ export const defaultTheme = {
         scale: 0.3,
       },
     },
+  },
+
+  //Free draw style
+  draw: {
+    color: '#2688e4',
+    lineWidth: 8,
+    lineCap: 'round',
   },
 
   //Grid
