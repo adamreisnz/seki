@@ -384,6 +384,9 @@ export default class PlayerModeEdit extends PlayerMode {
    */
   setEditTool(tool) {
 
+    //Get data
+    const {board} = this
+
     //Special stone tool case
     if (tool === editTools.STONE) {
       if (this.tool === editTools.BLACK) {
@@ -399,6 +402,9 @@ export default class PlayerModeEdit extends PlayerMode {
 
     //Set tool
     this.debug(`🪛 ${tool} tool activated`)
+
+    //Clear hover layer
+    board.clearHoverLayer()
 
     //Show hover, in case we're still over the board with mouse and
     //the tool changed via hotkey

@@ -146,7 +146,7 @@ p {
   top: -0.5rem;
   display: block;
   font-size: 4rem;
-  opacity: 0.03;
+  opacity: 0.05;
 }
 .player.black {
   margin-right: 0.25rem;
@@ -180,10 +180,15 @@ p {
 }
 .player .identity {
   display: flex;
+  align-items: center;
+  margin-top: -5px;
+  margin-bottom: 5px;
 }
 .player .nameAndRank {
   display: flex;
   flex-direction: column;
+  justify-content: center;
+  height: 35px;
 }
 .player .name {
   overflow: hidden;
@@ -192,13 +197,10 @@ p {
   max-width: 150px;
   font-size: 1rem;
   height: 20px;
-  margin-top: -3px;
 }
 .player .rank {
   font-size: 0.8rem;
   opacity: 0.5;
-  margin-bottom: 3px;
-  height: 1rem;
 }
 .player .score {
   flex: 0 0 50%;
