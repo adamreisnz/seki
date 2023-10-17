@@ -80,10 +80,15 @@ export default class PlayerModePlay extends PlayerMode {
 
     //Get data
     const {game, board} = this
+
+    //Already a stone in place?
     const {x, y} = event.detail
-    const color = game.getTurn()
+    if (game.hasStone(x, y)) {
+      return
+    }
 
     //Create hover stone
+    const color = game.getTurn()
     const stone = this.createHoverStone(color)
 
     //Set hover cell, but clear whole layer first due to shadows

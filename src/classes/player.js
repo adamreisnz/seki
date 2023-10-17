@@ -644,6 +644,13 @@ export default class Player extends Base {
   }
 
   /**
+   * Get capture count
+   */
+  getCaptureCount() {
+    return this.game.getCaptureCount()
+  }
+
+  /**
    * Score the current game position
    */
   // scoreGame() {

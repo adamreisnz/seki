@@ -279,6 +279,16 @@ export default class GamePosition {
   }
 
   /**
+   * Check if captures occurred in this position
+   */
+  hasCaptures() {
+    return (
+      this.captures[stoneColors.BLACK].length > 0 ||
+      this.captures[stoneColors.WHITE].length > 0
+    )
+  }
+
+  /**
    * Set captures for a color (expects array with capture object coordinates)
    */
   setCaptures(color, captures) {

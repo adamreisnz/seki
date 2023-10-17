@@ -507,7 +507,7 @@ export default class PlayerModeReplay extends PlayerMode {
   playMove(x, y) {
 
     //Get player
-    const {player} = this
+    const {player, game} = this
 
     //Not allowed
     if (!player.getConfig('allowMovesInReplayMode')) {
@@ -518,6 +518,11 @@ export default class PlayerModeReplay extends PlayerMode {
     const outcome = player.playMove(x, y)
     if (outcome.isValid) {
       player.playSound('move')
+      if (game.position.hasCaptures()) {
+        setTimeout(() => {
+          player.playSound('capture')
+        }, 150)
+      }
     }
   }
 
@@ -532,11 +537,14 @@ export default class PlayerModeReplay extends PlayerMode {
       return
     }
 
-    //Get data
+    //Already a stone in place?
     const {x, y} = event.detail
-    const color = game.getTurn()
+    if (game.hasStone(x, y)) {
+      return
+    }
 
     //Create hover stone
+    const color = game.getTurn()
     const stone = this.createHoverStone(color)
 
     //Set hover cell, but clear whole layer first due to shadows

@@ -334,6 +334,11 @@ findByQuery('.toggleConfig')
   })
 
 //Event handlers
+player.on('pathChange', () => {
+  const {black, white} = player.getCaptureCount()
+  setText('#blackCaptures', black)
+  setText('#whiteCaptures', white)
+})
 player.on('modeChange', () => {
   toggleActive('#playMoves', player.isModeActive(playerModes.REPLAY))
 })
