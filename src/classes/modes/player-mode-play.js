@@ -38,13 +38,8 @@ export default class PlayerModePlay extends PlayerMode {
     const {board} = this
     const {x, y} = event.detail
 
-    //Did the click fall outside of the board grid?
-    if (!board || !board.isOnBoard(x, y)) {
-      return
-    }
-
     //Play move
-    this.clearHover()
+    board.clearHoverLayer()
     this.playMove(x, y)
   }
 
@@ -59,7 +54,8 @@ export default class PlayerModePlay extends PlayerMode {
    * On grid leave
    */
   onGridLeave() {
-    this.clearHover()
+    const {board} = this
+    board.clearHoverLayer()
   }
 
   /**************************************************************************
@@ -83,11 +79,15 @@ export default class PlayerModePlay extends PlayerMode {
   showHoverStone(event) {
 
     //Get data
-    const {game} = this
+    const {game, board} = this
     const {x, y} = event.detail
     const color = game.getTurn()
 
-    //Parent method
-    super.showHoverStone(x, y, color)
+    //Create hover stone
+    const stone = this.createHoverStone(color)
+
+    //Set hover cell, but clear whole layer first due to shadows
+    board.clearHoverLayer()
+    board.setHoverCell(x, y, stone)
   }
 }

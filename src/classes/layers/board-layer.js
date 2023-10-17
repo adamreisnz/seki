@@ -180,6 +180,11 @@ export default class BoardLayer {
     const object = this.grid.get(x, y)
     const {context} = this
 
+    //No object
+    if (!object) {
+      return
+    }
+
     //Draw it
     if (Array.isArray(object)) {
       object.forEach(obj => obj.draw(context, x, y))
@@ -197,6 +202,11 @@ export default class BoardLayer {
     //Get object
     const object = this.grid.get(x, y)
     const {context} = this
+
+    //No object
+    if (!object) {
+      return
+    }
 
     //Draw it
     if (Array.isArray(object)) {

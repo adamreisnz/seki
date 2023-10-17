@@ -630,6 +630,34 @@ export default class Game extends Base {
    ***/
 
   /**
+   * Get markup on coordinates
+   */
+  getMarkup(x, y) {
+    const {position} = this
+    return position.markup.get(x, y)
+  }
+
+  /**
+   * Check if there is markup at the given coordinate for the current position
+   */
+  hasMarkup(x, y, markup) {
+    const {position} = this
+    if (typeof markup === 'undefined') {
+      return position.markup.has(x, y)
+    }
+    return position.markup.is(x, y, markup)
+  }
+
+  /**
+   * Check if we have markup in a given area
+   */
+  hasMarkupInArea(area) {
+    return area.some(({x, y}) => {
+      return this.hasMarkup(x, y)
+    })
+  }
+
+  /**
    * Add markup
    */
   addMarkup(x, y, markup) {
@@ -639,9 +667,6 @@ export default class Game extends Base {
       this.debug(`already has markup of type ${markup.type} on (${x},${y})`)
       return
     }
-
-    //Debug
-    this.debug(`adding ${markup.type} markup to (${x},${y})`)
 
     //Add
     const {position, node} = this
@@ -660,9 +685,6 @@ export default class Game extends Base {
       return
     }
 
-    //Debug
-    this.debug(`removing markup from (${x},${y})`)
-
     //Remove
     const {position, node} = this
     node.removeMarkup(x, y)
@@ -670,22 +692,51 @@ export default class Game extends Base {
   }
 
   /**
-   * Get markup on coordinates
+   * Remove markup from area
    */
-  getMarkup(x, y) {
-    const {position} = this
-    return position.markup.get(x, y)
+  removeMarkupFromArea(area) {
+    for (const {x, y} of area) {
+      if (this.hasMarkup(x, y)) {
+        this.removeMarkup(x, y)
+      }
+    }
   }
 
   /**
-   * Check if there is markup at the given coordinate for the current position
+   * Remove all markup from position
    */
-  hasMarkup(x, y, markup) {
+  removeAllMarkup() {
+
+    //Remove all markup
+    const {position, node} = this
+    node.removeAllMarkupInstructions()
+    position.markup.clear()
+  }
+
+  /**
+   * Get stone on coordinates
+   */
+  getStone(x, y) {
     const {position} = this
-    if (typeof markup === 'undefined') {
-      return position.markup.has(x, y)
+    return position.stones.get(x, y)
+  }
+
+  /**
+   * Check if there is a stone at given coordinates
+   */
+  hasStone(x, y, color) {
+    const {position} = this
+    if (typeof color === 'undefined') {
+      return position.stones.has(x, y)
     }
-    return position.markup.is(x, y, markup)
+    return position.stones.is(x, y, color)
+  }
+
+  /**
+   * Check if we have one or more stones in a given area
+   */
+  hasStonesInArea(area) {
+    return area.some(({x, y}) => this.hasStone(x, y))
   }
 
   /**
@@ -774,22 +825,14 @@ export default class Game extends Base {
   }
 
   /**
-   * Get stone on coordinates
+   * Remove stones from area
    */
-  getStone(x, y) {
-    const {position} = this
-    return position.stones.get(x, y)
-  }
-
-  /**
-   * Check if there is a stone at given coordinates
-   */
-  hasStone(x, y, color) {
-    const {position} = this
-    if (typeof color === 'undefined') {
-      return position.stones.has(x, y)
+  removeStonesFromArea(area) {
+    for (const {x, y} of area) {
+      if (this.hasStone(x, y)) {
+        this.removeStone(x, y)
+      }
     }
-    return position.stones.is(x, y, color)
   }
 
   /**

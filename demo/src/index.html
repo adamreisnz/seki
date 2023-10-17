@@ -113,10 +113,10 @@
             <span class="material-symbols-outlined">sentiment_dissatisfied</span>
           </button>
 
-          <button class="btnTool" tool="clear" title="Clear [X]">
+          <button class="btnTool" tool="clear" title="Remove markup or stones [X]">
             <span class="material-symbols-outlined">ink_eraser</span>
           </button>
-          <button id="clearAllMarkup" title="Remove all markup [SHIFT-X]">
+          <button id="removeAllMarkup" title="Remove all markup [SHIFT-X]">
             <span class="material-symbols-outlined">delete_sweep</span>
           </button>
         </div>
@@ -266,7 +266,6 @@ player.bootstrap(playerElement)
 //Settings
 onClick('#showSettings', btn => {
   const active = isActive(btn)
-  console.log(active)
   toggleActive('#showSettings', !active)
   toggleHidden('#settings', active)
   toggleActive('#showInfo', false)
@@ -319,21 +318,10 @@ onClick('#stopAutoPlay', () => {
 })
 
 //Remove all markup
-onClick('#clearAllMarkup', () => {
+onClick('#removeAllMarkup', () => {
   player.setMode(playerModes.EDIT)
-  player.clearAllMarkup()
+  player.removeAllMarkup()
 })
-
-//Handler for edit tool changes
-const onEditToolChange = (event) => {
-  const {tool} = event.detail
-
-  //Toggle tool buttons
-  findByQuery('.btnTool')
-    .forEach(btn => {
-      toggleActive(btn, btn.getAttribute('tool') === tool)
-    })
-}
 
 //Set checkboxes to initial toggle value
 findByQuery('.toggleConfig')
@@ -347,7 +335,15 @@ findByQuery('.toggleConfig')
 player.on('modeChange', () => {
   toggleActive('#playMoves', player.isModeActive(playerModes.REPLAY))
 })
-player.on('editToolChange', onEditToolChange)
+player.on('editToolChange', (event) => {
+  const {tool} = event.detail
+
+  //Toggle tool buttons
+  findByQuery('.btnTool')
+    .forEach(btn => {
+      toggleActive(btn, btn.getAttribute('tool') === tool)
+    })
+})
 player.on('config', event => {
   const {key, value} = event.detail
   if (key === 'showAdvancedNavigation') {

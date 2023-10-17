@@ -1,7 +1,6 @@
 import Base from '../base.js'
 import StoneFactory from '../stone-factory.js'
 import MarkupFactory from '../markup-factory.js'
-import {boardLayerTypes} from '../../constants/board.js'
 import {stoneModifierStyles} from '../../constants/stone.js'
 import {playerActions, playerModes} from '../../constants/player.js'
 
@@ -239,19 +238,20 @@ export default class PlayerMode extends Base {
    ***/
 
   /**
-   * Show a hover stone
+   * Create markup
    */
-  showHoverStone(x, y, color) {
+  createMarkup(type, data) {
+    const {board} = this
+    return MarkupFactory.create(type, board, data)
+  }
+
+  /**
+   * Create a hover stone with shadow
+   */
+  createHoverStone(color) {
 
     //Get data
-    const {game, board} = this
-
-    //Falling outside of grid or already have a stone?
-    if (!board || !board.isOnBoard(x, y) || game.hasStone(x, y)) {
-      return
-    }
-
-    //Get style
+    const {board} = this
     const style = board.theme.get('stone.style')
 
     //Create stone and shadow
@@ -259,75 +259,7 @@ export default class PlayerMode extends Base {
     const copy = StoneFactory.createCopy(stone, stoneModifierStyles.HOVER)
     const shadow = StoneFactory.createShadow(copy)
 
-    //Add to board
-    board.eraseLayer(boardLayerTypes.HOVER)
-    board.add(boardLayerTypes.HOVER, x, y, [shadow, copy])
-  }
-
-  /**
-   * Create hover markup for a given coordinate
-   */
-  createHoverMarkup(x, y, type, text) {
-
-    //Get data
-    const {board} = this
-
-    //Falling outside of grid?
-    if (!board || !board.isOnBoard(x, y)) {
-      return
-    }
-
-    //Create markup
-    const markup = MarkupFactory
-      .create(type, board, {text})
-
-    //Add to board
-    board.add(boardLayerTypes.HOVER, x, y, markup)
-  }
-
-  /**
-   * Clear hover layer
-   */
-  clearHover() {
-
-    //Get data
-    const {board} = this
-
-    //Check if board and layer are there
-    if (!board || !board.hasLayer(boardLayerTypes.HOVER)) {
-      return
-    }
-
-    //Remove all items
-    board.removeAll(boardLayerTypes.HOVER)
-  }
-
-  /**
-   * Redraw a grid cell
-   */
-  redrawGridCell(x, y) {
-
-    //Redraw grid cell
-    const {board} = this
-
-    //Falling outside of grid or already have a stone?
-    if (!board || !board.isOnBoard(x, y)) {
-      return
-    }
-
-    //Stone here, not needed
-    if (board.has(boardLayerTypes.STONES, x, y)) {
-      return
-    }
-
-    //Markup here, keep as is
-    if (board.has(boardLayerTypes.MARKUP, x, y)) {
-      return
-    }
-
-    //Redraw cell
-    board
-      .getLayer(boardLayerTypes.GRID)
-      .redrawCell(x, y)
+    //Return
+    return [shadow, copy]
   }
 }

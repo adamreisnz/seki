@@ -500,6 +500,111 @@ export default class Board extends Base {
     return (width && height && drawWidth && drawHeight)
   }
 
+  /**************************************************************************
+   * Helper to perform common actions on specific layers
+   ***/
+
+  /**
+   * Set a specific hover cell
+   */
+  setHoverCell(x, y, object) {
+    this.add(boardLayerTypes.HOVER, x, y, object)
+  }
+
+  /**
+   * Add objects to the hover layer
+   */
+  setHoverArea(area, object) {
+    for (const {x, y} of area) {
+      this.setHoverCell(x, y, object)
+    }
+  }
+
+  /**
+   * Clear a specific hover cell
+   */
+  clearHoverCell(x, y) {
+    this.remove(boardLayerTypes.HOVER, x, y)
+    this.redrawGridCell(x, y)
+  }
+
+  /**
+   * Clear a hover area
+   */
+  clearHoverArea(area) {
+    for (const {x, y} of area) {
+      this.clearHoverCell(x, y)
+    }
+  }
+
+  /**
+   * Clear entire hover layer
+   */
+  clearHoverLayer() {
+    this.removeAll(boardLayerTypes.HOVER)
+  }
+
+  /**
+   * Remove markup from a specific cell
+   */
+  removeMarkup(x, y) {
+    this.remove(boardLayerTypes.MARKUP, x, y)
+    this.redrawGridCell(x, y)
+  }
+
+  /**
+   * Remove markup from area
+   */
+  removeMarkupFromArea(area) {
+    for (const {x, y} of area) {
+      this.removeMarkup(x, y)
+    }
+  }
+
+  /**
+   * Remove all markup
+   */
+  removeAllMarkup() {
+    this.removeAll(boardLayerTypes.MARKUP)
+  }
+
+  /**
+   * Remove stone from a specific cell
+   */
+  removeStone(x, y) {
+    this.remove(boardLayerTypes.STONES, x, y)
+  }
+
+  /**
+   * Remove stones from area
+   */
+  removeStonesFromArea(area) {
+    for (const {x, y} of area) {
+      this.removeStone(x, y)
+    }
+  }
+
+  /**
+   * Redraw a grid cell if needed
+   */
+  redrawGridCell(x, y) {
+
+    //Stone here, not needed
+    if (this.has(boardLayerTypes.STONES, x, y)) {
+      return
+    }
+
+    //Markup here, keep as is
+    if (this.has(boardLayerTypes.MARKUP, x, y)) {
+      return
+    }
+
+    //Redraw cell
+    this
+      .getLayer(boardLayerTypes.GRID)
+      .redrawCell(x, y)
+  }
+
   /*****************************************************************************
    * Drawing helpers
    ***/
@@ -590,7 +695,8 @@ export default class Board extends Base {
   getGridX(absX) {
     const {cutoffLeft, drawMarginHor, cellSize} = this
     const offset = cutoffLeft ? 0.5 : 0
-    return Math.round((absX - drawMarginHor) / cellSize - offset)
+    const x = Math.round((absX - drawMarginHor) / cellSize - offset)
+    return Object.is(x, -0) ? 0 : x
   }
 
   /**
@@ -599,7 +705,8 @@ export default class Board extends Base {
   getGridY(absY) {
     const {cutoffTop, drawMarginVer, cellSize} = this
     const offset = cutoffTop ? 0.5 : 0
-    return Math.round((absY - drawMarginVer) / cellSize - offset)
+    const y = Math.round((absY - drawMarginVer) / cellSize - offset)
+    return Object.is(y, -0) ? 0 : y
   }
 
   /**

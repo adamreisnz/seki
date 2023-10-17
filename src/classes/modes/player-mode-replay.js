@@ -107,12 +107,12 @@ export default class PlayerModeReplay extends PlayerMode {
   onMouseWheel(event) {
 
     //Get data
-    const {player} = this
+    const {player, board} = this
     const {nativeEvent} = event.detail
     const action = player.getActionForMouseEvent(nativeEvent)
 
     //Clear hover
-    this.clearHover()
+    board.clearHoverLayer()
 
     //Process action
     if (action) {
@@ -129,17 +129,8 @@ export default class PlayerModeReplay extends PlayerMode {
     const {board, game} = this
     const {x, y} = event.detail
 
-    //Debug
-    this.debug(`click event at (${x},${y})`)
-
-    //Did the click fall outside of the board grid?
-    if (!board || !board.isOnBoard(x, y)) {
-      this.debug(`position (${x},${y}) is outside of board grid`)
-      return
-    }
-
-    //Clear hover
-    this.clearHover()
+    //Clear hover layer
+    board.clearHoverLayer()
 
     //Clicked on move variation, select that variation
     if (game.isMoveVariation(x, y)) {
@@ -190,7 +181,8 @@ export default class PlayerModeReplay extends PlayerMode {
    * On grid leave
    */
   onGridLeave() {
-    this.clearHover()
+    const {board} = this
+    board.clearHoverLayer()
   }
 
   /**************************************************************************
@@ -316,7 +308,7 @@ export default class PlayerModeReplay extends PlayerMode {
   renderMarkers() {
 
     //Get data
-    const {player, game} = this
+    const {player, game, board} = this
     const {node} = game
 
     //Get settings
@@ -327,8 +319,8 @@ export default class PlayerModeReplay extends PlayerMode {
     const showAllMoveNumbers = player.getConfig('showAllMoveNumbers')
     const showVariationMoveNumbers = player.getConfig('showVariationMoveNumbers')
 
-    //Clear hover and last move markers
-    this.clearHover()
+    //Clear hover layer and last move markers
+    board.clearHoverLayer()
     this.clearMarkers()
 
     //Show sibling variations
@@ -500,10 +492,7 @@ export default class PlayerModeReplay extends PlayerMode {
     }
 
     //Remove markers
-    markers.forEach(({x, y}) => {
-      board.remove(boardLayerTypes.MARKUP, x, y)
-      this.redrawGridCell(x, y)
-    })
+    markers.forEach(({x, y}) => board.removeMarkup(x, y))
 
     //Reset markers array
     this.markers = []
@@ -535,7 +524,7 @@ export default class PlayerModeReplay extends PlayerMode {
   showHoverStone(event) {
 
     //Check if needed
-    const {player, game} = this
+    const {player, game, board} = this
     if (!player.getConfig('allowMovesInReplayMode')) {
       return
     }
@@ -544,7 +533,11 @@ export default class PlayerModeReplay extends PlayerMode {
     const {x, y} = event.detail
     const color = game.getTurn()
 
-    //Parent method
-    super.showHoverStone(x, y, color)
+    //Create hover stone
+    const stone = this.createHoverStone(color)
+
+    //Set hover cell, but clear whole layer first due to shadows
+    board.clearHoverLayer()
+    board.setHoverCell(x, y, stone)
   }
 }

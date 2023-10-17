@@ -192,7 +192,7 @@ export const defaultPlayerConfig = {
     {
       key: 'X',
       shiftKey: true,
-      action: playerActions.CLEAR_ALL_MARKUP,
+      action: playerActions.REMOVE_ALL_MARKUP,
     },
 
     //Markup tool selection

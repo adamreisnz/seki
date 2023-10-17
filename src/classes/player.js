@@ -32,12 +32,9 @@ export default class Player extends Base {
   activeMode
   previousMode
 
-  //Mouse coordinates helper var
-  mouse = {
-    lastX: -1,
-    lastY: -1,
-    dragStart: null,
-  }
+  //Mouse coordinates helper vars
+  lastDetail = null
+  dragDetail = null
 
   /**
    * Constructor
@@ -51,6 +48,7 @@ export default class Player extends Base {
     this.createModeHandlers()
 
     //Initialise
+    this.initBoard()
     this.initGame()
     this.initConfig(config)
   }
@@ -71,6 +69,13 @@ export default class Player extends Base {
     for (const mode of modes) {
       this.modeHandlers[mode] = PlayerModeFactory.create(mode, this)
     }
+  }
+
+  /**
+   * Initialise board
+   */
+  initBoard(board) {
+    this.board = board || new Board()
   }
 
   /**
@@ -649,7 +654,7 @@ export default class Player extends Base {
   //   const captures = scorer.getCaptures()
 
   //   //Remove all markup, and set captures and points
-  //   this.board.layers.markup.removeAll()
+  //   this.board.removeAllMarkup()
   //   this.board.layers.score.setAll(points, captures)
 
   //   //Broadcast score
@@ -834,7 +839,7 @@ export default class Player extends Base {
 
     //Get board
     const {board} = this
-    if (!board || !board.elements.board) {
+    if (!board.elements.board) {
       return
     }
 
@@ -899,15 +904,13 @@ export default class Player extends Base {
    */
   triggerEvent(type, detail) {
 
-    //No detail provided, just trigger
-    if (!detail) {
-      return super.triggerEvent(type)
+    //No detail provided, or not a mouse event, just trigger
+    if (!detail || !type.match(/^mouse|click/)) {
+      return super.triggerEvent(type, detail)
     }
 
-    //Append grid coordinates for mouse events
-    if (type.match(/^mouse|click/)) {
-      this.appendCoordinatesToEvent(detail)
-    }
+    //Append grid coordinates
+    this.appendCoordinatesToEvent(detail)
 
     //Start dragging
     if (type === 'mousedown') {
@@ -915,13 +918,20 @@ export default class Player extends Base {
     }
 
     //Stop dragging
-    if (type === 'mouseup') {
+    //NOTE: Not using mouseup as it will then not append
+    //the correct grid area to the click event detail
+    if (type === 'click') {
       this.stopDragging()
     }
 
     //Trigger grid entry/leave events
     if (type === 'mousemove' || type === 'mouseout') {
       this.triggerGridEvent(detail)
+    }
+
+    //Don't propagate if there are no valid coordinates
+    if (!this.hasValidCoordinates(detail)) {
+      return
     }
 
     //Parent method
@@ -934,27 +944,37 @@ export default class Player extends Base {
   triggerGridEvent(detail) {
 
     //Get data
-    const {mouse} = this
-    const {lastX, lastY} = mouse
+    const {lastDetail} = this
     const {x, y} = detail
 
     //Last coordinates are the same? Ignore
-    if (lastX === x && lastY === y) {
+    if (lastDetail && lastDetail.x === x && lastDetail.y === y) {
       return
     }
 
-    //Remember last coordinates
-    mouse.lastX = x
-    mouse.lastY = y
+    //Remember last detail
+    this.lastDetail = detail
 
-    //Trigger grid leave event
-    this.triggerEvent('gridLeave', Object.assign({}, detail, {
-      x: lastX,
-      y: lastY,
-    }))
+    //Trigger grid leave event if there was a valid previous detail
+    if (this.hasValidCoordinates(lastDetail)) {
+      this.triggerEvent('gridLeave', lastDetail)
+    }
 
-    //Trigger grid entry event
-    this.triggerEvent('gridEnter', detail)
+    //Trigger grid entry event if there is a valid new detail
+    if (this.hasValidCoordinates(detail)) {
+      this.triggerEvent('gridEnter', detail)
+    }
+  }
+
+  /**
+   * Check if an event detail has valid coordinates
+   */
+  hasValidCoordinates(detail) {
+    if (!detail) {
+      return false
+    }
+    const {x, y} = detail
+    return this.board.isOnBoard(x, y)
   }
 
   /**
@@ -963,7 +983,7 @@ export default class Player extends Base {
   startDragging(detail) {
     const {x, y} = detail
     if (this.board.isOnBoard(x, y)) {
-      this.mouse.dragStart = {x, y}
+      this.dragDetail = detail
     }
   }
 
@@ -971,7 +991,7 @@ export default class Player extends Base {
    * Stop dragging
    */
   stopDragging() {
-    this.mouse.dragStart = null
+    this.dragDetail = null
   }
 
   /**
@@ -983,8 +1003,8 @@ export default class Player extends Base {
     const {board} = this
     const {nativeEvent} = detail
 
-    //Can only do this with a board and mouse event
-    if (!board || !nativeEvent) {
+    //Can only do this with a native mouse event
+    if (!nativeEvent) {
       detail.x = -1
       detail.y = -1
       detail.area = []
@@ -1014,19 +1034,18 @@ export default class Player extends Base {
   getDragArea(x, y) {
 
     //Get data
-    const {board, mouse} = this
-    const {dragStart} = mouse
+    const {board, dragDetail} = this
 
     //Not dragging
-    if (!dragStart) {
+    if (!dragDetail) {
       return [{x, y}]
     }
 
     //Determine coordinates
-    const fromX = Math.max(0, Math.min(dragStart.x, x))
-    const toX = Math.min(board.width - 1, Math.max(dragStart.x, x))
-    const fromY = Math.max(0, Math.min(dragStart.y, y))
-    const toY = Math.min(board.height - 1, Math.max(dragStart.y, y))
+    const fromX = Math.max(0, Math.min(dragDetail.x, x))
+    const toX = Math.min(board.width - 1, Math.max(dragDetail.x, x))
+    const fromY = Math.max(0, Math.min(dragDetail.y, y))
+    const toY = Math.min(board.height - 1, Math.max(dragDetail.y, y))
 
     //Create area
     const area = []

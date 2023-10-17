@@ -589,6 +589,13 @@ export default class GameNode {
     return Array.isArray(this.markup)
   }
 
+  /**
+   * Remove all markup instructions
+   */
+  removeAllMarkupInstructions() {
+    delete this.markup
+  }
+
   /**************************************************************************
    * Setup helpers
    ***/

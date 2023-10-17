@@ -88,6 +88,6 @@ export const playerActions = {
   SET_EDIT_TOOL_SAD: 'useEditToolSad',
   SET_EDIT_TOOL_LETTER: 'useEditToolLetter',
   SET_EDIT_TOOL_NUMBER: 'useEditToolNumber',
-  CLEAR_ALL_MARKUP: 'clearAllMarkup',
+  REMOVE_ALL_MARKUP: 'removeAllMarkup',
 }
 

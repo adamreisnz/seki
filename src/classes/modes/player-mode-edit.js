@@ -2,7 +2,6 @@ import PlayerMode from './player-mode.js'
 import {aCharUc, aCharLc} from '../../constants/util.js'
 import {markupTypes} from '../../constants/markup.js'
 import {stoneColors} from '../../constants/stone.js'
-import {boardLayerTypes} from '../../constants/board.js'
 import {
   playerActions,
   playerModes,
@@ -23,8 +22,9 @@ export default class PlayerModeEdit extends PlayerMode {
   //Used markup labels
   usedMarkupLabels = []
 
-  //Track hover coordinates so we can update the hover object
-  currentHoverGrid
+  //Track current and last gird event detail
+  currentGridDetail
+  lastGridDetail
 
   /**
    * Constructor
@@ -56,7 +56,7 @@ export default class PlayerModeEdit extends PlayerMode {
 
     //Extend player
     player.extend('setEditTool', mode)
-    player.extend('clearAllMarkup', mode)
+    player.extend('removeAllMarkup', mode)
   }
 
   /**
@@ -114,20 +114,11 @@ export default class PlayerModeEdit extends PlayerMode {
 
     //Get data
     const {board} = this
-    const {x, y, drag} = event.detail
+    const {area} = event.detail
 
-    //Debug
-    this.debug(`click event at (${x},${y})`)
-
-    //Did the click fall outside of the board grid?
-    if (!board || !board.isOnBoard(x, y)) {
-      this.debug(`position (${x},${y}) is outside of board grid`)
-      return
-    }
-
-    //Clear hover layer and edit spot
-    this.clearHover()
-    this.edit(x, y, drag)
+    //Clear hover layer and edit area
+    board.clearHoverLayer()
+    this.edit(area)
   }
 
   /**
@@ -135,8 +126,9 @@ export default class PlayerModeEdit extends PlayerMode {
    */
   onGridEnter(event) {
 
-    //Track coordinates
-    this.currentHoverGrid = event.detail
+    //Update grid detail
+    this.lastGridDetail = this.currentGridDetail
+    this.currentGridDetail = event.detail
 
     //Show hover markup or stone
     this.showHoverMarkup()
@@ -149,11 +141,21 @@ export default class PlayerModeEdit extends PlayerMode {
   onGridLeave(event) {
 
     //Get data
-    const {x, y} = event.detail
+    const {board} = this
+    const {area} = event.detail
 
-    //Clear hover and redraw grid cell (for removed markup)
-    this.clearHover()
-    this.redrawGridCell(x, y)
+    //Clear current grid detail
+    this.currentGridDetail = null
+
+    //Using stone tool? Clear whole layer
+    if (this.isUsingStoneTool()) {
+      board.clearHoverLayer()
+    }
+
+    //If markup tool, clear area to properly redraw grid
+    else {
+      board.clearHoverArea(area)
+    }
   }
 
   /**************************************************************************
@@ -211,8 +213,8 @@ export default class PlayerModeEdit extends PlayerMode {
       case playerActions.SET_EDIT_TOOL_NUMBER:
         this.setEditTool(editTools.NUMBER)
         return true
-      case playerActions.CLEAR_ALL_MARKUP:
-        this.clearAllMarkup()
+      case playerActions.REMOVE_ALL_MARKUP:
+        this.removeAllMarkup()
         return true
     }
 
@@ -223,74 +225,28 @@ export default class PlayerModeEdit extends PlayerMode {
   /**
    * Edit a position
    */
-  edit(x, y, drag) {
+  edit(area) {
 
     //Get data
-    const {player, game, tool} = this
-
-    //Clear tool
-    if (tool === editTools.CLEAR) {
-
-      //Erase markup first
-      if (game.hasMarkup(x, y)) {
-        this.removeMarkup(x, y)
-        this.redrawGridCell(x, y)
-        player.processPosition()
-        return
-      }
-
-      //Erase stone otherwise
-      else if (game.hasStone(x, y)) {
-        this.removeStone(x, y)
-        player.processPosition()
-        return
-      }
-
-      //Nothing here
-      return
-    }
+    const {player} = this
 
     //Get markup type and color
     const type = this.getEditingMarkupType()
     const color = this.getEditingColor()
 
-    //Set markup type
-    if (type) {
-
-      //Debug
-      this.debug(`setting 🔵 ${type} markup at (${x},${y})`)
-
-      //Already markup in place? Remove it first
-      //If it is the same type we're adding, we're done
-      if (game.hasMarkup(x, y)) {
-        const removed = this.removeMarkup(x, y)
-        if (removed.type === type) {
-          player.processPosition()
-          return
-        }
-      }
-
-      //Add markup
-      this.addMarkup(x, y, type)
+    //Clear tool
+    if (this.isUsingClearTool()) {
+      this.eraseArea(area)
     }
 
-    //Set stone
-    else if (color) {
+    //Markup tool
+    else if (this.isUsingMarkupTool()) {
+      this.addMarkupToArea(area, type)
+    }
 
-      //Debug
-      this.debug(
-        `setting ${color === stoneColors.WHITE ? '⚪️' : '⚫️'} stone at (${x},${y})`,
-      )
-
-      //Stone already in place of this same color
-      if (game.hasStone(x, y, color)) {
-        this.debug(`already have ${color} stone at (${x},${y})`)
-        return
-      }
-
-      //Remove existing stone and add new styone
-      this.removeStone(x, y)
-      this.addStone(x, y, color)
+    //Stone tool
+    else if (this.isUsingStoneTool()) {
+      this.addStonesToArea(area, color)
     }
 
     //Process position
@@ -298,41 +254,133 @@ export default class PlayerModeEdit extends PlayerMode {
   }
 
   /**
-   * Helper to remove markup
+   * Erase an area
    */
-  removeMarkup(x, y) {
+  eraseArea(area) {
 
     //Get data
-    const {game, board} = this
-    if (!game.hasMarkup(x, y)) {
+    const {game, player} = this
+
+    //Erase markup first if it is present
+    if (game.hasMarkupInArea(area)) {
+      this.removeMarkupFromArea(area)
+      player.processPosition()
       return
     }
 
-    //Check what markup there is
-    const markup = game.getMarkup(x, y)
-    const {text} = markup
-
-    //Remove used markup label
-    this.removeUsedMarkupLabel(text)
-
-    //Remove markup from game and board and return removed markup
-    game.removeMarkup(x, y)
-    board
-      .getLayer(boardLayerTypes.MARKUP)
-      .remove(x, y)
-
-    //Return removed markup
-    return markup
+    //Erase stones otherwise
+    else if (game.hasStonesInArea(area)) {
+      this.removeStonesFromArea(area)
+      player.processPosition()
+      return
+    }
   }
 
   /**
-   * Helper to remove a stone
+   * Add markup to area
    */
-  removeStone(x, y) {
+  addMarkupToArea(area, type) {
+
+    //Check if dragging
     const {game} = this
-    if (game.hasStone(x, y)) {
-      game.removeStone(x, y)
+    const isDrag = (area.length > 1)
+
+    //Single spot, remove if the same markup is already there
+    if (!isDrag) {
+      const {x, y} = area[0]
+      const existing = game.getMarkup(x, y)
+      if (existing && existing.type === type) {
+        this.removeMarkupFromArea(area)
+        return
+      }
     }
+
+    //Remove all existing
+    this.removeMarkupFromArea(area)
+
+    //Add markup to area
+    for (const {x, y} of area) {
+      this.addMarkup(x, y, type)
+    }
+  }
+
+  /**
+   * Add stones to area
+   */
+  addStonesToArea(area, color) {
+
+    //Check if dragging
+    const {game} = this
+    const isDrag = (area.length > 1)
+
+    //Single spot, remove if the same markup is already there
+    if (!isDrag) {
+      const {x, y} = area[0]
+      const existing = game.getStone(x, y)
+      if (existing && existing.color === color) {
+        this.removeStonesFromArea(area)
+        return
+      }
+    }
+
+    //Remove all existing
+    this.removeStonesFromArea(area)
+
+    //Add stones to area
+    for (const {x, y} of area) {
+      this.addStone(x, y, color)
+    }
+  }
+
+  /**
+   * Remove all markup
+   */
+  removeAllMarkup() {
+
+    //Get data
+    const {board, game} = this
+
+    //Reset used markup labels
+    this.resetUsedMarkupLabels()
+
+    //Remove all from game and board
+    game.removeAllMarkup()
+    board.removeAllMarkup()
+  }
+
+  /**
+   * Helper to remove markup from an area
+   */
+  removeMarkupFromArea(area) {
+
+    //Get data
+    const {game, board} = this
+
+    //Get markup labels
+    const labels = area
+      .filter(({x, y}) => game.hasMarkup(x, y))
+      .map(({x, y}) => game.getMarkup(x, y))
+      .map(markup => markup.text)
+
+    //Remove used markup labels
+    this.removeUsedMarkupLabel(labels)
+
+    //Remove markup from game and board
+    game.removeMarkupFromArea(area)
+    board.removeMarkupFromArea(area)
+  }
+
+  /**
+   * Helper to remove stones from an area
+   */
+  removeStonesFromArea(area) {
+
+    //Get data
+    const {game, board} = this
+
+    //Remove stones from game and board
+    game.removeStonesFromArea(area)
+    board.removeStonesFromArea(area)
   }
 
   /**
@@ -374,7 +422,8 @@ export default class PlayerModeEdit extends PlayerMode {
     //Set tool
     this.debug(`🪛 ${tool} tool activated`)
 
-    //Show hover
+    //Show hover, in case we're still over the board with mouse and
+    //the tool changed via hotkey
     this.showHoverMarkup()
     this.showHoverStone()
 
@@ -388,20 +437,23 @@ export default class PlayerModeEdit extends PlayerMode {
   showHoverStone() {
 
     //Check if anything to do
-    const {currentHoverGrid} = this
-    if (!currentHoverGrid) {
+    const {currentGridDetail, board} = this
+    if (!currentGridDetail) {
       return
     }
 
     //Get data
-    const {x, y} = currentHoverGrid
+    const {area} = currentGridDetail
     const color = this.getEditingColor()
     if (!color) {
       return
     }
 
-    //Parent method
-    super.showHoverStone(x, y, color)
+    //Create hover stone
+    const stone = this.createHoverStone(color)
+
+    //Set hover area
+    board.setHoverArea(area, stone)
   }
 
   /**
@@ -410,43 +462,24 @@ export default class PlayerModeEdit extends PlayerMode {
   showHoverMarkup() {
 
     //Check if anything to do
-    const {currentHoverGrid, board} = this
-    if (!currentHoverGrid || !board) {
+    const {currentGridDetail, board} = this
+    if (!currentGridDetail) {
       return
     }
 
     //Get details
-    const {area} = currentHoverGrid
+    const {area} = currentGridDetail
     const type = this.getEditingMarkupType()
     const text = this.getText()
     if (!type) {
       return
     }
 
-    //Remove all from board first and redraw grid
-    board.removeAll(boardLayerTypes.HOVER)
+    //Create markup
+    const markup = this.createMarkup(type, {text})
 
-    //Create hover markup for area
-    for (const {x, y} of area) {
-      this.createHoverMarkup(x, y, type, text)
-    }
-  }
-
-  /**
-   * Clear all markup
-   */
-  clearAllMarkup() {
-
-    //Get board
-    const {board} = this
-    if (!board) {
-      return
-    }
-
-    //Clear markup
-    board
-      .getLayer(boardLayerTypes.MARKUP)
-      .removeAll()
+    //Set on hover area
+    board.setHoverArea(area, markup)
   }
 
   /**************************************************************************
@@ -543,6 +576,10 @@ export default class PlayerModeEdit extends PlayerMode {
     if (!text) {
       return
     }
+    if (Array.isArray(text)) {
+      text.forEach(label => this.removeUsedMarkupLabel(label))
+      return
+    }
     const {usedMarkupLabels} = this
     const i = usedMarkupLabels.indexOf(text)
     if (i !== -1) {
@@ -575,6 +612,45 @@ export default class PlayerModeEdit extends PlayerMode {
    */
   resetUsedMarkupLabels() {
     this.usedMarkupLabels = []
+  }
+
+  /**
+   * Check if using markup tool
+   */
+  isUsingMarkupTool() {
+    const {tool} = this
+    return [
+      editTools.TRIANGLE,
+      editTools.CIRCLE,
+      editTools.SQUARE,
+      editTools.ARROW,
+      editTools.DIAMOND,
+      editTools.MARK,
+      editTools.SELECT,
+      editTools.HAPPY,
+      editTools.SAD,
+      editTools.LETTER,
+      editTools.NUMBER,
+    ].includes(tool)
+  }
+
+  /**
+   * Check if using stone tool
+   */
+  isUsingStoneTool() {
+    const {tool} = this
+    return [
+      editTools.BLACK,
+      editTools.WHITE,
+    ].includes(tool)
+  }
+
+  /**
+   * Check if using clear
+   */
+  isUsingClearTool() {
+    const {tool} = this
+    return tool === editTools.CLEAR
   }
 
   /**
