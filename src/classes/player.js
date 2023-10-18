@@ -83,10 +83,10 @@ export default class Player extends Base {
   /**
    * Initialise game
    */
-  initGame(game) {
+  initGame(game, info) {
 
     //Create new game and reset path
-    this.game = game || new Game()
+    this.game = game || new Game(info)
     this.path = null
 
     //Restricted nodes
@@ -353,12 +353,12 @@ export default class Player extends Base {
   }
 
   /**
-   * Reset player
+   * Load new file / reset player
    */
-  reset() {
+  newFile(info) {
 
     //Reset game
-    this.initGame()
+    this.initGame(null, info)
     this.processLoadedGame()
   }
 

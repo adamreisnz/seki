@@ -62,112 +62,126 @@
 
       <div class="block utility">
         <div class="buttons">
-          <button class="btnCommand" cmd="reset" title="New file [shift-N]">
+          <button class="iconButton btnAlt" id="btnNew" title="New file [shift-N]">
             <span class="icon material-symbols-outlined">note</span>
           </button>
-          <button class="btnCommand" cmd="openFile" title="Load file from computer [shift-O]">
+          <button class="iconButton btnCommand" cmd="openFile" title="Load file from computer [shift-O]">
             <span class="icon material-symbols-outlined">upload_file</span>
           </button>
-          <button class="btnCommand" cmd="loadFileFromUrl" title="Load file from OGS URL [shift-U]">
+          <button class="iconButton btnCommand" cmd="loadFileFromUrl" title="Load file from OGS URL [shift-U]">
             <span class="icon material-symbols-outlined">cloud_upload</span>
           </button>
-          <button class="btnCommand" cmd="downloadFile" title="Download file to computer [shift-D]">
+          <button class="iconButton btnCommand" cmd="downloadFile" title="Download file to computer [shift-D]">
             <span class="icon material-symbols-outlined">download_for_offline</span>
           </button>
           <!-- <button id="saveInCollection" title="Save file to your collection">
             <span class="icon material-symbols-outlined">cloud_download</span>
           </button> -->
-          <button id="showInfo" title="View game information">
+          <button class="iconButton btnAlt" id="btnInfo" title="View game information">
             <span class="icon material-symbols-outlined">info</span>
           </button>
-          <button id="showSettings" title="Settings">
+          <button class="iconButton btnAlt" id="btnSettings" title="Settings">
             <span class="icon material-symbols-outlined">tune</span>
           </button>
         </div>
       </div>
 
-      <div class="block editing" id="tools">
+      <div class="block blockAlt editing" id="blockTools">
         <div class="buttons">
-          <button id="playMoves" class="btnSwitchMode active" mode="replay" title="Play moves [M]">
+          <button id="playMoves" class="iconButton btnSwitchMode active" mode="replay" title="Play moves [M]">
             <span class="material-symbols-outlined">fiber_smart_record</span>
           </button>
 
-          <button class="btnTool" tool="stone" title="Place stone [S]">
+          <button class="iconButton btnTool" tool="stone" title="Place stone [S]">
             <span class="material-symbols-outlined">fiber_manual_record</span>
           </button>
-          <button class="btnTool" tool="triangle" title="Triangle [1]">
+          <button class="iconButton btnTool" tool="triangle" title="Triangle [1]">
             <span class="material-symbols-outlined">change_history</span>
           </button>
-          <button class="btnTool" tool="square" title="Square [2]">
+          <button class="iconButton btnTool" tool="square" title="Square [2]">
             <span class="material-symbols-outlined">square</span>
           </button>
-          <button class="btnTool" tool="circle" title="Circle [3]">
+          <button class="iconButton btnTool" tool="circle" title="Circle [3]">
             <span class="material-symbols-outlined">circle</span>
           </button>
-          <!-- <button class="btnTool" tool="diamond" title="Diamond [4]">
+          <!-- <button class="iconButton btnTool" tool="diamond" title="Diamond [4]">
             <span class="material-symbols-outlined">diamond</span>
           </button> -->
-          <button class="btnTool" tool="letter" title="Letter [4]">
+          <button class="iconButton btnTool" tool="letter" title="Letter [4]">
             <span class="material-symbols-outlined">abc</span>
           </button>
-          <button class="btnTool" tool="number" title="Number [5]">
+          <button class="iconButton btnTool" tool="number" title="Number [5]">
             <span class="material-symbols-outlined">123</span>
           </button>
-          <button class="btnTool" tool="happy" title="Happy [6]">
+          <button class="iconButton btnTool" tool="happy" title="Happy [6]">
             <span class="material-symbols-outlined">sentiment_satisfied</span>
           </button>
-          <button class="btnTool" tool="sad" title="Sad [7]">
+          <button class="iconButton btnTool" tool="sad" title="Sad [7]">
             <span class="material-symbols-outlined">sentiment_dissatisfied</span>
           </button>
-          <button class="btnTool" tool="mark" title="Mark [8]">
+          <button class="iconButton btnTool" tool="mark" title="Mark [8]">
             <span class="material-symbols-outlined">close</span>
           </button>
-          <button class="btnTool" tool="draw" title="Free draw [9]">
+          <button class="iconButton btnTool" tool="draw" title="Free draw [9]">
             <span class="material-symbols-outlined">stylus_note</span>
           </button>
 
-          <button class="btnTool" tool="clear" title="Remove markup or stones [X]">
+          <button class="iconButton btnTool" tool="clear" title="Remove markup or stones [X]">
             <span class="material-symbols-outlined">ink_eraser</span>
           </button>
-          <button id="removeAllMarkup" title="Remove all markup [SHIFT-X]">
+          <button class="iconButton" id="removeAllMarkup" title="Remove all markup [SHIFT-X]">
             <span class="material-symbols-outlined">delete_sweep</span>
           </button>
         </div>
       </div>
 
-      <div class="block hidden" id="settings">
+      <div class="block blockAlt hidden" id="blockNew">
         <div class="settings">
-          <label class="toggleConfig" config="showCoordinates">
+          <label>board size</label>
+          <select id="boardSize">
+            <option value="19">19x19</option>
+            <option value="13">13x13</option>
+            <option value="9">9x9</option>
+          </select>
+
+          <br>
+          <button id="confirmNewFile">Create new file</button>
+        </div>
+      </div>
+
+      <div class="block blockAlt hidden" id="blockSettings">
+        <div class="settings">
+          <label class="checkboxLabel toggleConfig" config="showCoordinates">
             <input type="checkbox"> Show coordinates
           </label>
-          <label class="toggleConfig" config="showLastMove">
+          <label class="checkboxLabel toggleConfig" config="showLastMove">
             <input type="checkbox"> Show last move
           </label>
-          <label class="toggleConfig" config="showNextMove">
+          <label class="checkboxLabel toggleConfig" config="showNextMove">
             <input type="checkbox"> Show next move
           </label>
-          <label class="toggleConfig" config="showAdvancedNavigation">
+          <label class="checkboxLabel toggleConfig" config="showAdvancedNavigation">
             <input type="checkbox"> Show advanced navigation
           </label>
-          <label class="toggleConfig" config="showAllMoveNumbers">
+          <label class="checkboxLabel toggleConfig" config="showAllMoveNumbers">
             <input type="checkbox"> Show all move numbers
           </label>
-          <label class="toggleConfig" config="showVariationMoveNumbers">
+          <label class="checkboxLabel toggleConfig" config="showVariationMoveNumbers">
             <input type="checkbox"> Show variation move numbers
           </label>
-          <label class="toggleConfig" config="showVariations">
+          <label class="checkboxLabel toggleConfig" config="showVariations">
             <input type="checkbox"> Show variations
           </label>
-          <label class="toggleConfig" config="rememberVariationPath">
+          <label class="checkboxLabel toggleConfig" config="rememberVariationPath">
             <input type="checkbox"> Remember path taken
           </label>
-          <label class="toggleConfig" config="swapColors">
+          <label class="checkboxLabel toggleConfig" config="swapColors">
             <input type="checkbox"> Swap colors
           </label>
         </div>
       </div>
 
-      <div class="block hidden" id="gameInfo">
+      <div class="block blockAlt hidden" id="blockInfo">
         <div class="gameInfo">
           <div class="row">
             <div class="label">Name</div>
@@ -198,43 +212,43 @@
 
       <div class="block navigation">
         <div class="buttons">
-          <button class="btnCommand" cmd="goToFirstPosition" title="Go to first position [cmd ←]">
+          <button class="iconButton btnCommand" cmd="goToFirstPosition" title="Go to first position [cmd ←]">
             <span class="material-symbols-outlined">first_page</span>
           </button>
-          <button class="btnCommand" cmd="goBackNumPositions" title="Go back 10 positions [shift ←]">
+          <button class="iconButton btnCommand" cmd="goBackNumPositions" title="Go back 10 positions [shift ←]">
             <span class="material-symbols-outlined">replay_10</span>
           </button>
-          <button class="btnCommand" cmd="goToPreviousPosition" title="Go back [←]">
+          <button class="iconButton btnCommand" cmd="goToPreviousPosition" title="Go back [←]">
             <span class="material-symbols-outlined">navigate_before</span>
           </button>
 
-          <button id="startAutoPlay" title="Start auto play [space]">
+          <button class="iconButton" id="startAutoPlay" title="Start auto play [space]">
             <span class="material-symbols-outlined">play_arrow</span>
           </button>
-          <button id="stopAutoPlay" class="active" title="Stop auto play [space]">
+          <button class="iconButton active" id="stopAutoPlay" title="Stop auto play [space]">
             <span class="material-symbols-outlined">stop</span>
           </button>
 
-          <button class="btnCommand" cmd="goToNextPosition" title="Go forward [→]">
+          <button class="iconButton btnCommand" cmd="goToNextPosition" title="Go forward [→]">
             <span class="material-symbols-outlined">navigate_next</span>
           </button>
-          <button class="btnCommand" cmd="goForwardNumPositions" title="Go forward 10 positions [shift →]">
+          <button class="iconButton btnCommand" cmd="goForwardNumPositions" title="Go forward 10 positions [shift →]">
             <span class="material-symbols-outlined">forward_10</span>
           </button>
-          <button class="btnCommand" cmd="goToLastPosition" title="Go to last position [cmd →]">
+          <button class="iconButton btnCommand" cmd="goToLastPosition" title="Go to last position [cmd →]">
             <span class="material-symbols-outlined">last_page</span>
           </button>
 
-          <button class="btnCommand advancedNav" cmd="goToPreviousFork" title="Go to previous fork [alt ←]">
+          <button class="iconButton btnCommand advancedNav" cmd="goToPreviousFork" title="Go to previous fork [alt ←]">
             <span class="material-symbols-outlined">fork_left</span>
           </button>
-          <button class="btnCommand advancedNav" cmd="goToNextFork" title="Go to next fork [alt →]">
+          <button class="iconButton btnCommand advancedNav" cmd="goToNextFork" title="Go to next fork [alt →]">
             <span class="material-symbols-outlined">fork_right</span>
           </button>
-          <button class="btnCommand advancedNav" cmd="goToPreviousComment" title="Go to previous comment">
+          <button class="iconButton btnCommand advancedNav" cmd="goToPreviousComment" title="Go to previous comment">
             <span class="material-symbols-outlined">comment</span>
           </button>
-          <button class="btnCommand advancedNav" cmd="goToNextComment" title="Go to next comment">
+          <button class="iconButton btnCommand advancedNav" cmd="goToNextComment" title="Go to next comment">
             <span class="material-symbols-outlined">chat</span>
           </button>
         </div>
@@ -295,24 +309,33 @@ if (config) {
 //Bootstrap player
 player.bootstrap(playerElement)
 
-//Settings
-onClick('#showSettings', btn => {
-  const active = isActive(btn)
-  toggleActive('#showSettings', !active)
-  toggleHidden('#settings', active)
-  toggleActive('#showInfo', false)
-  toggleHidden('#gameInfo', true)
-  toggleHidden('#tools', !active)
-})
+//Helper to toggle a panel
+function togglePanel(panel, active) {
 
-//Game info
-onClick('#showInfo', btn => {
-  const active = isActive(btn)
-  toggleActive('#showSettings', false)
-  toggleHidden('#settings', true)
-  toggleActive('#showInfo', !active)
-  toggleHidden('#gameInfo', active)
-  toggleHidden('#tools', !active)
+  //Hide all blocks and make buttons inactive
+  toggleHidden('.blockAlt', true)
+  toggleActive('.btnAlt', false)
+
+  //Activate the selected panel
+  if (!active) {
+    toggleHidden(`#block${panel}`, false)
+    toggleActive(`#btn${panel}`, true)
+  }
+  else {
+    toggleHidden(`#blockTools`, false)
+  }
+}
+
+//Panel toggles
+onClick('#btnNew', btn => togglePanel('New', isActive(btn)))
+onClick('#btnSettings', btn => togglePanel('Settings', isActive(btn)))
+onClick('#btnInfo', btn => togglePanel('Info', isActive(btn)))
+
+//Confirm new file
+onClick('#confirmNewFile', () => {
+  const size = parseInt(document.getElementById('boardSize').value)
+  player.newFile({board: {size}})
+  togglePanel('New', true)
 })
 
 //Mode switching

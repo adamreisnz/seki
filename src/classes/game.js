@@ -39,18 +39,18 @@ export default class Game extends Base {
   /**
    * Constructor
    */
-  constructor() {
+  constructor(info) {
     super()
-    this.init()
+    this.init(info)
   }
 
   /**
    * Initialize
    */
-  init() {
+  init(info) {
 
     //Info properties
-    this.info = merge(defaultGameInfo, {})
+    this.info = merge(defaultGameInfo, info || {})
 
     //The rood node and pointer to the current node
     this.root = new GameNode()
