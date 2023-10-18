@@ -330,6 +330,17 @@ export default class PlayerMode extends Base {
    ***/
 
   /**
+   * Check if an event has valid coordinates
+   */
+  hasValidCoordinates(event) {
+    if (!event || !event.detail) {
+      return false
+    }
+    const {x, y} = event.detail
+    return this.board.isOnBoard(x, y)
+  }
+
+  /**
    * Create markup
    */
   createMarkup(type, data) {

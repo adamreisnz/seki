@@ -980,11 +980,6 @@ export default class Player extends Base {
       this.triggerGridEvent(detail)
     }
 
-    //Don't propagate if there are no valid coordinates
-    if (!this.hasValidCoordinates(detail)) {
-      return
-    }
-
     //Parent method
     super.triggerEvent(type, detail)
   }
@@ -1011,26 +1006,9 @@ export default class Player extends Base {
     //Remember last detail
     this.lastDetail = detail
 
-    //Trigger grid leave event if there was a valid previous detail
-    if (this.hasValidCoordinates(lastDetail)) {
-      this.triggerEvent('gridLeave', lastDetail)
-    }
-
-    //Trigger grid entry event if there is a valid new detail
-    if (this.hasValidCoordinates(detail)) {
-      this.triggerEvent('gridEnter', detail)
-    }
-  }
-
-  /**
-   * Check if an event detail has valid coordinates
-   */
-  hasValidCoordinates(detail) {
-    if (!detail) {
-      return false
-    }
-    const {x, y} = detail
-    return this.board.isOnBoard(x, y)
+    //Trigger grid leave and entry events
+    this.triggerEvent('gridLeave', lastDetail)
+    this.triggerEvent('gridEnter', detail)
   }
 
   /**

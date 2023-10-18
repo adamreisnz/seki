@@ -34,6 +34,11 @@ export default class PlayerModePlay extends PlayerMode {
    */
   onClick(event) {
 
+    //Check if valid coordinates
+    if (!this.hasValidCoordinates(event)) {
+      return
+    }
+
     //Get data
     const {board} = this
     const {x, y} = event.detail

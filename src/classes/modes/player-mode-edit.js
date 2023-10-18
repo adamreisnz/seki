@@ -117,7 +117,7 @@ export default class PlayerModeEdit extends PlayerMode {
     board.stopFreeDraw()
 
     //Only process clicks if not dragging
-    if (isDragging) {
+    if (isDragging || !this.hasValidCoordinates(event)) {
       return
     }
 
@@ -157,6 +157,11 @@ export default class PlayerModeEdit extends PlayerMode {
     //Get event data
     const {isDragging} = event.detail
 
+    //Check if valid coordinates
+    if (!this.hasValidCoordinates(event)) {
+      return
+    }
+
     //Show eraser always
     this.showHoverEraser()
 
@@ -175,6 +180,11 @@ export default class PlayerModeEdit extends PlayerMode {
    * On grid leave
    */
   onGridLeave(event) {
+
+    //Check if valid coordinates
+    if (!this.hasValidCoordinates(event)) {
+      return
+    }
 
     //Get data
     const {board} = this
@@ -202,6 +212,11 @@ export default class PlayerModeEdit extends PlayerMode {
    * Edit a position
    */
   edit(event) {
+
+    //Check if valid coordinates
+    if (!this.hasValidCoordinates(event)) {
+      return
+    }
 
     //Get data
     const {player} = this

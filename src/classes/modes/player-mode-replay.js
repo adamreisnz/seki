@@ -127,6 +127,11 @@ export default class PlayerModeReplay extends PlayerMode {
    */
   onClick(event) {
 
+    //Check if valid coordinates
+    if (!this.hasValidCoordinates(event)) {
+      return
+    }
+
     //Get data
     const {board, game} = this
     const {x, y} = event.detail

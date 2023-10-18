@@ -818,7 +818,7 @@ export default class Game extends Base {
 
     //Invalid placement
     if (!newPosition) {
-      this.debug.warn(reason)
+      this.warn(reason)
       return
     }
 
