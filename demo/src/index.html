@@ -186,12 +186,8 @@
             <div class="value" id="ruleSet"></div>
           </div>
           <div class="row">
-            <div class="label">Main time</div>
-            <div class="value" id="mainTime"></div>
-          </div>
-          <div class="row">
-            <div class="label">Overtime</div>
-            <div class="value" id="overTime"></div>
+            <div class="label">Time</div>
+            <div class="value" id="time"></div>
           </div>
           <div class="row">
             <div class="label">Result</div>
@@ -260,7 +256,8 @@ import {
   toggleActive,
   isActive,
   setText,
-  parseTime
+  parseTime,
+  parseOverTime
 } from './js/demo.js'
 
 //Audio
@@ -438,13 +435,15 @@ player.on('gameLoad', () => {
   setText('#playerBlackRank', black.rank || '')
   setText('#playerWhiteRank', white.rank || '')
   setText('#komi', komi ? `+${komi}` : '')
-  setText('#result', result || '')
-  setText('#name', name || '')
+  setText('#result', result || '?')
+  setText('#name', name || '–')
   setText('#date', (dates && dates.length > 0) ? dates[0] : '')
-  setText('#ruleSet', rules.ruleSet || '')
-  setText('#mainTime', (rules.mainTime) ? parseTime(rules.mainTime) : '')
-  setText('#overTime', rules.overTime || '')
+  setText('#ruleSet', rules.ruleSet || '?')
+  setText('#time', '')
   if (rules.mainTime) {
+    const mt = parseTime(rules.mainTime)
+    const ot = parseOverTime(rules.overTime)
+    setText('#time', `${mt}${ot ? ` + ${ot}` : ''}`)
     toggleHidden('.times', false)
     setText('#blackTimeLeft', parseTime(rules.mainTime))
     setText('#whiteTimeLeft', parseTime(rules.mainTime))
