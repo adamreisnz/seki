@@ -255,15 +255,29 @@ export default class Game extends Base {
    */
   getTimeLeft(color) {
 
-    //Get node and default main time value
-    const {node} = this
+    //Get node
+    let {node} = this
 
-    //Node has info?
-    if (node.isMove() && node.move.color === color) {
-      if (node.move.timeLeft) {
-        return node.move.timeLeft
+    //Root node? Return main time
+    if (node.isRoot()) {
+      return this.getInfo('rules.mainTime')
+    }
+
+    //Not a move node
+    if (!node.isMove()) {
+      return
+    }
+
+    //Check previous node if it's not this player's turn
+    if (node.getMoveColor() !== color) {
+      node = node.getPreviousMove()
+      if (!node) {
+        return this.getInfo('rules.mainTime')
       }
     }
+
+    //Return time left
+    return node.move.timeLeft
   }
 
   /**
@@ -271,15 +285,22 @@ export default class Game extends Base {
    */
   getPeriodsLeft(color) {
 
-    //Get node and default main time value
-    const {node} = this
+    //Get node
+    let {node} = this
+    if (!node.isMove()) {
+      return
+    }
 
-    //Node has info?
-    if (node.isMove() && node.move.color === color) {
-      if (typeof node.move.periodsLeft !== 'undefined') {
-        return node.move.periodsLeft
+    //Check previous node if it's not this player's turn
+    if (node.getMoveColor() !== color) {
+      node = node.getPreviousMove()
+      if (!node) {
+        return
       }
     }
+
+    //Return info
+    return node.move.periodsLeft
   }
 
   /*****************************************************************************

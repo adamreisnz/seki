@@ -40,6 +40,13 @@ export default class GameNode {
   }
 
   /**
+   * Check if we're the root node
+   */
+  isRoot() {
+    return this === this.root
+  }
+
+  /**
    * Get variation root node
    */
   getVariationRoot() {
@@ -304,11 +311,34 @@ export default class GameNode {
   }
 
   /**
+   * Get the color of the current move
+   */
+  getMoveColor() {
+    const {move} = this
+    if (move) {
+      return move.color
+    }
+  }
+
+  /**
    * Check if we have a move at given coordinates
    */
   hasMove(x, y) {
     const {move} = this
     return Boolean(move && move.x === x && move.y === y)
+  }
+
+  /**
+   * Get previous move node
+   */
+  getPreviousMove() {
+    const {parent} = this
+    if (parent) {
+      if (parent.isMove()) {
+        return parent
+      }
+      return parent.getPreviousMove()
+    }
   }
 
   /**
