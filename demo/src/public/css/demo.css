@@ -127,20 +127,25 @@ p {
   padding-bottom: 0;
   border: 0;
 }
-.players {
+.players, .times {
   display: flex;
   justify-content: space-between;
 }
-.player {
-  position: relative;
+.player, .time {
   flex: 0 0 calc(50% - 0.25rem);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  height: 5rem;
   padding: 0.5rem;
   border-radius: 14px;
   background: #f3cf89;
+}
+.time {
+  align-items: center;
+}
+.player {
+  position: relative;
+  height: 5rem;
 }
 .player:after {
   position: absolute;
@@ -200,9 +205,12 @@ p {
   font-size: 1rem;
   height: 20px;
 }
-.player .rank {
+.player .rank, .timeLabel {
   font-size: 0.8rem;
   opacity: 0.5;
+}
+.timeLabel {
+  padding-bottom: 2px;
 }
 .player .score {
   flex: 0 0 50%;

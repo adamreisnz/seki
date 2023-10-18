@@ -250,6 +250,38 @@ export default class Game extends Base {
     return captures
   }
 
+  /**
+   * Get time left
+   */
+  getTimeLeft(color) {
+
+    //Get node and default main time value
+    const {node} = this
+
+    //Node has info?
+    if (node.isMove() && node.move.color === color) {
+      if (node.move.timeLeft) {
+        return node.move.timeLeft
+      }
+    }
+  }
+
+  /**
+   * Get periods left
+   */
+  getPeriodsLeft(color) {
+
+    //Get node and default main time value
+    const {node} = this
+
+    //Node has info?
+    if (node.isMove() && node.move.color === color) {
+      if (typeof node.move.periodsLeft !== 'undefined') {
+        return node.move.periodsLeft
+      }
+    }
+  }
+
   /*****************************************************************************
    * Position handling
    ***/

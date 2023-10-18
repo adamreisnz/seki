@@ -76,3 +76,25 @@ export function onClick(query, handler) {
     })
   })
 }
+
+/**
+ * Time parser
+ */
+export function parseTime(time) {
+  time = Math.floor(time)
+  if (time > 3600) {
+    const hours = String(Math.floor(time / 3600)).padStart(2, '0')
+    const minutes = String(Math.floor((time % 3600) / 60)).padStart(2, '0')
+    const seconds = String(time % 60).padStart(2, '0')
+    return `${hours}:${minutes}:${seconds}`
+  }
+  else if (time > 60) {
+    const minutes = String(Math.floor(time / 60)).padStart(2, '0')
+    const seconds = String(time % 60).padStart(2, '0')
+    return `${minutes}:${seconds}`
+  }
+  else {
+    const seconds = String(time).padStart(2, '0')
+    return `00:${seconds}`
+  }
+}

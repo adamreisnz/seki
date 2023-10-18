@@ -31,7 +31,7 @@
             </div>
           </div>
           <div class="score">
-            <div><span id="blackCaptures">0</span> captures</div>
+            <div id="blackCaptures">0 captures</div>
           </div>
         </div>
         <div class="player white">
@@ -43,9 +43,20 @@
             </div>
           </div>
           <div class="score">
-            <div><span id="whiteCaptures">0</span> captures</div>
+            <div id="whiteCaptures">0 captures</div>
             <div id="komi"></div>
           </div>
+        </div>
+      </div>
+
+      <div class="block times hidden">
+        <div class="time">
+          <div class="timeLabel">time left</div>
+          <div id="blackTimeLeft">&nbsp;</div>
+        </div>
+        <div class="time">
+          <div class="timeLabel">time left</div>
+          <div id="whiteTimeLeft">&nbsp;</div>
         </div>
       </div>
 
@@ -172,7 +183,15 @@
           </div>
           <div class="row">
             <div class="label">Rules</div>
-            <div class="value" id="rules"></div>
+            <div class="value" id="ruleSet"></div>
+          </div>
+          <div class="row">
+            <div class="label">Main time</div>
+            <div class="value" id="mainTime"></div>
+          </div>
+          <div class="row">
+            <div class="label">Overtime</div>
+            <div class="value" id="overTime"></div>
           </div>
           <div class="row">
             <div class="label">Result</div>
@@ -240,7 +259,8 @@ import {
   toggleHidden,
   toggleActive,
   isActive,
-  setText
+  setText,
+  parseTime
 } from './js/demo.js'
 
 //Audio
@@ -253,6 +273,9 @@ const {
   playerActions,
   editTools
 } = constants.player
+const {
+  stoneColors
+} = constants.stone
 
 //Set debug mode
 helpers.util.setDebug(true)
@@ -344,9 +367,39 @@ findByQuery('.toggleConfig')
 
 //Event handlers
 player.on('pathChange', () => {
-  const {black, white} = player.getCaptureCount()
-  setText('#blackCaptures', black)
-  setText('#whiteCaptures', white)
+  const {game} = player
+  const {black, white} = game.getCaptureCount()
+  const node = game.getCurrentNode()
+
+  //Set captures
+  const bs = black === 1 ? '' : 's'
+  const ws = white === 1 ? '' : 's'
+  setText('#blackCaptures', `${black} capture${bs}`)
+  setText('#whiteCaptures', `${white} capture${ws}`)
+
+  //Set time left
+  const blackTimeLeft = game.getTimeLeft(stoneColors.BLACK)
+  const whiteTimeLeft = game.getTimeLeft(stoneColors.WHITE)
+  const blackPeriodsLeft = game.getPeriodsLeft(stoneColors.BLACK)
+  const whitePeriodsLeft = game.getPeriodsLeft(stoneColors.WHITE)
+  if (blackTimeLeft) {
+    toggleHidden('.times', false)
+    if (blackPeriodsLeft) {
+      setText('#blackTimeLeft', `${blackPeriodsLeft} x ${blackTimeLeft}s`)
+    }
+    else {
+      setText('#blackTimeLeft', parseTime(blackTimeLeft))
+    }
+  }
+  if (whiteTimeLeft) {
+    toggleHidden('.times', false)
+    if (whitePeriodsLeft) {
+      setText('#whiteTimeLeft', `${whitePeriodsLeft} x ${whiteTimeLeft}s`)
+    }
+    else {
+      setText('#whiteTimeLeft', parseTime(whiteTimeLeft))
+    }
+  }
 })
 player.on('modeChange', () => {
   toggleActive('#playMoves', player.isModeActive(playerModes.REPLAY))
@@ -388,7 +441,14 @@ player.on('gameLoad', () => {
   setText('#result', result || '')
   setText('#name', name || '')
   setText('#date', (dates && dates.length > 0) ? dates[0] : '')
-  setText('#rules', rules.ruleSet || '')
+  setText('#ruleSet', rules.ruleSet || '')
+  setText('#mainTime', (rules.mainTime) ? parseTime(rules.mainTime) : '')
+  setText('#overTime', rules.overTime || '')
+  if (rules.mainTime) {
+    toggleHidden('.times', false)
+    setText('#blackTimeLeft', parseTime(rules.mainTime))
+    setText('#whiteTimeLeft', parseTime(rules.mainTime))
+  }
   setText('#event', '')
   if (event) {
     const parts = [

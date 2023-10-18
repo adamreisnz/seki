@@ -20,8 +20,8 @@ const regexNode = /[A-Z]+\s*((\[\])|(\[(.|\s)*?([^\\]\])))+/g
 const regexProperty = /[A-Z]+/
 const regexValues = /(\[\])|(\[(.|\s)*?([^\\]\]))/g
 const regexMove = /^;[B|W]\[/i
-const regexBlackPlayer = /PB|BT|BR/i
-const regexWhitePlayer = /PW|WT|WR/i
+const regexBlackPlayer = /PB|BT|BR|BL|OB/i
+const regexWhitePlayer = /PW|WT|WR|WL|OW/i
 
 //Property to parser map
 const parsingMap = {
@@ -59,6 +59,12 @@ const parsingMap = {
   //Node annotation
   C: 'parseComment',
   N: 'parseNodeName',
+
+  //Time and periods left
+  BL: 'parseTimeLeft',
+  WL: 'parseTimeLeft',
+  OB: 'parsePeriodsLeft',
+  OW: 'parsePeriodsLeft',
 
   //Board setup
   AB: 'parseSetup',
@@ -232,6 +238,44 @@ export default class ConvertFromSgf extends Converter {
 
     //Append to node
     node.move = move
+  }
+
+  /**
+   * Time left
+   */
+  parseTimeLeft(game, node, key, values) {
+
+    //Get color
+    const color = key.match(regexBlackPlayer) ?
+      stoneColors.BLACK :
+      stoneColors.WHITE
+
+    //Must already have a move node of matching color
+    if (!node.move || node.move.color !== color) {
+      return
+    }
+
+    //Set on node
+    node.move.timeLeft = parseFloat(values[0])
+  }
+
+  /**
+   * Periods left
+   */
+  parsePeriodsLeft(game, node, key, values) {
+
+    //Get color
+    const color = key.match(regexBlackPlayer) ?
+      stoneColors.BLACK :
+      stoneColors.WHITE
+
+    //Must already have a move node of matching color
+    if (!node.move || node.move.color !== color) {
+      return
+    }
+
+    //Set on node
+    node.move.periodsLeft = parseInt(values[0])
   }
 
   /**

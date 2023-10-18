@@ -248,6 +248,17 @@ JGF = {
       }
 		},
 
+    //You can specify remaining time & byo-yomi periods per move
+    {
+			move: {
+        color: "black",
+        x: 2,
+        y: 3,
+        timeLeft: 345, //seconds
+        periodsLeft: 3,
+      }
+		},
+
 		//A move node may contain other annotation as well, like comments or markup
 		{
 			move: {
