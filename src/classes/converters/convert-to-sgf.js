@@ -233,17 +233,21 @@ export default class ConvertToSgf extends Converter {
     //Initialise coordinate groups
     const groups = {}
 
+    console.log('SETUP', setup)
+
     //Loop over setup instructions
     for (const obj of setup) {
 
       //Get SGF setup type and extract coordinates
-      const type = this.getMappedValue(obj.type, sgfSetupTypes)
-      const coords = this.extractCoordinates(obj)
+      const key = this.getMappedValue(obj.type, sgfSetupTypes)
+      const coords = this.extractCoordinates(obj.coords)
 
       //Initialise group and add entry
-      groups[type] = groups[type] || []
-      groups[type].push(coords)
+      groups[key] = groups[key] || []
+      groups[key].push(...coords)
     }
+
+    console.log('GROUPS', groups)
 
     //Now convert by type to SGF
     let sgf = ''
@@ -267,19 +271,18 @@ export default class ConvertToSgf extends Converter {
     for (const obj of markup) {
 
       //Get SGF markup type and extract coordinates
-      const type = this.getMappedValue(obj.type, sgfMarkupTypes)
-      const coords = this.extractCoordinates(obj)
+      const key = this.getMappedValue(obj.type, sgfMarkupTypes)
+      const coords = this.extractCoordinates(obj.coords)
+      const mapped = coords.map(coord => {
+        if (obj.type === markupTypes.LABEL) {
+          return `${coord}:${obj.text}`
+        }
+        return coord
+      })
 
       //Initialise group
-      groups[type] = groups[type] || []
-
-      //Add to group
-      if (obj.type === markupTypes.LABEL) {
-        groups[type].push(`${coords}:${obj.text}`)
-      }
-      else {
-        groups[type].push(coords)
-      }
+      groups[key] = groups[key] || []
+      groups[key].push(...mapped)
     }
 
     //Now convert by type to SGF
