@@ -326,7 +326,7 @@ export const defaultTheme = {
 
     //Vertical coordinates
     vertical: {
-      color: 'rgba(101,69,37,0.9)',
+      color: 'rgb(68, 44, 20)',
       font: 'Arial',
       type: 'numbers',
       inverse: true,
@@ -337,7 +337,7 @@ export const defaultTheme = {
 
     //Horizontal coordinates
     horizontal: {
-      color: 'rgba(101,69,37,0.9)',
+      color: 'rgb(68, 44, 20)',
       font: 'Arial',
       type: 'letters',
       inverse: false,
