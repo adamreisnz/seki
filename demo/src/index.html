@@ -453,6 +453,8 @@ player.on('gameLoad', () => {
   const rules = game.getInfo('rules')
   const event = game.getInfo('event')
   const source = game.getInfo('source')
+  const size = game.getInfo('board.size')
+  document.getElementById('boardSize').value = size
   setText('#playerBlackName', black.name || 'Black')
   setText('#playerWhiteName', white.name || 'White')
   setText('#playerBlackRank', black.rank || '')

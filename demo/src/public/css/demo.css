@@ -282,12 +282,18 @@ label {
 }
 
 /* Settings */
+input[type="checkbox"] {
+  width: 1rem;
+  height: 1rem;
+}
 .checkboxLabel {
   display: flex;
   align-items: center;
-  padding: 0.5rem 0;
+  margin: 0;
+  padding: 0.25rem 0;
   font-size: 0.9rem;
   color: #333;
+  opacity: 1;
   gap: 5px;
 }
 
