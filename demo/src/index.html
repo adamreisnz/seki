@@ -133,6 +133,10 @@
             <span class="material-symbols-outlined">delete_sweep</span>
           </button>
         </div>
+
+        <div class="comments">
+          <textarea id="comments" placeholder="Comments" onkeydown="event.stopPropagation()"></textarea>
+        </div>
       </div>
 
       <div class="block blockAlt hidden" id="blockNew">
@@ -265,6 +269,7 @@ import {
 } from '../../src/index.js'
 import {
   onClick,
+  onEvent,
   findByQuery,
   toggleHidden,
   toggleActive,
@@ -377,6 +382,14 @@ onClick('#removeAllMarkup', () => {
   player.processAction(playerActions.REMOVE_ALL_MARKUP)
 })
 
+//Commenting
+onEvent('#comments', 'input', textarea => {
+  const {game} = player
+  const node = game.getCurrentNode()
+  const comments = textarea.value.split('\n\n')
+  node.setComments(comments)
+})
+
 //Set checkboxes to initial toggle value
 findByQuery('.toggleConfig')
   .forEach(lbl => {
@@ -387,9 +400,22 @@ findByQuery('.toggleConfig')
 
 //Event handlers
 player.on('pathChange', () => {
+
+  //Get data
   const {game} = player
   const {black, white} = game.getCaptureCount()
   const node = game.getCurrentNode()
+
+  //Set comments
+  if (node.hasComments()) {
+    const comments = node
+      .getComments()
+      .join('\n\n')
+    setText('#comments', comments)
+  }
+  else {
+    setText('#comments', '')
+  }
 
   //Set captures
   const bs = black === 1 ? '' : 's'
@@ -455,6 +481,7 @@ player.on('gameLoad', () => {
   const source = game.getInfo('source')
   const size = game.getInfo('board.size')
   document.getElementById('boardSize').value = size
+  setText('#comments', '')
   setText('#playerBlackName', black.name || 'Black')
   setText('#playerWhiteName', white.name || 'White')
   setText('#playerBlackRank', black.rank || '')

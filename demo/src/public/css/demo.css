@@ -85,6 +85,22 @@ select {
   padding: 0.25rem;
   outline: none;
 }
+textarea {
+  background: #d6ae60;
+  color: rgb(68, 44, 20);
+  width: 100%;
+  height: 100%;
+  outline: none;
+  font-family: Helvetica, sans-serif;
+  font-size: 0.9rem;
+  border: 1px solid rgba(68, 44, 20, 0.2);
+  border-radius: 8px;
+  padding: 0.5rem;
+  resize: none;
+}
+textarea::placeholder {
+  color: rgba(68, 44, 20, 0.35);
+}
 
 h2 {
   font-size: 1rem;
@@ -246,8 +262,18 @@ label {
   padding-right: 0.25rem;
   font-size: 0.9rem;
 }
-.navigation {
+.editing {
   flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+.comments {
+  flex: 1;
+  padding-top: 1rem;
+  padding-bottom: 0.5rem;
+}
+.navigation {
   display: flex;
   flex-direction: column;
   justify-content: flex-end;

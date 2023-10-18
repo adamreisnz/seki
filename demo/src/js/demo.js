@@ -66,15 +66,22 @@ export function isActive(element) {
 }
 
 /**
- * Add click handler
+ * Add generic event handler
  */
-export function onClick(query, handler) {
+export function onEvent(query, type, handler) {
   const elements = findByQuery(query)
   elements.forEach(element => {
-    element.addEventListener('click', event => {
+    element.addEventListener(type, event => {
       handler(element, event)
     })
   })
+}
+
+/**
+ * Add click handler
+ */
+export function onClick(query, handler) {
+  onEvent(query, 'click', handler)
 }
 
 /**

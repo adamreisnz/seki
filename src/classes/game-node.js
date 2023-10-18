@@ -430,6 +430,23 @@ export default class GameNode {
     return (comments && comments.length > 0)
   }
 
+  /**
+   * Get comments
+   */
+  getComments() {
+    return this.comments
+  }
+
+  /**
+   * Set comments
+   */
+  setComments(comments) {
+    if (!Array.isArray(comments)) {
+      comments = comments ? [comments] : []
+    }
+    this.comments = comments
+  }
+
   /**************************************************************************
    * Path helpers
    ***/
