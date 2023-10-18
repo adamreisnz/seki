@@ -844,20 +844,23 @@ export default class Player extends Base {
    */
   setupDocumentListeners() {
 
-    //Get event types
-    const eventTypes = [
-      'keydown',
-    ]
-
     //Create event handler
     this.documentEventHandler = new EventHandler(document)
 
-    //Setup listeners that will be propagated
-    for (const type of eventTypes) {
-      this.documentEventHandler.on(type, (event) => {
-        this.triggerEvent(type, {nativeEvent: event})
-      })
-    }
+    //Propagate keydown events
+    this.documentEventHandler.on('keydown', (event) => {
+      this.triggerEvent('keydown', {nativeEvent: event})
+    })
+
+    //Handle mouse up events that occurred outside of the board element
+    this.documentEventHandler.on('mousedown', () => {
+      this.isMouseDown = true
+    })
+    this.documentEventHandler.on('mousemove', () => {
+      if (this.isMouseDown) {
+        this.isDragging = true
+      }
+    })
 
     //Handle mouse up events that occurred outside of the board element
     this.documentEventHandler.on('click', () => {
@@ -955,24 +958,12 @@ export default class Player extends Base {
     //Append grid coordinates
     this.appendCoordinatesToEvent(detail)
 
-    //Start dragging
+    //Capture/reset drag detail
     if (type === 'mousedown') {
-      this.isMouseDown = true
-      this.startDragging(detail)
+      this.captureDragDetail(detail)
     }
-
-    //Check if dragging
-    if (type === 'mousemove' && this.isMouseDown) {
-      this.isDragging = true
-    }
-
-    //Stop dragging
-    //NOTE: Not using mouseup as it will then not append
-    //the correct grid area to the click event detail
-    if (type === 'click') {
-      // this.isMouseDown = false
-      // this.isDragging = false
-      this.stopDragging()
+    else if (type === 'click') {
+      this.resetDragDetail()
     }
 
     //Trigger grid entry/leave events
@@ -1012,9 +1003,9 @@ export default class Player extends Base {
   }
 
   /**
-   * Start dragging
+   * Capture drag detail
    */
-  startDragging(detail) {
+  captureDragDetail(detail) {
     const {x, y} = detail
     if (this.board.isOnBoard(x, y)) {
       this.dragDetail = detail
@@ -1024,7 +1015,7 @@ export default class Player extends Base {
   /**
    * Stop dragging
    */
-  stopDragging() {
+  resetDragDetail() {
     this.dragDetail = null
   }
 
