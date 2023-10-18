@@ -111,13 +111,12 @@ export default class PlayerModeEdit extends PlayerMode {
 
     //Get data
     const {board} = this
-    const {isDragging} = event.detail
 
     //Stop free draw
     board.stopFreeDraw()
 
-    //Only process clicks if not dragging
-    if (isDragging || !this.hasValidCoordinates(event)) {
+    //Only process if valid coordinates
+    if (!this.hasValidCoordinates(event)) {
       return
     }
 
