@@ -435,10 +435,10 @@ player.on('gameLoad', () => {
   setText('#playerBlackRank', black.rank || '')
   setText('#playerWhiteRank', white.rank || '')
   setText('#komi', komi ? `+${komi}` : '')
-  setText('#result', result || '?')
-  setText('#name', name || '–')
+  setText('#result', result || '')
+  setText('#name', name || '')
   setText('#date', (dates && dates.length > 0) ? dates[0] : '')
-  setText('#ruleSet', rules.ruleSet || '?')
+  setText('#ruleSet', rules.ruleSet || '')
   setText('#time', '')
   if (rules.mainTime) {
     const mt = parseTime(rules.mainTime)
