@@ -27,6 +27,7 @@
     "baduk",
     "board",
     "player",
+    "jgf",
     "sgf",
     "gib"
   ]
