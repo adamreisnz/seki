@@ -127,24 +127,11 @@ export default class ConvertFromGib extends Converter {
 
     //Determine player color
     const color = this.determinePlayerColor(match[1])
-
-    //Get players container (filter out if existing player found)
-    const players = game
-      .getInfo('players', [])
-      .filter(player => player.color !== color)
-
-    //Create player object
-    const player = {
-      color,
-      name: match[2],
-      rank: match[3].toLowerCase(),
-    }
-
-    //Add to players
-    players.push(player)
+    const name = match[2]
+    const rank = match[3].toLowerCase()
 
     //Set on game
-    game.setInfo('players', players)
+    game.setInfo(`players.${color}`, {name, rank})
   }
 
   /**

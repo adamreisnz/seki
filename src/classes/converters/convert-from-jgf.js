@@ -17,6 +17,7 @@ const skipPaths = [
   'rules.komi',
   'rules.handicap',
   'rules.mainTime',
+  'players',
 ]
 
 /**
@@ -39,6 +40,7 @@ export default class ConvertFromJgf extends Converter {
     this.extractDates(game, jgf)
     this.extractResult(game, jgf)
     this.extractMainTime(game, jgf)
+    this.extractPlayers(game, jgf)
 
     //Copy over rest of relevant paths
     for (const path of jgfPaths) {
@@ -167,6 +169,14 @@ export default class ConvertFromJgf extends Converter {
   }
 
   /**
+   * Extract handicap
+   */
+  extractHandicap(game, jgf) {
+    const handicap = get(jgf, 'rules.handicap')
+    game.setHandicap(handicap)
+  }
+
+  /**
    * Extract result
    */
   extractResult(game, jgf) {
@@ -197,10 +207,13 @@ export default class ConvertFromJgf extends Converter {
   }
 
   /**
-   * Extract handicap
+   * Extract players
    */
-  extractHandicap(game, jgf) {
-    const handicap = get(jgf, 'rules.handicap')
-    game.setHandicap(handicap)
+  extractPlayers(game, jgf) {
+    const players = get(jgf, 'players')
+    for (const player of players) {
+      const {color, name, rank, team} = player
+      game.setInfo(`players.${color}`, {name, rank, team})
+    }
   }
 }

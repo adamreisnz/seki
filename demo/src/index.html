@@ -470,9 +470,7 @@ player.on('config', event => {
 player.on('gameLoad', () => {
   player.setMode(playerModes.REPLAY)
   const {game} = player
-  const players = game.getInfo('players')
-  const black = players.find(p => p.color === stoneColors.BLACK)
-  const white = players.find(p => p.color === stoneColors.WHITE)
+  const {black, white} = game.getInfo('players')
   const komi = game.getKomi()
   const result = game.getInfo('game.result')
   const name = game.getInfo('game.name')

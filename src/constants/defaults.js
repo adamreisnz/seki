@@ -20,16 +20,14 @@ export const defaultGameInfo = {
       dateString(),
     ],
   },
-  players: [
-    {
-      color: stoneColors.BLACK,
+  players: {
+    black: {
       name: 'Black',
     },
-    {
-      color: stoneColors.WHITE,
+    white: {
       name: 'White',
     },
-  ],
+  },
   board: {
     size: 19,
   },

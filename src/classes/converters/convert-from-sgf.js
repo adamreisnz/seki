@@ -468,29 +468,12 @@ export default class ConvertFromSgf extends Converter {
    */
   parsePlayer(game, node, key, values) {
 
-    //Initialize players container
-    const players = game.getInfo('players', [])
-
     //Determine player color
     const color = this.convertPlayerColor(key)
     const infoKey = sgfPlayerInfoMap[key]
 
-    //Check if player of this color already exists
-    const existing = players.find(player => player.color === color)
-
-    //Exists
-    if (existing) {
-      existing[infoKey] = values[0]
-    }
-    else {
-      players.push({
-        color,
-        [infoKey]: values[0],
-      })
-    }
-
     //Set on game
-    game.setInfo('players', players)
+    game.setInfo(`players.${color}.${infoKey}`, values[0])
   }
 
   /*****************************************************************************

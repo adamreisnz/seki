@@ -142,26 +142,27 @@ export default class ConvertToSgf extends Converter {
 
     //Get players
     const players = game.getInfo('players')
+    const colors = Object.keys(players)
 
     //Loop
-    for (const player of players) {
+    for (const color of colors) {
 
       //Get color
-      const color = this.convertColor(player.color)
-      if (!color) {
+      const c = this.convertColor(color)
+      if (!c) {
         continue
       }
 
       //Get data
-      const {name, rank, team} = player
+      const {name, rank, team} = players[color]
 
       //Set properties
-      root[`P${color}`] = this.escapeSgf(name || '')
+      root[`P${c}`] = this.escapeSgf(name || '')
       if (rank) {
-        root[`${color}R`] = this.escapeSgf(rank)
+        root[`${c}R`] = this.escapeSgf(rank)
       }
       if (team) {
-        root[`${color}T`] = this.escapeSgf(team)
+        root[`${c}T`] = this.escapeSgf(team)
       }
     }
   }

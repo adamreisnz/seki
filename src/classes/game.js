@@ -1462,12 +1462,8 @@ export default class Game extends Base {
 
     //Get info
     const dates = this.getInfo('game.dates')
-    const players = this.getInfo('players')
+    const {black, white} = this.getInfo('players')
     const numMoves = this.getTotalNumberOfMoves()
-
-    //Ensure correct order of players
-    const black = players.find(player => player.color === stoneColors.BLACK)
-    const white = players.find(player => player.color === stoneColors.WHITE)
 
     //Parse players
     const playerInfo = [black, white]
