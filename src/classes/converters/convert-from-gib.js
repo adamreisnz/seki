@@ -160,7 +160,7 @@ export default class ConvertFromGib extends Converter {
    */
   parseDate(game, match) {
     const date = `${match[1]}-${match[2]}-${match[3]}`
-    game.setInfo('game.dates', [date])
+    game.setDate(date)
   }
 
   /**

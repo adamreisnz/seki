@@ -171,6 +171,38 @@ export default class Game extends Base {
   }
 
   /**
+   * Set dates
+   */
+  setDates(dates) {
+    this.setInfo('game.dates', dates)
+  }
+
+  /**
+   * Get dates
+   */
+  getDates() {
+    return this.getInfo('game.dates')
+  }
+
+  /**
+   * Set the game date
+   */
+  setDate(date) {
+    this.setInfo('game.dates', [date])
+  }
+
+  /**
+   * Get the game date
+   */
+  getDate() {
+    const dates = this.getInfo('game.dates')
+    if (Array.isArray(dates) && dates.length > 0) {
+      return dates[0]
+    }
+    return ''
+  }
+
+  /**
    * Get the black player
    */
   getBlackPlayer() {
