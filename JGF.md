@@ -136,14 +136,11 @@ JGF = {
 		//way of handicap stone placement.
 		handicap: 0,
 
-		//Type of time control
-    timeControl: "Byo-yomi",
-
     //Main time (in seconds)
     mainTime: 7200,
 
-    //Overtime per move (in seconds)
-    overTime: 60
+    //Overtime
+    overTime: '3x20 byo-yomi',
   },
 
 	//Board properties

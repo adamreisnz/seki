@@ -13,19 +13,39 @@ export const defaultGameInfo = {
     version: jgfVersion,
     charset: 'UTF-8',
     generator: `${appName} v${appVersion}`,
+    transcriber: '',
+  },
+  source: {
+    name: '',
+    url: '',
+    copyright: '',
   },
   game: {
     type: gameTypes.GO,
+    name: '',
+    result: '',
     dates: [
       dateString(),
     ],
+    opening: '',
+    annotator: '',
+    description: '',
+  },
+  event: {
+    name: '',
+    location: '',
+    round: '',
   },
   players: {
     black: {
       name: 'Black',
+      rank: '',
+      team: '',
     },
     white: {
       name: 'White',
+      rank: '',
+      team: '',
     },
   },
   board: {
@@ -34,6 +54,9 @@ export const defaultGameInfo = {
   rules: {
     komi: 0,
     handicap: 0,
+    ruleSet: '',
+    mainTime: 0,
+    overTime: '',
   },
 }
 

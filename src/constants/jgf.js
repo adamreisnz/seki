@@ -24,7 +24,6 @@ export const jgfPaths = [
   'rules.ruleSet',
   'rules.komi',
   'rules.handicap',
-  'rules.timeControl',
   'rules.mainTime',
   'rules.overTime',
   'board.size',
