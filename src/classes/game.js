@@ -109,6 +109,13 @@ export default class Game extends Base {
   }
 
   /**
+   * Check if we have a generic info property
+   */
+  hasInfo(path) {
+    return !!get(this.info, path)
+  }
+
+  /**
    * Set the grid size
    */
   setGridSize(width, height) {
