@@ -434,7 +434,7 @@ export default class GameNode {
    * Get comments
    */
   getComments() {
-    return this.comments
+    return this.comments || []
   }
 
   /**
