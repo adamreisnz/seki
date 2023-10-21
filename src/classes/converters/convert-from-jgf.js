@@ -16,6 +16,7 @@ const skipPaths = [
   'game.result',
   'rules.komi',
   'rules.handicap',
+  'rules.mainTime',
 ]
 
 /**
@@ -37,6 +38,7 @@ export default class ConvertFromJgf extends Converter {
     this.extractHandicap(game, jgf)
     this.extractDates(game, jgf)
     this.extractResult(game, jgf)
+    this.extractMainTime(game, jgf)
 
     //Copy over rest of relevant paths
     for (const path of jgfPaths) {
@@ -170,6 +172,14 @@ export default class ConvertFromJgf extends Converter {
   extractResult(game, jgf) {
     const result = get(jgf, 'game.result')
     game.setResult(result)
+  }
+
+  /**
+   * Extract main time
+   */
+  extractMainTime(game, jgf) {
+    const time = get(jgf, 'rules.mainTime')
+    game.setMainTime(time)
   }
 
   /**

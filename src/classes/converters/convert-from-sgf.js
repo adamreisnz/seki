@@ -41,6 +41,7 @@ const parsingMap = {
   //Rules
   KM: 'parseKomi',
   HA: 'parseHandicap',
+  TM: 'parseMainTime',
 
   //Settings
   ST: 'parseVariationSettings',
@@ -406,6 +407,14 @@ export default class ConvertFromSgf extends Converter {
   parseHandicap(game, node, key, values) {
     const handicap = values[0]
     game.setHandicap(handicap)
+  }
+
+  /**
+   * Main time parser function
+   */
+  parseMainTime(game, node, key, values) {
+    const time = values[0]
+    game.setMainTime(time)
   }
 
   /**

@@ -227,19 +227,17 @@ export default class Game extends Base {
   }
 
   /**
-   * Get the black player
+   * Set main time
    */
-  getBlackPlayer() {
-    const players = this.getInfo('players')
-    return players.find(player => player.color === stoneColors.BLACK)
+  setMainTime(time) {
+    this.setInfo('rules.mainTime', parseFloat(time))
   }
 
   /**
-   * Get the white player
+   * Get main time
    */
-  getWhitePlayer() {
-    const players = this.getInfo('players')
-    return players.find(player => player.color === stoneColors.WHITE)
+  getMainTime() {
+    return this.getInfo('rules.mainTime')
   }
 
   /**
