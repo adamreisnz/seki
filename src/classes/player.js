@@ -89,6 +89,11 @@ export default class Player extends Base {
     this.game = game || new Game(info)
     this.path = null
 
+    //Propagate info event
+    this.game.on('info', event => {
+      this.triggerEvent('gameInfo', event.detail)
+    })
+
     //Restricted nodes
     this.restrictedStartNode = null
     this.restrictedEndNode = null
