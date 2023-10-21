@@ -13,6 +13,7 @@ const skipPaths = [
   'board.width',
   'board.height',
   'game.dates',
+  'game.result',
   'rules.komi',
   'rules.handicap',
 ]
@@ -35,6 +36,7 @@ export default class ConvertFromJgf extends Converter {
     this.extractKomi(game, jgf)
     this.extractHandicap(game, jgf)
     this.extractDates(game, jgf)
+    this.extractResult(game, jgf)
 
     //Copy over rest of relevant paths
     for (const path of jgfPaths) {
@@ -160,6 +162,14 @@ export default class ConvertFromJgf extends Converter {
   extractKomi(game, jgf) {
     const komi = get(jgf, 'rules.komi')
     game.setKomi(komi)
+  }
+
+  /**
+   * Extract result
+   */
+  extractResult(game, jgf) {
+    const result = get(jgf, 'game.result')
+    game.setResult(result)
   }
 
   /**

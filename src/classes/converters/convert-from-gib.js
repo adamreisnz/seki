@@ -184,7 +184,7 @@ export default class ConvertFromGib extends Converter {
     }
 
     //Set in game
-    game.setInfo('game.result', result)
+    game.setResult(result)
   }
 
   /**

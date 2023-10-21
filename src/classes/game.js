@@ -171,6 +171,23 @@ export default class Game extends Base {
   }
 
   /**
+   * Set the game result
+   */
+  setResult(result) {
+    const match = result
+      .toUpperCase()
+      .match(/^((B|W)\+([0-9]+(\.[0-9]+)?|R|T|F))/)
+    this.setInfo('game.result', match ? match[1] : '?')
+  }
+
+  /**
+   * Get the game result
+   */
+  getResult() {
+    return this.getInfo('game.result')
+  }
+
+  /**
    * Set dates
    */
   setDates(dates) {

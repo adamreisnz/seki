@@ -15,6 +15,7 @@ export const defaultGameInfo = {
     generator: `${appName} v${appVersion}`,
   },
   game: {
+    name: 'New game',
     type: gameTypes.GO,
     dates: [
       dateString(),

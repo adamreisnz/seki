@@ -33,6 +33,7 @@ const parsingMap = {
   //Game information
   GM: 'parseGameType',
   DT: 'parseDates',
+  RE: 'parseResult',
 
   //Board information
   SZ: 'parseSize',
@@ -405,6 +406,14 @@ export default class ConvertFromSgf extends Converter {
   parseHandicap(game, node, key, values) {
     const handicap = values[0]
     game.setHandicap(handicap)
+  }
+
+  /**
+   * Result parser function
+   */
+  parseResult(game, node, key, values) {
+    const result = values[0]
+    game.setResult(result)
   }
 
   /**
