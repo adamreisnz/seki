@@ -99,6 +99,7 @@ export default class Game extends Base {
    */
   setInfo(path, value) {
     set(this.info, path, value)
+    this.triggerEvent('info', {path, value})
   }
 
   /**
