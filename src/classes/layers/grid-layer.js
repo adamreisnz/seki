@@ -74,11 +74,13 @@ export default class GridLayer extends BoardLayer {
     //Draw grid lines
     context.stroke()
 
-    //Star points defined?
-    for (i = 0; i < starPoints.length; i++) {
-      this.drawStarPoint(
-        starPoints[i].x, starPoints[i].y, starRadius, starColor,
-      )
+    //Star points enabled and defined?
+    if (board.getConfig('showStarPoints')) {
+      for (i = 0; i < starPoints.length; i++) {
+        this.drawStarPoint(
+          starPoints[i].x, starPoints[i].y, starRadius, starColor,
+        )
+      }
     }
 
     //Restore context

@@ -110,51 +110,35 @@ export default class Board extends Base {
   }
 
   /**
-   * Section config
-   */
-  get sectionLeft() {
-    return this.getConfig('sectionLeft', 0)
-  }
-  get sectionRight() {
-    return this.getConfig('sectionRight', 0)
-  }
-  get sectionTop() {
-    return this.getConfig('sectionTop', 0)
-  }
-  get sectionBottom() {
-    return this.getConfig('sectionBottom', 0)
-  }
-
-  /**
    * Cutoff config
    */
-  get cutoffLeft() {
-    return this.getConfig('cutoffLeft', false)
+  get cutOffLeft() {
+    return this.getConfig('cutOffLeft', false)
   }
-  get cutoffRight() {
-    return this.getConfig('cutoffRight', false)
+  get cutOffRight() {
+    return this.getConfig('cutOffRight', false)
   }
-  get cutoffTop() {
-    return this.getConfig('cutoffTop', false)
+  get cutOffTop() {
+    return this.getConfig('cutOffTop', false)
   }
-  get cutoffBottom() {
-    return this.getConfig('cutoffBottom', false)
+  get cutOffBottom() {
+    return this.getConfig('cutOffBottom', false)
   }
 
   /**
    * Board's x & y coordinates
    */
   get xLeft() {
-    return 0 + this.sectionLeft
+    return 0 + this.cutOffLeft
   }
   get xRight() {
-    return this.width - 1 - this.sectionRight
+    return this.width - 1 - this.cutOffRight
   }
   get yTop() {
-    return 0 + this.sectionTop
+    return 0 + this.cutOffTop
   }
   get yBottom() {
-    return this.height - 1 - this.sectionBottom
+    return this.height - 1 - this.cutOffBottom
   }
 
   /**
@@ -654,21 +638,21 @@ export default class Board extends Base {
     //Get data
     const {
       width, height, drawWidth, drawHeight, margin,
-      cutoffLeft, cutoffRight, cutoffTop, cutoffBottom,
+      cutOffLeft, cutOffRight, cutOffTop, cutOffBottom,
     } = this
 
     //Add half a cell of draw size if we're cutting of parts of the grid
-    const cutoffHor = [cutoffLeft, cutoffRight]
+    const cutOffHor = [cutOffLeft, cutOffRight]
       .map(side => side ? 0.5 : 0)
       .reduce((value, total) => value + total, 0)
-    const cutoffVer = [cutoffTop, cutoffBottom]
+    const cutOffVer = [cutOffTop, cutOffBottom]
       .map(side => side ? 0.5 : 0)
       .reduce((value, total) => value + total, 0)
 
     //Determine number of cells horizontally and vertically
     //The margin is a factor of the cell size, so let's add it to the number of cells
-    const numCellsHor = width + margin + cutoffHor
-    const numCellsVer = height + margin + cutoffVer
+    const numCellsHor = width + margin + cutOffHor
+    const numCellsVer = height + margin + cutOffVer
 
     //Determine cell size now
     const cellSize = Math.floor(Math.min(
@@ -706,8 +690,8 @@ export default class Board extends Base {
    * Convert grid coordinate to pixel coordinate
    */
   getAbsX(x) {
-    const {cutoffLeft, drawMarginHor, cellSize} = this
-    const offset = cutoffLeft ? 0.5 : 0
+    const {cutOffLeft, drawMarginHor, cellSize} = this
+    const offset = cutOffLeft ? 0.5 : 0
     return drawMarginHor + Math.round((x + offset) * cellSize)
   }
 
@@ -715,8 +699,8 @@ export default class Board extends Base {
    * Convert grid coordinate to pixel coordinate
    */
   getAbsY(y) {
-    const {cutoffTop, drawMarginVer, cellSize} = this
-    const offset = cutoffTop ? 0.5 : 0
+    const {cutOffTop, drawMarginVer, cellSize} = this
+    const offset = cutOffTop ? 0.5 : 0
     return drawMarginVer + Math.round((y + offset) * cellSize)
   }
 
@@ -724,8 +708,8 @@ export default class Board extends Base {
    * Convert pixel coordinate to grid coordinate
    */
   getGridX(absX) {
-    const {cutoffLeft, drawMarginHor, cellSize} = this
-    const offset = cutoffLeft ? 0.5 : 0
+    const {cutOffLeft, drawMarginHor, cellSize} = this
+    const offset = cutOffLeft ? 0.5 : 0
     const x = Math.round((absX - drawMarginHor) / cellSize - offset)
     return Object.is(x, -0) ? 0 : x
   }
@@ -734,8 +718,8 @@ export default class Board extends Base {
    * Convert pixel coordinate to grid coordinate
    */
   getGridY(absY) {
-    const {cutoffTop, drawMarginVer, cellSize} = this
-    const offset = cutoffTop ? 0.5 : 0
+    const {cutOffTop, drawMarginVer, cellSize} = this
+    const offset = cutOffTop ? 0.5 : 0
     const y = Math.round((absY - drawMarginVer) / cellSize - offset)
     return Object.is(y, -0) ? 0 : y
   }
@@ -965,6 +949,7 @@ export default class Board extends Base {
     //These need a redraw
     const needsRedraw = [
       'showCoordinates',
+      'showStarPoints',
       'swapColors',
     ]
 
@@ -992,6 +977,7 @@ export default class Board extends Base {
     //Config to pass from player to board
     const boardConfig = [
       'showCoordinates',
+      'showStarPoints',
       'swapColors',
     ]
 

@@ -161,6 +161,9 @@
           <label class="checkboxLabel toggleConfig" config="showCoordinates">
             <input type="checkbox"> Show coordinates
           </label>
+          <label class="checkboxLabel toggleConfig" config="showStarPoints">
+            <input type="checkbox"> Show star points
+          </label>
           <label class="checkboxLabel toggleConfig" config="showLastMove">
             <input type="checkbox"> Show last move
           </label>
@@ -303,6 +306,13 @@ helpers.util.setDebug(true)
 //Find player element and instantiate player
 const playerElement = document.getElementById('player')
 const player = new Player({
+  board: {
+    size: 9,
+    cutOffTop: 4,
+    cutOffBottom: 0,
+    cutOffLeft: 2,
+    cutOffRight: 0,
+  },
   theme: {
     board: {
       backgroundImage: imageWood1,

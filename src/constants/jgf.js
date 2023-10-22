@@ -29,8 +29,10 @@ export const jgfPaths = [
   'board.size',
   'board.width',
   'board.height',
-  'board.cutoff',
-  'board.section',
+  'board.cutOffLeft',
+  'board.cutOffRight',
+  'board.cutOffTop',
+  'board.cutOffBottom',
   'players',
   'meta',
 ]

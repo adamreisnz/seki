@@ -64,20 +64,15 @@ export const defaultBoardConfig = {
   //Width and height
   size: 19,
 
-  //Grid cut-off sides
-  cutoffTop: false,
-  cutoffBottom: false,
-  cutoffLeft: false,
-  cutoffRight: false,
-
-  //Section of board to display
-  sectionTop: 0,
-  sectionBottom: 0,
-  sectionLeft: 0,
-  sectionRight: 0,
+  //Grid cut-off
+  cutOffTop: 0,
+  cutOffBottom: 0,
+  cutOffLeft: 0,
+  cutOffRight: 0,
 
   //Flags
   showCoordinates: true,
+  showStarPoints: true,
   swapColors: false,
 }
 
@@ -280,10 +275,8 @@ export const defaultPlayerConfig = {
   },
 
   //Flags
-  swapColors: false,
   showLastMove: true,
   showNextMove: false,
-  showCoordinates: true,
   showSolutions: false,
   showAllMoveNumbers: false,
   showVariationMoveNumbers: true,
@@ -292,6 +285,11 @@ export const defaultPlayerConfig = {
   showSiblingVariations: false,
   rememberVariationPaths: true,
   allowMovesInReplayMode: true,
+
+  //Board configuration
+  showCoordinates: true,
+  showStarPoints: true,
+  swapColors: false,
 
   //Number of moves to skip at a time
   numSkipMoves: 10,
