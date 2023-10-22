@@ -68,7 +68,7 @@ export default class CoordinatesLayer extends BoardLayer {
     context.textAlign = 'center'
 
     //Draw vertical coordinates
-    for (let i = 0; i < board.height; i++) {
+    for (let i = board.yTop; i <= board.yBottom; i++) {
 
       //Get character
       const j = this.getIndex(i, board.height, inverse)
@@ -112,7 +112,7 @@ export default class CoordinatesLayer extends BoardLayer {
     context.textAlign = 'center'
 
     //Draw horizontal coordinates
-    for (let i = 0; i < board.width; i++) {
+    for (let i = board.xLeft; i <= board.xRight; i++) {
 
       //Get character
       const j = this.getIndex(i, board.width, inverse)

@@ -54,19 +54,16 @@ export default class GridLayer extends BoardLayer {
     context.lineCap = lineCap
     context.strokeStyle = strokeStyle
 
-    //Helper vars
-    let i, x, y
-
     //Draw vertical lines
-    for (i = board.xLeft; i <= board.xRight; i++) {
-      x = board.getAbsX(i)
+    for (let i = board.xLeft; i <= board.xRight; i++) {
+      const x = board.getAbsX(i)
       context.moveTo(x, ty)
       context.lineTo(x, ty + board.gridDrawHeight)
     }
 
     //Draw horizontal lines
-    for (i = board.yTop; i <= board.yBottom; i++) {
-      y = board.getAbsY(i)
+    for (let i = board.yTop; i <= board.yBottom; i++) {
+      const y = board.getAbsY(i)
       context.moveTo(tx, y)
       context.lineTo(tx + board.gridDrawWidth, y)
     }
@@ -76,7 +73,7 @@ export default class GridLayer extends BoardLayer {
 
     //Star points enabled and defined?
     if (board.getConfig('showStarPoints')) {
-      for (i = 0; i < starPoints.length; i++) {
+      for (let i = 0; i < starPoints.length; i++) {
         this.drawStarPoint(
           starPoints[i].x, starPoints[i].y, starRadius, starColor,
         )

@@ -110,7 +110,7 @@ export default class Board extends Base {
   }
 
   /**
-   * Cutoff config
+   * Cut-off config
    */
   get cutOffLeft() {
     return this.getConfig('cutOffLeft', false)
@@ -123,6 +123,18 @@ export default class Board extends Base {
   }
   get cutOffBottom() {
     return this.getConfig('cutOffBottom', false)
+  }
+
+  /**
+   * Actual grid width and height, factoring in cut-off
+   */
+  get gridWidth() {
+    const {width, cutOffLeft, cutOffRight} = this
+    return width - cutOffLeft - cutOffRight
+  }
+  get gridHeight() {
+    const {height, cutOffTop, cutOffBottom} = this
+    return height - cutOffTop - cutOffBottom
   }
 
   /**
@@ -637,22 +649,26 @@ export default class Board extends Base {
 
     //Get data
     const {
-      width, height, drawWidth, drawHeight, margin,
-      cutOffLeft, cutOffRight, cutOffTop, cutOffBottom,
+      gridWidth, gridHeight,
+      drawWidth, drawHeight,
+      cutOffLeft, cutOffRight,
+      cutOffTop, cutOffBottom,
+      margin,
     } = this
 
-    //Add half a cell of draw size if we're cutting of parts of the grid
+    //Add half a cell of draw size per side
+    //if we're cutting of parts of the grid
     const cutOffHor = [cutOffLeft, cutOffRight]
-      .map(side => side ? 0.5 : 0)
+      .map(side => side > 0 ? 0.5 : 0)
       .reduce((value, total) => value + total, 0)
     const cutOffVer = [cutOffTop, cutOffBottom]
-      .map(side => side ? 0.5 : 0)
+      .map(side => side > 0 ? 0.5 : 0)
       .reduce((value, total) => value + total, 0)
 
     //Determine number of cells horizontally and vertically
     //The margin is a factor of the cell size, so let's add it to the number of cells
-    const numCellsHor = width + margin + cutOffHor
-    const numCellsVer = height + margin + cutOffVer
+    const numCellsHor = gridWidth + margin + cutOffHor
+    const numCellsVer = gridHeight + margin + cutOffVer
 
     //Determine cell size now
     const cellSize = Math.floor(Math.min(
@@ -667,6 +683,24 @@ export default class Board extends Base {
     //Determine draw margins
     const drawMarginHor = Math.floor((drawWidth - gridDrawWidth) / 2)
     const drawMarginVer = Math.floor((drawHeight - gridDrawHeight) / 2)
+
+    //Debug
+    this.debug({
+      margin,
+      cellSize,
+      cellSizeHor: drawWidth / numCellsHor,
+      cellSizeVer: drawHeight / numCellsVer,
+      gridWidth,
+      gridHeight,
+      numCellsHor,
+      numCellsVer,
+      gridDrawWidth,
+      gridDrawHeight,
+      drawWidth,
+      drawHeight,
+      drawMarginHor,
+      drawMarginVer,
+    })
 
     //Set values
     this.cellSize = cellSize
@@ -691,7 +725,7 @@ export default class Board extends Base {
    */
   getAbsX(x) {
     const {cutOffLeft, drawMarginHor, cellSize} = this
-    const offset = cutOffLeft ? 0.5 : 0
+    const offset = (cutOffLeft > 0 ? 0.5 : 0) - cutOffLeft
     return drawMarginHor + Math.round((x + offset) * cellSize)
   }
 
@@ -700,7 +734,7 @@ export default class Board extends Base {
    */
   getAbsY(y) {
     const {cutOffTop, drawMarginVer, cellSize} = this
-    const offset = cutOffTop ? 0.5 : 0
+    const offset = (cutOffTop > 0 ? 0.5 : 0) - cutOffTop
     return drawMarginVer + Math.round((y + offset) * cellSize)
   }
 
@@ -709,7 +743,7 @@ export default class Board extends Base {
    */
   getGridX(absX) {
     const {cutOffLeft, drawMarginHor, cellSize} = this
-    const offset = cutOffLeft ? 0.5 : 0
+    const offset = (cutOffLeft > 0 ? 0.5 : 0) - cutOffLeft
     const x = Math.round((absX - drawMarginHor) / cellSize - offset)
     return Object.is(x, -0) ? 0 : x
   }
@@ -719,7 +753,7 @@ export default class Board extends Base {
    */
   getGridY(absY) {
     const {cutOffTop, drawMarginVer, cellSize} = this
-    const offset = cutOffTop ? 0.5 : 0
+    const offset = (cutOffTop > 0 ? 0.5 : 0) - cutOffTop
     const y = Math.round((absY - drawMarginVer) / cellSize - offset)
     return Object.is(y, -0) ? 0 : y
   }
@@ -876,21 +910,40 @@ export default class Board extends Base {
   getDrawSize() {
 
     //Get data
-    const {width, height} = this
     const {availableWidth, availableHeight} = this.getAvailableSize()
+    const {
+      gridWidth, gridHeight,
+      cutOffLeft, cutOffRight,
+      cutOffTop, cutOffBottom,
+      margin,
+    } = this
 
     //Grid size known?
-    if (width && height) {
+    if (gridWidth && gridHeight) {
 
-      //Determine smallest cell size
-      const cellSize = Math.min(
-        availableWidth / width,
-        availableHeight / height,
-      )
+      //Add half a cell of draw size per side
+      //if we're cutting of parts of the grid
+      const cutOffHor = [cutOffLeft, cutOffRight]
+        .map(side => side > 0 ? 0.5 : 0)
+        .reduce((value, total) => value + total, 0)
+      const cutOffVer = [cutOffTop, cutOffBottom]
+        .map(side => side > 0 ? 0.5 : 0)
+        .reduce((value, total) => value + total, 0)
+
+      //Determine number of cells horizontally and vertically
+      //The margin is a factor of the cell size, so let's add it to the number of cells
+      const numCellsHor = gridWidth + margin + cutOffHor
+      const numCellsVer = gridHeight + margin + cutOffVer
+
+      //Determine cell size now
+      const cellSize = Math.floor(Math.min(
+        availableWidth / numCellsHor,
+        availableHeight / numCellsVer,
+      ))
 
       //Set draw size
-      const drawWidth = Math.floor(cellSize * width)
-      const drawHeight = Math.floor(cellSize * height)
+      const drawWidth = Math.floor(cellSize * numCellsHor)
+      const drawHeight = Math.floor(cellSize * numCellsVer)
 
       //Return
       return {drawWidth, drawHeight}
