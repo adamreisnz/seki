@@ -967,6 +967,14 @@ export default class Board extends Base {
    */
   setupConfigListeners() {
 
+    //These need recalculation of draw size
+    const needsDrawSize = [
+      'cutOffTop',
+      'cutOffBottom',
+      'cutOffLeft',
+      'cutOffRight',
+    ]
+
     //These need a redraw
     const needsRedraw = [
       'showCoordinates',
@@ -980,8 +988,14 @@ export default class Board extends Base {
       //Check what has changed
       const {key} = event.detail
 
+      //Need to recalculate draw size?
+      if (needsDrawSize.includes(key)) {
+        this.recalculateDrawSize()
+        this.computeAndRedraw()
+      }
+
       //Need to reprocess position?
-      if (needsRedraw.includes(key)) {
+      else if (needsRedraw.includes(key)) {
         this.computeAndRedraw()
       }
     })
