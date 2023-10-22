@@ -65,20 +65,16 @@ export const defaultBoardConfig = {
   size: 19,
 
   //Grid cut-off sides
-  cutoff: {
-    top: false,
-    bottom: false,
-    left: false,
-    right: false,
-  },
+  cutoffTop: false,
+  cutoffBottom: false,
+  cutoffLeft: false,
+  cutoffRight: false,
 
   //Section of board to display
-  section: {
-    top: 0,
-    bottom: 0,
-    left: 0,
-    right: 0,
-  },
+  sectionTop: 0,
+  sectionBottom: 0,
+  sectionLeft: 0,
+  sectionRight: 0,
 
   //Flags
   showCoordinates: true,

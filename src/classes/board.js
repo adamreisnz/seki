@@ -112,49 +112,49 @@ export default class Board extends Base {
   /**
    * Section config
    */
-  getSectionLeft() {
+  get sectionLeft() {
     return this.getConfig('sectionLeft', 0)
   }
-  getSectionRight() {
+  get sectionRight() {
     return this.getConfig('sectionRight', 0)
   }
-  getSectionTop() {
+  get sectionTop() {
     return this.getConfig('sectionTop', 0)
   }
-  getSectionBottom() {
+  get sectionBottom() {
     return this.getConfig('sectionBottom', 0)
   }
 
   /**
    * Cutoff config
    */
-  getCutoffLeft() {
+  get cutoffLeft() {
     return this.getConfig('cutoffLeft', false)
   }
-  getCutoffRight() {
+  get cutoffRight() {
     return this.getConfig('cutoffRight', false)
   }
-  getCutoffTop() {
+  get cutoffTop() {
     return this.getConfig('cutoffTop', false)
   }
-  getCutoffBottom() {
+  get cutoffBottom() {
     return this.getConfig('cutoffBottom', false)
   }
 
   /**
    * Board's x & y coordinates
    */
-  getXLeft() {
-    return 0 + this.getSectionLeft()
+  get xLeft() {
+    return 0 + this.sectionLeft
   }
-  getXRight() {
-    return this.width - 1 - this.getSectionRight()
+  get xRight() {
+    return this.width - 1 - this.sectionRight
   }
-  getYTop() {
-    return 0 + this.getSectionTop()
+  get yTop() {
+    return 0 + this.sectionTop
   }
-  getYBottom() {
-    return this.height - 1 - this.getSectionBottom()
+  get yBottom() {
+    return this.height - 1 - this.sectionBottom
   }
 
   /**
@@ -654,13 +654,8 @@ export default class Board extends Base {
     //Get data
     const {
       width, height, drawWidth, drawHeight, margin,
+      cutoffLeft, cutoffRight, cutoffTop, cutoffBottom,
     } = this
-
-    //Get cutoffs
-    const cutoffLeft = this.getCutoffLeft()
-    const cutoffRight = this.getCutoffRight()
-    const cutoffTop = this.getCutoffTop()
-    const cutoffBottom = this.getCutoffBottom()
 
     //Add half a cell of draw size if we're cutting of parts of the grid
     const cutoffHor = [cutoffLeft, cutoffRight]
@@ -711,8 +706,7 @@ export default class Board extends Base {
    * Convert grid coordinate to pixel coordinate
    */
   getAbsX(x) {
-    const {drawMarginHor, cellSize} = this
-    const cutoffLeft = this.getCutoffLeft()
+    const {cutoffLeft, drawMarginHor, cellSize} = this
     const offset = cutoffLeft ? 0.5 : 0
     return drawMarginHor + Math.round((x + offset) * cellSize)
   }
@@ -721,8 +715,7 @@ export default class Board extends Base {
    * Convert grid coordinate to pixel coordinate
    */
   getAbsY(y) {
-    const {drawMarginVer, cellSize} = this
-    const cutoffTop = this.getCutoffTop()
+    const {cutoffTop, drawMarginVer, cellSize} = this
     const offset = cutoffTop ? 0.5 : 0
     return drawMarginVer + Math.round((y + offset) * cellSize)
   }
@@ -731,8 +724,7 @@ export default class Board extends Base {
    * Convert pixel coordinate to grid coordinate
    */
   getGridX(absX) {
-    const {drawMarginHor, cellSize} = this
-    const cutoffLeft = this.getCutoffLeft()
+    const {cutoffLeft, drawMarginHor, cellSize} = this
     const offset = cutoffLeft ? 0.5 : 0
     const x = Math.round((absX - drawMarginHor) / cellSize - offset)
     return Object.is(x, -0) ? 0 : x
@@ -742,8 +734,7 @@ export default class Board extends Base {
    * Convert pixel coordinate to grid coordinate
    */
   getGridY(absY) {
-    const {drawMarginVer, cellSize} = this
-    const cutoffTop = this.getCutoffTop()
+    const {cutoffTop, drawMarginVer, cellSize} = this
     const offset = cutoffTop ? 0.5 : 0
     const y = Math.round((absY - drawMarginVer) / cellSize - offset)
     return Object.is(y, -0) ? 0 : y
@@ -753,10 +744,7 @@ export default class Board extends Base {
    * Check if given grid coordinates are on board
    */
   isOnBoard(x, y) {
-    const xLeft = this.getXLeft()
-    const xRight = this.getXRight()
-    const yTop = this.getYTop()
-    const yBottom = this.getYBottom()
+    const {xLeft, xRight, yTop, yBottom} = this
     return (
       x >= xLeft && y >= yTop &&
       x <= xRight && y <= yBottom
