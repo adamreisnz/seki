@@ -335,7 +335,8 @@ export const defaultTheme = {
   board: {
     margin: 0.25, //cells
     borderWidth: 8, //px
-    background: '../../images/wood-1.jpg',
+    backgroundColor: '#fff',
+    backgroundImage: '../../images/wood-1.jpg',
     stoneStyle: stoneStyles.SLATE_SHELL,
   },
 
