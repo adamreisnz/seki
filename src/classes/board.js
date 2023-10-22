@@ -1006,6 +1006,11 @@ export default class Board extends Base {
         this.setConfig(key, value)
       }
     })
+
+    //Grab initial settings
+    for (const key of boardConfig) {
+      this.setConfig(key, player.getConfig(key))
+    }
   }
 
   /**************************************************************************
