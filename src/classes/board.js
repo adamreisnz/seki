@@ -11,6 +11,9 @@ import {
   getPixelRatio,
   createElement,
   createCanvasContext,
+  mergeCanvases,
+  downloadImage,
+  dateTimeString,
 } from '../helpers/util.js'
 
 /**
@@ -24,6 +27,7 @@ export default class Board extends Base {
 
   //Layer order
   layerOrder = [
+    boardLayerTypes.BACKGROUND,
     boardLayerTypes.GRID,
     boardLayerTypes.COORDINATES,
     boardLayerTypes.SHADOW,
@@ -1002,5 +1006,28 @@ export default class Board extends Base {
         this.setConfig(key, value)
       }
     })
+  }
+
+  /**************************************************************************
+   * To image
+   ***/
+
+  /**
+   * Download board image
+   */
+  downloadImage() {
+
+    //Get canvases and merged them
+    const {layers} = this
+    const canvases = Array
+      .from(layers.values())
+      .map(layer => layer.context.canvas)
+
+    //Merge canvases and generate filename
+    const merged = mergeCanvases(canvases)
+    const filename = `seki board ${dateTimeString()}.png`
+
+    //Download image
+    downloadImage(merged, filename)
   }
 }

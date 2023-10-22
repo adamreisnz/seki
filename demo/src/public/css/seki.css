@@ -19,9 +19,6 @@
   min-height: 50px;
   box-sizing: content-box;
   box-shadow: 0 0 10px rgba(60, 30, 20, 0.4);
-  background: url('../images/wood-1.jpg');
-  background-size: 40%;
-  background-repeat: repeat;
   border: 10px solid;
   border-image-slice: 1;
   border-width: 0; /* 4px, themed*/

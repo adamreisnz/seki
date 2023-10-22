@@ -44,6 +44,45 @@ export function createCanvasContext(element, className) {
 }
 
 /**
+ * Merge canvases onto a single canvas
+ */
+export function mergeCanvases(canvases) {
+
+  //Create merged canvas
+  const merged = document.createElement('canvas')
+  const context = merged.getContext('2d')
+  const pixelRatio = getPixelRatio()
+
+  //Scale context depending on pixel ratio
+  if (pixelRatio > 1) {
+    context.scale(pixelRatio, pixelRatio)
+  }
+
+  //Set dimensions based on first canvas
+  merged.width = canvases[0].width
+  merged.height = canvases[0].height
+
+  //Merge canvases
+  for (const canvas of canvases) {
+    context.drawImage(canvas, 0, 0)
+  }
+
+  //Return merged canvas
+  return merged
+}
+
+/**
+ * Download image
+ */
+export function downloadImage(canvas, filename = 'seki.png') {
+  const dataURL = canvas.toDataURL('image/png')
+  const link = document.createElement('a')
+  link.download = filename
+  link.href = dataURL.replace('image/png', 'image/octet-stream')
+  link.click()
+}
+
+/**
  * Helper wrapper
  */
 export function editClassList(element, action, ...args) {
@@ -220,4 +259,17 @@ export function dateString(date = new Date()) {
   const month = date.getMonth() + 1
   const year = date.getFullYear()
   return `${year}-${month}-${day}`
+}
+
+/**
+ * Date and time string generator
+ */
+export function dateTimeString(date = new Date()) {
+  const day = date.getDate()
+  const month = date.getMonth() + 1
+  const year = date.getFullYear()
+  const hours = date.getHours()
+  const minutes = date.getMinutes()
+  const seconds = date.getSeconds()
+  return `${year}-${month}-${day} at ${hours}.${minutes}.${seconds}`
 }

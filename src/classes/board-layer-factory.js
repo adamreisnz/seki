@@ -1,3 +1,4 @@
+import BackgroundLayer from './layers/background-layer.js'
 import GridLayer from './layers/grid-layer.js'
 import CoordinatesLayer from './layers/coordinates-layer.js'
 import ShadowLayer from './layers/shadow-layer.js'
@@ -18,6 +19,8 @@ export default class BoardLayerFactory {
    */
   static getClass(type) {
     switch (type) {
+      case boardLayerTypes.BACKGROUND:
+        return BackgroundLayer
       case boardLayerTypes.GRID:
         return GridLayer
       case boardLayerTypes.COORDINATES:

@@ -14,6 +14,7 @@ export default class BoardStatic extends Board {
 
   //Layer order for static boards
   layerOrder = [
+    boardLayerTypes.BACKGROUND,
     boardLayerTypes.GRID,
     boardLayerTypes.COORDINATES,
     boardLayerTypes.STONES,

@@ -710,6 +710,16 @@ export default class Player extends Base {
     }
   }
 
+  /**
+   * Download board image
+   */
+  downloadBoardImage() {
+    const {board} = this
+    if (board) {
+      board.downloadImage()
+    }
+  }
+
   /*****************************************************************************
    * Bootstrapping
    ***/

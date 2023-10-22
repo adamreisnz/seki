@@ -9,6 +9,7 @@ export const boardSides = {
 
 //Board layer types
 export const boardLayerTypes = {
+  BACKGROUND: 'background',
   GRID: 'grid',
   COORDINATES: 'coordinates',
   SHADOW: 'shadow',
