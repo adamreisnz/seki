@@ -464,8 +464,7 @@ player.on('config', event => {
   if (key === 'showAdvancedNavigation') {
     toggleHidden('.advancedNav', !value)
   }
-  const config = player.getConfigCopy()
-  helpers.storage.set('config', config)
+  helpers.storage.set('config', player.getConfigCopy())
 })
 player.on('gameLoad', () => {
   player.setMode(playerModes.REPLAY)
