@@ -233,8 +233,6 @@ export default class ConvertToSgf extends Converter {
     //Initialise coordinate groups
     const groups = {}
 
-    console.log('SETUP', setup)
-
     //Loop over setup instructions
     for (const obj of setup) {
 
@@ -246,8 +244,6 @@ export default class ConvertToSgf extends Converter {
       groups[key] = groups[key] || []
       groups[key].push(...coords)
     }
-
-    console.log('GROUPS', groups)
 
     //Now convert by type to SGF
     let sgf = ''

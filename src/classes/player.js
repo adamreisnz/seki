@@ -51,7 +51,7 @@ export default class Player extends Base {
 
     //Initialise
     this.initBoard(config.board, config.theme)
-    this.initGame(config.game)
+    this.initGame()
     this.initConfig(config)
   }
 
@@ -76,8 +76,8 @@ export default class Player extends Base {
   /**
    * Initialise board
    */
-  initBoard(board) {
-    this.board = board || new Board()
+  initBoard(boardConfig, themeConfig) {
+    this.board = new Board(boardConfig, themeConfig)
   }
 
   /**
@@ -755,7 +755,7 @@ export default class Player extends Base {
   bootstrapBoard() {
 
     //Get player element
-    const {element} = this
+    const {element, board} = this
     const boardElement = element.children[0]
 
     //No board element
@@ -766,15 +766,9 @@ export default class Player extends Base {
     //Store
     this.boardElement = boardElement
 
-    //Create board
-    const board = new Board()
-
     //Bootstrap it and link it to the player
     board.bootstrap(boardElement, element)
     board.linkPlayer(this)
-
-    //Set board
-    this.setBoard(board)
   }
 
   /**

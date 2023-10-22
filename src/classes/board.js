@@ -54,7 +54,7 @@ export default class Board extends Base {
   /**
    * Board constructor
    */
-  constructor(config, themeConfig) {
+  constructor(boardConfig, themeConfig) {
 
     //Parent constructor
     super()
@@ -65,7 +65,7 @@ export default class Board extends Base {
     //Initialize board
     this.init()
     this.createLayers()
-    this.initConfig(config)
+    this.initConfig(boardConfig)
 
     //Create config event listeners
     this.setupConfigListeners()

@@ -336,7 +336,7 @@ export const defaultTheme = {
     margin: 0.25, //cells
     borderWidth: 0, //px
     backgroundColor: '#fff',
-    backgroundImage: '../../images/wood-1.jpg',
+    backgroundImage: '',
     stoneStyle: stoneStyles.SLATE_SHELL,
   },
 

@@ -283,8 +283,9 @@ import {
 } from './js/demo.js'
 
 //Audio
-import audioMove from './audio/move.wav'
-import audioCapture from './audio/capture.wav'
+import audioMove from './assets/audio/move.wav'
+import audioCapture from './assets/audio/capture.wav'
+import imageWood1 from './assets/images/wood-1.jpg'
 
 //Get constants
 const {
@@ -302,6 +303,11 @@ helpers.util.setDebug(true)
 //Find player element and instantiate player
 const playerElement = document.getElementById('player')
 const player = new Player({
+  theme: {
+    board: {
+      backgroundImage: imageWood1,
+    },
+  },
   audio: {
     move: audioMove,
     capture: audioCapture,
