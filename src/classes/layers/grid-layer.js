@@ -35,12 +35,6 @@ export default class GridLayer extends BoardLayer {
     const tx = drawMarginHor
     const ty = drawMarginVer
 
-    //Get boundaries
-    const xLeft = board.getXLeft()
-    const xRight = board.getXRight()
-    const yTop = board.getYTop()
-    const yBottom = board.getYBottom()
-
     //Get theme properties
     const cellSize = board.getCellSize()
     const lineWidth = theme.get('grid.lineWidth', cellSize)
@@ -64,14 +58,14 @@ export default class GridLayer extends BoardLayer {
     let i, x, y
 
     //Draw vertical lines
-    for (i = xLeft; i <= xRight; i++) {
+    for (i = board.xLeft; i <= board.xRight; i++) {
       x = board.getAbsX(i)
       context.moveTo(x, ty)
       context.lineTo(x, ty + board.gridDrawHeight)
     }
 
     //Draw horizontal lines
-    for (i = yTop; i <= yBottom; i++) {
+    for (i = board.yTop; i <= board.yBottom; i++) {
       y = board.getAbsY(i)
       context.moveTo(tx, y)
       context.lineTo(tx + board.gridDrawWidth, y)
