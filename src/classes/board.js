@@ -113,32 +113,32 @@ export default class Board extends Base {
    * Section config
    */
   getSectionLeft() {
-    return this.getConfig('section.left', 0)
+    return this.getConfig('sectionLeft', 0)
   }
   getSectionRight() {
-    return this.getConfig('section.right', 0)
+    return this.getConfig('sectionRight', 0)
   }
   getSectionTop() {
-    return this.getConfig('section.top', 0)
+    return this.getConfig('sectionTop', 0)
   }
   getSectionBottom() {
-    return this.getConfig('section.bottom', 0)
+    return this.getConfig('sectionBottom', 0)
   }
 
   /**
    * Cutoff config
    */
   getCutoffLeft() {
-    return this.getConfig('cutoff.left', false)
+    return this.getConfig('cutoffLeft', false)
   }
   getCutoffRight() {
-    return this.getConfig('cutoff.right', false)
+    return this.getConfig('cutoffRight', false)
   }
   getCutoffTop() {
-    return this.getConfig('cutoff.top', false)
+    return this.getConfig('cutoffTop', false)
   }
   getCutoffBottom() {
-    return this.getConfig('cutoff.bottom', false)
+    return this.getConfig('cutoffBottom', false)
   }
 
   /**
