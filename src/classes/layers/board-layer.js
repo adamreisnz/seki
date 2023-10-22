@@ -178,10 +178,15 @@ export default class BoardLayer {
 
     //Get object
     const object = this.grid.get(x, y)
-    const {context} = this
+    const {board, context} = this
 
     //No object
     if (!object) {
+      return
+    }
+
+    //Not on board
+    if (!board.isOnBoard(x, y)) {
       return
     }
 
@@ -201,10 +206,15 @@ export default class BoardLayer {
 
     //Get object
     const object = this.grid.get(x, y)
-    const {context} = this
+    const {board, context} = this
 
     //No object
     if (!object) {
+      return
+    }
+
+    //Not on board
+    if (!board.isOnBoard(x, y)) {
       return
     }
 

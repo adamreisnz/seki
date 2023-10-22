@@ -117,6 +117,11 @@ export default class GridLayer extends BoardLayer {
     //Get board and context
     const {board, theme, context} = this
 
+    //Not on board
+    if (!board.isOnBoard(x, y)) {
+      return
+    }
+
     //Get absolute coordinates and stone radius
     const absX = board.getAbsX(x)
     const absY = board.getAbsY(y)
@@ -148,6 +153,11 @@ export default class GridLayer extends BoardLayer {
 
     //Get board and context
     const {board, theme, context} = this
+
+    //Not on board
+    if (!board.isOnBoard(x, y)) {
+      return
+    }
 
     //Get absolute coordinates and stone radius
     const absX = board.getAbsX(x)
