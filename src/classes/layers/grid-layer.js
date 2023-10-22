@@ -29,7 +29,10 @@ export default class GridLayer extends BoardLayer {
 
     //Get data
     const {board, theme, context} = this
-    const {width, height, drawMarginHor, drawMarginVer} = board
+    const {
+      width, height, drawMarginHor, drawMarginVer,
+      cutOffLeft, cutOffRight, cutOffTop, cutOffBottom,
+    } = board
 
     //Determine top x and y margin
     const tx = drawMarginHor
@@ -45,6 +48,12 @@ export default class GridLayer extends BoardLayer {
     const starPoints = theme.get('grid.star.points', width, height)
     const canvasTranslate = theme.canvasTranslate(lineWidth)
 
+    //Adjustments for cut off edges
+    const dty = cutOffTop ? (cellSize * 0.25) : 0
+    const dby = cutOffBottom ? (cellSize * 0.25) : 0
+    const dlx = cutOffLeft ? (cellSize * 0.25) : 0
+    const drx = cutOffRight ? (cellSize * 0.25) : 0
+
     //Translate canvas
     this.prepareContext(canvasTranslate)
 
@@ -57,15 +66,15 @@ export default class GridLayer extends BoardLayer {
     //Draw vertical lines
     for (let i = board.xLeft; i <= board.xRight; i++) {
       const x = board.getAbsX(i)
-      context.moveTo(x, ty)
-      context.lineTo(x, ty + board.gridDrawHeight)
+      context.moveTo(x, ty - dty)
+      context.lineTo(x, ty + dby + board.gridDrawHeight)
     }
 
     //Draw horizontal lines
     for (let i = board.yTop; i <= board.yBottom; i++) {
       const y = board.getAbsY(i)
-      context.moveTo(tx, y)
-      context.lineTo(tx + board.gridDrawWidth, y)
+      context.moveTo(tx - dlx, y)
+      context.lineTo(tx + drx + board.gridDrawWidth, y)
     }
 
     //Draw grid lines
@@ -172,11 +181,18 @@ export default class GridLayer extends BoardLayer {
     const canvasTranslate = theme.canvasTranslate(lineWidth)
     const starPoints = theme.get('grid.star.points', board.width, board.height)
 
+    //Adjustments for cut off edges
+    const {cutOffLeft, cutOffRight, cutOffTop, cutOffBottom} = board
+    const dlx = cutOffLeft ? (cellSize * 0.25) : 0
+    const drx = cutOffRight ? (cellSize * 0.25) : 0
+    const dty = cutOffTop ? (cellSize * 0.25) : 0
+    const dby = cutOffBottom ? (cellSize * 0.25) : 0
+
     //Determine draw coordinates
-    const x1 = (x === 0) ? absX : absX - radius
-    const x2 = (x === board.width - 1) ? absX : absX + radius
-    const y1 = (y === 0) ? absY : absY - radius
-    const y2 = (y === board.height - 1) ? absY : absY + radius
+    const x1 = (x === board.xLeft) ? absX - dlx : absX - radius
+    const x2 = (x === board.xRight) ? absX + drx : absX + radius
+    const y1 = (y === board.yTop) ? absY - dty : absY - radius
+    const y2 = (y === board.yBottom) ? absY + dby : absY + radius
 
     //Prepare context
     this.prepareContext(canvasTranslate)
@@ -194,9 +210,11 @@ export default class GridLayer extends BoardLayer {
     context.stroke()
 
     //Check if we need to draw a star point here
-    for (const i in starPoints) {
-      if (starPoints[i].x === x && starPoints[i].y === y) {
-        this.drawStarPoint(x, y, starRadius, starColor)
+    if (board.getConfig('showStarPoints')) {
+      for (const i in starPoints) {
+        if (starPoints[i].x === x && starPoints[i].y === y) {
+          this.drawStarPoint(x, y, starRadius, starColor)
+        }
       }
     }
 
