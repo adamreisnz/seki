@@ -71,7 +71,7 @@ export default class StoneShadow extends Stone {
 
     //Check if we should render
     const {alpha, shadow} = this
-    if ((alpha && alpha < 1) || shadow === false) {
+    if ((alpha && alpha < 1) || !shadow) {
       return
     }
 

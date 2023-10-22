@@ -377,7 +377,6 @@ export const defaultTheme = {
       radius(cellSize) {
         return Math.floor(cellSize / 2) * 0.97
       },
-      shadow: true,
     },
 
     //Slate and shell stones
@@ -385,6 +384,7 @@ export const defaultTheme = {
       color(cellSize, stoneColor) {
         return (stoneColor === stoneColors.BLACK) ? '#111' : '#cfcfca'
       },
+      shadow: true,
       shellStroke: 'rgba(128,128,150,0.15)',
       shellTypes: [
         {
@@ -424,6 +424,7 @@ export const defaultTheme = {
 
     //Glass stones
     glass: {
+      shadow: true,
       color(cellSize, stoneColor) {
         return (stoneColor === stoneColors.BLACK) ? '#111' : '#cfcfca'
       },

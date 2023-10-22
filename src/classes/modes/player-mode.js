@@ -355,7 +355,7 @@ export default class PlayerMode extends Base {
 
     //Get data
     const {board} = this
-    const style = board.theme.get('stone.style')
+    const style = board.theme.get('board.stoneStyle')
 
     //Create stone and shadow
     const stone = StoneFactory.create(style, color, board)
