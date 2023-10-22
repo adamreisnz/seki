@@ -24,9 +24,7 @@ export const defaultGameInfo = {
     type: gameTypes.GO,
     name: '',
     result: '',
-    dates: [
-      dateString(),
-    ],
+    date: dateString(),
     opening: '',
     annotator: '',
     description: '',

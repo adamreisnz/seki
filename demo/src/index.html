@@ -466,7 +466,7 @@ player.on('gameLoad', () => {
   const komi = game.getKomi()
   const result = game.getInfo('game.result')
   const name = game.getInfo('game.name')
-  const dates = game.getInfo('game.dates')
+  const date = game.getInfo('game.date')
   const rules = game.getInfo('rules')
   const event = game.getInfo('event')
   const source = game.getInfo('source')
@@ -480,7 +480,7 @@ player.on('gameLoad', () => {
   setText('#komi', komi ? `+${komi}` : '')
   setText('#result', result || '')
   setText('#name', name || '')
-  setText('#date', (dates && dates.length > 0) ? dates[0] : '')
+  setText('#date', date || '')
   setText('#ruleSet', rules.ruleSet || '')
   setText('#time', '')
   if (rules.mainTime) {

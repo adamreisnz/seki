@@ -12,7 +12,7 @@ const skipPaths = [
   'board.size',
   'board.width',
   'board.height',
-  'game.dates',
+  'game.date',
   'game.result',
   'rules.komi',
   'rules.handicap',
@@ -37,7 +37,7 @@ export default class ConvertFromJgf extends Converter {
     this.extractBoardSize(game, jgf)
     this.extractKomi(game, jgf)
     this.extractHandicap(game, jgf)
-    this.extractDates(game, jgf)
+    this.extractDate(game, jgf)
     this.extractResult(game, jgf)
     this.extractMainTime(game, jgf)
     this.extractPlayers(game, jgf)
@@ -193,13 +193,13 @@ export default class ConvertFromJgf extends Converter {
   }
 
   /**
-   * Extract dates
+   * Extract date
    */
-  extractDates(game, jgf) {
+  extractDate(game, jgf) {
     const dates = get(jgf, 'game.dates')
     const date = get(jgf, 'game.date')
-    if (Array.isArray(dates)) {
-      game.setDates(dates)
+    if (Array.isArray(dates) && dates.length > 0) {
+      game.setDate(dates[0])
     }
     else if (date) {
       game.setDate(date)

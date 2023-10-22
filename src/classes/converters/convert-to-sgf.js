@@ -14,7 +14,6 @@ import {
 const gameInfoConversionMap = {
   'record.generator': 'convertGenerator',
   'game.type': 'convertGameType',
-  'game.dates': 'convertDates',
 }
 
 //Node parsing map
@@ -384,14 +383,6 @@ export default class ConvertToSgf extends Converter {
    */
   convertGameType(type) {
     return this.getMappedValue(type, sgfGameTypes)
-  }
-
-  /**
-   * Date conversion
-   */
-  convertDates(dates) {
-    return dates
-      .join(',')
   }
 
   /**

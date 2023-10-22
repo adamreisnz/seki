@@ -390,7 +390,9 @@ export default class ConvertFromSgf extends Converter {
    */
   parseDates(game, node, key, values) {
     const dates = values[0].split(',')
-    game.setDates(dates)
+    if (dates.length > 0) {
+      game.setDate(dates[0])
+    }
   }
 
   /**

@@ -54,10 +54,9 @@ JGF = {
 		result: "W+4.5",
 
     //Date this game was played on in ISO format
-    //Month and/or day can be ommitted if not known
     date: "2023-06-12",
 
-		//If more than one date, can specify an array of dates
+		//If played on more than one date, specify an array of date values
 		dates: [
       "2011-04-22",
       "2011-04-23"

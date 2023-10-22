@@ -196,35 +196,17 @@ export default class Game extends Base {
   }
 
   /**
-   * Set dates
-   */
-  setDates(dates) {
-    this.setInfo('game.dates', dates)
-  }
-
-  /**
-   * Get dates
-   */
-  getDates() {
-    return this.getInfo('game.dates')
-  }
-
-  /**
    * Set the game date
    */
   setDate(date) {
-    this.setInfo('game.dates', [date])
+    this.setInfo('game.date', date)
   }
 
   /**
    * Get the game date
    */
   getDate() {
-    const dates = this.getInfo('game.dates')
-    if (Array.isArray(dates) && dates.length > 0) {
-      return dates[0]
-    }
-    return ''
+    return this.getInfo('game.date')
   }
 
   /**
@@ -1462,7 +1444,7 @@ export default class Game extends Base {
   getFileName() {
 
     //Get info
-    const dates = this.getInfo('game.dates')
+    const date = this.getInfo('game.date')
     const {black, white} = this.getInfo('players')
     const numMoves = this.getTotalNumberOfMoves()
 
@@ -1478,7 +1460,7 @@ export default class Game extends Base {
       .join(' vs ')
 
     //Return filename
-    return `${dates[0]} ${numMoves > 0 ? `- ${numMoves}` : ''} - ${playerInfo}`
+    return `${date} ${numMoves > 0 ? `- ${numMoves}` : ''} - ${playerInfo}`
   }
 
   /**************************************************************************

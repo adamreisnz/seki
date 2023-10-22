@@ -14,7 +14,7 @@ export const jgfPaths = [
   'game.type',
   'game.name',
   'game.result',
-  'game.dates',
+  'game.date',
   'game.opening',
   'game.annotator',
   'game.description',

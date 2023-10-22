@@ -22,7 +22,7 @@ export const sgfGameInfoMap = {
   //Game information
   GM: 'game.type',
   GN: 'game.name',
-  DT: 'game.dates',
+  DT: 'game.date',
   RE: 'game.result',
   ON: 'game.opening',
   AN: 'game.annotator',
