@@ -32,22 +32,21 @@ export default class BackgroundLayer extends BoardLayer {
     const backgroundImage = theme.get('board.backgroundImage')
     const {width, height} = context.canvas
 
-    //Set background color
-    context.fillStyle = backgroundColor
-    context.fillRect(0, 0, width, height)
-
-    //No background image, done
-    if (!backgroundImage) {
-      return
+    //Background image
+    if (backgroundImage) {
+      const img = new Image()
+      img.src = backgroundImage
+      img.addEventListener('load', () => {
+        const pattern = context.createPattern(img, 'repeat')
+        context.fillStyle = pattern
+        context.fillRect(0, 0, width, height)
+      })
     }
 
-    //Load image
-    const img = new Image()
-    img.src = backgroundImage
-    img.addEventListener('load', () => {
-      const pattern = context.createPattern(img, 'repeat')
-      context.fillStyle = pattern
+    //Background color
+    else if (backgroundColor) {
+      context.fillStyle = backgroundColor
       context.fillRect(0, 0, width, height)
-    })
+    }
   }
 }

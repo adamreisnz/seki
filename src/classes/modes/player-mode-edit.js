@@ -55,6 +55,7 @@ export default class PlayerModeEdit extends PlayerMode {
     const {player, mode} = this
 
     //Extend player
+    player.extend('getEditTool', mode)
     player.extend('setEditTool', mode)
     player.extend('removeAllMarkup', mode)
   }
@@ -361,6 +362,13 @@ export default class PlayerModeEdit extends PlayerMode {
     game.removeAllMarkup()
     board.removeAllMarkup()
     board.eraseDrawLayer()
+  }
+
+  /**
+   * Get edit tool
+   */
+  getEditTool() {
+    return this.tool
   }
 
   /**
