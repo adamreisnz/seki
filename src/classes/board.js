@@ -129,16 +129,16 @@ export default class Board extends Base {
    * Cutoff config
    */
   get cutoffLeft() {
-    return this.getConfig('cutoffLeft', false)
+    return this.getConfig('cutoff.left', false)
   }
   get cutoffRight() {
-    return this.getConfig('cutoffRight', false)
+    return this.getConfig('cutoff.right', false)
   }
   get cutoffTop() {
-    return this.getConfig('cutoffTop', false)
+    return this.getConfig('cutoff.top', false)
   }
   get cutoffBottom() {
-    return this.getConfig('cutoffBottom', false)
+    return this.getConfig('cutoff.bottom', false)
   }
 
   /**
