@@ -793,11 +793,6 @@ export default class Board extends Base {
       board, `seki-board-canvas-container`,
     )
 
-    //Set border width on board
-    const {theme} = this
-    const borderWidth = theme.get('board.borderWidth')
-    board.style.borderWidth = `${borderWidth}px`
-
     //Set element references
     this.elements = {
       container,
@@ -882,14 +877,12 @@ export default class Board extends Base {
   getAvailableSize() {
 
     //Get data
-    const {theme} = this
     const {container} = this.elements
-    const borderWidth = theme.get('board.borderWidth', 0)
 
     //Return size of canvas container
     return {
-      availableWidth: container.clientWidth - (2 * borderWidth),
-      availableHeight: container.clientHeight - (2 * borderWidth),
+      availableWidth: container.clientWidth,
+      availableHeight: container.clientHeight,
     }
   }
 
