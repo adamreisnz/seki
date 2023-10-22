@@ -50,8 +50,8 @@ export default class Player extends Base {
     this.createModeHandlers()
 
     //Initialise
-    this.initBoard()
-    this.initGame()
+    this.initBoard(config.board, config.theme)
+    this.initGame(config.game)
     this.initConfig(config)
   }
 

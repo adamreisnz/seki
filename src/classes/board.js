@@ -54,13 +54,13 @@ export default class Board extends Base {
   /**
    * Board constructor
    */
-  constructor(config) {
+  constructor(config, themeConfig) {
 
     //Parent constructor
     super()
 
     //Instantiate theme
-    this.theme = new Theme()
+    this.theme = new Theme(themeConfig)
 
     //Initialize board
     this.init()
