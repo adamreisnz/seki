@@ -360,7 +360,7 @@ export default class PlayerMode extends Base {
     //Create stone and shadow
     const stone = StoneFactory.create(style, color, board)
     const copy = StoneFactory.createCopy(stone, stoneModifierStyles.HOVER)
-    const shadow = StoneFactory.createShadow(copy)
+    const shadow = StoneFactory.createShadow(stone)
 
     //Return
     return [shadow, copy]

@@ -32,6 +32,12 @@ export default class BackgroundLayer extends BoardLayer {
     const backgroundImage = theme.get('board.backgroundImage')
     const {width, height} = context.canvas
 
+    //Background color
+    if (backgroundColor) {
+      context.fillStyle = backgroundColor
+      context.fillRect(0, 0, width, height)
+    }
+
     //Background image
     if (backgroundImage) {
       const img = new Image()
@@ -41,12 +47,6 @@ export default class BackgroundLayer extends BoardLayer {
         context.fillStyle = pattern
         context.fillRect(0, 0, width, height)
       })
-    }
-
-    //Background color
-    else if (backgroundColor) {
-      context.fillStyle = backgroundColor
-      context.fillRect(0, 0, width, height)
     }
   }
 }
