@@ -129,11 +129,12 @@ export default class Player extends Base {
       //Get handler
       const handler = this.getModeHandler(mode)
       if (!handler) {
+        this.warn(`not calling ${method} method as ${mode} has no handler`)
         return
       }
 
       //Call method
-      handler[method](...args)
+      return handler[method](...args)
     }
   }
 
