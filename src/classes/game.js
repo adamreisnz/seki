@@ -242,6 +242,17 @@ export default class Game extends Base {
    ***/
 
   /**
+   * Get the player turn for this position
+   */
+  getTurn() {
+    const {position} = this
+    if (position) {
+      return position.getTurn()
+    }
+    return stoneColors.BLACK
+  }
+
+  /**
    * Set the player turn for the current position
    */
   setTurn(color) {
@@ -252,14 +263,13 @@ export default class Game extends Base {
   }
 
   /**
-   * Get the player turn for this position
+   * Switch the player turn for the current position
    */
-  getTurn() {
+  switchTurn() {
     const {position} = this
     if (position) {
-      return position.getTurn()
+      position.switchTurn()
     }
-    return stoneColors.BLACK
   }
 
   /**
