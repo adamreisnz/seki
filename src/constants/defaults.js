@@ -180,6 +180,18 @@ export const defaultPlayerConfig = {
       action: playerActions.GO_TO_NEXT_FORK,
     },
     {
+      key: keyValues.ARROW_LEFT,
+      altKey: true,
+      shiftKey: true,
+      action: playerActions.GO_TO_PREV_COMMENT,
+    },
+    {
+      key: keyValues.ARROW_RIGHT,
+      altKey: true,
+      shiftKey: true,
+      action: playerActions.GO_TO_NEXT_COMMENT,
+    },
+    {
       key: keyValues.SPACE,
       action: playerActions.TOGGLE_AUTO_PLAY,
     },

@@ -233,6 +233,14 @@ export default class PlayerMode extends Base {
         player.setMode(playerModes.REPLAY)
         player.goToPreviousFork()
         return true
+      case playerActions.GO_TO_NEXT_COMMENT:
+        player.setMode(playerModes.REPLAY)
+        player.goToNextComment()
+        return true
+      case playerActions.GO_TO_PREV_COMMENT:
+        player.setMode(playerModes.REPLAY)
+        player.goToPreviousComment()
+        return true
 
       //Variation selection
       case playerActions.SELECT_NEXT_VARIATION:

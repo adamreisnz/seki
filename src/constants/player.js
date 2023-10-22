@@ -71,6 +71,8 @@ export const playerActions = {
   GO_BACK_NUM_POSITIONS: 'goBackNumPositions',
   GO_TO_NEXT_FORK: 'goToNextFork',
   GO_TO_PREV_FORK: 'goToPrevFork',
+  GO_TO_NEXT_COMMENT: 'goToNextComment',
+  GO_TO_PREV_COMMENT: 'goToPrevComment',
   SELECT_NEXT_VARIATION: 'selectNextVariation',
   SELECT_PREV_VARIATION: 'selectPrevVariation',
 
