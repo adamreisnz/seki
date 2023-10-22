@@ -117,6 +117,11 @@ export const defaultPlayerConfig = {
       action: playerActions.DOWNLOAD_FILE,
     },
     {
+      key: 'P',
+      shiftKey: true,
+      action: playerActions.DOWNLOAD_IMAGE,
+    },
+    {
       key: 'U',
       shiftKey: true,
       action: playerActions.LOAD_FILE_FROM_URL,

@@ -51,6 +51,7 @@ export const playerActions = {
   NEW_FILE: 'newFile',
   OPEN_FILE: 'openFile',
   DOWNLOAD_FILE: 'downloadFile',
+  DOWNLOAD_IMAGE: 'downloadImage',
   LOAD_FILE_FROM_URL: 'loadFileFromUrl',
 
   //Mode selection

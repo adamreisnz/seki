@@ -177,6 +177,9 @@ export default class PlayerMode extends Base {
       case playerActions.DOWNLOAD_FILE:
         player.downloadFile()
         return true
+      case playerActions.DOWNLOAD_IMAGE:
+        player.downloadImage()
+        return true
       case playerActions.LOAD_FILE_FROM_URL:
         player.loadFileFromUrl()
         return true

@@ -712,9 +712,9 @@ export default class Player extends Base {
   }
 
   /**
-   * Download board image
+   * Download image of board position
    */
-  downloadBoardImage() {
+  downloadImage() {
     const {board} = this
     if (board) {
       board.downloadImage()
