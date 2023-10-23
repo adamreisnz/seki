@@ -820,6 +820,13 @@ export default class Player extends Base {
    * Play sound
    */
   playSound(type) {
+
+    //Check if enabled
+    if (!this.getConfig('playSounds')) {
+      return
+    }
+
+    //Get audio element
     const audioElement = this.audioElements[type]
     if (audioElement) {
       try {

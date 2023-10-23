@@ -291,7 +291,7 @@ export const defaultPlayerConfig = {
     capture: null,
   },
 
-  //Flags
+  //Player configuration
   showTree: true,
   showTimeLeft: true,
   showLastMove: true,
@@ -303,6 +303,8 @@ export const defaultPlayerConfig = {
   showSiblingVariations: false,
   rememberVariationPaths: true,
   allowMovesInReplayMode: true,
+  allowPlayerConfig: true,
+  playSounds: true,
 
   //Board configuration
   showCoordinates: true,
@@ -314,9 +316,6 @@ export const defaultPlayerConfig = {
 
   //Default kifu format
   defaultKifuFormat: kifuFormats.SGF,
-
-  //Allow player configuration settigns to be loaded from game records
-  allowPlayerConfig: true,
 }
 
 //Default star point locations
