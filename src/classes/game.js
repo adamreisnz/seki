@@ -743,12 +743,12 @@ export default class Game extends Base {
   /**
    * Check if there is markup at the given coordinate for the current position
    */
-  hasMarkup(x, y, markup) {
+  hasMarkup(x, y, type) {
     const {position} = this
-    if (typeof markup === 'undefined') {
+    if (typeof type === 'undefined') {
       return position.markup.has(x, y)
     }
-    return position.markup.is(x, y, markup)
+    return position.markup.is(x, y, {type})
   }
 
   /**
@@ -832,7 +832,7 @@ export default class Game extends Base {
     if (typeof color === 'undefined') {
       return position.stones.has(x, y)
     }
-    return position.stones.is(x, y, color)
+    return position.stones.is(x, y, {color})
   }
 
   /**
