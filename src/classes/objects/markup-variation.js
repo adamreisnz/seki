@@ -58,7 +58,7 @@ export default class MarkupVariation extends MarkupCircle {
    * Get grid erase radius
    */
   getGridEraseRadius() {
-    return this.radius * 1.4
+    return this.radius * 1.1
   }
 
   /**

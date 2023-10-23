@@ -582,8 +582,8 @@ export const defaultTheme = {
       type: markupTypes.LABEL,
       scale: 0.9,
       lineDash(cellSize) {
-        const line = Math.max(1, Math.floor(cellSize / 16))
-        const dash = Math.max(1, Math.floor(cellSize / 8))
+        const line = Math.max(1, Math.floor(cellSize / 8))
+        const dash = Math.max(1, Math.floor(cellSize / 10))
         return [line, dash]
       },
       text(i) {
