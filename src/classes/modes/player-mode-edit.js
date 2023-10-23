@@ -220,12 +220,18 @@ export default class PlayerModeEdit extends PlayerMode {
 
     //Get data
     const {player} = this
-    const {x, y, isDragging} = event.detail
+    const {x, y, area, isDragging} = event.detail
 
     //Clear tool
     if (this.isUsingClearTool()) {
       this.eraseCell(x, y)
       this.showHoverEraser()
+    }
+
+    //Clear area tool
+    else if (this.isUsingClearAreaTool()) {
+      this.eraseArea(area)
+      // this.showHoverEraser()
     }
 
     //Markup tool
@@ -259,6 +265,25 @@ export default class PlayerModeEdit extends PlayerMode {
     else if (game.hasStone(x, y)) {
       this.removeStone(x, y)
     }
+  }
+
+  /**
+   * Erase area
+   */
+  eraseArea(area) {
+
+    //Get data
+    const {game} = this
+
+    //Loop area, erasing both markup and stones indiscriminantly
+    area.forEach(({x, y}) => {
+      if (game.hasMarkup(x, y)) {
+        this.removeMarkup(x, y)
+      }
+      if (game.hasStone(x, y)) {
+        this.removeStone(x, y)
+      }
+    })
   }
 
   /**
@@ -662,6 +687,14 @@ export default class PlayerModeEdit extends PlayerMode {
   isUsingClearTool() {
     const {tool} = this
     return tool === editTools.CLEAR
+  }
+
+  /**
+   * Check if using clear area tool
+   */
+  isUsingClearAreaTool() {
+    const {tool} = this
+    return tool === editTools.CLEAR_AREA
   }
 
   /**
