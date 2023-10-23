@@ -36,6 +36,7 @@ export const editTools = {
   BLACK: setupTypes.BLACK,
   WHITE: setupTypes.WHITE,
   CLEAR: setupTypes.CLEAR,
+  CLEAR_AREA: 'clearArea',
   STONE: 'stone',
 }
 
@@ -87,6 +88,7 @@ export const playerActions = {
   SET_EDIT_TOOL_BLACK: 'setEditToolBlack',
   SET_EDIT_TOOL_WHITE: 'setEditToolWhite',
   SET_EDIT_TOOL_CLEAR: 'setEditToolClear',
+  SET_EDIT_TOOL_CLEAR_AREA: 'setEditToolClearArea',
   SET_EDIT_TOOL_TRIANGLE: 'setEditToolTriangle',
   SET_EDIT_TOOL_CIRCLE: 'setEditToolCircle',
   SET_EDIT_TOOL_SQUARE: 'setEditToolSquare',

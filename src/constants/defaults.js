@@ -218,6 +218,11 @@ export const defaultPlayerConfig = {
     },
     {
       key: 'X',
+      altKey: true,
+      action: playerActions.SET_EDIT_TOOL_CLEAR_AREA,
+    },
+    {
+      key: 'X',
       shiftKey: true,
       action: playerActions.REMOVE_ALL_MARKUP,
     },
@@ -235,10 +240,6 @@ export const defaultPlayerConfig = {
       key: '3',
       action: playerActions.SET_EDIT_TOOL_CIRCLE,
     },
-    // {
-    //   key: '4',
-    //   action: playerActions.SET_EDIT_TOOL_DIAMOND,
-    // },
     {
       key: '4',
       action: playerActions.SET_EDIT_TOOL_LETTER,

@@ -286,6 +286,10 @@ export default class PlayerMode extends Base {
         player.setMode(playerModes.EDIT)
         player.setEditTool(editTools.CLEAR)
         return true
+      case playerActions.SET_EDIT_TOOL_CLEAR_AREA:
+        player.setMode(playerModes.EDIT)
+        player.setEditTool(editTools.CLEAR_AREA)
+        return true
       case playerActions.SET_EDIT_TOOL_TRIANGLE:
         player.setMode(playerModes.EDIT)
         player.setEditTool(editTools.TRIANGLE)
