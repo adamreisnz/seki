@@ -520,6 +520,22 @@ export default class Player extends Base {
   }
 
   /**
+   * Go to a specific target node
+   */
+  goToNode(target) {
+    this.game.goToNode(target)
+    this.processPathChange()
+  }
+
+  /**
+   * Go to a specific named node
+   */
+  goToNamedNode(name) {
+    this.game.goToNamedNode(name)
+    this.processPathChange()
+  }
+
+  /**
    * Select the previous variation
    */
   selectNextVariation() {

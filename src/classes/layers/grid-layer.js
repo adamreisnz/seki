@@ -171,7 +171,10 @@ export default class GridLayer extends BoardLayer {
     const absX = board.getAbsX(x)
     const absY = board.getAbsY(y)
     const cellSize = board.getCellSize()
-    const radius = theme.get('grid.radius', cellSize)
+
+    //NOTE: We draw a slightly larger radius to account for the fact that
+    //some markup might erase more than the cell radius
+    const radius = theme.get('grid.radius', cellSize) * 1.5
 
     //Get theme properties
     const lineWidth = theme.get('grid.lineWidth', cellSize)

@@ -509,13 +509,6 @@ export default class Game extends Base {
     return this.root.findNodeByName(name)
   }
 
-  /**
-   * Get the game path to a certain named node
-   */
-  getPathToNode(nodeName) {
-    return GamePath.findNode(nodeName, this.root)
-  }
-
   /**************************************************************************
    * Move number and named node handling
    ***/
@@ -596,6 +589,16 @@ export default class Game extends Base {
     const {root} = this
     const path = new GamePath()
     const node = root.findNamedNode(name, path)
+    return node ? path : null
+  }
+
+  /**
+   * Get path to a specific node
+   */
+  getPathToNode(target) {
+    const {root} = this
+    const path = new GamePath()
+    const node = root.findNode(target, path)
     return node ? path : null
   }
 
@@ -1133,6 +1136,21 @@ export default class Game extends Base {
 
     //Get path to the named node
     const path = this.getPathToNamedNode(name)
+    this.goToPath(path)
+  }
+
+  /**
+   * Go to specific target node
+   */
+  goToNode(target) {
+
+    //Already here
+    if (this.node === target) {
+      return
+    }
+
+    //Get path to the named node
+    const path = this.getPathToNode(target)
     this.goToPath(path)
   }
 

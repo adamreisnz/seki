@@ -292,13 +292,14 @@ export const defaultPlayerConfig = {
   },
 
   //Flags
+  showTree: true,
+  showTimeLeft: true,
   showLastMove: true,
   showNextMove: false,
   showSolutions: false,
-  showAllMoveNumbers: false,
-  showVariationMoveNumbers: true,
   showVariations: true,
-  showTime: true,
+  showVariationMoveNumbers: true,
+  showAllMoveNumbers: false,
   showSiblingVariations: false,
   rememberVariationPaths: true,
   allowMovesInReplayMode: true,
