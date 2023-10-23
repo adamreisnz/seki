@@ -30,6 +30,10 @@ export const sgfGameInfoMap = {
 
   //Board information
   SZ: 'board.size',
+  XL: 'board.cutOffLeft',
+  XR: 'board.cutOffRight',
+  XT: 'board.cutOffTop',
+  XB: 'board.cutOffBottom',
 
   //Event information
   EV: 'event.name',

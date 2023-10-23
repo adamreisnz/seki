@@ -37,6 +37,10 @@ const parsingMap = {
 
   //Board information
   SZ: 'parseSize',
+  XL: 'parseCutOff',
+  XR: 'parseCutOff',
+  XT: 'parseCutOff',
+  XB: 'parseCutOff',
 
   //Rules
   KM: 'parseKomi',
@@ -383,6 +387,28 @@ export default class ConvertFromSgf extends Converter {
   parseSize(game, node, key, values) {
     const [width, height] = values[0].split(':')
     game.setGridSize(width, height)
+  }
+
+  /**
+   * Cut off parser
+   */
+  parseCutOff(game, node, key, values) {
+    const side = key.charAt(1)
+    const cutOff = values[0]
+    switch (side) {
+      case 'L':
+        game.setInfo('board.cutOffLeft', cutOff)
+        break
+      case 'R':
+        game.setInfo('board.cutOffRight', cutOff)
+        break
+      case 'T':
+        game.setInfo('board.cutOffTop', cutOff)
+        break
+      case 'B':
+        game.setInfo('board.cutOffBottom', cutOff)
+        break
+    }
   }
 
   /**
