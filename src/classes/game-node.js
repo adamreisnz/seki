@@ -420,14 +420,14 @@ export default class GameNode {
 
       //Find child
       const child = children[i].findNamedNode(name, path)
-
-      //Not found? Retreat path
-      if (!child && path) {
-        path.retreat()
+      if (child) {
+        return child
       }
 
-      //Return child
-      return child
+      //Otherwise retreat path
+      if (path) {
+        path.retreat()
+      }
     }
   }
 
@@ -454,14 +454,14 @@ export default class GameNode {
 
       //Find child
       const child = children[i].findNode(target, path)
-
-      //Not found? Retreat path
-      if (!child && path) {
-        path.retreat()
+      if (child) {
+        return child
       }
 
-      //Return child
-      return child
+      //Otherwise retreat path
+      if (path) {
+        path.retreat()
+      }
     }
   }
 
