@@ -20,9 +20,3 @@ export const scoreState = {
   WHITE_CANDIDATE: -2,
   NEUTRAL: 3,
 }
-
-//Repeating positions check types
-export const checkRepeatTypes = {
-  KO: 'ko',
-  ALL: 'all',
-}

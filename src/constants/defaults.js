@@ -50,9 +50,11 @@ export const defaultGameInfo = {
     size: 19,
   },
   rules: {
+    ruleSet: '',
+    allowSuicide: false,
+    disallowRepeatPositions: false,
     komi: 0,
     handicap: 0,
-    ruleSet: '',
     mainTime: 0,
     overTime: '',
   },

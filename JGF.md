@@ -127,12 +127,16 @@ JGF = {
     //The rule set used
 		ruleSet: "Japanese",
 
+    //Whether suicide moves are allowed
+    allowSuicide: false,
+
+    //Whether any board position is disallowed to repeat (as opposed to just ko's)
+    disallowRepeatPositions: false,
+
     //Komi used (can be negative)
 		komi: 6.5,
 
-		//Handicap used
-		//The amount of handicap specified does not imply any particular
-		//way of handicap stone placement.
+		//Handicap used (does not imply any particular way of handicap stone placement)
 		handicap: 0,
 
     //Main time (in seconds)

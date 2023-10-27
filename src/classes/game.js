@@ -15,20 +15,19 @@ import {isValidColor} from '../helpers/color.js'
 import {stoneColors} from '../constants/stone.js'
 import {kifuFormats} from '../constants/app.js'
 import {setupTypes} from '../constants/setup.js'
-import {checkRepeatTypes} from '../constants/game.js'
 import {defaultGameInfo} from '../constants/defaults.js'
 
 /**
- * This class represents a game record or a game that is being played/edited. The class
- * traverses the move tree nodes and keeps track of the changes between the previous and new game
- * positions. These changes can then be fed to the board, to add or remove stones and markup.
- * The class also keeps a stack of all board positions in memory and can validate moves to make
- * sure they are not repeating or suicide.
+ * This class represents a game record or a game that is being played/edited.
+ * The class traverses the move tree nodes and keeps track of the changes between
+ * the previous and new game positions. These changes can then be fed to the
+ * board, to add or remove stones and markup. The class also keeps a stack of
+ * all board positions in memory and can validate moves to make sure they are
+ * not repeating or suicide.
  *
  * - A game position is a snapshot of stones and markup on the board at a point in time
- * - The position stack is an array of all traversed game positions
- * - The game path is a simple record of which variation was selected at each fork,
- *   and what move we're at
+ * - The positions stack is an array of all traversed game positions
+ * - The game path tracks which variation was selected at each fork and what move we're at
  * - The current node points at the current node in the game tree
  */
 export default class Game extends Base {
@@ -53,13 +52,9 @@ export default class Game extends Base {
     this.info = merge(defaultGameInfo, info || {})
 
     //The rood node and pointer to the current node
-    this.root = new GameNode()
     this.path = new GamePath()
+    this.root = new GameNode()
     this.node = this.root
-
-    //Settings
-    this.allowSuicide = false
-    this.checkRepeat = checkRepeatTypes.KO
 
     //Initialize position stack
     this.initialisePositionStack()
@@ -221,20 +216,6 @@ export default class Game extends Base {
    */
   getMainTime() {
     return this.getInfo('rules.mainTime')
-  }
-
-  /**
-   * Set allow suicide
-   */
-  setAllowSuicide(allowSuicide) {
-    this.allowSuicide = allowSuicide
-  }
-
-  /**
-   * Set check repeat
-   */
-  setCheckRepeat(checkRepeat) {
-    this.checkRepeat = checkRepeat
   }
 
   /**************************************************************************
@@ -427,20 +408,21 @@ export default class Game extends Base {
   isRepeatingPosition(checkPosition) {
 
     //Get data
-    const {checkRepeat, positions} = this
+    const {positions} = this
+    const disallowRepeatPositions = this.getInfo('rules.disallowRepeatPositions')
     let stop
 
-    //Check for ko only? (Last two positions)
-    if (checkRepeat === checkRepeatTypes.KO && (positions.length - 2) >= 0) {
-      stop = positions.length - 2
-    }
-
     //Check all positions?
-    else if (checkRepeat === checkRepeatTypes.ALL) {
+    if (disallowRepeatPositions) {
       stop = 0
     }
 
-    //Not repeating
+    //Otherwise check for ko only (last two positions)
+    else if ((positions.length - 2) >= 0) {
+      stop = positions.length - 2
+    }
+
+    //Not checking for repeating positions
     else {
       return false
     }
@@ -664,7 +646,7 @@ export default class Game extends Base {
   validateMove(position, x, y, color) {
 
     //Get data
-    const {allowSuicide, checkRepeat} = this
+    const allowSuicide = this.getInfo('rules.allowSuicide')
 
     //Check coordinates validity
     if (!this.isValidCoordinate(x, y)) {
@@ -700,7 +682,7 @@ export default class Game extends Base {
     }
 
     //Check position stack for repeating moves
-    if (checkRepeat && this.isRepeatingPosition(position)) {
+    if (this.isRepeatingPosition(position)) {
       return new ErrorOutcome(`Move on (${x},${y}) creates a repeating position`)
     }
 
