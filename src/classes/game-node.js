@@ -412,13 +412,22 @@ export default class GameNode {
 
     //Check all child variations
     for (let i = 0; i < children.length; i++) {
-      const child = children[i].findNamedNode(name, path)
-      if (child) {
-        if (path) {
-          path.advance(i)
-        }
-        return child
+
+      //Advance path
+      if (path) {
+        path.advance(i)
       }
+
+      //Find child
+      const child = children[i].findNamedNode(name, path)
+
+      //Not found? Retreat path
+      if (!child && path) {
+        path.retreat()
+      }
+
+      //Return child
+      return child
     }
   }
 
@@ -437,13 +446,22 @@ export default class GameNode {
 
     //Check all child variations
     for (let i = 0; i < children.length; i++) {
-      const child = children[i].findNode(target, path)
-      if (child) {
-        if (path) {
-          path.advance(i)
-        }
-        return child
+
+      //Advance path
+      if (path) {
+        path.advance(i)
       }
+
+      //Find child
+      const child = children[i].findNode(target, path)
+
+      //Not found? Retreat path
+      if (!child && path) {
+        path.retreat()
+      }
+
+      //Return child
+      return child
     }
   }
 
