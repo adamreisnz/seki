@@ -410,9 +410,8 @@ export default class Player extends Base {
       return
     }
 
-    //Check which path index to use
-    const remember = this.getConfig('rememberVariationPaths')
-    const i = remember ? this.game.getCurrentPathIndex() : 0
+    //Get path index
+    const i = this.game.getCurrentPathIndex()
 
     //Go to next position
     this.game.goToNextPosition(i)
@@ -540,7 +539,7 @@ export default class Player extends Base {
    */
   selectNextVariation() {
     this.game.selectNextVariation()
-    this.processPathChange()
+    this.triggerEvent('variationChange')
   }
 
   /**
@@ -548,7 +547,7 @@ export default class Player extends Base {
    */
   selectPreviousVariation() {
     this.game.selectPreviousVariation()
-    this.processPathChange()
+    this.triggerEvent('variationChange')
   }
 
   /**
@@ -604,18 +603,6 @@ export default class Player extends Base {
   }
 
   /**
-   * Process current game position
-   */
-  processPosition() {
-
-    //Get position
-    const position = this.game.getPosition()
-
-    //Update board
-    this.updateBoard(position)
-  }
-
-  /**
    * Process path change
    */
   processPathChange() {
@@ -635,8 +622,8 @@ export default class Player extends Base {
     //Debug
     this.debug('path changed')
 
-    //Process static position
-    this.processPosition()
+    //Update board
+    this.updateBoard()
 
     //Copy new path and trigger path change event
     this.path = path.clone()
@@ -662,7 +649,7 @@ export default class Player extends Base {
    */
   newGame() {
     this.game = new Game()
-    this.processPosition()
+    this.updateBoard()
   }
 
   /**
@@ -713,15 +700,16 @@ export default class Player extends Base {
     this.board.removeAll()
     this.board.loadConfigFromGame(this.game)
 
-    //Process position
-    this.processPosition()
+    //Update board
+    this.updateBoard()
   }
 
   /**
    * Update the board
    */
-  updateBoard(position) {
-    const {board} = this
+  updateBoard() {
+    const {board, game} = this
+    const position = game.getPosition()
     if (board) {
       board.updatePosition(position)
     }

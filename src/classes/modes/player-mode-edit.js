@@ -244,8 +244,8 @@ export default class PlayerModeEdit extends PlayerMode {
       this.addStone(x, y, isDragging)
     }
 
-    //Process position
-    player.processPosition()
+    //Update board
+    player.updateBoard()
   }
 
   /**

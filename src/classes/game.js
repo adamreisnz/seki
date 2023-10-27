@@ -514,17 +514,31 @@ export default class Game extends Base {
    ***/
 
   /**
-   * Get current move number
-   */
-  getCurrentMoveNumber() {
-    this.node.getMoveNumber()
-  }
-
-  /**
    * Get path index of current node
    */
   getCurrentPathIndex() {
     return this.node.getPathIndex()
+  }
+
+  /**
+   * Set current path index
+   */
+  setCurrentPathIndex(i) {
+    return this.node.setPathIndex(i)
+  }
+
+  /**
+   * Reset current path index
+   */
+  resetCurrentPathIndex() {
+    return this.node.setPathIndex(0)
+  }
+
+  /**
+   * Get current move number
+   */
+  getCurrentMoveNumber() {
+    this.node.getMoveNumber()
   }
 
   /**

@@ -39,6 +39,7 @@ export default class PlayerModeReplay extends PlayerMode {
       gridEnter: 'onGridEnter',
       gridLeave: 'onGridLeave',
       pathChange: 'onPathChange',
+      variationChange: 'onVariationChange',
       gameLoad: 'onGameLoad',
       config: 'onPathChange',
     })
@@ -154,7 +155,12 @@ export default class PlayerModeReplay extends PlayerMode {
   onPathChange() {
 
     //Get data
-    const {game, board, isAutoPlaying} = this
+    const {player, game, board, isAutoPlaying} = this
+
+    //Reset path index if not remembering
+    if (!player.getConfig('rememberVariationPaths')) {
+      game.resetCurrentPathIndex()
+    }
 
     //Erase draw layer
     board.eraseDrawLayer()
@@ -195,25 +201,16 @@ export default class PlayerModeReplay extends PlayerMode {
     board.clearHoverLayer()
   }
 
+  /**
+   * On variation change
+   */
+  onVariationChange() {
+    this.renderMarkers()
+  }
+
   /**************************************************************************
    * Actions
    ***/
-
-  /**
-   * Select next variation
-   */
-  selectNextVariation() {
-    this.player.selectNextVariation()
-    this.renderMarkers()
-  }
-
-  /**
-   * Select previous variation
-   */
-  selectPreviousVariation() {
-    this.player.selectPreviousVariation()
-    this.renderMarkers()
-  }
 
   /**
    * Toggle auto play
