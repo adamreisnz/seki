@@ -792,6 +792,13 @@ export default class Game extends Base {
   getPlayer(color) {
     return this.players[color]
   }
+  updatePlayer(color, info) {
+    if (isObject(info)) {
+      for (const key in info) {
+        this.players[color][key] = info[key]
+      }
+    }
+  }
 
   /**************************************************************************
    * Turn and capture count

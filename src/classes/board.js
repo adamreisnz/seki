@@ -400,9 +400,6 @@ export default class Board extends Base {
    */
   updatePosition(position) {
 
-    //Debug
-    this.debug('updating position')
-
     //If we have no grid size yet, use what's in the position
     if (!this.width || !this.height) {
       this.setSize(position.width, position.height)
@@ -674,22 +671,22 @@ export default class Board extends Base {
     const drawMarginVer = Math.floor((drawHeight - gridDrawHeight) / 2)
 
     //Debug
-    this.debug({
-      margin,
-      cellSize,
-      cellSizeHor: drawWidth / numCellsHor,
-      cellSizeVer: drawHeight / numCellsVer,
-      gridWidth,
-      gridHeight,
-      numCellsHor,
-      numCellsVer,
-      gridDrawWidth,
-      gridDrawHeight,
-      drawWidth,
-      drawHeight,
-      drawMarginHor,
-      drawMarginVer,
-    })
+    // this.debug({
+    //   margin,
+    //   cellSize,
+    //   cellSizeHor: drawWidth / numCellsHor,
+    //   cellSizeVer: drawHeight / numCellsVer,
+    //   gridWidth,
+    //   gridHeight,
+    //   numCellsHor,
+    //   numCellsVer,
+    //   gridDrawWidth,
+    //   gridDrawHeight,
+    //   drawWidth,
+    //   drawHeight,
+    //   drawMarginHor,
+    //   drawMarginVer,
+    // })
 
     //Set values
     this.cellSize = cellSize
