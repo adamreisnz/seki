@@ -13,6 +13,7 @@ import ConvertToSgf from './converters/convert-to-sgf.js'
 import {copy, get, set, merge, isObject} from '../helpers/object.js'
 import {isValidColor} from '../helpers/color.js'
 import {stoneColors} from '../constants/stone.js'
+import {handicapPlacements} from '../constants/game.js'
 import {kifuFormats} from '../constants/app.js'
 import {setupTypes} from '../constants/setup.js'
 import {defaultGameInfo} from '../constants/defaults.js'
@@ -935,6 +936,41 @@ export default class Game extends Base {
 
     //Return info
     return node.move.periodsLeft
+  }
+
+  /**
+   * Place default handicap stones
+   */
+  placeDefaultHandicapStones() {
+
+    //Get handicap
+    const {handicap} = this
+    if (handicap < 2) {
+      return
+    }
+
+    //Get size
+    const {width, height} = this.getBoardSize()
+    if (width !== height) {
+      return
+    }
+
+    //Check if handicap position is available
+    if (!handicapPlacements[width] || !handicapPlacements[width][handicap]) {
+      return
+    }
+
+    //Get coords
+    const coords = handicapPlacements[width][handicap]
+
+    //Set as setup on root node
+    const {root} = this
+    for (const {x, y} of coords) {
+      root.addSetup(x, y, stoneColors.BLACK)
+    }
+
+    //Set white to play
+    this.setTurn(stoneColors.WHITE)
   }
 
   /*****************************************************************************

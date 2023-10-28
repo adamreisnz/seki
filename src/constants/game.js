@@ -21,8 +21,8 @@ export const scoreState = {
   NEUTRAL: 3,
 }
 
-//Default handicap positions by board size
-export const handicapPositions = {
+//Default handicap placements for standard board sizes
+export const handicapPlacements = {
   9: {
     2: [
       {x: 2, y: 2},
