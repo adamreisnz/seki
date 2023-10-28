@@ -241,7 +241,7 @@ export function randomInt(min, max) {
 }
 
 /**
- * Throttle a functino call
+ * Throttle a function call
  */
 export function throttle(fn, delay) {
   let t = 0

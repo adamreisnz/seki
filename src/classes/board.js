@@ -979,8 +979,8 @@ export default class Board extends Base {
       'swapColors',
     ]
 
-    //Config change
-    this.on('config', event => {
+    //Create throttled config change handler
+    const fn = throttle(event => {
 
       //Check what has changed
       const {key} = event.detail
@@ -995,7 +995,10 @@ export default class Board extends Base {
       else if (needsRedraw.includes(key)) {
         this.computeAndRedraw()
       }
-    })
+    }, 100)
+
+    //Config change
+    this.on('config', fn)
   }
 
   /**
