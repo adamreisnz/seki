@@ -1,7 +1,8 @@
 import Converter from './converter.js'
 import Game from '../game.js'
-import {copy, set} from '../../helpers/object.js'
+import {copy, get, set} from '../../helpers/object.js'
 import {
+  jgfVersion,
   jgfPaths,
   jgfNodePaths,
 } from '../../constants/jgf.js'
@@ -21,12 +22,13 @@ export default class ConvertToJgf extends Converter {
       throw new Error('Not a game instance')
     }
 
-    //Initialize JGF object
+    //Get game info and initialize JGF object
+    const info = game.getInfo()
     const jgf = {}
 
     //Copy over relevant game info
     for (const path of jgfPaths) {
-      set(jgf, path, copy(game.getInfo(path)))
+      set(jgf, path, copy(get(info, path)))
     }
 
     //Create tree
@@ -46,6 +48,7 @@ export default class ConvertToJgf extends Converter {
   appendGenerator(jgf) {
     jgf.record = jgf.record || {}
     jgf.record.generator = this.getGeneratorSignature()
+    jgf.record.version = jgfVersion
     jgf.record.charset = 'UTF-8'
   }
 

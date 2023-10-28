@@ -1,6 +1,7 @@
 import Converter from './converter.js'
 import Game from '../game.js'
 import GameNode from '../game-node.js'
+import {set, get} from '../../helpers/object.js'
 import {gameTypes} from '../../constants/game.js'
 import {stoneColors} from '../../constants/stone.js'
 import {markupTypes} from '../../constants/markup.js'
@@ -28,12 +29,10 @@ const parsingMap = {
 
   //Record properties
   AP: 'parseGenerator',
-  FF: 'parseFormat',
 
   //Game information
   GM: 'parseGameType',
   DT: 'parseDates',
-  RE: 'parseResult',
 
   //Board information
   SZ: 'parseSize',
@@ -41,11 +40,6 @@ const parsingMap = {
   XR: 'parseCutOff',
   XT: 'parseCutOff',
   XB: 'parseCutOff',
-
-  //Rules
-  KM: 'parseKomi',
-  HA: 'parseHandicap',
-  TM: 'parseMainTime',
 
   //Settings
   ST: 'parseVariationSettings',
@@ -99,28 +93,32 @@ export default class ConvertFromSgf extends Converter {
    */
   convert(sgf) {
 
-    //Initialize game and find sequence
+    //Initialize
     const game = new Game()
+    const info = {}
+    const root = this.parseSgf(sgf, info)
 
-    //Parse SGF
-    this.parseSgf(sgf, game)
+    //Set game info and root node
+    game.setInfo(info)
+    game.setRootNode(root)
 
-    //Return object
+    //Return game
     return game
   }
 
   /**
-   * Parse sequence
+   * Parse SGF
    */
-  parseSgf(sgf, game, parentNode) {
+  parseSgf(sgf, info, parentNode = null) {
 
     //Get sequence and initialise stack for parent nodes
     const sequence = sgf.match(regexSequence)
     const stack = []
+    const root = new GameNode()
 
     //No parent node? Use root node
     if (!parentNode) {
-      parentNode = game.getRootNode()
+      parentNode = root
     }
 
     //Loop sequence
@@ -150,15 +148,18 @@ export default class ConvertFromSgf extends Converter {
       //Get node properties and parse them
       const properties = str.match(regexNode)
       if (properties) {
-        this.parseProperties(properties, parentNode, game)
+        this.parseProperties(properties, parentNode, info)
       }
     }
+
+    //Return the root node
+    return root
   }
 
   /**
    * Parse node propties
    */
-  parseProperties(properties, node, game) {
+  parseProperties(properties, node, info) {
 
     //Make array of properties within this sequence
     for (const prop of properties) {
@@ -176,14 +177,14 @@ export default class ConvertFromSgf extends Converter {
 
       //SGF parser present for this key?
       if (parsingMap[key]) {
-        this[parsingMap[key]](game, node, key, values)
+        this[parsingMap[key]](info, node, key, values)
         continue
       }
 
       //Plain info value?
       else if (sgfGameInfoMap[key]) {
         const value = this.getSimpleValue(values)
-        game.setInfo(sgfGameInfoMap[key], value)
+        set(info, sgfGameInfoMap[key], value)
         continue
       }
 
@@ -197,43 +198,18 @@ export default class ConvertFromSgf extends Converter {
    ***/
 
   /**
-   * Generator parser
-   */
-  parseGenerator(game, node, key, values) {
-    const [name, version] = values[0].split(':')
-    game.setInfo('record.generator', `${name}${version ? ` v${version}` : ''}`)
-  }
-
-  /**
-   * SGF format parser
-   */
-  parseFormat() {
-    return
-  }
-
-  /**
-   * Game type parser function
-   */
-  parseGameType(game, node, key, values) {
-    const type = this.getMappedValue(values[0], sgfGameTypes, true)
-    game.setInfo('game.type', type || gameTypes.GO)
-  }
-
-  /**
    * Move parser function
    */
-  parseMove(game, node, key, values) {
+  parseMove(info, node, key, values) {
 
     //Instantiate move
     const move = {}
-    const size = game.getInfo('board.size')
-    const isNormalSize = (size && size <= 19)
 
     //Set color
     move.color = this.convertColor(key)
 
     //Pass
-    if (values[0] === '' || (values[0] === 'tt' && isNormalSize)) {
+    if (values[0] === '' || (values[0] === 'tt' && this.isNormalSize(info))) {
       move.pass = true
     }
 
@@ -249,7 +225,7 @@ export default class ConvertFromSgf extends Converter {
   /**
    * Time left
    */
-  parseTimeLeft(game, node, key, values) {
+  parseTimeLeft(info, node, key, values) {
 
     //Get color
     const color = key.match(regexBlackPlayer) ?
@@ -268,7 +244,7 @@ export default class ConvertFromSgf extends Converter {
   /**
    * Periods left
    */
-  parsePeriodsLeft(game, node, key, values) {
+  parsePeriodsLeft(info, node, key, values) {
 
     //Get color
     const color = key.match(regexBlackPlayer) ?
@@ -287,21 +263,21 @@ export default class ConvertFromSgf extends Converter {
   /**
    * Comment parser function
    */
-  parseComment(game, node, key, values) {
+  parseComment(info, node, key, values) {
     node.comments = values
   }
 
   /**
    * Node name parser function
    */
-  parseNodeName(game, node, key, values) {
+  parseNodeName(info, node, key, values) {
     node.name = values[0]
   }
 
   /**
    * Markup parser function
    */
-  parseMarkup(game, node, key, values) {
+  parseMarkup(info, node, key, values) {
 
     //Initialize markup container
     const markup = node.markup || []
@@ -328,7 +304,7 @@ export default class ConvertFromSgf extends Converter {
   /**
    * Board setup parser function
    */
-  parseSetup(game, node, key, values) {
+  parseSetup(info, node, key, values) {
 
     //Initialize setup container and get color
     const setup = node.setup || []
@@ -353,7 +329,7 @@ export default class ConvertFromSgf extends Converter {
   /**
    * Scoring parser function
    */
-  parseScore(game, node, key, values) {
+  parseScore(info, node, key, values) {
 
     //Initialize score container and get color
     const score = node.score || []
@@ -377,86 +353,73 @@ export default class ConvertFromSgf extends Converter {
   /**
    * Turn parser function
    */
-  parseTurn(game, node, key, values) {
+  parseTurn(info, node, key, values) {
     node.turn = this.convertColor(values[0])
   }
 
   /**
-   * Size parser function
+   * Generator parser
    */
-  parseSize(game, node, key, values) {
+  parseGenerator(info, node, key, values) {
+    const [name, version] = values[0].split(':')
+    set(info, 'record.generator', `${name}${version ? ` v${version}` : ''}`)
+  }
+
+  /**
+   * Game type parser
+   */
+  parseGameType(info, node, key, values) {
+    const type = this.getMappedValue(values[0], sgfGameTypes, true)
+    set(info, 'game.type', type || gameTypes.GO)
+  }
+
+  /**
+   * Size parser
+   */
+  parseSize(info, node, key, values) {
     const [width, height] = values[0].split(':')
-    game.setGridSize(width, height)
+    if (width && height && width !== height) {
+      set(info, 'board.width', width)
+      set(info, 'board.height', height)
+    }
+    else if (width) {
+      set(info, 'board.size', width)
+    }
   }
 
   /**
    * Cut off parser
    */
-  parseCutOff(game, node, key, values) {
+  parseCutOff(info, node, key, values) {
     const side = key.charAt(1)
     const cutOff = values[0]
     switch (side) {
       case 'L':
-        game.setInfo('board.cutOffLeft', cutOff)
+        set(info, 'board.cutOffLeft', cutOff)
         break
       case 'R':
-        game.setInfo('board.cutOffRight', cutOff)
+        set(info, 'board.cutOffRight', cutOff)
         break
       case 'T':
-        game.setInfo('board.cutOffTop', cutOff)
+        set(info, 'board.cutOffTop', cutOff)
         break
       case 'B':
-        game.setInfo('board.cutOffBottom', cutOff)
+        set(info, 'board.cutOffBottom', cutOff)
         break
     }
   }
 
   /**
-   * Dates parser function
+   * Dates parser
    */
-  parseDates(game, node, key, values) {
-    const dates = values[0].split(',')
-    if (dates.length > 0) {
-      game.setDate(dates[0])
-    }
+  parseDates(info, node, key, values) {
+    set(info, 'game.dates', values[0].split(','))
   }
 
   /**
-   * Komi parser function
+   * Variation settings parser
    */
-  parseKomi(game, node, key, values) {
-    const komi = values[0]
-    game.setKomi(komi)
-  }
-
-  /**
-   * Handicap parser function
-   */
-  parseHandicap(game, node, key, values) {
-    const handicap = values[0]
-    game.setHandicap(handicap)
-  }
-
-  /**
-   * Main time parser function
-   */
-  parseMainTime(game, node, key, values) {
-    const time = values[0]
-    game.setMainTime(time)
-  }
-
-  /**
-   * Result parser function
-   */
-  parseResult(game, node, key, values) {
-    const result = values[0]
-    game.setResult(result)
-  }
-
-  /**
-   * Variation settings parser function
-   */
-  parseVariationSettings(game, node, key, values) {
+  parseVariationSettings(info, node, key, values) {
 
     //Initialize variation display settings
     const settings = {
@@ -488,20 +451,20 @@ export default class ConvertFromSgf extends Converter {
     }
 
     //Set in game info
-    game.setInfo('settings', settings)
+    set(info, 'settings', settings)
   }
 
   /**
-   * Player info parser function
+   * Player info parser
    */
-  parsePlayer(game, node, key, values) {
+  parsePlayer(info, node, key, values) {
 
     //Determine player color
     const color = this.convertPlayerColor(key)
     const infoKey = sgfPlayerInfoMap[key]
 
-    //Set on game
-    game.setInfo(`players.${color}.${infoKey}`, values[0])
+    //Set on info
+    set(info, `players.${color}.${infoKey}`, values[0])
   }
 
   /*****************************************************************************
@@ -545,5 +508,18 @@ export default class ConvertFromSgf extends Converter {
       return values[0]
     }
     return values
+  }
+
+  /**
+   * Check if board is normal size
+   */
+  isNormalSize(info) {
+    const size = get(info, 'board.size')
+    const width = get(info, 'board.width')
+    const height = get(info, 'board.height')
+    return (
+      (size && size <= 19) ||
+      (width && height && width <= 19 && height <= 19)
+    )
   }
 }

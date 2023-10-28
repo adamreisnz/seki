@@ -1,5 +1,6 @@
 import Converter from './converter.js'
 import Game from '../game.js'
+import {get} from '../../helpers/object.js'
 import {markupTypes} from '../../constants/markup.js'
 import {
   charCodeA,
@@ -42,7 +43,8 @@ export default class ConvertToSgf extends Converter {
       throw new Error('Not a game instance')
     }
 
-    //Initialize sgf root properties object
+    //Get game info and initialize sgf root properties object
+    const info = game.getInfo()
     const root = {
       FF: 4,
       CA: 'UTF-8',
@@ -53,7 +55,7 @@ export default class ConvertToSgf extends Converter {
 
       //Get prop and value
       const prop = sgfGameInfoMap[key]
-      const value = game.getInfo(prop)
+      const value = get(info, prop)
 
       //No value
       if (typeof value === 'undefined') {
@@ -106,20 +108,13 @@ export default class ConvertToSgf extends Converter {
   appendBoardSize(root, game) {
 
     //Get size properties
-    const size = game.getInfo('board.size')
-    const width = game.getInfo('board.width')
-    const height = game.getInfo('board.height')
+    const {width, height} = game.getBoardSize()
 
     //Get key
     const key = 'SZ'
 
-    //Size
-    if (size) {
-      root[key] = size
-    }
-
     //Width and height which are the same
-    else if (width && height && width === height) {
+    if (width && height && width === height) {
       root[key] = width
     }
 
@@ -140,7 +135,7 @@ export default class ConvertToSgf extends Converter {
   appendPlayers(root, game) {
 
     //Get players
-    const players = game.getInfo('players')
+    const players = game.getPlayers()
     const colors = Object.keys(players)
 
     //Loop

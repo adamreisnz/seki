@@ -227,9 +227,9 @@ export default class Board extends Base {
   loadConfigFromGame(game) {
 
     //Get board config
-    const config = game.getInfo('board')
+    const config = game.getBoardConfig()
 
-    //Load, then redraw
+    //Load it and redraw
     this.loadConfig(config)
     this.loadSizeFromConfig()
     this.computeAndRedraw()
@@ -244,11 +244,11 @@ export default class Board extends Base {
     const {size, width, height} = this.config
 
     //Set size
-    if (size) {
-      this.setSize(size)
-    }
-    else if (width && height) {
+    if (width && height) {
       this.setSize(width, height)
+    }
+    else if (size) {
+      this.setSize(size)
     }
   }
 

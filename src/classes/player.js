@@ -168,7 +168,7 @@ export default class Player extends Base {
     }
 
     //Get config
-    const config = game.getInfo('settings')
+    const config = game.getSettings()
 
     //Load config
     this.loadConfig(config)

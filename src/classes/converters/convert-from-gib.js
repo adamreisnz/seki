@@ -131,7 +131,7 @@ export default class ConvertFromGib extends Converter {
     const rank = match[3].toLowerCase()
 
     //Set on game
-    game.setInfo(`players.${color}`, {name, rank})
+    game.setPlayer(color, {name, rank})
   }
 
   /**
@@ -171,7 +171,7 @@ export default class ConvertFromGib extends Converter {
     }
 
     //Set in game
-    game.setResult(result)
+    game.setGameResult(result)
   }
 
   /**

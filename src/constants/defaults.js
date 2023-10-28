@@ -1,7 +1,6 @@
 import {appName, appVersion, kifuFormats} from './app.js'
 import {keyValues, mouseEvents} from './util.js'
 import {gameTypes} from './game.js'
-import {jgfVersion} from './jgf.js'
 import {playerModes, playerActions} from './player.js'
 import {markupTypes} from './markup.js'
 import {stoneColors, stoneStyles} from './stone.js'
@@ -10,53 +9,23 @@ import {dateString} from '../helpers/util.js'
 //Default game info
 export const defaultGameInfo = {
   record: {
-    version: jgfVersion,
-    charset: 'UTF-8',
     generator: `${appName} v${appVersion}`,
-    transcriber: '',
-  },
-  source: {
-    name: '',
-    url: '',
-    copyright: '',
+    charset: 'UTF-8',
   },
   game: {
     type: gameTypes.GO,
-    name: '',
-    result: '',
     date: dateString(),
-    opening: '',
-    annotator: '',
-    description: '',
-  },
-  event: {
-    name: '',
-    location: '',
-    round: '',
   },
   players: {
     black: {
       name: 'Black',
-      rank: '',
-      team: '',
     },
     white: {
       name: 'White',
-      rank: '',
-      team: '',
     },
   },
   board: {
     size: 19,
-  },
-  rules: {
-    ruleSet: '',
-    allowSuicide: false,
-    disallowRepeatPositions: false,
-    komi: 0,
-    handicap: 0,
-    mainTime: 0,
-    overTime: '',
   },
 }
 

@@ -10,7 +10,7 @@ import ConvertFromGib from './converters/convert-from-gib.js'
 import ConvertToJgf from './converters/convert-to-jgf.js'
 import ConvertToJson from './converters/convert-to-json.js'
 import ConvertToSgf from './converters/convert-to-sgf.js'
-import {set, get, merge} from '../helpers/object.js'
+import {copy, get, set, merge, isObject} from '../helpers/object.js'
 import {isValidColor} from '../helpers/color.js'
 import {stoneColors} from '../constants/stone.js'
 import {kifuFormats} from '../constants/app.js'
@@ -39,32 +39,383 @@ export default class Game extends Base {
    * Constructor
    */
   constructor(info) {
+
+    //Parent constructor
     super()
-    this.init(info)
+
+    //Initialise
+    this.init()
+    this.initInfo(info)
+    this.initPositionStack()
   }
 
   /**
-   * Initialize
+   * Initialize game
    */
-  init(info) {
-
-    //Info properties
-    this.info = merge(defaultGameInfo, info || {})
+  init() {
 
     //The rood node and pointer to the current node
     this.path = new GamePath()
     this.root = new GameNode()
     this.node = this.root
 
-    //Initialize position stack
-    this.initialisePositionStack()
+    //Record properties
+    this.recordVersion = ''
+    this.recordCharset = ''
+    this.recordGenerator = ''
+    this.recordTranscriber = ''
+
+    //Source properties
+    this.sourceName = ''
+    this.sourceUrl = ''
+    this.sourceCopyright = ''
+
+    //Event properties
+    this.eventName = ''
+    this.eventLocation = ''
+    this.eventRound = ''
+
+    //Game properties
+    this.gameType = ''
+    this.gameName = ''
+    this.gameResult = ''
+    this.gameDate = ''
+    this.gameOpening = ''
+    this.gameAnnotator = ''
+    this.gameDescription = ''
+
+    //Board properties
+    this.boardWidth = 19
+    this.boardHeight = 19
+    this.boardCutOffLeft = 0
+    this.boardCutOffRight = 0
+    this.boardCutOffTop = 0
+    this.boardCutOffBottom = 0
+
+    //Rules
+    this.ruleSet = ''
+    this.allowSuicide = false
+    this.disallowRepeats = false
+    this.komi = 0
+    this.handicap = 0
+    this.mainTime = 0
+    this.overTime = ''
+
+    //Meta data and player settings
+    this.meta = {}
+    this.settings = {}
+
+    //Players
+    this.players = {
+      black: {
+        name: '',
+        team: '',
+        rank: '',
+      },
+      white: {
+        name: '',
+        team: '',
+        rank: '',
+      },
+    }
   }
 
   /**
-   * Reset
+   * Initialise game info
+   */
+  initInfo(info) {
+    this.setInfo(merge(defaultGameInfo, info))
+  }
+
+  /**
+   * Set game info in bulk
+   */
+  setInfo(info) {
+
+    //Extract record info
+    const recordVersion = get(info, 'record.version')
+    const recordCharset = get(info, 'record.charset')
+    const recordGenerator = get(info, 'record.generator')
+    const recordTranscriber = get(info, 'record.transcriber')
+
+    //Extract source info
+    const sourceName = get(info, 'source.name')
+    const sourceUrl = get(info, 'source.url')
+    const sourceCopyright = get(info, 'source.copyright')
+
+    //Extract event info
+    const eventName = get(info, 'event.name')
+    const eventLocation = get(info, 'event.location')
+    const eventRound = get(info, 'event.round')
+
+    //Extract game info
+    const gameType = get(info, 'game.type')
+    const gameName = get(info, 'game.name')
+    const gameResult = get(info, 'game.result')
+    const gameDate = get(info, 'game.date')
+    const gameDates = get(info, 'game.dates')
+    const gameOpening = get(info, 'game.opening')
+    const gameAnnotator = get(info, 'game.annotator')
+    const gameDescription = get(info, 'game.description')
+
+    //Extract board info
+    const boardSize = get(info, 'board.size')
+    const boardWidth = get(info, 'board.width')
+    const boardHeight = get(info, 'board.height')
+    const boardCutOffLeft = get(info, 'board.cutOffLeft')
+    const boardCutOffRight = get(info, 'board.cutOffRight')
+    const boardCutOffTop = get(info, 'board.cutOffTop')
+    const boardCutOffBottom = get(info, 'board.cutOffBottom')
+
+    //Extract rules
+    const ruleSet = get(info, 'rules.ruleSet')
+    const allowSuicide = get(info, 'rules.allowSuicide')
+    const disallowRepeats = get(info, 'rules.disallowRepeats')
+    const komi = get(info, 'rules.komi')
+    const handicap = get(info, 'rules.handicap')
+    const mainTime = get(info, 'rules.mainTime')
+    const overTime = get(info, 'rules.overTime')
+
+    //Extract players, settings and meta data
+    const players = get(info, 'players')
+    const settings = get(info, 'settings')
+    const meta = get(info, 'meta')
+
+    //Set record info
+    if (typeof recordVersion !== 'undefined') {
+      this.setRecordVersion(recordVersion)
+    }
+    if (typeof recordCharset !== 'undefined') {
+      this.setRecordCharset(recordCharset)
+    }
+    if (typeof recordGenerator !== 'undefined') {
+      this.setRecordGenerator(recordGenerator)
+    }
+    if (typeof recordTranscriber !== 'undefined') {
+      this.setRecordTranscriber(recordTranscriber)
+    }
+
+    //Set source info
+    if (typeof sourceName !== 'undefined') {
+      this.setSourcename(sourceName)
+    }
+    if (typeof sourceUrl !== 'undefined') {
+      this.setSourceUrl(sourceUrl)
+    }
+    if (typeof sourceCopyright !== 'undefined') {
+      this.setSourceCopyright(sourceCopyright)
+    }
+
+    //Set event info
+    if (typeof eventName !== 'undefined') {
+      this.setEventName(eventName)
+    }
+    if (typeof eventLocation !== 'undefined') {
+      this.setEventLocation(eventLocation)
+    }
+    if (typeof eventRound !== 'undefined') {
+      this.setEventRound(eventRound)
+    }
+
+    //Set game info
+    if (typeof gameType !== 'undefined') {
+      this.setGameType(gameType)
+    }
+    if (typeof gameName !== 'undefined') {
+      this.setGameName(gameName)
+    }
+    if (typeof gameResult !== 'undefined') {
+      this.setGameResult(gameResult)
+    }
+    if (typeof gameOpening !== 'undefined') {
+      this.setGameOpening(gameOpening)
+    }
+    if (typeof gameAnnotator !== 'undefined') {
+      this.setGameAnnotator(gameAnnotator)
+    }
+    if (typeof gameDescription !== 'undefined') {
+      this.setGameDescription(gameDescription)
+    }
+
+    //Set rules
+    if (typeof ruleSet !== 'undefined') {
+      this.setRuleSet(ruleSet)
+    }
+    if (typeof allowSuicide !== 'undefined') {
+      this.setAllowSuicide(allowSuicide)
+    }
+    if (typeof disallowRepeats !== 'undefined') {
+      this.setDisallowRepeats(disallowRepeats)
+    }
+    if (typeof komi !== 'undefined') {
+      this.setKomi(komi)
+    }
+    if (typeof handicap !== 'undefined') {
+      this.setHandicap(handicap)
+    }
+    if (typeof mainTime !== 'undefined') {
+      this.setMainTime(mainTime)
+    }
+    if (typeof overTime !== 'undefined') {
+      this.setOverTime(overTime)
+    }
+
+    //Set date
+    if (typeof gameDate !== 'undefined') {
+      this.setGameDate(gameDate)
+    }
+    else if (Array.isArray(gameDates) && gameDates.length > 0) {
+      this.setGameDate(gameDates[0])
+    }
+
+    //Set board size
+    if (boardWidth && boardHeight) {
+      this.setBoardSize(boardWidth, boardHeight)
+    }
+    else if (boardSize) {
+      this.setBoardSize(boardSize)
+    }
+
+    //Set board cut off
+    if (
+      typeof boardCutOffLeft !== 'undefined' ||
+      typeof boardCutOffRight !== 'undefined' ||
+      typeof boardCutOffTop !== 'undefined' ||
+      typeof boardCutOffBottom !== 'undefined'
+    ) {
+      this.setBoardCutOff(
+        boardCutOffLeft,
+        boardCutOffRight,
+        boardCutOffTop,
+        boardCutOffBottom,
+      )
+    }
+
+    //Set players
+    if (typeof players !== 'undefined') {
+      for (const color in players) {
+        this.setPlayer(color, players[color])
+      }
+    }
+
+    //Set meta data and settings
+    if (typeof meta !== 'undefined') {
+      this.setMeta(meta)
+    }
+    if (typeof settings !== 'undefined') {
+      this.setSettings(settings)
+    }
+
+    //Trigger event
+    this.triggerEvent('info', {info})
+  }
+
+  /**
+   * Get game info in bulk
+   */
+  getInfo() {
+
+    //Initialise
+    const info = {}
+
+    //Get info
+    const {
+      recordVersion,
+      recordCharset,
+      recordGenerator,
+      recordTranscriber,
+      sourceName,
+      sourceUrl,
+      sourceCopyright,
+      eventName,
+      eventLocation,
+      eventRound,
+      gameType,
+      gameName,
+      gameResult,
+      gameDate,
+      gameDates,
+      gameOpening,
+      gameAnnotator,
+      gameDescription,
+      boardSize,
+      boardWidth,
+      boardHeight,
+      boardCutOffLeft,
+      boardCutOffRight,
+      boardCutOffTop,
+      boardCutOffBottom,
+      ruleSet,
+      allowSuicide,
+      disallowRepeats,
+      komi,
+      handicap,
+      mainTime,
+      overTime,
+      players,
+      settings,
+      meta,
+    } = this
+
+    //Set on info
+    set(info, 'record.version', recordVersion)
+    set(info, 'record.charset', recordCharset)
+    set(info, 'record.generator', recordGenerator)
+    set(info, 'record.transcriber', recordTranscriber)
+
+    //Extract source info
+    set(info, 'source.name', sourceName)
+    set(info, 'source.url', sourceUrl)
+    set(info, 'source.copyright', sourceCopyright)
+
+    //Extract event info
+    set(info, 'event.name', eventName)
+    set(info, 'event.location', eventLocation)
+    set(info, 'event.round', eventRound)
+
+    //Extract game info
+    set(info, 'game.type', gameType)
+    set(info, 'game.name', gameName)
+    set(info, 'game.result', gameResult)
+    set(info, 'game.date', gameDate)
+    set(info, 'game.dates', gameDates)
+    set(info, 'game.opening', gameOpening)
+    set(info, 'game.annotator', gameAnnotator)
+    set(info, 'game.description', gameDescription)
+
+    //Extract board info
+    set(info, 'board.size', boardSize)
+    set(info, 'board.width', boardWidth)
+    set(info, 'board.height', boardHeight)
+    set(info, 'board.cutOffLeft', boardCutOffLeft)
+    set(info, 'board.cutOffRight', boardCutOffRight)
+    set(info, 'board.cutOffTop', boardCutOffTop)
+    set(info, 'board.cutOffBottom', boardCutOffBottom)
+
+    //Extract rules
+    set(info, 'rules.ruleSet', ruleSet)
+    set(info, 'rules.allowSuicide', allowSuicide)
+    set(info, 'rules.disallowRepeats', disallowRepeats)
+    set(info, 'rules.komi', komi)
+    set(info, 'rules.handicap', handicap)
+    set(info, 'rules.mainTime', mainTime)
+    set(info, 'rules.overTime', overTime)
+
+    //Extract players, settings and meta data
+    set(info, 'players', players)
+    set(info, 'settings', settings)
+    set(info, 'meta', meta)
+
+    //Return info
+    return info
+  }
+
+  /**
+   * Reset game (but preserve info)
    */
   reset() {
     this.init()
+    this.initPositionStack()
   }
 
   /**
@@ -86,136 +437,360 @@ export default class Game extends Base {
   }
 
   /**************************************************************************
-   * Game information & rules getters/setters
+   * Game info getters and setters
    ***/
 
   /**
-   * Set a generic game info property
+   * Set/get record version
    */
-  setInfo(path, value) {
-    set(this.info, path, value)
-    this.triggerEvent('info', {path, value})
+  setRecordVersion(recordVersion = '') {
+    this.recordVersion = recordVersion
+  }
+  getRecordVersion() {
+    return this.recordVersion
   }
 
   /**
-   * Get a generic game info property
+   * Set/get record char set
    */
-  getInfo(path, defaultValue) {
-    return get(this.info, path, defaultValue)
+  setRecordCharset(recordCharset = '') {
+    this.recordCharset = recordCharset
+  }
+  getRecordCharset() {
+    return this.recordCharset
   }
 
   /**
-   * Check if we have a generic info property
+   * Set/get record generator
    */
-  hasInfo(path) {
-    return !!get(this.info, path)
+  setRecordGenerator(recordGenerator = '') {
+    this.recordGenerator = recordGenerator
+  }
+  getRecordGenerator() {
+    return this.recordGenerator
   }
 
   /**
-   * Set the grid size
+   * Set/get record transcriber
    */
-  setGridSize(width, height) {
-    if (width && height && width !== height) {
-      this.setInfo('board.width', parseInt(width))
-      this.setInfo('board.height', parseInt(height))
-    }
-    else if (width) {
-      this.setInfo('board.size', parseInt(width))
-    }
+  setRecordTranscriber(recordTranscriber = '') {
+    this.recordTranscriber = recordTranscriber
+  }
+  getRecordTranscriber() {
+    return this.recordTranscriber
   }
 
   /**
-   * Get the board size
+   * Set/get source name
    */
-  getGridSize() {
-
-    //Get from game info
-    const size = this.getInfo('board.size')
-    const width = this.getInfo('board.width')
-    const height = this.getInfo('board.height')
-
-    //Check available dimensions
-    if (width && height) {
-      return {width, height}
-    }
-    else if (size) {
-      return {width: size, height: size}
-    }
-    return {width: 19, height: 19}
+  setSourceName(sourceName = '') {
+    this.sourceName = sourceName
+  }
+  getSourceName() {
+    return this.sourceName
   }
 
   /**
-   * Set the game komi
+   * Set/get source URL
    */
-  setKomi(komi) {
-    this.setInfo('rules.komi', parseFloat(komi))
+  setSourceUrl(sourceUrl = '') {
+    this.sourceUrl = sourceUrl
+  }
+  getSourceUrl() {
+    return this.sourceUrl
   }
 
   /**
-   * Get the game komi
+   * Set/get source copyright
    */
-  getKomi() {
-    const {defaultKomi} = defaultGameInfo
-    return this.getInfo('rules.komi', defaultKomi)
+  setSourceCopyright(sourceCopyright = '') {
+    this.sourceCopyright = sourceCopyright
+  }
+  getSourceCopyright() {
+    return this.sourceCopyright
   }
 
   /**
-   * Set the game handicap
+   * Set/get event name
    */
-  setHandicap(handicap) {
-    this.setInfo('rules.handicap', parseInt(handicap))
+  setEventName(eventName = '') {
+    this.eventName = eventName
+  }
+  getEventName() {
+    return this.eventName
   }
 
   /**
-   * Get the game handicap
+   * Set/get event location
    */
-  getHandicap() {
-    return this.getInfo('rules.handicap', 0)
+  setEventLocation(eventLocation = '') {
+    this.eventLocation = eventLocation
+  }
+  getEventLocation() {
+    return this.eventLocation
   }
 
   /**
-   * Set the game result
+   * Set/get event round
    */
-  setResult(result) {
-    const match = result
+  setEventRound(eventRound = '') {
+    this.eventRound = eventRound
+  }
+  getEventRound() {
+    return this.eventRound
+  }
+
+  /**
+   * Set/get game type
+   */
+  setGameType(gameType = '') {
+    this.gameType = gameType
+  }
+  getGameType() {
+    return this.gameType
+  }
+
+  /**
+   * Set/get game name
+   */
+  setGameName(gameName = '') {
+    this.gameName = gameName
+  }
+  getGameName() {
+    return this.gameName
+  }
+
+  /**
+   * Set/get game result
+   */
+  setGameResult(gameResult = '') {
+    const match = gameResult
       .toUpperCase()
       .match(/^((B|W)\+([0-9]+(\.[0-9]+)?|R|T|F))/)
-    this.setInfo('game.result', match ? match[1] : '?')
+    this.gameResult = match ? match[1] : '?'
+  }
+  getGameResult() {
+    return this.gameResult
   }
 
   /**
-   * Get the game result
+   * Set/get game date
    */
-  getResult() {
-    return this.getInfo('game.result')
+  setGameDate(gameDate = '') {
+    const match = gameDate
+      .match(/^(([0-9]{4})(-[0-9]{2})?(-[0-9]{2})?)/)
+    this.gameDate = match ? match[1] : '?'
+  }
+  getGameDate() {
+    return this.gameDate
   }
 
   /**
-   * Set the game date
+   * Set/get game opening
    */
-  setDate(date) {
-    this.setInfo('game.date', date)
+  setGameOpening(gameOpening = '') {
+    this.gameOpening = gameOpening
+  }
+  getGameOpening() {
+    return this.gameOpening
   }
 
   /**
-   * Get the game date
+   * Set/get game annotator
    */
-  getDate() {
-    return this.getInfo('game.date')
+  setGameAnnotator(gameAnnotator = '') {
+    this.gameAnnotator = gameAnnotator
+  }
+  getGameAnnotator() {
+    return this.gameAnnotator
   }
 
   /**
-   * Set main time
+   * Set/get game description
    */
-  setMainTime(time) {
-    this.setInfo('rules.mainTime', parseFloat(time))
+  setGameDescription(gameDescription = '') {
+    this.gameDescription = gameDescription
+  }
+  getGameDescription() {
+    return this.gameDescription
   }
 
   /**
-   * Get main time
+   * Set/get the board size
    */
+  setBoardSize(width, height) {
+    if (width && height && width !== height) {
+      this.boardWidth = parseInt(width)
+      this.boardHeight = parseInt(height)
+    }
+    else if (width) {
+      this.boardWidth = this.boardHeight = parseInt(width)
+    }
+  }
+  getBoardSize() {
+    const {boardWidth: width, boardHeight: height} = this
+    return {width, height}
+  }
+
+  /**
+   * Set the board cut off
+   */
+  setBoardCutOff(left = 0, right = 0, top = 0, bottom = 0) {
+    this.boardCutOffLeft = parseInt(left)
+    this.boardCutOffRight = parseInt(right)
+    this.boardCutOffTop = parseInt(top)
+    this.boardCutOffBottom = parseInt(bottom)
+  }
+  getBoardCutOff() {
+    const {
+      boardCutOffLeft: cutOffLeft,
+      boardCutOffRight: cutOffRight,
+      boardCutOffTop: cutOffTop,
+      boardCutOffBottom: cutOffBottom,
+    } = this
+    return {cutOffLeft, cutOffRight, cutOffTop, cutOffBottom}
+  }
+
+  /**
+   * Get combined board config for Board class
+   */
+  getBoardConfig() {
+
+    //Get config
+    const {
+      boardWidth: width,
+      boardHeight: height,
+      boardCutOffLeft: cutOffLeft,
+      boardCutOffRight: cutOffRight,
+      boardCutOffTop: cutOffTop,
+      boardCutOffBottom: cutOffBottom,
+    } = this
+
+    //Return combined config
+    return {
+      width,
+      height,
+      cutOffLeft,
+      cutOffRight,
+      cutOffTop,
+      cutOffBottom,
+    }
+  }
+
+  /**
+   * Set/get ruleset
+   */
+  setRuleSet(ruleSet = '') {
+    this.ruleSet = ruleSet
+  }
+  getRuleSet() {
+    return this.ruleSet
+  }
+
+  /**
+   * Set/get allow suicide
+   */
+  setAllowSuicide(allowSuicide = false) {
+    this.allowSuicide = Boolean(allowSuicide)
+  }
+  getAllowSuicide() {
+    return this.allowSuicide
+  }
+
+  /**
+   * Set/get disallow repeats
+   */
+  setDisallowRepeats(disallowRepeats = false) {
+    this.disallowRepeats = Boolean(disallowRepeats)
+  }
+  getDisallowRepeats() {
+    return this.disallowRepeats
+  }
+
+  /**
+   * Set/get komi
+   */
+  setKomi(komi = 0) {
+    this.komi = parseFloat(komi)
+  }
+  getKomi() {
+    return this.komi
+  }
+
+  /**
+   * Set/get handicap
+   */
+  setHandicap(handicap = 0) {
+    this.handicap = parseInt(handicap)
+  }
+  getHandicap() {
+    return this.handicap
+  }
+
+  /**
+   * Set/get main time
+   */
+  setMainTime(mainTime = 0) {
+    this.mainTime = parseFloat(mainTime)
+  }
   getMainTime() {
-    return this.getInfo('rules.mainTime')
+    return this.mainTime
+  }
+
+  /**
+   * Set/get over time
+   */
+  setOverTime(overTime = '') {
+    this.overTime = overTime
+  }
+  getOverTime() {
+    return this.overTime
+  }
+
+  /**
+   * Set/get meta data
+   */
+  setMeta(meta = {}) {
+    if (isObject(meta)) {
+      this.meta = copy(meta)
+    }
+  }
+  getMeta() {
+    return this.meta
+  }
+
+  /**
+   * Set/get player settings
+   */
+  setSettings(settings = {}) {
+    if (isObject(settings)) {
+      this.settings = copy(settings)
+    }
+  }
+  getSettings() {
+    return this.settings
+  }
+
+  /**
+   * Set/get players
+   */
+  setPlayers(players = {}) {
+    this.players = copy(players)
+  }
+  getPlayers() {
+    return this.players
+  }
+
+  /**
+   * Set/get player of a specific color
+   */
+  setPlayer(color, info) {
+    if (isObject(info)) {
+      this.players[color] = copy(info)
+    }
+  }
+  getPlayer(color) {
+    return this.players[color]
   }
 
   /**************************************************************************
@@ -288,7 +863,7 @@ export default class Game extends Base {
 
     //Root node? Return main time
     if (node.isRoot()) {
-      return this.getInfo('rules.mainTime')
+      return this.getMainTime()
     }
 
     //Not a move node
@@ -300,7 +875,7 @@ export default class Game extends Base {
     if (node.getMoveColor() !== color) {
       node = node.getPreviousMove()
       if (!node) {
-        return this.getInfo('rules.mainTime')
+        return this.getMainTime()
       }
     }
 
@@ -354,11 +929,11 @@ export default class Game extends Base {
   /**
    * Initialise the position stack
    */
-  initialisePositionStack() {
+  initPositionStack() {
 
     //Create new blank game position
     const {positions} = this
-    const {width, height} = this.getGridSize()
+    const {width, height} = this.getBoardSize()
     const position = new GamePosition(width, height)
 
     //Debug
@@ -408,12 +983,11 @@ export default class Game extends Base {
   isRepeatingPosition(checkPosition) {
 
     //Get data
-    const {positions} = this
-    const disallowRepeatPositions = this.getInfo('rules.disallowRepeatPositions')
+    const {positions, disallowRepeats} = this
     let stop
 
     //Check all positions?
-    if (disallowRepeatPositions) {
+    if (disallowRepeats) {
       stop = 0
     }
 
@@ -454,6 +1028,13 @@ export default class Game extends Base {
    */
   isCurrentNode(node) {
     return this.node === node
+  }
+
+  /**
+   * Set root node
+   */
+  setRootNode(root) {
+    this.root = root
   }
 
   /**
@@ -609,7 +1190,7 @@ export default class Game extends Base {
    * because this class can be used independently of the board class.
    */
   isValidCoordinate(x, y) {
-    const {width, height} = this.getGridSize()
+    const {width, height} = this.getBoardSize()
     return (x >= 0 && y >= 0 && x < width && y < height)
   }
 
@@ -646,7 +1227,7 @@ export default class Game extends Base {
   validateMove(position, x, y, color) {
 
     //Get data
-    const allowSuicide = this.getInfo('rules.allowSuicide')
+    const {allowSuicide} = this
 
     //Check coordinates validity
     if (!this.isValidCoordinate(x, y)) {
@@ -1338,7 +1919,7 @@ export default class Game extends Base {
 
     //Set turn
     this.setTurn(turn)
-    this.initialisePositionStack()
+    this.initPositionStack()
   }
 
   /**
@@ -1468,8 +2049,8 @@ export default class Game extends Base {
   getFileName() {
 
     //Get info
-    const date = this.getInfo('game.date')
-    const {black, white} = this.getInfo('players')
+    const date = this.getGameDate()
+    const {black, white} = this.getPlayers()
     const numMoves = this.getTotalNumberOfMoves()
 
     //Parse players

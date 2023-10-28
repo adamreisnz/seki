@@ -482,15 +482,18 @@ player.on('config', event => {
 player.on('gameLoad', () => {
   player.setMode(playerModes.REPLAY)
   const {game} = player
-  const {black, white} = game.getInfo('players')
+  const {black, white} = game.getPlayers()
   const komi = game.getKomi()
-  const result = game.getInfo('game.result')
-  const name = game.getInfo('game.name')
-  const date = game.getInfo('game.date')
-  const rules = game.getInfo('rules')
-  const event = game.getInfo('event')
-  const source = game.getInfo('source')
-  const size = game.getInfo('board.size')
+  const result = game.getGameResult()
+  const name = game.getGameName()
+  const date = game.getGameDate()
+  const ruleSet = game.getRuleSet()
+  const mainTime = game.getMainTime()
+  const overTime = game.getOverTime()
+  const eventName = game.getEventName()
+  const eventLocation = game.getEventLocation()
+  const eventRound = game.getEventRound()
+  const {width: size} = game.getBoardSize()
   document.getElementById('boardSize').value = size
   setText('#comments', '')
   setText('#playerBlackName', black.name || 'Black')
@@ -501,22 +504,22 @@ player.on('gameLoad', () => {
   setText('#result', result || '')
   setText('#name', name || '')
   setText('#date', date || '')
-  setText('#ruleSet', rules.ruleSet || '')
+  setText('#ruleSet', ruleSet || '')
   setText('#time', '')
-  if (rules.mainTime) {
-    const mt = parseTime(rules.mainTime)
-    const ot = parseOverTime(rules.overTime)
+  if (mainTime) {
+    const mt = parseTime(mainTime)
+    const ot = parseOverTime(overTime)
     setText('#time', `${mt}${ot ? ` + ${ot}` : ''}`)
     toggleHidden('.times', false)
-    setText('#blackTimeLeft', parseTime(rules.mainTime))
-    setText('#whiteTimeLeft', parseTime(rules.mainTime))
+    setText('#blackTimeLeft', parseTime(mainTime))
+    setText('#whiteTimeLeft', parseTime(mainTime))
   }
   setText('#event', '')
-  if (event) {
+  if (eventName || eventLocation || eventRound) {
     const parts = [
-      event.name,
-      event.location,
-      event.round
+      eventName,
+      eventLocation,
+      eventRound
     ].filter(p => !!p)
     if (parts.length > 0) {
       setText('#event', parts.join(', '))

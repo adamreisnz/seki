@@ -11,8 +11,9 @@ export const charCodeA = 97
 export const sgfGameInfoMap = {
 
   //Record properties
-  AP: 'record.generator',
+  FF: 'record.version',
   CA: 'record.charset',
+  AP: 'record.generator',
   US: 'record.transcriber',
 
   //Source properties
@@ -22,7 +23,7 @@ export const sgfGameInfoMap = {
   //Game information
   GM: 'game.type',
   GN: 'game.name',
-  DT: 'game.date',
+  DT: 'game.dates',
   RE: 'game.result',
   ON: 'game.opening',
   AN: 'game.annotator',

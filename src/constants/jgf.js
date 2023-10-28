@@ -1,8 +1,8 @@
 
 //JGF version
-export const jgfVersion = 2
+export const jgfVersion = '2.0.0'
 
-//Top level paths to copy over
+//Top level JGF paths
 export const jgfPaths = [
   'record.version',
   'record.charset',
@@ -15,6 +15,7 @@ export const jgfPaths = [
   'game.name',
   'game.result',
   'game.date',
+  'game.dates',
   'game.opening',
   'game.annotator',
   'game.description',
@@ -34,6 +35,7 @@ export const jgfPaths = [
   'board.cutOffTop',
   'board.cutOffBottom',
   'players',
+  'settings',
   'meta',
 ]
 

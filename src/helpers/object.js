@@ -77,3 +77,10 @@ export function set(obj, path, value) {
     obj = obj[keys[i]]
   }
 }
+
+/**
+ * Object check
+ */
+export function isObject(obj) {
+  return !!obj && typeof obj === 'object'
+}

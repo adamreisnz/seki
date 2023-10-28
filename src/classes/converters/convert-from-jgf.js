@@ -2,23 +2,7 @@ import Converter from './converter.js'
 import Game from '../game.js'
 import GameNode from '../game-node.js'
 import {copy, get, set} from '../../helpers/object.js'
-import {
-  jgfPaths,
-  jgfNodePaths,
-} from '../../constants/jgf.js'
-
-//Skip these paths as this is handled separately
-const skipPaths = [
-  'board.size',
-  'board.width',
-  'board.height',
-  'game.date',
-  'game.result',
-  'rules.komi',
-  'rules.handicap',
-  'rules.mainTime',
-  'players',
-]
+import {jgfNodePaths} from '../../constants/jgf.js'
 
 /**
  * Convert JGF data into a seki game object
@@ -32,27 +16,13 @@ export default class ConvertFromJgf extends Converter {
 
     //Initialize
     const game = new Game()
+    const root = this.parseTree(jgf.tree)
 
-    //Determine some properties manually
-    this.extractBoardSize(game, jgf)
-    this.extractKomi(game, jgf)
-    this.extractHandicap(game, jgf)
-    this.extractDate(game, jgf)
-    this.extractResult(game, jgf)
-    this.extractMainTime(game, jgf)
-    this.extractPlayers(game, jgf)
+    //Extract game info and set root node
+    game.setInfo(jgf)
+    game.setRootNode(root)
 
-    //Copy over rest of relevant paths
-    for (const path of jgfPaths) {
-      if (!skipPaths.includes(path)) {
-        game.setInfo(path, copy(get(jgf, path)))
-      }
-    }
-
-    //Parse tree and obtain root node
-    game.root = this.parseTree(jgf.tree)
-
-    //Return object
+    //Return game
     return game
   }
 
@@ -144,76 +114,5 @@ export default class ConvertFromJgf extends Converter {
    */
   isVariationNode(jgfNode) {
     return (jgfNode && Array.isArray(jgfNode.variations))
-  }
-
-  /**
-   * Extract board size
-   */
-  extractBoardSize(game, jgf) {
-
-    //Get board size properties
-    const size = get(jgf, 'board.size')
-    const width = get(jgf, 'board.width')
-    const height = get(jgf, 'board.height')
-
-    //Set grid size
-    game.setGridSize(width || size, height)
-  }
-
-  /**
-   * Extract komi
-   */
-  extractKomi(game, jgf) {
-    const komi = get(jgf, 'rules.komi')
-    game.setKomi(komi)
-  }
-
-  /**
-   * Extract handicap
-   */
-  extractHandicap(game, jgf) {
-    const handicap = get(jgf, 'rules.handicap')
-    game.setHandicap(handicap)
-  }
-
-  /**
-   * Extract result
-   */
-  extractResult(game, jgf) {
-    const result = get(jgf, 'game.result')
-    game.setResult(result)
-  }
-
-  /**
-   * Extract main time
-   */
-  extractMainTime(game, jgf) {
-    const time = get(jgf, 'rules.mainTime')
-    game.setMainTime(time)
-  }
-
-  /**
-   * Extract date
-   */
-  extractDate(game, jgf) {
-    const dates = get(jgf, 'game.dates')
-    const date = get(jgf, 'game.date')
-    if (Array.isArray(dates) && dates.length > 0) {
-      game.setDate(dates[0])
-    }
-    else if (date) {
-      game.setDate(date)
-    }
-  }
-
-  /**
-   * Extract players
-   */
-  extractPlayers(game, jgf) {
-    const players = get(jgf, 'players')
-    for (const player of players) {
-      const {color, name, rank, team} = player
-      game.setInfo(`players.${color}`, {name, rank, team})
-    }
   }
 }

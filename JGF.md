@@ -131,7 +131,7 @@ JGF = {
     allowSuicide: false,
 
     //Whether any board position is disallowed to repeat (as opposed to just ko's)
-    disallowRepeatPositions: false,
+    disallowRepeats: false,
 
     //Komi used (can be negative)
 		komi: 6.5,
