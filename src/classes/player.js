@@ -291,13 +291,13 @@ export default class Player extends Base {
   }
 
   /*****************************************************************************
-   * Game record handling
+   * Game handling
    ***/
 
   /**
-   * Open file
+   * Load game
    */
-  async openFile() {
+  async loadGame() {
 
     //Load file
     const file = await openFile()
@@ -305,19 +305,21 @@ export default class Player extends Base {
     const {name} = file
 
     //Trigger event and load data
-    this.triggerEvent('openFile', {file, name, data})
+    this.triggerEvent('loadGame', {file, name, data})
     this.load(data)
   }
 
   /**
-   * Load file from URL
+   * Load game from URL
    */
-  async loadFileFromUrl() {
+  async loadGameFromUrl(url) {
 
     //Load data
-    const url = getUrl('Enter OGS game URL')
     if (!url) {
-      return
+      const url = getUrl('Enter game URL')
+      if (!url) {
+        return
+      }
     }
 
     //Load URL
@@ -325,14 +327,14 @@ export default class Player extends Base {
     const data = await result.text()
 
     //Trigger event and load data
-    this.triggerEvent('loadFileFromUrl', {url, data})
+    this.triggerEvent('loadGameFromUrl', {url, data})
     this.load(data)
   }
 
   /**
-   * Download file
+   * Download game
    */
-  downloadFile(format) {
+  downloadGame(format) {
 
     //Use default format
     if (!format) {
@@ -362,9 +364,9 @@ export default class Player extends Base {
   }
 
   /**
-   * Load new file / reset player
+   * Start new game
    */
-  newFile(info) {
+  newGame(info) {
 
     //Reset game
     this.initGame(null, info)
@@ -644,16 +646,8 @@ export default class Player extends Base {
   }
 
   /*****************************************************************************
-   * Game handling
+   * Scoring
    ***/
-
-  /**
-   * Start a new game
-   */
-  newGame() {
-    this.game = new Game()
-    this.updateBoardPosition()
-  }
 
   /**
    * Score the current game position

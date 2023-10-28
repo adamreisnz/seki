@@ -62,16 +62,16 @@
 
       <div class="block utility">
         <div class="buttons">
-          <button class="iconButton btnAlt" id="btnNew" title="New file [shift-N]">
+          <button class="iconButton btnAlt" id="btnNew" title="New game [shift-N]">
             <span class="icon material-symbols-outlined">note</span>
           </button>
-          <button class="iconButton btnCommand" cmd="openFile" title="Load file from computer [shift-O]">
+          <button class="iconButton btnCommand" cmd="loadGame" title="Load game from computer [shift-O]">
             <span class="icon material-symbols-outlined">upload_file</span>
           </button>
-          <button class="iconButton btnCommand" cmd="loadFileFromUrl" title="Load file from OGS URL [shift-U]">
+          <button class="iconButton btnCommand" cmd="loadGameFromUrl" title="Load game from OGS URL [shift-U]">
             <span class="icon material-symbols-outlined">cloud_upload</span>
           </button>
-          <button class="iconButton btnCommand" cmd="downloadFile" title="Download file to computer [shift-D]">
+          <button class="iconButton btnCommand" cmd="downloadGame" title="Download game to computer [shift-D]">
             <span class="icon material-symbols-outlined">download_for_offline</span>
           </button>
           <button class="iconButton btnCommand" cmd="downloadImage" title="Download image of board">
@@ -155,7 +155,7 @@
           </select>
 
           <br>
-          <button id="confirmNewFile">Create new file</button>
+          <button id="confirmNewGame">Create new game</button>
         </div>
       </div>
 
@@ -351,9 +351,9 @@ onClick('#btnSettings', btn => togglePanel('Settings', isActive(btn)))
 onClick('#btnInfo', btn => togglePanel('Info', isActive(btn)))
 
 //Confirm new file
-onClick('#confirmNewFile', () => {
+onClick('#confirmNewGame', () => {
   const size = parseInt(document.getElementById('boardSize').value)
-  player.newFile({board: {size}})
+  player.newGame({board: {size}})
   togglePanel('New', true)
 })
 

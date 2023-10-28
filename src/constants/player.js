@@ -48,12 +48,12 @@ export const playerActions = {
   //General
   CANCEL_ACTION: 'cancelAction',
 
-  //File handling
-  NEW_FILE: 'newFile',
-  OPEN_FILE: 'openFile',
-  DOWNLOAD_FILE: 'downloadFile',
+  //Game handling
+  NEW_GAME: 'newGame',
+  LOAD_GAME: 'openGame',
+  LOAD_GAME_FROM_URL: 'loadGameFromUrl',
+  DOWNLOAD_GAME: 'downloadGame',
   DOWNLOAD_IMAGE: 'downloadImage',
-  LOAD_FILE_FROM_URL: 'loadFileFromUrl',
 
   //Mode selection
   SET_MODE_REPLAY: 'setModeReplay',

@@ -71,31 +71,31 @@ export const defaultPlayerConfig = {
       action: playerActions.CANCEL_ACTION,
     },
 
-    //File handling
+    //Game handling
     {
       key: 'N',
       shiftKey: true,
-      action: playerActions.NEW_FILE,
+      action: playerActions.NEW_GAME,
     },
     {
       key: 'O',
       shiftKey: true,
-      action: playerActions.OPEN_FILE,
+      action: playerActions.LOAD_GAME,
+    },
+    {
+      key: 'U',
+      shiftKey: true,
+      action: playerActions.LOAD_GAME_FROM_URL,
     },
     {
       key: 'D',
       shiftKey: true,
-      action: playerActions.DOWNLOAD_FILE,
+      action: playerActions.DOWNLOAD_GAME,
     },
     {
       key: 'P',
       shiftKey: true,
       action: playerActions.DOWNLOAD_IMAGE,
-    },
-    {
-      key: 'U',
-      shiftKey: true,
-      action: playerActions.LOAD_FILE_FROM_URL,
     },
 
     //Mode selection

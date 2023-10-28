@@ -167,21 +167,21 @@ export default class PlayerMode extends Base {
     //Determine action
     switch (action) {
 
-      //File handling
-      case playerActions.NEW_FILE:
-        player.newFile()
+      //Game handling
+      case playerActions.NEW_GAME:
+        player.newGame()
         return true
-      case playerActions.OPEN_FILE:
-        player.openFile()
+      case playerActions.LOAD_GAME:
+        player.loadGame()
         return true
-      case playerActions.DOWNLOAD_FILE:
-        player.downloadFile()
+      case playerActions.DOWNLOAD_GAME:
+        player.downloadGame()
         return true
       case playerActions.DOWNLOAD_IMAGE:
         player.downloadImage()
         return true
-      case playerActions.LOAD_FILE_FROM_URL:
-        player.loadFileFromUrl()
+      case playerActions.LOAD_GAME_FROM_URL:
+        player.loadGameFromUrl()
         return true
 
       //Mode selection
