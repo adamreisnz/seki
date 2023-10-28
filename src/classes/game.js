@@ -307,7 +307,7 @@ export default class Game extends Base {
     }
 
     //Trigger event
-    this.triggerEvent('info', {info})
+    this.triggerEvent('info')
   }
 
   /**
