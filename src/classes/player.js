@@ -11,6 +11,7 @@ import {
   removeClass,
   openFile,
   getUrl,
+  parseGameUrl,
   downloadFile,
   isKeyDownEvent,
   isMouseEvent,
@@ -295,6 +296,16 @@ export default class Player extends Base {
    ***/
 
   /**
+   * Start new game
+   */
+  newGame(info) {
+
+    //Reset game
+    this.initGame(null, info)
+    this.processLoadedGame()
+  }
+
+  /**
    * Load game
    */
   async loadGame() {
@@ -316,11 +327,14 @@ export default class Player extends Base {
 
     //Load data
     if (!url) {
-      const url = getUrl('Enter game URL')
+      url = getUrl('Enter game URL')
       if (!url) {
         return
       }
     }
+
+    //Parse URL
+    url = parseGameUrl(url)
 
     //Load URL
     const result = await fetch(url)
@@ -360,16 +374,6 @@ export default class Player extends Base {
 
     //Init
     this.initGame(game)
-    this.processLoadedGame()
-  }
-
-  /**
-   * Start new game
-   */
-  newGame(info) {
-
-    //Reset game
-    this.initGame(null, info)
     this.processLoadedGame()
   }
 

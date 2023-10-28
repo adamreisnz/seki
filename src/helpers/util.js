@@ -133,14 +133,7 @@ export function toggleClass(element, className, value) {
  * Get URL
  */
 export function getUrl(text = 'Enter URL') {
-  let url = prompt(text)
-  if (url) {
-    const match = url.match(/https:\/\/online-go\.com\/game\/([0-9]+)/)
-    if (match) {
-      url = `https://online-go.com/api/v1/games/${match[1]}/sgf`
-    }
-  }
-  return url
+  return prompt(text)
 }
 
 /**
@@ -170,6 +163,19 @@ export function downloadFile(data, name, type) {
   link.target = '_blank'
   link.download = `${name}.${type}`
   link.click()
+}
+
+/**
+ * Parse game URL
+ */
+export function parseGameUrl(url) {
+  if (url) {
+    const match = url.match(/https:\/\/online-go\.com\/game\/([0-9]+)/)
+    if (match) {
+      return `https://online-go.com/api/v1/games/${match[1]}/sgf`
+    }
+  }
+  return url
 }
 
 /**************************************************************************
