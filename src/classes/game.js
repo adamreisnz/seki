@@ -960,13 +960,9 @@ export default class Game extends Base {
       return
     }
 
-    //Get coords
-    const coords = handicapPlacements[width][handicap]
-
-    //Set as setup on root node
-    const {root} = this
-    for (const {x, y} of coords) {
-      root.addSetup(x, y, stoneColors.BLACK)
+    //Add stones
+    for (const {x, y} of handicapPlacements[width][handicap]) {
+      this.addStone(x, y, stoneColors.BLACK)
     }
 
     //Set white to play
