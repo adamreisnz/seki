@@ -618,13 +618,21 @@ export default class Game extends Base {
   /**
    * Set/get the board size
    */
-  setBoardSize(width, height) {
+  setBoardSize(width = 0, height = 0) {
+    width = parseInt(width)
+    if (isNaN(width)) {
+      width = 0
+    }
+    height = parseInt(height)
+    if (isNaN(height)) {
+      height = 0
+    }
     if (width && height && width !== height) {
-      this.boardWidth = parseInt(width)
-      this.boardHeight = parseInt(height)
+      this.boardWidth = width
+      this.boardHeight = height
     }
     else if (width) {
-      this.boardWidth = this.boardHeight = parseInt(width)
+      this.boardWidth = this.boardHeight = width
     }
   }
   getBoardSize() {
@@ -636,10 +644,14 @@ export default class Game extends Base {
    * Set the board cut off
    */
   setBoardCutOff(left = 0, right = 0, top = 0, bottom = 0) {
-    this.boardCutOffLeft = parseInt(left)
-    this.boardCutOffRight = parseInt(right)
-    this.boardCutOffTop = parseInt(top)
-    this.boardCutOffBottom = parseInt(bottom)
+    left = parseInt(left)
+    right = parseInt(right)
+    top = parseInt(top)
+    bottom = parseInt(bottom)
+    this.boardCutOffLeft = isNaN(left) ? 0 : left
+    this.boardCutOffRight = isNaN(right) ? 0 : right
+    this.boardCutOffTop = isNaN(top) ? 0 : top
+    this.boardCutOffBottom = isNaN(bottom) ? 0 : bottom
   }
   getBoardCutOff() {
     const {
@@ -711,7 +723,11 @@ export default class Game extends Base {
    * Set/get komi
    */
   setKomi(komi = 0) {
-    this.komi = parseFloat(komi)
+    komi = parseFloat(komi)
+    if (isNaN(komi)) {
+      komi = 0
+    }
+    this.komi = komi
   }
   getKomi() {
     return this.komi
@@ -721,7 +737,11 @@ export default class Game extends Base {
    * Set/get handicap
    */
   setHandicap(handicap = 0) {
-    this.handicap = parseInt(handicap)
+    handicap = parseInt(handicap)
+    if (isNaN(handicap)) {
+      handicap = 0
+    }
+    this.handicap = handicap
   }
   getHandicap() {
     return this.handicap
@@ -731,7 +751,11 @@ export default class Game extends Base {
    * Set/get main time
    */
   setMainTime(mainTime = 0) {
-    this.mainTime = parseFloat(mainTime)
+    mainTime = parseFloat(mainTime)
+    if (isNaN(mainTime)) {
+      mainTime = 0
+    }
+    this.mainTime = mainTime
   }
   getMainTime() {
     return this.mainTime
