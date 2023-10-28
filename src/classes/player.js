@@ -89,9 +89,12 @@ export default class Player extends Base {
     this.game = game || new Game(info)
     this.path = null
 
-    //Propagate info event
+    //Propagate events
     this.game.on('info', event => {
       this.triggerEvent('gameInfo', event.detail)
+    })
+    this.game.on('positionChange', event => {
+      this.triggerEvent('gamePositionChange', event.detail)
     })
 
     //Restricted nodes
@@ -622,8 +625,8 @@ export default class Player extends Base {
     //Debug
     this.debug('path changed')
 
-    //Update board
-    this.updateBoard()
+    //Update board position
+    this.updateBoardPosition()
 
     //Copy new path and trigger path change event
     this.path = path.clone()
@@ -649,7 +652,7 @@ export default class Player extends Base {
    */
   newGame() {
     this.game = new Game()
-    this.updateBoard()
+    this.updateBoardPosition()
   }
 
   /**
@@ -700,14 +703,14 @@ export default class Player extends Base {
     this.board.removeAll()
     this.board.loadConfigFromGame(this.game)
 
-    //Update board
-    this.updateBoard()
+    //Update board position
+    this.updateBoardPosition()
   }
 
   /**
-   * Update the board
+   * Update the board position
    */
-  updateBoard() {
+  updateBoardPosition() {
     const {board, game} = this
     const position = game.getPosition()
     if (board) {

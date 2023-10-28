@@ -847,6 +847,7 @@ export default class Game extends Base {
     const {position} = this
     if (position) {
       position.setTurn(color)
+      this.triggerEvent('positionChange', {position})
     }
   }
 
@@ -857,6 +858,7 @@ export default class Game extends Base {
     const {position} = this
     if (position) {
       position.switchTurn()
+      this.triggerEvent('positionChange', {position})
     }
   }
 
@@ -1520,11 +1522,13 @@ export default class Game extends Base {
       this.debug(`new node was created with index ${newNodeIndex}`)
       this.handleNewSetupNodeCreation(newNodeIndex)
       this.replaceLastPositionInStack(newPosition)
+      this.triggerEvent('positionChange', {position})
       return
     }
 
     //Just set stone on current position
     position.stones.set(x, y, color)
+    this.triggerEvent('positionChange', {position})
   }
 
   /**
@@ -1565,6 +1569,7 @@ export default class Game extends Base {
     //Replace current position
     this.handleNewSetupNodeCreation(newNodeIndex)
     this.replaceLastPositionInStack(newPosition)
+    this.triggerEvent('positionChange', {position})
   }
 
   /**
