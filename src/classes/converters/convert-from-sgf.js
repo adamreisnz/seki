@@ -215,7 +215,12 @@ export default class ConvertFromSgf extends Converter {
 
     //Regular move
     else {
-      Object.assign(move, this.createCoordinate(values[0]))
+      const coord = this.createCoordinate(values[0])
+      if (!coord) {
+        console.warn(`Invalid coordinate encountered while parsing SGF: ${key} =>`, values[0])
+        return
+      }
+      Object.assign(move, coord)
     }
 
     //Append to node
@@ -291,6 +296,10 @@ export default class ConvertFromSgf extends Converter {
     //Add values
     for (const value of values) {
       const coord = this.createCoordinate(value.substr(0, 2))
+      if (!coord) {
+        console.warn(`Invalid coordinate encountered while parsing SGF: ${key} =>`, value)
+        continue
+      }
       if (type === markupTypes.LABEL) {
         coord.text = value.substr(3)
       }
@@ -319,6 +328,10 @@ export default class ConvertFromSgf extends Converter {
     //Add values
     for (const value of values) {
       const coord = this.createCoordinate(value, {})
+      if (!coord) {
+        console.warn(`Invalid coordinate encountered while parsing SGF: ${key} =>`, value)
+        continue
+      }
       coords.push(coord)
     }
 
@@ -343,6 +356,10 @@ export default class ConvertFromSgf extends Converter {
     //Add values
     for (const value of values) {
       const coord = this.createCoordinate(value, {})
+      if (!coord) {
+        console.warn(`Invalid coordinate encountered while parsing SGF: ${key} =>`, value)
+        continue
+      }
       coords.push(coord)
     }
 
@@ -475,10 +492,12 @@ export default class ConvertFromSgf extends Converter {
    * Helper to create a coordinate
    */
   createCoordinate(str) {
-    return {
-      x: str.charCodeAt(0) - charCodeA,
-      y: str.charCodeAt(1) - charCodeA,
+    const x = str.charCodeAt(0) - charCodeA
+    const y = str.charCodeAt(1) - charCodeA
+    if (x < 0 || y < 0) {
+      return null
     }
+    return {x, y}
   }
 
   /**

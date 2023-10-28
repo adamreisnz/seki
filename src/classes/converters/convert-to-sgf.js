@@ -15,6 +15,7 @@ import {
 const gameInfoConversionMap = {
   'record.generator': 'convertGenerator',
   'game.type': 'convertGameType',
+  settings: 'convertVariationSettings',
 }
 
 //Node parsing map
@@ -68,7 +69,7 @@ export default class ConvertToSgf extends Converter {
       }
 
       //Otherwise, just copy over
-      else {
+      else if (value !== '') {
         root[key] = this.escapeSgf(value)
       }
     }
@@ -234,6 +235,7 @@ export default class ConvertToSgf extends Converter {
       //Get SGF setup type and extract coordinates
       const key = this.getMappedValue(obj.type, sgfSetupTypes)
       const coords = this.extractCoordinates(obj.coords)
+      console.log(key, coords)
 
       //Initialise group and add entry
       groups[key] = groups[key] || []
@@ -357,6 +359,9 @@ export default class ConvertToSgf extends Converter {
     if (Array.isArray(obj)) {
       return obj.map(entry => this.extractCoordinates(entry))
     }
+    if (obj.x < 0 || obj.y < 0) {
+      throw new Error(`Invalid coordinates: (${obj.x},${obj.y})`)
+    }
     const x = String.fromCharCode(charCodeA + obj.x)
     const y = String.fromCharCode(charCodeA + obj.y)
     return `${x}${y}`
@@ -387,11 +392,6 @@ export default class ConvertToSgf extends Converter {
 
   /**
    * Settings parser
-   *
-   * NOTE: not used at the moment, as the settings are not always present in
-   * the game info, and there is no mechanism to get it out of the player.
-   * This is honestly also not really a setting that should be saved in a game
-   * record, but rather saved in the player/browser instead.
    */
   convertVariationSettings(settings) {
     return (
