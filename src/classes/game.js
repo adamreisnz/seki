@@ -197,7 +197,7 @@ export default class Game extends Base {
 
     //Set source info
     if (typeof sourceName !== 'undefined') {
-      this.setSourcename(sourceName)
+      this.setSourceName(sourceName)
     }
     if (typeof sourceUrl !== 'undefined') {
       this.setSourceUrl(sourceUrl)
