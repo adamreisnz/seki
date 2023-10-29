@@ -264,8 +264,6 @@ export const defaultPlayerConfig = {
   },
 
   //Player configuration
-  showTree: true,
-  showTimeLeft: true,
   showLastMove: true,
   showNextMove: false,
   showSolutions: false,
