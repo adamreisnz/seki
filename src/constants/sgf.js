@@ -47,6 +47,8 @@ export const sgfGameInfoMap = {
   RU: 'rules.ruleSet',
   TM: 'rules.mainTime',
   OT: 'rules.overTime',
+  TC: 'rules.numberOfPeriods', //Fox
+  TT: 'rules.timePerPeriod', //Fox
 
   //Settings
   ST: 'settings',

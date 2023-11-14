@@ -176,6 +176,8 @@ export default class Game extends Base {
     const handicap = get(info, 'rules.handicap')
     const mainTime = get(info, 'rules.mainTime')
     const overTime = get(info, 'rules.overTime')
+    const numberOfPeriods = get(info, 'rules.numberOfPeriods')
+    const timePerPeriod = get(info, 'rules.timePerPeriod')
 
     //Extract players, settings and meta data
     const players = get(info, 'players')
@@ -259,6 +261,12 @@ export default class Game extends Base {
     }
     if (typeof overTime !== 'undefined') {
       this.setOverTime(overTime)
+    }
+    if (typeof numberOfPeriods !== 'undefined') {
+      this.setNumberOfPeriods(numberOfPeriods)
+    }
+    if (typeof timePerPeriod !== 'undefined') {
+      this.setTimePerPeriod(timePerPeriod)
     }
 
     //Set date
@@ -767,9 +775,42 @@ export default class Game extends Base {
    */
   setOverTime(overTime = '') {
     this.overTime = overTime
+    const match = overTime.match(/([0-9]+)x([0-9.]+)/)
+    if (match) {
+      this.setNumberOfPeriods(match[1])
+      this.setTimePerPeriod(match[2])
+    }
   }
   getOverTime() {
     return this.overTime
+  }
+
+  /**
+   * Set/get number of periods
+   */
+  setNumberOfPeriods(numberOfPeriods) {
+    numberOfPeriods = parseInt(numberOfPeriods)
+    if (isNaN(numberOfPeriods)) {
+      numberOfPeriods = 0
+    }
+    this.numberOfPeriods = numberOfPeriods
+  }
+  getNumberOfPeriods() {
+    return this.numberOfPeriods
+  }
+
+  /**
+   * Set/get time per period
+   */
+  setTimePerPeriod(timePerPeriod) {
+    timePerPeriod = parseFloat(timePerPeriod)
+    if (isNaN(timePerPeriod)) {
+      timePerPeriod = 0
+    }
+    this.timePerPeriod = timePerPeriod
+  }
+  getTimePerPeriod() {
+    return this.timePerPeriod
   }
 
   /**
