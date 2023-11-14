@@ -519,9 +519,9 @@ export default class ConvertFromSgf extends Converter {
     //Determine player color and normalise rank
     const color = this.convertPlayerColor(key)
     const rank = values[0]
-      .replace('段', 'D')
-      .replace('級', 'K')
-      .replace('级', 'K')
+      .replace('段', 'd')
+      .replace('級', 'k')
+      .replace('级', 'k')
       .replace('一', '1')
       .replace('二', '2')
       .replace('三', '3')
@@ -532,6 +532,7 @@ export default class ConvertFromSgf extends Converter {
       .replace('八', '8')
       .replace('九', '9')
       .replace('十', '10')
+      .toLowerCase()
 
     //Set on info
     set(info, `players.${color}.rank`, rank)
