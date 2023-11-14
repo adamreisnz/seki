@@ -782,7 +782,12 @@ export default class Game extends Base {
     }
   }
   getOverTime() {
-    return this.overTime
+    if (this.overTime) {
+      return this.overTime
+    }
+    if (this.numberOfPeriods && this.timePerPeriod) {
+      return `${this.numberOfPeriods}x${this.timePerPeriod} byo-yomi`
+    }
   }
 
   /**
