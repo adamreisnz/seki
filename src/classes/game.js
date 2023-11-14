@@ -724,20 +724,10 @@ export default class Game extends Base {
    * Set/get komi
    */
   setKomi(komi = 0) {
-
-    //Parse into number
     komi = parseFloat(komi)
     if (isNaN(komi)) {
       komi = 0
     }
-
-    //Fox games use "half area chinese counting" where this komi is actually 7.5
-    //for normal area counting
-    if (komi === 375) {
-      komi = 7.5
-    }
-
-    //Set komi
     this.komi = komi
   }
   getKomi() {

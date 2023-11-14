@@ -32,7 +32,9 @@ const parsingMap = {
 
   //Game information
   GM: 'parseGameType',
+  RE: 'parseResult',
   DT: 'parseDates',
+  KM: 'parseKomi',
 
   //Board information
   SZ: 'parseSize',
@@ -388,6 +390,25 @@ export default class ConvertFromSgf extends Converter {
   parseGameType(info, node, key, values) {
     const type = this.getMappedValue(values[0], sgfGameTypes, true)
     set(info, 'game.type', type || gameTypes.GO)
+  }
+
+  /**
+   * Game result parser
+   */
+  parseResult(info, node, key, values) {
+    const result = values[0]
+      .replace(/\+0\.03'/, '+F') //Fox use 0.03 result for a Forfeit
+      .replace(/\+0\.02'/, '+T') //Fox use 0.02 result for a Timeout
+    set(info, 'game.result', result)
+  }
+
+  /**
+   * Komi parser
+   */
+  parseKomi(info, node, key, values) {
+    const komi = values[0]
+      .replace(/375/, '7.5') //Fox use chinese half-area counting
+    set(info, 'rules.komi', komi)
   }
 
   /**
