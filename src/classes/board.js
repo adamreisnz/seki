@@ -67,6 +67,9 @@ export default class Board extends Base {
     //Instantiate theme
     this.theme = new Theme(themeConfig)
 
+    //Initialize layers map
+    this.layers = new Map()
+
     //Initialize board
     this.init()
     this.initConfig(boardConfig)
@@ -83,9 +86,6 @@ export default class Board extends Base {
     //Initialize board size
     this.width = 0
     this.height = 0
-
-    //Initialize layers map
-    this.layers = new Map()
   }
 
   /**
