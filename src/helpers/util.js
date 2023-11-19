@@ -247,13 +247,17 @@ export function randomInt(min, max) {
 }
 
 /**
- * Throttle a function call
+ * Throttle a function call to run at most once every interval
  */
-export function throttle(fn, delay) {
-  let t = 0
+export function throttle(fn, interval) {
+  fn.isRunning = false
   return (...args) => {
-    clearTimeout(t)
-    t = setTimeout(() => fn(...args), delay)
+    if (fn.isRunning) {
+      return
+    }
+    fn.isRunning = true
+    fn(...args)
+    setTimeout(() => fn.isRunning = false, interval)
   }
 }
 

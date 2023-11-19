@@ -9,7 +9,7 @@
 }
 html, body {
   height: 100%;
-  background: #333;
+  background: #fff;
   position: relative;
   font-family: Helvetica, sans-serif;
   font-size: 16px;
@@ -18,16 +18,16 @@ html, body {
 h1 {
   font-size: 1.5rem;
   margin: 1rem 0;
-  color: #fff;
+  color: #333;
 }
 h3 {
   font-size: 1rem;
   margin: 1rem 0;
-  color: #fff;
+  color: #333;
 }
 p {
   margin-bottom: 1rem;
-  color: #fff;
+  color: #333;
 }
 
 .main {
@@ -37,6 +37,7 @@ p {
   display: flex;
   margin-left: -1rem;
   margin-right: -1rem;
+  flex-wrap: wrap;
 }
 .example {
   flex: 0 0 50%;

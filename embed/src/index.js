@@ -63,8 +63,110 @@ css.replaceSync(`
   .seki-player-mode-static .seki-board canvas {
     cursor: default;
   }
+  .seki-navigation {
+    background: #f3cf89;
+  }
+  .seki-button {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    line-height: 1rem;
+    vertical-align: middle;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 1rem;
+    color: #513518;
+    transition: all .2s ease;
+    outline: none;
+
+    width: 2.5rem;
+    height: 2.5rem;
+    margin: 0;
+    padding: 0.125rem;
+    border-radius: 8px;
+    background: #f3cf89;
+  }
+  .seki-button:hover {
+    transform: scale(1.05);
+  }
+  .seki-button:hover, .seki-button.isActive {
+    color: #513518;
+    background: #fff1d5;
+  }
 `)
 document.adoptedStyleSheets.push(css)
+
+//Render button
+function renderButton(content, title, onClick) {
+  const button = document.createElement('button')
+  button.classList.add('seki-button')
+  button.textContent = content
+  button.setAttribute('title', title)
+  button.addEventListener('click', onClick)
+  return button
+}
+
+//Render navigation
+function renderNavigation(element, player) {
+
+  //Create control elements
+  const navElement = document.createElement('div')
+  navElement.classList.add('seki-navigation')
+
+  //Create buttons
+  const cFirstPos = renderButton(
+    '|<<', 'Go to first position',
+    () => player.goToFirstPosition(),
+  )
+  const cSkipBack = renderButton(
+    '<<', 'Skip backward',
+    () => player.goBackNumPositions(),
+  )
+  const cPrevPos = renderButton(
+    '<', 'Go back',
+    () => player.goToPreviousPosition(),
+  )
+  const cAutoPlay = renderButton(
+    '▶', 'Toggle auto play',
+    () => player.toggleAutoPlay(),
+  )
+  const cNextPos = renderButton(
+    '>', 'Go forward',
+    () => player.goToNextPosition(),
+  )
+  const cSkipForward = renderButton(
+    '>>', 'Skip forward',
+    () => player.goForwardNumPositions(),
+  )
+  const cLastPos = renderButton(
+    '>>|', 'Go to last position',
+    () => player.goToLastPosition(),
+  )
+
+  //Append to controls
+  navElement.appendChild(cFirstPos)
+  navElement.appendChild(cSkipBack)
+  navElement.appendChild(cPrevPos)
+  navElement.appendChild(cAutoPlay)
+  navElement.appendChild(cNextPos)
+  navElement.appendChild(cSkipForward)
+  navElement.appendChild(cLastPos)
+
+  //Append to parent element
+  element.appendChild(navElement)
+
+  //Listener for auto play toggling
+  player.on('autoPlayToggle', event => {
+    const {isAutoPlaying} = event.detail
+    if (isAutoPlaying) {
+      cAutoPlay.textContent = '◼'
+    }
+    else {
+      cAutoPlay.textContent = '▶'
+    }
+  })
+}
 
 //Export static seki board initialiser
 export function sekiBoard(element, config = {}) {
@@ -141,6 +243,11 @@ export function sekiPlayer(element, config = {}) {
   //Load game info from data attribute
   if (element.dataset.game) {
     player.load(element.dataset.game)
+  }
+
+  //Render navigation
+  if (config.showNavigation) {
+    renderNavigation(element, player)
   }
 
   //Return player
