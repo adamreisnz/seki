@@ -1,0 +1,48 @@
+
+/* General */
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+html, body {
+  height: 100%;
+  background: #333;
+  position: relative;
+  font-family: Helvetica, sans-serif;
+  font-size: 16px;
+}
+
+h1 {
+  font-size: 1.5rem;
+  margin: 1rem 0;
+  color: #fff;
+}
+h3 {
+  font-size: 1rem;
+  margin: 1rem 0;
+  color: #fff;
+}
+p {
+  margin-bottom: 1rem;
+  color: #fff;
+}
+
+.main {
+  padding: 1rem;
+}
+.examples {
+  display: flex;
+  margin-left: -1rem;
+  margin-right: -1rem;
+}
+.example {
+  flex: 0 0 50%;
+  padding: 1rem;
+}
+.static, .dynamic {
+  height: 300px;
+  margin-top: 1rem;
+}

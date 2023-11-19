@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Seki Embeddable Player</title>
+  <meta charset="utf-8">
+  <meta name="author" content="Adam Reis">
+  <!-- <link rel="stylesheet" type="text/css" media="screen" href="css/seki.css"> -->
+  <link rel="stylesheet" type="text/css" media="screen" href="css/demo.css">
+  <link rel="icon" type="image/png" sizes="32x32" href="images/favicon.png">
+</head>
+<body lang="en">
+  <div class="main">
+    <h1>Seki Embeddable Player Examples</h1>
+    <div class="examples">
+      <div class="example">
+        <h3>Static position 1</h3>
+        <div
+          class="static"
+          data-game="(;
+            FF[4]
+            CA[UTF-8]
+            AP[Seki v1.3.17]
+            GM[1]
+            XL[2]
+            XR[0]
+            XT[3]
+            XB[0]
+            KM[0]
+            HA[0]
+            TM[0]
+            ST[2]
+            SZ[9]
+            PB[Black]
+            PW[White]
+            ;AB[fh][gg][fg][hf][ge][dg]AW[gh][hg][hi][ih]
+            )"
+          data-config="{
+            'showCoordinates': false,
+            'showStarPoints': false
+          }"
+        ></div>
+      </div>
+      <div class="example">
+        <h3>Static position 2</h3>
+        <div
+          class="static"
+          data-game="(;
+            FF[4]
+            CA[UTF-8]
+            AP[Seki v1.3.17]
+            GM[1]
+            XL[2]
+            XR[0]
+            XT[3]
+            XB[0]
+            KM[0]
+            HA[0]
+            TM[0]
+            ST[2]
+            SZ[9]
+            PB[Black]
+            PW[White]
+            ;AB[eg][ff][gf][he][ef][dh]AW[fg][gg][hf][eh][hh]LB[if:A][fh:B]
+            )"
+          data-config="{
+            'showCoordinates': false,
+            'showStarPoints': false
+          }"
+        ></div>
+      </div>
+    </div>
+  </div>
+  <script type="module">
+    import {sekiBoard, sekiPlayer} from './index.js';
+
+    //Initialise all static boards
+    Array
+      .from(document.getElementsByClassName('static'))
+      .forEach(element => sekiBoard(element))
+
+    //Initialize all dynamic players
+    Array
+      .from(document.getElementsByClassName('dynamic'))
+      .forEach(element => sekiPlayer(element))
+  </script>
+</body>
+</html>
