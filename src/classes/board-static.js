@@ -2,9 +2,9 @@ import Board from './board.js'
 import {
   boardLayerTypes,
 } from '../constants/board.js'
-import {
-  createCanvasContext,
-} from '../helpers/util.js'
+// import {
+//   createCanvasContext,
+// } from '../helpers/util.js'
 
 /**
  * This class represents a static Go board, used for just rendering and
@@ -17,19 +17,10 @@ export default class BoardStatic extends Board {
     boardLayerTypes.BACKGROUND,
     boardLayerTypes.GRID,
     boardLayerTypes.COORDINATES,
+    boardLayerTypes.SHADOW,
     boardLayerTypes.STONES,
     boardLayerTypes.MARKUP,
   ]
-
-  /**
-   * Erase the whole board
-   */
-  erase() {
-
-    //Erasing the stones layer is enough
-    const stonesLayer = this.layers.get(boardLayerTypes.STONES)
-    stonesLayer.erase()
-  }
 
   /**
    * Single layer ops not possible for static board
@@ -52,24 +43,29 @@ export default class BoardStatic extends Board {
 
   /**
    * Create layer contexts
+   *
+   * NOTE: Sharing a single context causes issues when rendering markup. The
+   * render function of the markup tries to clear a square of the grid, but
+   * since the context is shared with the background, it also erases the
+   * background itself.
    */
-  createLayerContexts() {
+  // createLayerContexts() {
 
-    //Get data
-    const {elements, layers} = this
-    const {canvasContainer} = elements
+  //   //Get data
+  //   const {elements, layers} = this
+  //   const {canvasContainer} = elements
 
-    //Create single canvas
-    const context = createCanvasContext(
-      canvasContainer, `seki-board-layer-static`,
-    )
+  //   //Create single canvas
+  //   const context = createCanvasContext(
+  //     canvasContainer, `seki-board-layer-static`,
+  //   )
 
-    //Link to all layers
-    layers.forEach(layer => layer.setContext(context))
+  //   //Link to all layers
+  //   layers.forEach(layer => layer.setContext(context))
 
-    //Store canvases as elements array
-    elements.canvasses = Array.from(
-      canvasContainer.getElementsByTagName('canvas'),
-    )
-  }
+  //   //Store canvases as elements array
+  //   elements.canvasses = Array.from(
+  //     canvasContainer.getElementsByTagName('canvas'),
+  //   )
+  // }
 }

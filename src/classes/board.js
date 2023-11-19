@@ -59,12 +59,16 @@ export default class Board extends Base {
     //Parent constructor
     super()
 
+    //Theme config passed via board config
+    if (!themeConfig && boardConfig.theme) {
+      themeConfig = boardConfig.theme
+    }
+
     //Instantiate theme
     this.theme = new Theme(themeConfig)
 
     //Initialize board
     this.init()
-    this.createLayers()
     this.initConfig(boardConfig)
 
     //Create config event listeners
@@ -79,6 +83,9 @@ export default class Board extends Base {
     //Initialize board size
     this.width = 0
     this.height = 0
+
+    //Initialize layers map
+    this.layers = new Map()
   }
 
   /**
@@ -177,11 +184,6 @@ export default class Board extends Base {
    * Create layers
    */
   createLayers() {
-
-    //Initialise layers
-    this.layers = new Map()
-
-    //Create layers
     for (const type of this.layerOrder) {
       this.createLayer(type)
     }
@@ -764,6 +766,7 @@ export default class Board extends Base {
    */
   bootstrap(container) {
     this.setupElements(container)
+    this.createLayers()
     this.createLayerContexts()
     this.setupResizeObserver()
     this.makeVisible()

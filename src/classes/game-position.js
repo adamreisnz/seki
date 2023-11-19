@@ -16,7 +16,6 @@ export default class GamePosition {
   constructor(width, height) {
 
     //Initialize
-    this.error = 0
     this.width = 0
     this.height = 0
     this.stones = new Grid()

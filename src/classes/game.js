@@ -2294,14 +2294,14 @@ export default class Game extends Base {
 
     //Use appropriate parser
     switch (format) {
-      case kifuFormats.JGF:
-        return this.fromJgf(data)
       case kifuFormats.SGF:
         return this.fromSgf(data)
-      case kifuFormats.JSON:
-        return this.fromJson(data)
+      case kifuFormats.JGF:
+        return this.fromJgf(data)
       case kifuFormats.GIB:
         return this.fromGib(data)
+      case kifuFormats.JSON:
+        return this.fromJson(data)
       default:
         throw new Error(`Unsupported data format`)
     }
