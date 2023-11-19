@@ -98,8 +98,8 @@ export function sekiBoard(element, config = {}) {
   if (element.dataset.game) {
     const game = Game.fromData(element.dataset.game)
     game.goToFirstPosition()
+    game.goToLastPosition()
     const position = game.getPosition()
-
     board.loadConfigFromGame(game)
     board.updatePosition(position)
   }

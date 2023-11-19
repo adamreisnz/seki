@@ -602,7 +602,7 @@ export default class Board extends Base {
     //Redraw cell
     this
       .getLayer(boardLayerTypes.GRID)
-      .redrawCell(x, y)
+      ?.redrawCell(x, y)
   }
 
   /**
@@ -611,15 +611,16 @@ export default class Board extends Base {
   freeDraw(x, y) {
     this
       .getLayer(boardLayerTypes.DRAW)
-      .drawLine(x, y)
+      ?.drawLine(x, y)
   }
 
   /**
    * Stop free draw
    */
   stopFreeDraw() {
-    this.getLayer(boardLayerTypes.DRAW)
-      .stopDrawing()
+    this
+      .getLayer(boardLayerTypes.DRAW)
+      ?.stopDrawing()
   }
 
   /**
@@ -628,7 +629,7 @@ export default class Board extends Base {
   eraseDrawLayer() {
     this
       .getLayer(boardLayerTypes.DRAW)
-      .erase()
+      ?.erase()
   }
 
   /*****************************************************************************
