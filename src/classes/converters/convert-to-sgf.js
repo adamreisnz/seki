@@ -235,7 +235,6 @@ export default class ConvertToSgf extends Converter {
       //Get SGF setup type and extract coordinates
       const key = this.getMappedValue(obj.type, sgfSetupTypes)
       const coords = this.extractCoordinates(obj.coords)
-      console.log(key, coords)
 
       //Initialise group and add entry
       groups[key] = groups[key] || []
@@ -264,18 +263,13 @@ export default class ConvertToSgf extends Converter {
     for (const obj of markup) {
 
       //Get SGF markup type and extract coordinates
+      const isLabel = (obj.type === markupTypes.LABEL)
       const key = this.getMappedValue(obj.type, sgfMarkupTypes)
-      const coords = this.extractCoordinates(obj.coords)
-      const mapped = coords.map(coord => {
-        if (obj.type === markupTypes.LABEL) {
-          return `${coord}:${obj.text}`
-        }
-        return coord
-      })
+      const coords = this.extractCoordinates(obj.coords, isLabel)
 
       //Initialise group
       groups[key] = groups[key] || []
-      groups[key].push(...mapped)
+      groups[key].push(...coords)
     }
 
     //Now convert by type to SGF
@@ -355,15 +349,18 @@ export default class ConvertToSgf extends Converter {
   /**
    * Helper to convert to SGF coordinates
    */
-  extractCoordinates(obj) {
+  extractCoordinates(obj, isLabel = false) {
     if (Array.isArray(obj)) {
-      return obj.map(entry => this.extractCoordinates(entry))
+      return obj.map(entry => this.extractCoordinates(entry, isLabel))
     }
     if (obj.x < 0 || obj.y < 0) {
       throw new Error(`Invalid coordinates: (${obj.x},${obj.y})`)
     }
     const x = String.fromCharCode(charCodeA + obj.x)
     const y = String.fromCharCode(charCodeA + obj.y)
+    if (isLabel && obj.text) {
+      return `${x}${y}:${obj.text}`
+    }
     return `${x}${y}`
   }
 
