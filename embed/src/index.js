@@ -28,8 +28,8 @@ export {
 const css = new CSSStyleSheet()
 css.replaceSync(`
   .seki-player {
-    width: 100%;
     height: 100%;
+    aspect-ratio: 1;
   }
   .seki-board-container {
     position: relative;
