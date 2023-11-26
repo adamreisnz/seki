@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Seki Embeddable Player</title>
+  <meta charset="utf-8">
+  <meta name="author" content="Adam Reis">
+  <link rel="stylesheet" type="text/css" media="screen" href="css/demo.css">
+  <link rel="icon" type="image/png" sizes="32x32" href="images/favicon.png">
+</head>
+<body lang="en">
+  <div class="main">
+    <h1>Seki Embeddable Player Examples</h1>
+    <ul>
+      <li><a href="demo-static-positions.html">Static positions</a></li>
+      <li><a href="demo-game-records.html">Game records</a></li>
+      <li><a href="demo-flexible-player.html">Flexible player</a></li>
+    </ul>
+    <hr>
+
+    <div class="examples">
+      <div class="example">
+        <h3>Static position</h3>
+        <div
+          class="static fixed-size"
+          data-game="(;
+            FF[4]
+            CA[UTF-8]
+            AP[Seki v1.3.17]
+            GM[1]
+            XL[2]
+            XR[0]
+            XT[3]
+            XB[0]
+            KM[0]
+            HA[0]
+            TM[0]
+            ST[2]
+            SZ[9]
+            PB[Black]
+            PW[White]
+            ;AB[fh][gg][fg][hf][ge][dg]AW[gh][hg][hi][ih]
+          )"
+          data-config="{
+            'showCoordinates': false,
+            'showStarPoints': false
+          }"
+        ></div>
+      </div>
+
+      <div class="example">
+        <h3>Static position</h3>
+        <div
+          class="static fixed-size"
+          data-game="(;
+            FF[4]
+            CA[UTF-8]
+            AP[Seki v1.3.17]
+            GM[1]
+            XL[2]
+            XR[0]
+            XT[3]
+            XB[0]
+            KM[0]
+            HA[0]
+            TM[0]
+            ST[2]
+            SZ[9]
+            PB[Black]
+            PW[White]
+            ;AB[eg][ff][gf][he][ef][dh]AW[fg][gg][hf][eh][hh]LB[if:A][fh:B]
+          )"
+          data-config="{
+            'showCoordinates': false,
+            'showStarPoints': false
+          }"
+        ></div>
+      </div>
+
+      <div class="example">
+        <h3>Static position (mono)</h3>
+        <div
+          class="static fixed-size"
+          data-game="(;
+            FF[4]
+            CA[UTF-8]
+            AP[Seki v1.3.17]
+            GM[1]
+            XL[2]
+            XR[0]
+            XT[3]
+            XB[0]
+            KM[0]
+            HA[0]
+            TM[0]
+            ST[2]
+            SZ[9]
+            PB[Black]
+            PW[White]
+            ;AB[fh][gg][fg][hf][ge][dg]AW[gh][hg][hi][ih]
+          )"
+          data-config="{
+            'showCoordinates': false,
+            'showStarPoints': false,
+            'theme': {
+              'board': {
+                'stoneStyle': 'mono',
+                'backgroundColor': '#fff',
+                'backgroundImage': ''
+              }
+            }
+          }"
+        ></div>
+      </div>
+
+      <div class="example">
+        <h3>Static position (mono)</h3>
+        <div
+          class="static fixed-size"
+          data-game="(;
+            FF[4]
+            CA[UTF-8]
+            AP[Seki v1.3.17]
+            GM[1]
+            XL[2]
+            XR[0]
+            XT[3]
+            XB[0]
+            KM[0]
+            HA[0]
+            TM[0]
+            ST[2]
+            SZ[9]
+            PB[Black]
+            PW[White]
+            ;AB[eg][ff][gf][he][ef][dh]AW[fg][gg][hf][eh][hh]LB[if:A][fh:B]
+          )"
+          data-config="{
+            'showCoordinates': false,
+            'showStarPoints': false,
+            'theme': {
+              'board': {
+                'stoneStyle': 'mono',
+                'backgroundColor': '#fff',
+                'backgroundImage': ''
+              }
+            }
+          }"
+        ></div>
+      </div>
+    </div>
+  </div>
+  <script type="module">
+    import {sekiBoard} from './index.js';
+    Array
+      .from(document.getElementsByClassName('static'))
+      .forEach(element => sekiBoard(element))
+  </script>
+</body>
+</html>

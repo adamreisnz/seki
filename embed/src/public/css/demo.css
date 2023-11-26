@@ -29,6 +29,19 @@ p {
   margin-bottom: 1rem;
   color: #333;
 }
+ul {
+  margin-bottom: 1rem;
+  margin-left: 1rem;
+}
+a {
+  color: #0574cf;
+  text-decoration: none;
+}
+hr {
+  margin: 1rem 0;
+  border: none;
+  border-top: 1px solid #ccc;
+}
 
 .main {
   padding: 1rem;
@@ -44,13 +57,11 @@ p {
   padding: 1rem;
 }
 .fixed-size {
-  height: 300px;
+  height: 400px;
   margin-top: 1rem;
 }
 .flexible-size {
   width: 100%;
-  padding-top: 100%;
-}
-.flexible-wrapper {
-
+  max-height: 95vh;
+  aspect-ratio: 1;
 }

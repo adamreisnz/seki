@@ -3,6 +3,7 @@ import {
   Player,
   Game,
   BoardStatic,
+  MarkupFactory,
   constants,
   helpers,
 } from '../../src/index.js'
@@ -168,6 +169,19 @@ function renderNavigation(element, player) {
   })
 }
 
+//Helper to show all move numbers for a static board
+function showAllMoveNumbers(game, board) {
+  game.node
+    .getAllMoveNodes()
+    .forEach((node, i) => {
+      const {x, y} = node.move
+      const number = i + 1
+      board
+        .add(constants.board.boardLayerTypes.MARKUP, x, y, MarkupFactory
+          .create(constants.markup.markupTypes.MOVE_NUMBER, board, {number}))
+    })
+}
+
 //Export static seki board initialiser
 export function sekiBoard(element, config = {}) {
 
@@ -192,22 +206,29 @@ export function sekiBoard(element, config = {}) {
 
   //Instantiate static board
   const board = new BoardStatic(config)
+  const game = element.dataset.game ? Game.fromData(element.dataset.game) : null
 
   //Bootstrap board
   board.bootstrap(boardElement)
 
   //Load game info from data attribute (always go to last position)
-  if (element.dataset.game) {
-    const game = Game.fromData(element.dataset.game)
+  if (game) {
     game.goToFirstPosition()
     game.goToLastPosition()
     const position = game.getPosition()
     board.loadConfigFromGame(game)
     board.updatePosition(position)
+
+    //Show all move numbers
+    if (config.showAllMoveNumbers) {
+      setTimeout(() => {
+        showAllMoveNumbers(game, board)
+      })
+    }
   }
 
   //Return board
-  return board
+  return {board, game}
 }
 
 //Export seki player initialiser
@@ -251,5 +272,5 @@ export function sekiPlayer(element, config = {}) {
   }
 
   //Return player
-  return player
+  return {player}
 }
