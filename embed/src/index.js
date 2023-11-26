@@ -1,4 +1,12 @@
 import imageWood1 from './assets/images/wood-1.jpg'
+import imageBackwardFast from './assets/images/backward-fast.svg'
+import imageBackwardSkip from './assets/images/backward-skip.svg'
+import imageBackwardStep from './assets/images/backward-step.svg'
+import imageForwardFast from './assets/images/forward-fast.svg'
+import imageForwardSkip from './assets/images/forward-skip.svg'
+import imageForwardStep from './assets/images/forward-step.svg'
+import imagePlay from './assets/images/play.svg'
+import imagePause from './assets/images/pause.svg'
 import {
   Player,
   Game,
@@ -27,8 +35,16 @@ export {
 //Apply core Seki CSS to document
 const css = new CSSStyleSheet()
 css.replaceSync(`
+  .seki-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    padding-bottom: 100%;
+  }
   .seki-player {
-    height: 100%;
+    min-width: 100%;
+    max-width: 100%;
     aspect-ratio: 1;
   }
   .seki-board-container {
@@ -64,47 +80,55 @@ css.replaceSync(`
   .seki-player-mode-static .seki-board canvas {
     cursor: default;
   }
-  .seki-navigation {
-    background: #f3cf89;
-  }
   .seki-button {
     position: relative;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    border: 0;
-    line-height: 1rem;
-    vertical-align: middle;
-    font-family: Arial, Helvetica, sans-serif;
-    font-size: 1rem;
-    color: #513518;
-    transition: all .2s ease;
-    outline: none;
-
-    width: 2.5rem;
-    height: 2.5rem;
+    height: 2.25rem;
     margin: 0;
-    padding: 0.125rem;
-    border-radius: 8px;
-    background: #f3cf89;
+    border: 0;
+    border-radius: 4px;
+    background: none;
+    outline: none;
+    transition: all .2s ease;
+  }
+  .seki-button img {
+    width: 24px;
+    height: 24px;
   }
   .seki-button:hover {
     transform: scale(1.05);
   }
   .seki-button:hover, .seki-button.isActive {
-    color: #513518;
-    background: #fff1d5;
+    background: #f0f0f0;
+  }
+  .seki-hidden {
+    display: none;
+  }
+  .seki-navigation {
+    padding: 0.5rem 0;
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    gap: 0.5rem;
+  }
+  .seki-navigation .seki-button {
+    flex: 1;
   }
 `)
 document.adoptedStyleSheets.push(css)
 
 //Render button
-function renderButton(content, title, onClick) {
+function renderButton(type, icon, title, onClick) {
   const button = document.createElement('button')
+  const image = document.createElement('img')
+  image.src = icon
   button.classList.add('seki-button')
-  button.textContent = content
+  button.classList.add(`seki-button-${type}`)
   button.setAttribute('title', title)
   button.addEventListener('click', onClick)
+  button.appendChild(image)
   return button
 }
 
@@ -117,39 +141,55 @@ function renderNavigation(element, player) {
 
   //Create buttons
   const cFirstPos = renderButton(
-    '|<<', 'Go to first position',
+    'first', imageBackwardFast,
+    'Go to first position',
     () => player.goToFirstPosition(),
   )
   const cSkipBack = renderButton(
-    '<<', 'Skip backward',
+    'back', imageBackwardSkip,
+    'Skip backward',
     () => player.goBackNumPositions(),
   )
   const cPrevPos = renderButton(
-    '<', 'Go back',
+    'previous', imageBackwardStep,
+    'Go back',
     () => player.goToPreviousPosition(),
   )
-  const cAutoPlay = renderButton(
-    '▶', 'Toggle auto play',
+  const cPlay = renderButton(
+    'play', imagePlay,
+    'Start auto play',
+    () => player.toggleAutoPlay(),
+  )
+  const cPause = renderButton(
+    'pause', imagePause,
+    'Pause auto play',
     () => player.toggleAutoPlay(),
   )
   const cNextPos = renderButton(
-    '>', 'Go forward',
+    'next', imageForwardStep,
+    'Go forward',
     () => player.goToNextPosition(),
   )
   const cSkipForward = renderButton(
-    '>>', 'Skip forward',
+    'forward', imageForwardSkip,
+    'Skip forward',
     () => player.goForwardNumPositions(),
   )
   const cLastPos = renderButton(
-    '>>|', 'Go to last position',
+    'last', imageForwardFast,
+    'Go to last position',
     () => player.goToLastPosition(),
   )
+
+  //Hide pause button
+  helpers.util.toggleClass(cPause, 'seki-hidden', true)
 
   //Append to controls
   navElement.appendChild(cFirstPos)
   navElement.appendChild(cSkipBack)
   navElement.appendChild(cPrevPos)
-  navElement.appendChild(cAutoPlay)
+  navElement.appendChild(cPlay)
+  navElement.appendChild(cPause)
   navElement.appendChild(cNextPos)
   navElement.appendChild(cSkipForward)
   navElement.appendChild(cLastPos)
@@ -160,12 +200,8 @@ function renderNavigation(element, player) {
   //Listener for auto play toggling
   player.on('autoPlayToggle', event => {
     const {isAutoPlaying} = event.detail
-    if (isAutoPlaying) {
-      cAutoPlay.textContent = '◼'
-    }
-    else {
-      cAutoPlay.textContent = '▶'
-    }
+    helpers.util.toggleClass(cPlay, 'seki-hidden', isAutoPlaying)
+    helpers.util.toggleClass(cPause, 'seki-hidden', !isAutoPlaying)
   })
 }
 
@@ -250,10 +286,13 @@ export function sekiPlayer(element, config = {}) {
   }
 
   //Create player and board elements
+  const wrapperElement = document.createElement('div')
   const playerElement = document.createElement('div')
   const boardElement = document.createElement('div')
+  wrapperElement.classList.add('seki-wrapper')
+  wrapperElement.appendChild(playerElement)
   playerElement.appendChild(boardElement)
-  element.appendChild(playerElement)
+  element.appendChild(wrapperElement)
 
   //Instantiate player
   const player = new Player(config)
@@ -268,7 +307,7 @@ export function sekiPlayer(element, config = {}) {
 
   //Render navigation
   if (config.showNavigation) {
-    renderNavigation(element, player)
+    renderNavigation(wrapperElement, player)
   }
 
   //Return player
