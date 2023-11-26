@@ -270,6 +270,7 @@ export const defaultPlayerConfig = {
   showVariations: true,
   showVariationMoveNumbers: true,
   showAllMoveNumbers: false,
+  showLastMoveNumber: false,
   showSiblingVariations: false,
   rememberVariationPaths: true,
   allowMovesInReplayMode: true,

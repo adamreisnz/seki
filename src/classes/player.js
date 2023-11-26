@@ -870,7 +870,7 @@ export default class Player extends Base {
     this.documentEventHandler = new EventHandler(document)
 
     //Propagate keydown events
-    this.documentEventHandler.on('keydown', (event) => {
+    this.documentEventHandler.on('keydown', event => {
       this.triggerEvent('keydown', {nativeEvent: event})
     })
 
@@ -918,6 +918,7 @@ export default class Player extends Base {
     //Setup listeners
     for (const type of eventTypes) {
       this.elementEventHandler.on(type, (event) => {
+        event.preventDefault()
         this.triggerEvent(type, {nativeEvent: event})
       })
     }

@@ -36,8 +36,6 @@ export default class PlayerModeReplay extends PlayerMode {
       keydown: 'onKeyDown',
       click: 'onClick',
       wheel: 'onMouseWheel',
-      gridEnter: 'onGridEnter',
-      gridLeave: 'onGridLeave',
       pathChange: 'onPathChange',
       variationChange: 'onVariationChange',
       gameLoad: 'onGameLoad',
@@ -134,18 +132,15 @@ export default class PlayerModeReplay extends PlayerMode {
     }
 
     //Get data
-    const {board, game} = this
+    const {player, game} = this
     const {x, y} = event.detail
-
-    //Clear hover layer
-    board.clearHoverLayer()
 
     //Clicked on move variation, select that variation
     if (game.isMoveVariation(x, y)) {
       this.selectMoveVariation(x, y)
     }
     else {
-      this.playMove(x, y)
+      player.goToNextPosition()
     }
   }
 
@@ -184,21 +179,6 @@ export default class PlayerModeReplay extends PlayerMode {
    */
   onGameLoad() {
     this.stopAutoPlay()
-  }
-
-  /**
-   * On grid enter
-   */
-  onGridEnter(event) {
-    this.showHoverStone(event)
-  }
-
-  /**
-   * On grid leave
-   */
-  onGridLeave() {
-    const {board} = this
-    board.clearHoverLayer()
   }
 
   /**
@@ -297,6 +277,7 @@ export default class PlayerModeReplay extends PlayerMode {
     const showVariations = player.getConfig('showVariations')
     const showSiblingVariations = player.getConfig('showSiblingVariations')
     const showAllMoveNumbers = player.getConfig('showAllMoveNumbers')
+    const showLastMoveNumber = player.getConfig('showLastMoveNumber')
     const showVariationMoveNumbers = player.getConfig('showVariationMoveNumbers')
 
     //Clear hover layer and last move markers
@@ -328,6 +309,11 @@ export default class PlayerModeReplay extends PlayerMode {
     //Number variation moves
     else if (showVariationMoveNumbers && node.isVariationBranch()) {
       this.numberVariationMoves(node)
+    }
+
+    //Show last move number
+    else if (showLastMoveNumber) {
+      this.numberLastMove(node)
     }
 
     //Last move
@@ -458,6 +444,30 @@ export default class PlayerModeReplay extends PlayerMode {
         .add(boardLayerTypes.MARKUP, x, y, MarkupFactory
           .create(markupTypes.MOVE_NUMBER, board, {number}))
     })
+  }
+
+  /**
+   * Number last move
+   */
+  numberLastMove(node) {
+
+    //Not a move node
+    if (!node.isMove()) {
+      return
+    }
+
+    //Get data
+    const {board, markers} = this
+    const {x, y} = node.move
+    const number = node.getMoveNumber()
+
+    //Store
+    markers.push({x, y})
+
+    //Add to board
+    board
+      .add(boardLayerTypes.MARKUP, x, y, MarkupFactory
+        .create(markupTypes.MOVE_NUMBER, board, {number}))
   }
 
   /**
