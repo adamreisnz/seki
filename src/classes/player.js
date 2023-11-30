@@ -7,8 +7,6 @@ import {playerModes} from '../constants/player.js'
 import {defaultPlayerConfig} from '../constants/defaults.js'
 import {
   getPixelRatio,
-  addClass,
-  removeClass,
   openFile,
   getUrl,
   parseGameUrl,
@@ -740,9 +738,8 @@ export default class Player extends Base {
       throw new Error(`Player has already been bootstrapped!`)
     }
 
-    //Link element and apply classes
+    //Link element
     this.linkElement(element)
-    this.addClass('seki-player')
 
     //Create audio elements
     this.createAudioElements()
@@ -832,20 +829,6 @@ export default class Player extends Base {
         //Fall through
       }
     }
-  }
-
-  /**
-   * Add class to player
-   */
-  addClass(className) {
-    addClass(this.element, className)
-  }
-
-  /**
-   * Remove class from player
-   */
-  removeClass(className) {
-    removeClass(this.element, className)
   }
 
   /**************************************************************************

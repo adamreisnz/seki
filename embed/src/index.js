@@ -35,10 +35,10 @@ export {
 //Apply core Seki CSS to document
 const css = new CSSStyleSheet()
 css.replaceSync(`
-  .seki-wrapper {
+  .seki-player-container {
+    position: relative;
     display: flex;
     flex-direction: column;
-    align-items: center;
     height: 100%;
     flex: 1 0 auto;
   }
@@ -71,8 +71,7 @@ css.replaceSync(`
     touch-action: manipulation;
     -webkit-tap-highlight-color: transparent;
   }
-  .seki-board-static canvas,
-  .seki-player-mode-static .seki-board canvas {
+  .seki-board-static canvas {
     cursor: default;
   }
   .seki-button {
@@ -281,12 +280,12 @@ export function sekiPlayer(element, config = {}) {
   }
 
   //Create player and board elements
-  const wrapperElement = document.createElement('div')
+  const containerElement = document.createElement('div')
   const boardElement = document.createElement('div')
-  wrapperElement.classList.add('seki-wrapper')
-  // wrapperElement.appendChild(boardElement)
-  // element.appendChild(wrapperElement)
-  element.appendChild(boardElement)
+  containerElement.classList.add('seki-player-container')
+  containerElement.appendChild(boardElement)
+  element.appendChild(containerElement)
+  // element.appendChild(boardElement)
 
   //Instantiate player
   const player = new Player(config)
@@ -301,7 +300,7 @@ export function sekiPlayer(element, config = {}) {
 
   //Render navigation
   if (config.showNavigation) {
-    renderNavigation(wrapperElement, player)
+    renderNavigation(containerElement, player)
   }
 
   //Return player

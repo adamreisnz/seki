@@ -7,6 +7,8 @@ import {defaultBoardConfig} from '../constants/defaults.js'
 import {boardLayerTypes} from '../constants/board.js'
 import {swapColor} from '../helpers/color.js'
 import {
+  addClass,
+  removeClass,
   throttle,
   getPixelRatio,
   createElement,
@@ -782,17 +784,11 @@ export default class Board extends Base {
     this.elements = {}
 
     //Add container class
-    container.classList.add('seki-board-container')
+    addClass(container, 'seki-board-container')
 
-    //Create board element
-    const board = createElement(
-      container, `seki-board`,
-    )
-
-    //Create canvas container element within board
-    const canvasContainer = createElement(
-      board, `seki-board-canvas-container`,
-    )
+    //Create board element and canvas container
+    const board = createElement(container, `seki-board`)
+    const canvasContainer = createElement(board, `seki-board-canvas-container`)
 
     //Set element references
     this.elements = {
@@ -800,6 +796,20 @@ export default class Board extends Base {
       board,
       canvasContainer,
     }
+  }
+
+  /**
+   * Add class to board element
+   */
+  addClass(className) {
+    addClass(this.elements.board, className)
+  }
+
+  /**
+   * Remove class from board element
+   */
+  removeClass(className) {
+    removeClass(this.elements.board, className)
   }
 
   /**

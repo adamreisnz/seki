@@ -56,13 +56,17 @@ export default class PlayerMode extends Base {
   activate() {
 
     //Get data
-    const {player, mode} = this
+    const {board, mode} = this
 
     //Register event listeners
     this.registerEventListeners()
 
-    //Set player class
-    player.addClass(`seki-player-mode-${mode}`)
+    //Add static class on board
+    if (mode === playerModes.STATIC) {
+      board.addClass('seki-board-static')
+    }
+
+    //Debug
     this.debug(`mode activated`)
   }
 
@@ -72,7 +76,7 @@ export default class PlayerMode extends Base {
   deactivate() {
 
     //Get data
-    const {player, mode} = this
+    const {board, mode} = this
 
     //NOTE: There is no need to tear down any available tools or active tool,
     //because the new mode will do that automatically when it's activated.
@@ -80,8 +84,12 @@ export default class PlayerMode extends Base {
     //Remove event listeners
     this.removeEventListeners()
 
-    //Remove player class
-    player.removeClass(`seki-player-mode-${mode}`)
+    //Remove static class from board
+    if (mode === playerModes.STATIC) {
+      board.removeClass('seki-board-static')
+    }
+
+    //Debug
     this.debug(`mode deactivated`)
   }
 
