@@ -38,6 +38,9 @@ export const editTools = {
   CLEAR: setupTypes.CLEAR,
   CLEAR_AREA: 'clearArea',
   STONE: 'stone',
+
+  //Move
+  MOVE: 'move',
 }
 
 /**
@@ -84,6 +87,7 @@ export const playerActions = {
   TOGGLE_AUTO_PLAY: 'toggleAutoPlay',
 
   //Editing
+  SET_EDIT_TOOL_MOVE: 'setEditToolMove',
   SET_EDIT_TOOL_STONE: 'setEditToolStone',
   SET_EDIT_TOOL_BLACK: 'setEditToolBlack',
   SET_EDIT_TOOL_WHITE: 'setEditToolWhite',

@@ -296,6 +296,10 @@ export function sekiPlayer(element, config = {}) {
   //Load game info from data attribute
   if (element.dataset.game) {
     player.load(element.dataset.game)
+    player.setMode(constants.player.playerModes.REPLAY)
+  }
+  else {
+    player.setMode(constants.player.playerModes.EDIT)
   }
 
   //Render navigation

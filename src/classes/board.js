@@ -66,10 +66,8 @@ export default class Board extends Base {
       themeConfig = boardConfig.theme
     }
 
-    //Instantiate theme
+    //Instantiate theme and layers map
     this.theme = new Theme(themeConfig)
-
-    //Initialize layers map
     this.layers = new Map()
 
     //Initialize board
@@ -195,10 +193,14 @@ export default class Board extends Base {
    * Create layer of given type
    */
   createLayer(type) {
-    this.layers.set(
-      type,
-      BoardLayerFactory.create(type, this),
-    )
+
+    //Create layer
+    const {layers, width, height} = this
+    const layer = BoardLayerFactory.create(type, this)
+
+    //Set grid size and store layer in map
+    layer.setGridSize(width, height)
+    layers.set(type, layer)
   }
 
   /**

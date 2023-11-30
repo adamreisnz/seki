@@ -101,10 +101,10 @@ export const defaultPlayerConfig = {
     //Mode selection
     {
       key: 'E',
-      action: playerActions.TOGGLE_MODE_EDIT,
+      action: playerActions.SET_MODE_EDIT,
     },
     {
-      key: 'M',
+      key: 'R',
       action: playerActions.SET_MODE_REPLAY,
     },
 
@@ -178,7 +178,11 @@ export const defaultPlayerConfig = {
       action: playerActions.TOGGLE_COORDINATES,
     },
 
-    //Setup tools
+    //Edit tools
+    {
+      key: 'M',
+      action: playerActions.SET_EDIT_TOOL_MOVE,
+    },
     {
       key: 'S',
       action: playerActions.SET_EDIT_TOOL_STONE,
@@ -273,7 +277,6 @@ export const defaultPlayerConfig = {
   showLastMoveNumber: false,
   showSiblingVariations: false,
   rememberVariationPaths: true,
-  allowMovesInReplayMode: true,
   allowPlayerConfig: true,
   playSounds: true,
 

@@ -1,6 +1,5 @@
 import PlayerMode from './player-mode.js'
 import MarkupFactory from '../markup-factory.js'
-import {randomInt} from '../../helpers/util.js'
 import {boardLayerTypes} from '../../constants/board.js'
 import {markupTypes} from '../../constants/markup.js'
 import {playerModes} from '../../constants/player.js'
@@ -36,10 +35,10 @@ export default class PlayerModeReplay extends PlayerMode {
       keydown: 'onKeyDown',
       click: 'onClick',
       wheel: 'onMouseWheel',
+      config: 'onPathChange',
       pathChange: 'onPathChange',
       variationChange: 'onVariationChange',
       gameLoad: 'onGameLoad',
-      config: 'onPathChange',
     })
   }
 
@@ -486,60 +485,5 @@ export default class PlayerModeReplay extends PlayerMode {
 
     //Reset markers array
     this.markers = []
-  }
-
-  /**
-   * Play a move
-   */
-  playMove(x, y) {
-
-    //Get player
-    const {player, game} = this
-
-    //Not allowed
-    if (!player.getConfig('allowMovesInReplayMode')) {
-      return
-    }
-
-    //Play move
-    const outcome = player.playMove(x, y)
-    if (outcome.isValid) {
-      player.playSound('move')
-      if (game.position.hasCaptures()) {
-        const num = Math.min(game.position.getTotalCaptureCount(), 10)
-        for (let i = 0; i < num; i++) {
-          setTimeout(() => {
-            player.stopSound('capture')
-            player.playSound('capture')
-          }, 150 + randomInt(30, 90) * i)
-        }
-      }
-    }
-  }
-
-  /**
-   * Show hover stone
-   */
-  showHoverStone(event) {
-
-    //Check if needed
-    const {player, game, board} = this
-    if (!player.getConfig('allowMovesInReplayMode')) {
-      return
-    }
-
-    //Already a stone in place?
-    const {x, y} = event.detail
-    if (game.hasStone(x, y)) {
-      return
-    }
-
-    //Create hover stone
-    const color = game.getTurn()
-    const stone = this.createHoverStone(color)
-
-    //Set hover cell, but clear whole layer first due to shadows
-    board.clearHoverLayer()
-    board.setHoverCell(x, y, stone)
   }
 }

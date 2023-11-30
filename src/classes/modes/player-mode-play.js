@@ -1,10 +1,11 @@
-import PlayerMode from './player-mode.js'
+import PlayerModeReplay from './player-mode-replay.js'
+import {randomInt} from '../../helpers/util.js'
 import {playerModes} from '../../constants/player.js'
 
 /**
  * Play a game in this mode
  */
-export default class PlayerModePlay extends PlayerMode {
+export default class PlayerModePlay extends PlayerModeReplay {
 
   //Mode type
   mode = playerModes.PLAY
@@ -40,11 +41,9 @@ export default class PlayerModePlay extends PlayerMode {
     }
 
     //Get data
-    const {board} = this
     const {x, y} = event.detail
 
     //Play move
-    board.clearHoverLayer()
     this.playMove(x, y)
   }
 
@@ -68,13 +67,27 @@ export default class PlayerModePlay extends PlayerMode {
    ***/
 
   /**
-   * Play move
+   * Play a move
    */
   playMove(x, y) {
-    const {player} = this
+
+    //Get player
+    const {player, board, game} = this
+
+    //Play move
     const outcome = player.playMove(x, y)
     if (outcome.isValid) {
+      board.clearHoverLayer()
       player.playSound('move')
+      if (game.position.hasCaptures()) {
+        const num = Math.min(game.position.getTotalCaptureCount(), 10)
+        for (let i = 0; i < num; i++) {
+          setTimeout(() => {
+            player.stopSound('capture')
+            player.playSound('capture')
+          }, 150 + randomInt(30, 90) * i)
+        }
+      }
     }
   }
 
@@ -84,7 +97,7 @@ export default class PlayerModePlay extends PlayerMode {
   showHoverStone(event) {
 
     //Get data
-    const {game, board} = this
+    const {game} = this
 
     //Already a stone in place?
     const {x, y} = event.detail
@@ -94,10 +107,8 @@ export default class PlayerModePlay extends PlayerMode {
 
     //Create hover stone
     const color = game.getTurn()
-    const stone = this.createHoverStone(color)
 
-    //Set hover cell, but clear whole layer first due to shadows
-    board.clearHoverLayer()
-    board.setHoverCell(x, y, stone)
+    //Show hover stone for given color
+    this.showHoverStoneForColor(x, y, color)
   }
 }

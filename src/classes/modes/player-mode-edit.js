@@ -1,4 +1,5 @@
-import PlayerMode from './player-mode.js'
+import PlayerModeReplay from './player-mode-replay.js'
+import {randomInt} from '../../helpers/util.js'
 import {aCharUc, aCharLc} from '../../constants/util.js'
 import {markupTypes} from '../../constants/markup.js'
 import {stoneColors} from '../../constants/stone.js'
@@ -10,13 +11,13 @@ import {
 /**
  * This mode lets you edit a single position
  */
-export default class PlayerModeEdit extends PlayerMode {
+export default class PlayerModeEdit extends PlayerModeReplay {
 
   //Mode type
   mode = playerModes.EDIT
 
   //Set default editing tool
-  tool = null
+  tool = editTools.MOVE
 
   //Used markup labels
   usedMarkupLabels = []
@@ -40,6 +41,11 @@ export default class PlayerModeEdit extends PlayerMode {
     this.createBoundListeners({
       keydown: 'onKeyDown',
       click: 'onClick',
+      wheel: 'onMouseWheel',
+      config: 'onPathChange',
+      pathChange: 'onPathChange',
+      variationChange: 'onVariationChange',
+      gameLoad: 'onGameLoad',
       mousemove: 'onMouseMove',
       gridEnter: 'onGridEnter',
       gridLeave: 'onGridLeave',
@@ -193,13 +199,13 @@ export default class PlayerModeEdit extends PlayerMode {
     //Clear current grid detail
     this.currentGridDetail = null
 
-    //Using stone tool? Clear whole layer
-    if (this.isUsingStoneTool()) {
+    //Using stone or move tool? Clear whole layer
+    if (this.isUsingStoneTool() || this.isUsingMoveTool()) {
       board.clearHoverLayer()
     }
 
     //If markup tool, clear cell to properly redraw grid
-    else {
+    else if (this.isUsingMarkupTool()) {
       board.clearHoverCell(x, y)
     }
   }
@@ -222,8 +228,14 @@ export default class PlayerModeEdit extends PlayerMode {
     const {player} = this
     const {x, y, area, isDragging} = event.detail
 
+    //Move tool
+    if (this.isUsingMoveTool()) {
+      this.playMove(x, y)
+      return //Return to preserve move markers
+    }
+
     //Clear tool
-    if (this.isUsingClearTool()) {
+    else if (this.isUsingClearTool()) {
       this.eraseCell(x, y)
       this.showHoverEraser()
     }
@@ -246,6 +258,30 @@ export default class PlayerModeEdit extends PlayerMode {
 
     //Update board position
     player.updateBoardPosition()
+  }
+
+  /**
+   * Play a move
+   */
+  playMove(x, y) {
+
+    //Get player
+    const {player, game} = this
+
+    //Play move
+    const outcome = player.playMove(x, y)
+    if (outcome.isValid) {
+      player.playSound('move')
+      if (game.position.hasCaptures()) {
+        const num = Math.min(game.position.getTotalCaptureCount(), 10)
+        for (let i = 0; i < num; i++) {
+          setTimeout(() => {
+            player.stopSound('capture')
+            player.playSound('capture')
+          }, 150 + randomInt(30, 90) * i)
+        }
+      }
+    }
   }
 
   /**
@@ -446,28 +482,36 @@ export default class PlayerModeEdit extends PlayerMode {
   showHoverStone() {
 
     //Check if anything to do
-    const {currentGridDetail, game, board} = this
+    const {currentGridDetail, game} = this
     if (!currentGridDetail) {
       return
     }
 
-    //Get data
+    //Get coordinates
     const {x, y} = currentGridDetail
+
+    //Move tool
+    if (this.isUsingMoveTool()) {
+
+      //Already has any stone
+      if (game.hasStone(x, y)) {
+        return
+      }
+
+      //Get color and create stone
+      const color = game.getTurn()
+      this.showHoverStoneForColor(x, y, color)
+      return
+    }
+
+    //Editing, check if valid color and if not have stone of this color
     const color = this.getEditingColor()
-    if (!color) {
+    if (!color || game.hasStone(x, y, color)) {
       return
     }
 
-    //Already have a stone of this color here?
-    if (game.hasStone(x, y, color)) {
-      return
-    }
-
-    //Create hover stone
-    const stone = this.createHoverStone(color)
-
-    //Set hover
-    board.setHoverCell(x, y, stone)
+    //Show hover color
+    this.showHoverStoneForColor(x, y, color)
   }
 
   /**
@@ -703,6 +747,14 @@ export default class PlayerModeEdit extends PlayerMode {
   isUsingDrawTool() {
     const {tool} = this
     return tool === editTools.DRAW
+  }
+
+  /**
+   * Check if using move tool
+   */
+  isUsingMoveTool() {
+    const {tool} = this
+    return tool === editTools.MOVE
   }
 
   /**

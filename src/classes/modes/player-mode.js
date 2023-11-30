@@ -196,11 +196,11 @@ export default class PlayerMode extends Base {
       case playerActions.SET_MODE_REPLAY:
         player.setMode(playerModes.REPLAY)
         return true
-      case playerActions.SET_MODE_EDIT:
-        player.setMode(playerModes.EDIT)
-        return true
       case playerActions.SET_MODE_PLAY:
         player.setMode(playerModes.PLAY)
+        return true
+      case playerActions.SET_MODE_EDIT:
+        player.setMode(playerModes.EDIT)
         return true
       case playerActions.TOGGLE_MODE_EDIT:
         player.toggleMode(playerModes.EDIT)
@@ -213,71 +213,60 @@ export default class PlayerMode extends Base {
 
       //Navigation
       case playerActions.GO_TO_NEXT_POSITION:
-        player.setMode(playerModes.REPLAY)
         player.goToNextPosition()
         return true
       case playerActions.GO_TO_PREV_POSITION:
-        player.setMode(playerModes.REPLAY)
         player.goToPreviousPosition()
         return true
       case playerActions.GO_FORWARD_NUM_POSITIONS:
-        player.setMode(playerModes.REPLAY)
         player.goForwardNumPositions()
         return true
       case playerActions.GO_BACK_NUM_POSITIONS:
-        player.setMode(playerModes.REPLAY)
         player.goBackNumPositions()
         return true
       case playerActions.GO_TO_LAST_POSITION:
-        player.setMode(playerModes.REPLAY)
         player.goToLastPosition()
         return true
       case playerActions.GO_TO_FIRST_POSITION:
-        player.setMode(playerModes.REPLAY)
         player.goToFirstPosition()
         return true
       case playerActions.GO_TO_NEXT_FORK:
-        player.setMode(playerModes.REPLAY)
         player.goToNextFork()
         return true
       case playerActions.GO_TO_PREV_FORK:
-        player.setMode(playerModes.REPLAY)
         player.goToPreviousFork()
         return true
       case playerActions.GO_TO_NEXT_COMMENT:
-        player.setMode(playerModes.REPLAY)
         player.goToNextComment()
         return true
       case playerActions.GO_TO_PREV_COMMENT:
-        player.setMode(playerModes.REPLAY)
         player.goToPreviousComment()
         return true
 
       //Variation selection
       case playerActions.SELECT_NEXT_VARIATION:
-        player.setMode(playerModes.REPLAY)
         player.selectNextVariation()
         return true
       case playerActions.SELECT_PREV_VARIATION:
-        player.setMode(playerModes.REPLAY)
         player.selectPreviousVariation()
         return true
 
       //Auto play
       case playerActions.START_AUTO_PLAY:
-        player.setMode(playerModes.REPLAY)
         player.startAutoPlay()
         return true
       case playerActions.STOP_AUTO_PLAY:
-        player.setMode(playerModes.REPLAY)
         player.stopAutoPlay()
         return true
       case playerActions.TOGGLE_AUTO_PLAY:
-        player.setMode(playerModes.REPLAY)
         player.toggleAutoPlay()
         return true
 
       //Edit tools
+      case playerActions.SET_EDIT_TOOL_MOVE:
+        player.setMode(playerModes.EDIT)
+        player.setEditTool(editTools.MOVE)
+        return true
       case playerActions.SET_EDIT_TOOL_STONE:
         player.setMode(playerModes.EDIT)
         player.setEditTool(editTools.STONE)
@@ -387,5 +376,19 @@ export default class PlayerMode extends Base {
 
     //Return
     return [shadow, copy]
+  }
+
+  /**
+   * Show hover stone of given color
+   */
+  showHoverStoneForColor(x, y, color) {
+
+    //Get board and create stone
+    const {board} = this
+    const stone = this.createHoverStone(color)
+
+    //Set hover cell, but clear whole layer first due to shadows
+    board.clearHoverLayer()
+    board.setHoverCell(x, y, stone)
   }
 }
