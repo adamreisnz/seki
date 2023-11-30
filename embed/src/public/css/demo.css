@@ -48,17 +48,22 @@ hr {
 }
 .examples {
   display: flex;
-  margin-left: -1rem;
-  margin-right: -1rem;
   flex-wrap: wrap;
 }
 .example {
   flex: 0 0 50%;
+  max-width: 50%;
   padding: 1rem;
 }
 .fixed-size {
-  height: 400px;
-  margin-top: 1rem;
+  max-height: 400px;
+  width: 100%;
+}
+.rectangular {
+  aspect-ratio: 1.15;
+}
+.square {
+  aspect-ratio: 1;
 }
 .flexible-size {
   width: 100%;

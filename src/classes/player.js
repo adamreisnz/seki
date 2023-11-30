@@ -762,18 +762,9 @@ export default class Player extends Base {
 
     //Get player element
     const {element, board} = this
-    const boardElement = element.children[0]
-
-    //No board element
-    if (!boardElement) {
-      return
-    }
-
-    //Store
-    this.boardElement = boardElement
 
     //Bootstrap it and link it to the player
-    board.bootstrap(boardElement, element)
+    board.bootstrap(element)
     board.linkPlayer(this)
   }
 

@@ -39,13 +39,8 @@ css.replaceSync(`
     display: flex;
     flex-direction: column;
     align-items: center;
-    width: 100%;
-    padding-bottom: 100%;
-  }
-  .seki-player {
-    min-width: 100%;
-    max-width: 100%;
-    aspect-ratio: 1;
+    height: 100%;
+    flex: 1 0 auto;
   }
   .seki-board-container {
     position: relative;
@@ -287,18 +282,17 @@ export function sekiPlayer(element, config = {}) {
 
   //Create player and board elements
   const wrapperElement = document.createElement('div')
-  const playerElement = document.createElement('div')
   const boardElement = document.createElement('div')
   wrapperElement.classList.add('seki-wrapper')
-  wrapperElement.appendChild(playerElement)
-  playerElement.appendChild(boardElement)
-  element.appendChild(wrapperElement)
+  // wrapperElement.appendChild(boardElement)
+  // element.appendChild(wrapperElement)
+  element.appendChild(boardElement)
 
   //Instantiate player
   const player = new Player(config)
 
   //Bootstrap player
-  player.bootstrap(playerElement)
+  player.bootstrap(boardElement)
 
   //Load game info from data attribute
   if (element.dataset.game) {
