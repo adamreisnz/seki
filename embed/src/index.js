@@ -17,14 +17,15 @@ import {
 } from '../../src/index.js'
 
 //Get constants
-// const {
-//   playerModes,
-//   playerActions,
-//   editTools,
-// } = constants.player
-// const {
-//   stoneColors,
-// } = constants.stone
+const {
+  playerModes,
+} = constants.player
+const {
+  boardLayerTypes,
+} = constants.board
+const {
+  markupTypes,
+} = constants.markup
 
 //Re-export Seki constants and helpers
 export {
@@ -47,6 +48,18 @@ css.replaceSync(`
     display: flex;
     height: 100%;
     flex: 1 0 auto;
+    container-name: board-container;
+    container-type: size;
+  }
+  @container board-container (aspect-ratio >= 1) {
+    .seki-board {
+
+    }
+  }
+  @container board-container (aspect-ratio < 1) {
+    .seki-board {
+
+    }
   }
   .seki-board {
     visibility: hidden;
@@ -207,8 +220,8 @@ function showAllMoveNumbers(game, board) {
       const {x, y} = node.move
       const number = i + 1
       board
-        .add(constants.board.boardLayerTypes.MARKUP, x, y, MarkupFactory
-          .create(constants.markup.markupTypes.MOVE_NUMBER, board, {number}))
+        .add(boardLayerTypes.MARKUP, x, y, MarkupFactory
+          .create(markupTypes.MOVE_NUMBER, board, {number}))
     })
 }
 
@@ -296,10 +309,10 @@ export function sekiPlayer(element, config = {}) {
   //Load game info from data attribute
   if (element.dataset.game) {
     player.load(element.dataset.game)
-    player.setMode(constants.player.playerModes.REPLAY)
+    player.setMode(playerModes.REPLAY)
   }
   else {
-    player.setMode(constants.player.playerModes.EDIT)
+    player.setMode(playerModes.EDIT)
   }
 
   //Render navigation
