@@ -3,7 +3,7 @@
 <head>
   <title>Seki Embeddable Player</title>
   <meta charset="utf-8">
-  <meta name="author" content="Adam Reis">
+  <meta name="author" content="Adam Reis"><link rel="stylesheet" type="text/css" media="screen" href="./assets/css/seki.css">
   <link rel="stylesheet" type="text/css" media="screen" href="css/demo.css">
   <link rel="icon" type="image/png" sizes="32x32" href="images/favicon.png">
 </head>
@@ -13,7 +13,7 @@
     <ul>
       <li><a href="demo-game-boards.html">Game boards</a></li>
       <li><a href="demo-static-positions.html">Static positions</a></li>
-      <li><a href="demo-flexible-player.html">Flexible size player</a></li>
+      <li><a href="demo-full-player.html">Full player</a></li>
     </ul>
     <hr>
 
@@ -150,10 +150,10 @@
     </div>
   </div>
   <script type="module">
-    import {sekiBoard} from './index.js';
+    import {sekiBoardStatic} from './index.js';
     Array
       .from(document.getElementsByClassName('static'))
-      .forEach(element => sekiBoard(element))
+      .forEach(element => sekiBoardStatic(element))
   </script>
 </body>
 </html>

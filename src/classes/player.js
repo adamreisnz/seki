@@ -26,6 +26,7 @@ export default class Player extends Base {
 
   //Props
   board
+  elements = {}
   modeHandlers = {}
   audioElements = {}
   activeMode
@@ -731,15 +732,15 @@ export default class Player extends Base {
   /**
    * Bootstrap
    */
-  bootstrap(element) {
+  bootstrap(container) {
 
     //Already bootstrapped
-    if (this.element) {
-      throw new Error(`Player has already been bootstrapped!`)
+    if (this.elements.container) {
+      throw new Error(`Player has already been bootstrapped`)
     }
 
     //Link element
-    this.linkElement(element)
+    this.elements.container = container
 
     //Create audio elements
     this.createAudioElements()
@@ -758,18 +759,12 @@ export default class Player extends Base {
   bootstrapBoard() {
 
     //Get player element
-    const {element, board} = this
+    const {elements, board} = this
+    const {container} = elements
 
     //Bootstrap it and link it to the player
-    board.bootstrap(element)
+    board.bootstrap(container)
     board.linkPlayer(this)
-  }
-
-  /**
-   * Link the player to a HTML element
-   */
-  linkElement(element) {
-    this.element = element
   }
 
   /**
@@ -779,7 +774,7 @@ export default class Player extends Base {
 
     //Get audio config
     const audio = this.getConfig('audio')
-    const {element} = this
+    const {container} = this.elements
 
     //Create audio elements
     for (const key in audio) {
@@ -788,7 +783,7 @@ export default class Player extends Base {
       }
       const audioElement = document.createElement('audio')
       audioElement.src = audio[key]
-      element.appendChild(audioElement)
+      container.appendChild(audioElement)
       this.audioElements[key] = audioElement
     }
   }

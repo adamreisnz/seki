@@ -2,9 +2,9 @@ import Board from './board.js'
 import {
   boardLayerTypes,
 } from '../constants/board.js'
-// import {
-//   createCanvasContext,
-// } from '../helpers/util.js'
+import {
+  addClass,
+} from '../helpers/util.js'
 
 /**
  * This class represents a static Go board, used for just rendering and
@@ -37,8 +37,9 @@ export default class BoardStatic extends Board {
     super.setupElements(container)
 
     //Add static class
-    const {board} = this.elements
-    board.classList.add('seki-board-static')
+    const {wrapper, board} = this.elements
+    addClass(wrapper, 'seki-board-wrapper-static')
+    addClass(board, 'seki-board-static')
   }
 
   /**

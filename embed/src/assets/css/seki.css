@@ -1,0 +1,214 @@
+:root {
+  --seki-color-background: #d6ae60;
+  --seki-color-element: #f3cf89;
+  --seki-color-highlight: #fff1d5;
+  --seki-color-black: #222;
+  --seki-color-white: #fff;
+  --seki-padding-element: 8px;
+}
+
+/* Full player */
+.seki-player-container {
+  container-name: seki-player-container;
+  container-type: size;
+}
+.seki-player {
+  display: flex;
+  flex-direction: column-reverse;
+  background: var(--seki-color-background);
+}
+.seki-player-board-and-controls {
+  display: flex;
+  flex-direction: column;
+}
+.seki-player-board {
+  aspect-ratio: 1;
+}
+
+/* Controls */
+.seki-controls-container {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  height: 52px;
+  padding: var(--seki-padding-element);
+  gap: var(--seki-padding-element);
+}
+.seki-button {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 2.25rem;
+  margin: 0;
+  border: 0;
+  border-radius: 4px;
+  background: var(--seki-color-element);
+  outline: none;
+  transition: all .2s ease;
+  cursor: pointer;
+  flex: 1;
+}
+.seki-button img {
+  width: 24px;
+  height: 24px;
+}
+.seki-button:hover {
+  transform: scale(1.05);
+}
+.seki-button:hover {
+  background: var(--seki-color-highlight);
+}
+
+/* Info */
+.seki-info-container {
+  padding: var(--seki-padding-element);
+  width: 100%;
+}
+.seki-info-blocks {
+  max-width: 100%;
+  display: flex;
+  justify-content: space-between;
+}
+.seki-info-block {
+  position: relative;
+  padding: var(--seki-padding-element);
+  background: var(--seki-color-element);
+  border-radius: 8px;
+}
+.seki-info-block:after {
+  position: absolute;
+  right: 8px;
+  top: -12px;
+  display: block;
+  font-size: 4rem;
+  font-family: Arial, sans-serif;
+  opacity: 0.05;
+}
+.seki-info-block-black:after {
+  content: '黒';
+}
+.seki-info-block-white:after {
+  content: '白';
+}
+.seki-info-block-half {
+  flex: 0 0 calc(50% - var(--seki-padding-element) / 2);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+.seki-identity {
+  display: flex;
+  align-items: center;
+  margin-top: -4px;
+  margin-bottom: 4px;
+}
+.seki-color {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 50%;
+  margin-right: 8px;
+  box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
+}
+.seki-color-black {
+  background: var(--seki-color-black);
+}
+.seki-color-white {
+  background: var(--seki-color-white);
+}
+.seki-name-and-rank {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  height: 35px;
+}
+.seki-name {
+  height: 20px;
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 1rem;
+}
+.seki-score {
+  flex: 0 0 50%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 8px;
+  padding-left: 4px;
+  padding-right: 4px;
+  font-size: .9rem;
+}
+
+/* Horizontal player */
+@container seki-player-container (aspect-ratio > 0.8) {
+  .seki-player {
+    flex-direction: row;
+    height: 100%;
+    max-height: calc(100% - 100px);
+    aspect-ratio: 1.333;
+  }
+  .seki-player-board-and-controls {
+    height: 100%;
+  }
+  .seki-player-board {
+    height: calc(100% - 52px);
+  }
+  .seki-controls-container {
+    padding-right: 0;
+  }
+  .seki-info-blocks {
+    flex-direction: column;
+  }
+  .seki-info-block-half {
+    flex: 1;
+    margin-bottom: var(--seki-padding-element);
+  }
+}
+
+/* Board */
+.seki-board-wrapper {
+  display: flex;
+  width: 100%;
+  /* height: 100%; */
+  box-shadow: 1px 1px 4px rgba(0, 0, 0, 0.4);
+}
+.seki-board-wrapper-static {
+  box-shadow: none;
+}
+.seki-board {
+  position: relative;
+  visibility: hidden;
+  left: 0;
+  top: 0;
+  min-width: 50px;
+  min-height: 50px;
+  box-sizing: content-box;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+.seki-board-canvas-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+.seki-board-canvas-container canvas {
+  position: absolute;
+  max-width: 100%;
+  max-height: 100%;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+.seki-board-static canvas {
+  cursor: default;
+}
+
+/* Utility */
+.seki-hidden {
+  display: none;
+}

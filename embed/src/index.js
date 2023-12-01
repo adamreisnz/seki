@@ -33,99 +33,6 @@ export {
   helpers,
 }
 
-//Apply core Seki CSS to document
-const css = new CSSStyleSheet()
-css.replaceSync(`
-  .seki-player-container {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    flex: 1 0 auto;
-  }
-  .seki-board-container {
-    position: relative;
-    display: flex;
-    height: 100%;
-    flex: 1 0 auto;
-    container-name: board-container;
-    container-type: size;
-  }
-  @container board-container (aspect-ratio >= 1) {
-    .seki-board {
-
-    }
-  }
-  @container board-container (aspect-ratio < 1) {
-    .seki-board {
-
-    }
-  }
-  .seki-board {
-    visibility: hidden;
-    left: 0;
-    top: 0;
-    min-width: 50px;
-    min-height: 50px;
-    box-sizing: content-box;
-    touch-action: manipulation;
-    -webkit-tap-highlight-color: transparent;
-  }
-  .seki-board-canvas-container {
-    position: relative;
-    width: 100%;
-    height: 100%;
-  }
-  .seki-board-canvas-container canvas {
-    position: absolute;
-    max-width: 100%;
-    max-height: 100%;
-    cursor: pointer;
-    touch-action: manipulation;
-    -webkit-tap-highlight-color: transparent;
-  }
-  .seki-board-static canvas {
-    cursor: default;
-  }
-  .seki-button {
-    position: relative;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    height: 2.25rem;
-    margin: 0;
-    border: 0;
-    border-radius: 4px;
-    background: none;
-    outline: none;
-    transition: all .2s ease;
-  }
-  .seki-button img {
-    width: 24px;
-    height: 24px;
-  }
-  .seki-button:hover {
-    transform: scale(1.05);
-  }
-  .seki-button:hover, .seki-button.isActive {
-    background: #f0f0f0;
-  }
-  .seki-hidden {
-    display: none;
-  }
-  .seki-navigation {
-    padding: 0.5rem 0;
-    display: flex;
-    justify-content: center;
-    width: 100%;
-    gap: 0.5rem;
-  }
-  .seki-navigation .seki-button {
-    flex: 1;
-  }
-`)
-document.adoptedStyleSheets.push(css)
-
 //Render button
 function renderButton(type, icon, title, onClick) {
   const button = document.createElement('button')
@@ -140,11 +47,7 @@ function renderButton(type, icon, title, onClick) {
 }
 
 //Render navigation
-function renderNavigation(element, player) {
-
-  //Create control elements
-  const navElement = document.createElement('div')
-  navElement.classList.add('seki-navigation')
+function renderControls(element, player) {
 
   //Create buttons
   const cFirstPos = renderButton(
@@ -192,17 +95,14 @@ function renderNavigation(element, player) {
   helpers.util.toggleClass(cPause, 'seki-hidden', true)
 
   //Append to controls
-  navElement.appendChild(cFirstPos)
-  navElement.appendChild(cSkipBack)
-  navElement.appendChild(cPrevPos)
-  navElement.appendChild(cPlay)
-  navElement.appendChild(cPause)
-  navElement.appendChild(cNextPos)
-  navElement.appendChild(cSkipForward)
-  navElement.appendChild(cLastPos)
-
-  //Append to parent element
-  element.appendChild(navElement)
+  element.appendChild(cFirstPos)
+  element.appendChild(cSkipBack)
+  element.appendChild(cPrevPos)
+  element.appendChild(cPlay)
+  element.appendChild(cPause)
+  element.appendChild(cNextPos)
+  element.appendChild(cSkipForward)
+  element.appendChild(cLastPos)
 
   //Listener for auto play toggling
   player.on('autoPlayToggle', event => {
@@ -226,7 +126,7 @@ function showAllMoveNumbers(game, board) {
 }
 
 //Export static seki board initialiser
-export function sekiBoard(element, config = {}) {
+export function sekiBoardStatic(element, config = {}) {
 
   //Extend given config with defaults
   config = Object.assign({
@@ -243,16 +143,12 @@ export function sekiBoard(element, config = {}) {
     config = Object.assign(config, JSON.parse(json))
   }
 
-  //Create player and board elements
-  const boardElement = document.createElement('div')
-  element.appendChild(boardElement)
-
   //Instantiate static board
   const board = new BoardStatic(config)
   const game = element.dataset.game ? Game.fromData(element.dataset.game) : null
 
   //Bootstrap board
-  board.bootstrap(boardElement)
+  board.bootstrap(element)
 
   //Load game info from data attribute (always go to last position)
   if (game) {
@@ -274,6 +170,43 @@ export function sekiBoard(element, config = {}) {
   return {board, game}
 }
 
+//Export dynamic seki board initialiser
+export function sekiBoardDynamic(element, config = {}) {
+
+  //Extend given config with defaults
+  config = Object.assign({
+    theme: {
+      board: {
+        backgroundImage: imageWood1,
+      },
+    },
+  }, config || {})
+
+  //Extend with element data config
+  if (element.dataset.config) {
+    const json = element.dataset.config.replace(/'/g, '"')
+    config = Object.assign(config, JSON.parse(json))
+  }
+
+  //Instantiate player
+  const player = new Player(config)
+
+  //Bootstrap player
+  player.bootstrap(element)
+
+  //Load game info from data attribute
+  if (element.dataset.game) {
+    player.load(element.dataset.game)
+    player.setMode(playerModes.REPLAY)
+  }
+  else {
+    player.setMode(playerModes.EDIT)
+  }
+
+  //Return player
+  return {player}
+}
+
 //Export seki player initialiser
 export function sekiPlayer(element, config = {}) {
 
@@ -292,18 +225,52 @@ export function sekiPlayer(element, config = {}) {
     config = Object.assign(config, JSON.parse(json))
   }
 
-  //Create player and board elements
-  const containerElement = document.createElement('div')
-  const boardElement = document.createElement('div')
-  containerElement.classList.add('seki-player-container')
-  containerElement.appendChild(boardElement)
-  element.appendChild(containerElement)
-  // element.appendChild(boardElement)
+  //Create HTML structure for player
+  element.classList.add('seki-player-container')
+  element.innerHTML = `
+    <div class="seki-player">
+      <div class="seki-player-board-and-controls">
+        <div class="seki-player-board"></div>
+        <div class="seki-controls-container"></div>
+      </div>
+      <div class="seki-info-container">
+        <div class="seki-info-blocks">
+          <div class="seki-info-block seki-info-block-half seki-info-block-black">
+            <div class="seki-identity">
+              <div class="seki-color seki-color-black"></div>
+              <div class="seki-name-and-rank">
+                <span class="seki-name">Black</span>
+                <small></small>
+              </div>
+            </div>
+            <div class="seki-score">
+              <span>0 captures</span>
+            </div>
+          </div>
+          <div class="seki-info-block seki-info-block-half seki-info-block-white">
+            <div class="seki-identity">
+              <div class="seki-color seki-color-white"></div>
+              <div class="seki-name-and-rank">
+                <span class="seki-name">White</span>
+                <small></small>
+              </div>
+            </div>
+            <div class="seki-score">
+              <span>0 captures</span>
+              <span>+6.5</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `
 
-  //Instantiate player
+  //Instantiate player and get board element
   const player = new Player(config)
+  const boardElement = element
+    .getElementsByClassName('seki-player-board')[0]
 
-  //Bootstrap player
+  //Bootstrap player onto board element
   player.bootstrap(boardElement)
 
   //Load game info from data attribute
@@ -315,10 +282,10 @@ export function sekiPlayer(element, config = {}) {
     player.setMode(playerModes.EDIT)
   }
 
-  //Render navigation
-  if (config.showNavigation) {
-    renderNavigation(containerElement, player)
-  }
+  //Render controls
+  const controlsElement = element
+    .getElementsByClassName('seki-controls-container')[0]
+  renderControls(controlsElement, player)
 
   //Return player
   return {player}

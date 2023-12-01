@@ -8,7 +8,6 @@
   -webkit-tap-highlight-color: transparent;
 }
 html, body {
-  height: 100%;
   background: #fff;
   position: relative;
   font-family: Helvetica, sans-serif;
@@ -55,9 +54,11 @@ hr {
   max-width: 50%;
   padding: 1rem;
 }
+
 .fixed-size {
   max-height: 400px;
   width: 100%;
+  height: 100%;
 }
 .rectangular {
   aspect-ratio: 1.15;
@@ -65,10 +66,17 @@ hr {
 .square {
   aspect-ratio: 1;
 }
-.flexible-size {
-  width: 100%;
-  max-height: 96vh;
-  aspect-ratio: 1;
-  display: flex;
-  justify-content: center;
+.mono .seki-board-wrapper {
+  border: 1px solid #aaa;
+}
+
+/* Flexible player sizing based on screen aspect ratio */
+.flexible-player {
+  aspect-ratio: 0.75;
+}
+@media (min-aspect-ratio: 0.8) {
+  .flexible-player {
+    max-width: 960px;
+    aspect-ratio: 1.333;
+  }
 }

@@ -782,21 +782,20 @@ export default class Board extends Base {
    */
   setupElements(container) {
 
-    //Reset elements container
+    //Reset elements
     this.elements = {}
 
-    //Add container class
-    addClass(container, 'seki-board-container')
-
-    //Create board element and canvas container
-    const board = createElement(container, `seki-board`)
-    const canvasContainer = createElement(board, `seki-board-canvas-container`)
+    //Create elements
+    const wrapper = createElement(container, `seki-board-wrapper`)
+    const board = createElement(wrapper, `seki-board`)
+    const canvasses = createElement(board, `seki-board-canvas-container`)
 
     //Set element references
     this.elements = {
       container,
+      wrapper,
       board,
-      canvasContainer,
+      canvasses,
     }
   }
 
@@ -831,19 +830,19 @@ export default class Board extends Base {
 
     //Get data
     const {elements, layers} = this
-    const {canvasContainer} = elements
+    const {canvasses} = elements
 
     //Create for each layer
     layers.forEach(layer => {
       const context = createCanvasContext(
-        canvasContainer, `seki-board-layer-${layer.type}`,
+        canvasses, `seki-board-layer-${layer.type}`,
       )
       layer.setContext(context)
     })
 
     //Store canvases as elements array
     elements.canvasses = Array.from(
-      canvasContainer.getElementsByTagName('canvas'),
+      canvasses.getElementsByTagName('canvas'),
     )
   }
 
