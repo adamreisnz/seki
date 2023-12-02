@@ -214,7 +214,8 @@ export function sekiPlayer(element, config = {}) {
   config = Object.assign({
     theme: {
       board: {
-        backgroundImage: imageWood1,
+        backgroundColor: '',
+        backgroundImage: '',
       },
     },
   }, config || {})

@@ -1,10 +1,52 @@
+@import url('https://fonts.googleapis.com/css2?family=Lexend:wght@300&display=swap');
+
+/* Variables */
 :root {
+  --seki-url-background: url('/images/wood-1.jpg');
+  --seki-box-shadow: 1px 1px 8px rgba(0, 0, 0, 0.25);
+  --seki-padding-element: 8px;
   --seki-color-background: #d6ae60;
   --seki-color-element: #f3cf89;
   --seki-color-highlight: #fff1d5;
-  --seki-color-black: #222;
-  --seki-color-white: #fff;
-  --seki-padding-element: 8px;
+  --seki-color-black-player: #222;
+  --seki-color-white-player: #fff;
+  --seki-color-kanji: rgba(0, 0, 0, 0.05);
+  --seki-font-family: 'Lexend', sans-serif;
+}
+
+/* Board */
+.seki-board-wrapper {
+  display: flex;
+  width: auto;
+  max-height: 100%;
+}
+.seki-board {
+  position: relative;
+  visibility: hidden;
+  left: 0;
+  top: 0;
+  min-width: 50px;
+  min-height: 50px;
+  box-sizing: content-box;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  box-shadow: var(--seki-box-shadow);
+}
+.seki-board-canvas-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+.seki-board-canvas-container canvas {
+  position: absolute;
+  max-width: 100%;
+  max-height: 100%;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+.seki-board-static canvas {
+  cursor: default;
 }
 
 /* Full player */
@@ -16,6 +58,13 @@
   display: flex;
   flex-direction: column-reverse;
   background: var(--seki-color-background);
+  background-image: var(--seki-url-background);
+  background-size: 25% 25%;
+  box-shadow: var(--seki-box-shadow);
+  font-family: var(--seki-font-family)
+}
+.seki-player .seki-board {
+  box-shadow: none;
 }
 .seki-player-board-and-controls {
   display: flex;
@@ -83,7 +132,7 @@
   display: block;
   font-size: 4rem;
   font-family: Arial, sans-serif;
-  opacity: 0.05;
+  color: var(--seki-color-kanji);
 }
 .seki-info-block-black:after {
   content: '黒';
@@ -114,10 +163,10 @@
   box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
 }
 .seki-color-black {
-  background: var(--seki-color-black);
+  background: var(--seki-color-black-player);
 }
 .seki-color-white {
-  background: var(--seki-color-white);
+  background: var(--seki-color-white-player);
 }
 .seki-name-and-rank {
   display: flex;
@@ -168,44 +217,6 @@
     flex: 1;
     margin-bottom: var(--seki-padding-element);
   }
-}
-
-/* Board */
-.seki-board-wrapper {
-  display: flex;
-  width: 100%;
-  /* height: 100%; */
-  box-shadow: 1px 1px 4px rgba(0, 0, 0, 0.4);
-}
-.seki-board-wrapper-static {
-  box-shadow: none;
-}
-.seki-board {
-  position: relative;
-  visibility: hidden;
-  left: 0;
-  top: 0;
-  min-width: 50px;
-  min-height: 50px;
-  box-sizing: content-box;
-  touch-action: manipulation;
-  -webkit-tap-highlight-color: transparent;
-}
-.seki-board-canvas-container {
-  position: relative;
-  width: 100%;
-  height: 100%;
-}
-.seki-board-canvas-container canvas {
-  position: absolute;
-  max-width: 100%;
-  max-height: 100%;
-  cursor: pointer;
-  touch-action: manipulation;
-  -webkit-tap-highlight-color: transparent;
-}
-.seki-board-static canvas {
-  cursor: default;
 }
 
 /* Utility */

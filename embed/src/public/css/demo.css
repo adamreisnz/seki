@@ -60,13 +60,16 @@ hr {
   width: 100%;
   height: 100%;
 }
-.rectangular {
-  aspect-ratio: 1.15;
-}
 .square {
   aspect-ratio: 1;
 }
-.mono .seki-board-wrapper {
+.rectangular {
+  aspect-ratio: 1.15;
+}
+.mono .seki-board {
+  box-shadow: none;
+}
+.mono.square .seki-board {
   border: 1px solid #aaa;
 }
 
