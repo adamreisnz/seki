@@ -76,6 +76,8 @@ hr {
 /* Flexible player sizing based on screen aspect ratio */
 .seki-player {
   aspect-ratio: 0.75;
+  margin: 0 auto;
+  margin-top: 2rem;
 }
 @media (min-aspect-ratio: 0.8) {
   .seki-player {

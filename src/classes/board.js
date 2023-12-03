@@ -858,10 +858,9 @@ export default class Board extends Base {
 
     //Create observer
     const resizeObserver = new ResizeObserver(fn)
-    const {container} = this.elements
 
-    //Observe the canvas container
-    resizeObserver.observe(container)
+    //Observe the document body
+    resizeObserver.observe(document.body)
   }
 
   /**
