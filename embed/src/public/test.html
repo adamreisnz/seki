@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Seki Embeddable Go Player Test</title>
+  <meta charset="utf-8">
+  <meta name="author" content="Adam Reis">
+  <link rel="stylesheet" type="text/css" media="screen" href="https://www.sekiplayer.com/css/seki.css">
+  <script type="module" src="https://www.sekiplayer.com/js/seki.js"></script>
+  <style>
+    .seki-player {
+      aspect-ratio: 0.75;
+      margin: 0 auto;
+      margin-top: 2rem;
+    }
+    @media (min-aspect-ratio: 0.8) {
+      .seki-player {
+        max-width: 960px;
+        max-height: 600px;
+        aspect-ratio: 1.4;
+      }
+    }
+  </style>
+</head>
+<body lang="en">
+  <div
+    class="seki-player"
+    data-game-url="https://online-go.com/game/57818013"
+    data-config="{
+      'showCoordinates': true,
+      'showLastMoveNumber': true
+    }"
+  ></div>
+</body>
+</html>
