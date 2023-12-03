@@ -369,6 +369,12 @@ export function sekiPlayer(element, config = {}) {
     findElements(className).forEach(el => toggleClass(el, 'seki-hidden', val))
   }
 
+  //Show result
+  const showResult = () => {
+    toggleHidden('result-toggle', true)
+    toggleHidden('game-result', false)
+  }
+
   //Instantiate player and get board element
   const player = new Player(config)
   const boardElement = element
@@ -457,10 +463,12 @@ export function sekiPlayer(element, config = {}) {
   onClick('button-last', () => player.goToLastPosition())
 
   //Bind click handler for result toggle
-  onClick('result-toggle', () => {
-    toggleHidden('result-toggle', true)
-    toggleHidden('game-result', false)
-  })
+  onClick('result-toggle', () => showResult())
+
+  //Show result right away
+  if (config.showResult) {
+    showResult()
+  }
 
   //Load game info from data attribute
   if (element.dataset.game) {
