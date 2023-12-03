@@ -60,7 +60,7 @@ const showAllMoveNumbers = (game, board) => {
 const appendNotice = (element, text = 'Generated using') => {
   const notice = document.createElement('div')
   notice.classList.add('seki-notice')
-  notice.innerHTML = `${text} the <a href="https://github.com/adamreisnz/seki">Seki Go Player</a>`
+  notice.innerHTML = `${text} the <a href="https://sekiplayer.com">Seki Go Player</a>`
   element.appendChild(notice)
 }
 
