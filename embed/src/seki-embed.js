@@ -9,19 +9,16 @@ import {
 
 //Get constants
 const {
-  playerModes,
-} = constants.player
-const {
-  boardLayerTypes,
-} = constants.board
-const {
-  markupTypes,
-} = constants.markup
+  player: {playerModes, playerActions},
+  board: {boardLayerTypes},
+  markup: {markupTypes},
+  util: {keyValues},
+} = constants
 
 //Get helpers
 const {
-  toggleClass,
-} = helpers.util
+  util: {toggleClass},
+} = helpers
 
 //Re-export Seki constants and helpers
 export {
@@ -170,6 +167,78 @@ export function sekiPlayer(element, config = {}) {
         backgroundImage: '',
       },
     },
+    availableModes: [
+      playerModes.REPLAY,
+      playerModes.EDIT,
+    ],
+    keyBindings: [
+      {
+        key: keyValues.ARROW_LEFT,
+        action: playerActions.GO_TO_PREV_POSITION,
+      },
+      {
+        key: keyValues.ARROW_RIGHT,
+        action: playerActions.GO_TO_NEXT_POSITION,
+      },
+      {
+        key: keyValues.ARROW_UP,
+        action: playerActions.SELECT_PREV_VARIATION,
+      },
+      {
+        key: keyValues.ARROW_DOWN,
+        action: playerActions.SELECT_NEXT_VARIATION,
+      },
+      {
+        key: keyValues.ARROW_LEFT,
+        shiftKey: true,
+        action: playerActions.GO_BACK_NUM_POSITIONS,
+      },
+      {
+        key: keyValues.ARROW_RIGHT,
+        shiftKey: true,
+        action: playerActions.GO_FORWARD_NUM_POSITIONS,
+      },
+      {
+        key: keyValues.ARROW_LEFT,
+        metaKey: true,
+        action: playerActions.GO_TO_FIRST_POSITION,
+      },
+      {
+        key: keyValues.ARROW_RIGHT,
+        metaKey: true,
+        action: playerActions.GO_TO_LAST_POSITION,
+      },
+      {
+        key: keyValues.ARROW_LEFT,
+        altKey: true,
+        action: playerActions.GO_TO_PREV_FORK,
+      },
+      {
+        key: keyValues.ARROW_RIGHT,
+        altKey: true,
+        action: playerActions.GO_TO_NEXT_FORK,
+      },
+      {
+        key: keyValues.ARROW_LEFT,
+        altKey: true,
+        shiftKey: true,
+        action: playerActions.GO_TO_PREV_COMMENT,
+      },
+      {
+        key: keyValues.ARROW_RIGHT,
+        altKey: true,
+        shiftKey: true,
+        action: playerActions.GO_TO_NEXT_COMMENT,
+      },
+      {
+        key: keyValues.SPACE,
+        action: playerActions.TOGGLE_AUTO_PLAY,
+      },
+      {
+        key: 'C',
+        action: playerActions.TOGGLE_COORDINATES,
+      },
+    ],
   }, config || {})
 
   //Extend with element data config
@@ -366,8 +435,8 @@ export function sekiPlayer(element, config = {}) {
     }
 
     //Set captures
-    setText(element, 'captures-black', capturesString(black))
-    setText(element, 'captures-white', capturesString(white))
+    setText('captures-black', capturesString(black))
+    setText('captures-white', capturesString(white))
   })
 
   //Auto play toggle handler

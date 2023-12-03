@@ -1,5 +1,5 @@
 import {appName, appVersion, kifuFormats} from './app.js'
-import {keyValues, mouseEvents} from './util.js'
+import {mouseEvents} from './util.js'
 import {gameTypes} from './game.js'
 import {playerModes, playerActions} from './player.js'
 import {markupTypes} from './markup.js'
@@ -62,185 +62,6 @@ export const defaultPlayerConfig = {
   //Initial mode
   initialMode: playerModes.REPLAY,
 
-  //Key bindings
-  keyBindings: [
-
-    //General
-    {
-      key: keyValues.ESC,
-      action: playerActions.CANCEL_ACTION,
-    },
-
-    //Game handling
-    {
-      key: 'N',
-      shiftKey: true,
-      action: playerActions.NEW_GAME,
-    },
-    {
-      key: 'O',
-      shiftKey: true,
-      action: playerActions.LOAD_GAME,
-    },
-    {
-      key: 'U',
-      shiftKey: true,
-      action: playerActions.LOAD_GAME_FROM_URL,
-    },
-    {
-      key: 'D',
-      shiftKey: true,
-      action: playerActions.DOWNLOAD_GAME,
-    },
-    {
-      key: 'P',
-      shiftKey: true,
-      action: playerActions.DOWNLOAD_IMAGE,
-    },
-
-    //Mode selection
-    {
-      key: 'E',
-      action: playerActions.SET_MODE_EDIT,
-    },
-    {
-      key: 'R',
-      action: playerActions.SET_MODE_REPLAY,
-    },
-
-    //Navigation
-    {
-      key: keyValues.ARROW_LEFT,
-      action: playerActions.GO_TO_PREV_POSITION,
-    },
-    {
-      key: keyValues.ARROW_RIGHT,
-      action: playerActions.GO_TO_NEXT_POSITION,
-    },
-    {
-      key: keyValues.ARROW_UP,
-      action: playerActions.SELECT_PREV_VARIATION,
-    },
-    {
-      key: keyValues.ARROW_DOWN,
-      action: playerActions.SELECT_NEXT_VARIATION,
-    },
-    {
-      key: keyValues.ARROW_LEFT,
-      shiftKey: true,
-      action: playerActions.GO_BACK_NUM_POSITIONS,
-    },
-    {
-      key: keyValues.ARROW_RIGHT,
-      shiftKey: true,
-      action: playerActions.GO_FORWARD_NUM_POSITIONS,
-    },
-    {
-      key: keyValues.ARROW_LEFT,
-      metaKey: true,
-      action: playerActions.GO_TO_FIRST_POSITION,
-    },
-    {
-      key: keyValues.ARROW_RIGHT,
-      metaKey: true,
-      action: playerActions.GO_TO_LAST_POSITION,
-    },
-    {
-      key: keyValues.ARROW_LEFT,
-      altKey: true,
-      action: playerActions.GO_TO_PREV_FORK,
-    },
-    {
-      key: keyValues.ARROW_RIGHT,
-      altKey: true,
-      action: playerActions.GO_TO_NEXT_FORK,
-    },
-    {
-      key: keyValues.ARROW_LEFT,
-      altKey: true,
-      shiftKey: true,
-      action: playerActions.GO_TO_PREV_COMMENT,
-    },
-    {
-      key: keyValues.ARROW_RIGHT,
-      altKey: true,
-      shiftKey: true,
-      action: playerActions.GO_TO_NEXT_COMMENT,
-    },
-    {
-      key: keyValues.SPACE,
-      action: playerActions.TOGGLE_AUTO_PLAY,
-    },
-
-    //Coordinates visibility
-    {
-      key: 'C',
-      action: playerActions.TOGGLE_COORDINATES,
-    },
-
-    //Edit tools
-    {
-      key: 'M',
-      action: playerActions.SET_EDIT_TOOL_MOVE,
-    },
-    {
-      key: 'S',
-      action: playerActions.SET_EDIT_TOOL_STONE,
-    },
-    {
-      key: 'X',
-      action: playerActions.SET_EDIT_TOOL_CLEAR,
-    },
-    {
-      key: 'X',
-      altKey: true,
-      action: playerActions.SET_EDIT_TOOL_CLEAR_AREA,
-    },
-    {
-      key: 'X',
-      shiftKey: true,
-      action: playerActions.REMOVE_ALL_MARKUP,
-    },
-
-    //Markup tool selection
-    {
-      key: '1',
-      action: playerActions.SET_EDIT_TOOL_TRIANGLE,
-    },
-    {
-      key: '2',
-      action: playerActions.SET_EDIT_TOOL_SQUARE,
-    },
-    {
-      key: '3',
-      action: playerActions.SET_EDIT_TOOL_CIRCLE,
-    },
-    {
-      key: '4',
-      action: playerActions.SET_EDIT_TOOL_LETTER,
-    },
-    {
-      key: '5',
-      action: playerActions.SET_EDIT_TOOL_NUMBER,
-    },
-    {
-      key: '6',
-      action: playerActions.SET_EDIT_TOOL_HAPPY,
-    },
-    {
-      key: '7',
-      action: playerActions.SET_EDIT_TOOL_SAD,
-    },
-    {
-      key: '8',
-      action: playerActions.SET_EDIT_TOOL_MARK,
-    },
-    {
-      key: '9',
-      action: playerActions.SET_EDIT_TOOL_DRAW,
-    },
-  ],
-
   //Mouse bindings
   mouseBindings: [
     {
@@ -260,6 +81,9 @@ export const defaultPlayerConfig = {
       action: playerActions.SELECT_NEXT_VARIATION,
     },
   ],
+
+  //Key bindings
+  keyBindings: [],
 
   //Audio
   audio: {
