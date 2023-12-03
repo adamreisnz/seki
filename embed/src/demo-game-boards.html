@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Seki Embeddable Player</title>
+  <title>Seki Embeddable Go Player</title>
   <meta charset="utf-8">
   <meta name="author" content="Adam Reis">
   <link rel="stylesheet" type="text/css" media="screen" href="./assets/css/seki.css">
@@ -10,7 +10,7 @@
 </head>
 <body lang="en">
   <div class="main">
-    <h1>Seki Embeddable Player Examples</h1>
+    <h1>Seki Embeddable Go Player Examples</h1>
     <ul>
       <li><a href="demo-game-boards.html">Game boards</a></li>
       <li><a href="demo-static-positions.html">Static positions</a></li>
@@ -22,7 +22,7 @@
       <div class="example">
         <h3>9x9 (empty board)</h3>
         <div
-          class="dynamic fixed-size square"
+          class="seki-board-dynamic fixed-size square"
           data-config="{
             'showCoordinates': false,
             'board': {
@@ -35,7 +35,7 @@
       <div class="example">
         <h3>19x19 (empty board)</h3>
         <div
-          class="dynamic fixed-size square"
+          class="seki-board-dynamic fixed-size square"
           data-config="{
             'showCoordinates': false
           }"
@@ -45,7 +45,7 @@
       <div class="example">
         <h3>9x9 (replay game record)</h3>
         <div
-          class="dynamic fixed-size square"
+          class="seki-board-dynamic fixed-size square"
           data-game="(;
             FF[4]
             CA[UTF-8]
@@ -109,7 +109,7 @@
       <div class="example">
         <h3>19x19 (replay game record)</h3>
         <div
-          class="dynamic fixed-size square"
+          class="seki-board-dynamic fixed-size square"
           data-game="(;FF[4]CA[UTF-8]AP[Seki v1.3.17]GM[1]GN[Friendly Match]RE[W+15.5]XL[0]XR[0]XT[0]XB[0]PC[OGS: https://online-go.com/game/57818013]KM[6.5]HA[0]RU[Japanese]TM[259200]OT[3x86400 byo-yomi]ST[2]SZ[19]PB[andytsai14]BR[1d]PW[Akineko 秋猫]WR[1d];B[pp];W[dd];B[pd];W[dq];B[co];W[ep];B[cl];W[qc];B[qd];W[pc];B[od];W[nb];B[qn];W[jq];B[cf];W[fc];B[cd];W[cc];B[bc];W[bb];B[be];W[ac];B[bd];W[dc];B[mc];W[mb];B[lc];W[lb];B[kc];W[qj];B[oj];W[qg];B[hp];W[jo];B[hn];W[nq];B[oq];W[np];B[iq];W[en];B[jr];W[bp];B[cp];W[cq];B[bo];W[kq];B[kr];W[ch];B[ef];W[eh];B[bj];W[dj];B[el];W[gh];B[bh];W[bg];B[cg];W[bi];B[ci];W[ah];B[dh];W[di];B[bh];W[nc];B[nd];W[ch];B[oc];W[dg];B[ob];W[bq];B[fm];W[go];B[ho];W[gn];B[gm];W[hm];B[cj];W[gq];B[lq];W[lp];B[mq];W[mp];B[nr];W[hr];B[ir];W[hl];B[gf];W[df];B[ed];W[hc];B[ec];W[eb];B[fd];W[gc];B[if];W[he];B[hf];W[de];B[jn];W[dk];B[dl];W[fk];B[bm];W[bk];B[ck];W[aj];B[bl];W[ak];B[al];W[ai];B[an];W[cn];B[dn];W[dm];B[do];W[em];B[eo];W[fn];B[fl];W[gp];B[cm];W[kn];B[jm];W[km];B[kl];W[jl];B[io];W[in];B[im];W[il];B[in];W[hq];B[ip];W[po];B[qo];W[pn];B[pm];W[or];B[mr];W[pq];B[qp];W[op];B[qr];W[qq];B[rq];W[jp];B[pr];W[os];B[oq];W[pq];B[lm];W[ln];B[ls];W[ll];B[kk];W[mm];B[gk];W[ih];B[jk];W[je];B[jf];W[ke];B[kf];W[le];B[ie];W[id];B[lf];W[rf];B[re];W[qe];B[pe];W[qf];B[kb];W[rd];B[rc];W[se];B[rb];W[jc];B[om];W[jb];B[ko];W[kp];B[nn];W[mj];B[lj];W[lk];B[kj];W[mh];B[mi];W[mn];B[mk];W[ml];B[nj];W[ph];B[ja];W[ia];B[ka];W[ib];B[rk];W[rj];B[qk];W[sk];B[sl];W[sj];B[pj];W[pi];B[qq];W[hj];B[gj];W[ij];B[fh];W[fg];B[fi];W[gg];B[ge];W[eg];B[nh];W[me];B[nl];W[mg];B[mf];W[ng];B[nf];W[og];B[oq];W[rl];B[sm];W[pq];B[gi];W[hh];B[oq];W[rm];B[sn];W[pq];B[qi];W[ri];B[oq];W[rn];B[so];W[pq];B[rh];W[qh];B[oq];W[md];B[na];W[pq];B[oo];W[oq];B[hs];W[gs];B[is];W[kd];B[ne];W[fj];B[ei];W[dh];B[gl];W[ns];B[ms];W[hd];B[fp];W[fq];B[fo];W[dp];B[ap];W[aq];B[ao];W[fr];B[lh];W[oi];B[ni];W[kh];B[sc];W[sd];B[no];W[mo];B[nm];W[of];B[pf];W[lg];B[li];W[ps];B[qs];W[ff];B[ee];W[jd];B[ma];W[ld];B[la];W[kg];B[ji];W[jh];B[];W[])"
           data-config="{
             'showCoordinates': false,
@@ -121,7 +121,7 @@
       <div class="example">
         <h3>9x9 (final position)</h3>
         <div
-          class="static fixed-size square"
+          class="seki-board-static fixed-size square"
           data-game="(;
             FF[4]
             CA[UTF-8]
@@ -185,7 +185,7 @@
       <div class="example">
         <h3>19x19 (final position)</h3>
         <div
-          class="static fixed-size square"
+          class="seki-board-static fixed-size square"
           data-game="(;FF[4]CA[UTF-8]AP[Seki v1.3.17]GM[1]GN[Friendly Match]RE[W+15.5]XL[0]XR[0]XT[0]XB[0]PC[OGS: https://online-go.com/game/57818013]KM[6.5]HA[0]RU[Japanese]TM[259200]OT[3x86400 byo-yomi]ST[2]SZ[19]PB[andytsai14]BR[1d]PW[Akineko 秋猫]WR[1d];B[pp];W[dd];B[pd];W[dq];B[co];W[ep];B[cl];W[qc];B[qd];W[pc];B[od];W[nb];B[qn];W[jq];B[cf];W[fc];B[cd];W[cc];B[bc];W[bb];B[be];W[ac];B[bd];W[dc];B[mc];W[mb];B[lc];W[lb];B[kc];W[qj];B[oj];W[qg];B[hp];W[jo];B[hn];W[nq];B[oq];W[np];B[iq];W[en];B[jr];W[bp];B[cp];W[cq];B[bo];W[kq];B[kr];W[ch];B[ef];W[eh];B[bj];W[dj];B[el];W[gh];B[bh];W[bg];B[cg];W[bi];B[ci];W[ah];B[dh];W[di];B[bh];W[nc];B[nd];W[ch];B[oc];W[dg];B[ob];W[bq];B[fm];W[go];B[ho];W[gn];B[gm];W[hm];B[cj];W[gq];B[lq];W[lp];B[mq];W[mp];B[nr];W[hr];B[ir];W[hl];B[gf];W[df];B[ed];W[hc];B[ec];W[eb];B[fd];W[gc];B[if];W[he];B[hf];W[de];B[jn];W[dk];B[dl];W[fk];B[bm];W[bk];B[ck];W[aj];B[bl];W[ak];B[al];W[ai];B[an];W[cn];B[dn];W[dm];B[do];W[em];B[eo];W[fn];B[fl];W[gp];B[cm];W[kn];B[jm];W[km];B[kl];W[jl];B[io];W[in];B[im];W[il];B[in];W[hq];B[ip];W[po];B[qo];W[pn];B[pm];W[or];B[mr];W[pq];B[qp];W[op];B[qr];W[qq];B[rq];W[jp];B[pr];W[os];B[oq];W[pq];B[lm];W[ln];B[ls];W[ll];B[kk];W[mm];B[gk];W[ih];B[jk];W[je];B[jf];W[ke];B[kf];W[le];B[ie];W[id];B[lf];W[rf];B[re];W[qe];B[pe];W[qf];B[kb];W[rd];B[rc];W[se];B[rb];W[jc];B[om];W[jb];B[ko];W[kp];B[nn];W[mj];B[lj];W[lk];B[kj];W[mh];B[mi];W[mn];B[mk];W[ml];B[nj];W[ph];B[ja];W[ia];B[ka];W[ib];B[rk];W[rj];B[qk];W[sk];B[sl];W[sj];B[pj];W[pi];B[qq];W[hj];B[gj];W[ij];B[fh];W[fg];B[fi];W[gg];B[ge];W[eg];B[nh];W[me];B[nl];W[mg];B[mf];W[ng];B[nf];W[og];B[oq];W[rl];B[sm];W[pq];B[gi];W[hh];B[oq];W[rm];B[sn];W[pq];B[qi];W[ri];B[oq];W[rn];B[so];W[pq];B[rh];W[qh];B[oq];W[md];B[na];W[pq];B[oo];W[oq];B[hs];W[gs];B[is];W[kd];B[ne];W[fj];B[ei];W[dh];B[gl];W[ns];B[ms];W[hd];B[fp];W[fq];B[fo];W[dp];B[ap];W[aq];B[ao];W[fr];B[lh];W[oi];B[ni];W[kh];B[sc];W[sd];B[no];W[mo];B[nm];W[of];B[pf];W[lg];B[li];W[ps];B[qs];W[ff];B[ee];W[jd];B[ma];W[ld];B[la];W[kg];B[ji];W[jh];B[];W[])"
           data-config="{
             'showCoordinates': false,
@@ -197,7 +197,7 @@
       <div class="example">
         <h3>9x9 (with coordinates)</h3>
         <div
-          class="static fixed-size square"
+          class="seki-board-static fixed-size square"
           data-game="(;
             FF[4]
             CA[UTF-8]
@@ -261,7 +261,7 @@
       <div class="example">
         <h3>19x19 (with coordinates)</h3>
         <div
-          class="static fixed-size square"
+          class="seki-board-static fixed-size square"
           data-game="(;FF[4]CA[UTF-8]AP[Seki v1.3.17]GM[1]GN[Friendly Match]RE[W+15.5]XL[0]XR[0]XT[0]XB[0]PC[OGS: https://online-go.com/game/57818013]KM[6.5]HA[0]RU[Japanese]TM[259200]OT[3x86400 byo-yomi]ST[2]SZ[19]PB[andytsai14]BR[1d]PW[Akineko 秋猫]WR[1d];B[pp];W[dd];B[pd];W[dq];B[co];W[ep];B[cl];W[qc];B[qd];W[pc];B[od];W[nb];B[qn];W[jq];B[cf];W[fc];B[cd];W[cc];B[bc];W[bb];B[be];W[ac];B[bd];W[dc];B[mc];W[mb];B[lc];W[lb];B[kc];W[qj];B[oj];W[qg];B[hp];W[jo];B[hn];W[nq];B[oq];W[np];B[iq];W[en];B[jr];W[bp];B[cp];W[cq];B[bo];W[kq];B[kr];W[ch];B[ef];W[eh];B[bj];W[dj];B[el];W[gh];B[bh];W[bg];B[cg];W[bi];B[ci];W[ah];B[dh];W[di];B[bh];W[nc];B[nd];W[ch];B[oc];W[dg];B[ob];W[bq];B[fm];W[go];B[ho];W[gn];B[gm];W[hm];B[cj];W[gq];B[lq];W[lp];B[mq];W[mp];B[nr];W[hr];B[ir];W[hl];B[gf];W[df];B[ed];W[hc];B[ec];W[eb];B[fd];W[gc];B[if];W[he];B[hf];W[de];B[jn];W[dk];B[dl];W[fk];B[bm];W[bk];B[ck];W[aj];B[bl];W[ak];B[al];W[ai];B[an];W[cn];B[dn];W[dm];B[do];W[em];B[eo];W[fn];B[fl];W[gp];B[cm];W[kn];B[jm];W[km];B[kl];W[jl];B[io];W[in];B[im];W[il];B[in];W[hq];B[ip];W[po];B[qo];W[pn];B[pm];W[or];B[mr];W[pq];B[qp];W[op];B[qr];W[qq];B[rq];W[jp];B[pr];W[os];B[oq];W[pq];B[lm];W[ln];B[ls];W[ll];B[kk];W[mm];B[gk];W[ih];B[jk];W[je];B[jf];W[ke];B[kf];W[le];B[ie];W[id];B[lf];W[rf];B[re];W[qe];B[pe];W[qf];B[kb];W[rd];B[rc];W[se];B[rb];W[jc];B[om];W[jb];B[ko];W[kp];B[nn];W[mj];B[lj];W[lk];B[kj];W[mh];B[mi];W[mn];B[mk];W[ml];B[nj];W[ph];B[ja];W[ia];B[ka];W[ib];B[rk];W[rj];B[qk];W[sk];B[sl];W[sj];B[pj];W[pi];B[qq];W[hj];B[gj];W[ij];B[fh];W[fg];B[fi];W[gg];B[ge];W[eg];B[nh];W[me];B[nl];W[mg];B[mf];W[ng];B[nf];W[og];B[oq];W[rl];B[sm];W[pq];B[gi];W[hh];B[oq];W[rm];B[sn];W[pq];B[qi];W[ri];B[oq];W[rn];B[so];W[pq];B[rh];W[qh];B[oq];W[md];B[na];W[pq];B[oo];W[oq];B[hs];W[gs];B[is];W[kd];B[ne];W[fj];B[ei];W[dh];B[gl];W[ns];B[ms];W[hd];B[fp];W[fq];B[fo];W[dp];B[ap];W[aq];B[ao];W[fr];B[lh];W[oi];B[ni];W[kh];B[sc];W[sd];B[no];W[mo];B[nm];W[of];B[pf];W[lg];B[li];W[ps];B[qs];W[ff];B[ee];W[jd];B[ma];W[ld];B[la];W[kg];B[ji];W[jh];B[];W[])"
           data-config="{
             'showCoordinates': true
@@ -272,7 +272,7 @@
       <div class="example">
         <h3>9x9 (kifu)</h3>
         <div
-          class="static fixed-size square mono"
+          class="seki-board-static fixed-size square mono"
           data-game="(;
             FF[4]
             CA[UTF-8]
@@ -344,7 +344,7 @@
       <div class="example">
         <h3>19x19 (kifu)</h3>
         <div
-          class="static fixed-size square mono"
+          class="seki-board-static fixed-size square mono"
           data-game="(;FF[4]CA[UTF-8]AP[Seki v1.3.17]GM[1]GN[Friendly Match]RE[W+15.5]XL[0]XR[0]XT[0]XB[0]PC[OGS: https://online-go.com/game/57818013]KM[6.5]HA[0]RU[Japanese]TM[259200]OT[3x86400 byo-yomi]ST[2]SZ[19]PB[andytsai14]BR[1d]PW[Akineko 秋猫]WR[1d];B[pp];W[dd];B[pd];W[dq];B[co];W[ep];B[cl];W[qc];B[qd];W[pc];B[od];W[nb];B[qn];W[jq];B[cf];W[fc];B[cd];W[cc];B[bc];W[bb];B[be];W[ac];B[bd];W[dc];B[mc];W[mb];B[lc];W[lb];B[kc];W[qj];B[oj];W[qg];B[hp];W[jo];B[hn];W[nq];B[oq];W[np];B[iq];W[en];B[jr];W[bp];B[cp];W[cq];B[bo];W[kq];B[kr];W[ch];B[ef];W[eh];B[bj];W[dj];B[el];W[gh];B[bh];W[bg];B[cg];W[bi];B[ci];W[ah];B[dh];W[di];B[bh];W[nc];B[nd];W[ch];B[oc];W[dg];B[ob];W[bq];B[fm];W[go];B[ho];W[gn];B[gm];W[hm];B[cj];W[gq];B[lq];W[lp];B[mq];W[mp];B[nr];W[hr];B[ir];W[hl];B[gf];W[df];B[ed];W[hc];B[ec];W[eb];B[fd];W[gc];B[if];W[he];B[hf];W[de];B[jn];W[dk];B[dl];W[fk];B[bm];W[bk];B[ck];W[aj];B[bl];W[ak];B[al];W[ai];B[an];W[cn];B[dn];W[dm];B[do];W[em];B[eo];W[fn];B[fl];W[gp];B[cm];W[kn];B[jm];W[km];B[kl];W[jl];B[io];W[in];B[im];W[il];B[in];W[hq];B[ip];W[po];B[qo];W[pn];B[pm];W[or];B[mr];W[pq];B[qp];W[op];B[qr];W[qq];B[rq];W[jp];B[pr];W[os];B[oq];W[pq];B[lm];W[ln];B[ls];W[ll];B[kk];W[mm];B[gk];W[ih];B[jk];W[je];B[jf];W[ke];B[kf];W[le];B[ie];W[id];B[lf];W[rf];B[re];W[qe];B[pe];W[qf];B[kb];W[rd];B[rc];W[se];B[rb];W[jc];B[om];W[jb];B[ko];W[kp];B[nn];W[mj];B[lj];W[lk];B[kj];W[mh];B[mi];W[mn];B[mk];W[ml];B[nj];W[ph];B[ja];W[ia];B[ka];W[ib];B[rk];W[rj];B[qk];W[sk];B[sl];W[sj];B[pj];W[pi];B[qq];W[hj];B[gj];W[ij];B[fh];W[fg];B[fi];W[gg];B[ge];W[eg];B[nh];W[me];B[nl];W[mg];B[mf];W[ng];B[nf];W[og];B[oq];W[rl];B[sm];W[pq];B[gi];W[hh];B[oq];W[rm];B[sn];W[pq];B[qi];W[ri];B[oq];W[rn];B[so];W[pq];B[rh];W[qh];B[oq];W[md];B[na];W[pq];B[oo];W[oq];B[hs];W[gs];B[is];W[kd];B[ne];W[fj];B[ei];W[dh];B[gl];W[ns];B[ms];W[hd];B[fp];W[fq];B[fo];W[dp];B[ap];W[aq];B[ao];W[fr];B[lh];W[oi];B[ni];W[kh];B[sc];W[sd];B[no];W[mo];B[nm];W[of];B[pf];W[lg];B[li];W[ps];B[qs];W[ff];B[ee];W[jd];B[ma];W[ld];B[la];W[kg];B[ji];W[jh];B[];W[])"
           data-config="{
             'showCoordinates': true,
@@ -362,17 +362,8 @@
     </div>
   </div>
   <script type="module">
-    import {sekiBoardStatic, sekiBoardDynamic} from './index.js';
-
-    //Initialise static boards
-    Array
-      .from(document.getElementsByClassName('static'))
-      .forEach(element => sekiBoardStatic(element))
-
-    //Initialize dynamic boards
-    Array
-      .from(document.getElementsByClassName('dynamic'))
-      .forEach(element => sekiBoardDynamic(element))
+    import {bootstrap} from './index.js';
+    bootstrap()
   </script>
 </body>
 </html>

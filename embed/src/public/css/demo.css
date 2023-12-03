@@ -74,12 +74,13 @@ hr {
 }
 
 /* Flexible player sizing based on screen aspect ratio */
-.flexible-player {
+.seki-player {
   aspect-ratio: 0.75;
 }
 @media (min-aspect-ratio: 0.8) {
-  .flexible-player {
+  .seki-player {
     max-width: 960px;
-    aspect-ratio: 1.333;
+    max-height: 600px;
+    aspect-ratio: 1.4;
   }
 }

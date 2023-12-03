@@ -1,6 +1,6 @@
 {
   "name": "@reis/seki-embed",
-  "description": "Embeddable Seki Player",
+  "description": "Seki Embeddable Go Player",
   "version": "1.0.0",
   "homepage": "https://github.com/adamreisnz/seki#readme",
   "author": {

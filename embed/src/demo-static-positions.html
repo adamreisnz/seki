@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Seki Embeddable Player</title>
+  <title>Seki Embeddable Go Player</title>
   <meta charset="utf-8">
   <meta name="author" content="Adam Reis"><link rel="stylesheet" type="text/css" media="screen" href="./assets/css/seki.css">
   <link rel="stylesheet" type="text/css" media="screen" href="css/demo.css">
@@ -9,7 +9,7 @@
 </head>
 <body lang="en">
   <div class="main">
-    <h1>Seki Embeddable Player Examples</h1>
+    <h1>Seki Embeddable Go Player Examples</h1>
     <ul>
       <li><a href="demo-game-boards.html">Game boards</a></li>
       <li><a href="demo-static-positions.html">Static positions</a></li>
@@ -21,7 +21,7 @@
       <div class="example">
         <h3>Static position</h3>
         <div
-          class="static fixed-size rectangular"
+          class="seki-board-static fixed-size rectangular"
           data-game="(;
             FF[4]
             CA[UTF-8]
@@ -50,7 +50,7 @@
       <div class="example">
         <h3>Static position</h3>
         <div
-          class="static fixed-size rectangular"
+          class="seki-board-static fixed-size rectangular"
           data-game="(;
             FF[4]
             CA[UTF-8]
@@ -79,7 +79,7 @@
       <div class="example">
         <h3>Static position (mono)</h3>
         <div
-          class="static fixed-size rectangular mono"
+          class="seki-board-static fixed-size rectangular mono"
           data-game="(;
             FF[4]
             CA[UTF-8]
@@ -115,7 +115,7 @@
       <div class="example">
         <h3>Static position (mono)</h3>
         <div
-          class="static fixed-size rectangular mono"
+          class="seki-board-static fixed-size rectangular mono"
           data-game="(;
             FF[4]
             CA[UTF-8]
@@ -150,10 +150,8 @@
     </div>
   </div>
   <script type="module">
-    import {sekiBoardStatic} from './index.js';
-    Array
-      .from(document.getElementsByClassName('static'))
-      .forEach(element => sekiBoardStatic(element))
+    import {bootstrap} from './index.js';
+    bootstrap()
   </script>
 </body>
 </html>

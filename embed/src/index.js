@@ -41,6 +41,20 @@ export {
 //Generate captures string
 const capturesString = (count) => `${count} capture${count === 1 ? '' : 's'}`
 
+//Generate event string
+const eventString = (...parts) => parts.filter(p => !!p).join(', ')
+
+//Extract event link
+const eventStringAndLink = (...parts) => {
+  const str = eventString(...parts)
+  const regex = /:?\s?(https?:\/\/(.*?(?=\s|$)))/
+  const match = str.match(regex)
+  if (match) {
+    return [str.replace(regex, ''), match[1]]
+  }
+  return [str, null]
+}
+
 //Show all move numbers for a static board
 const showAllMoveNumbers = (game, board) => {
   game.node
@@ -52,6 +66,14 @@ const showAllMoveNumbers = (game, board) => {
         .add(boardLayerTypes.MARKUP, x, y, MarkupFactory
           .create(markupTypes.MOVE_NUMBER, board, {number}))
     })
+}
+
+//Append notice
+const appendNotice = (element, text = 'Generated using') => {
+  const notice = document.createElement('div')
+  notice.classList.add('seki-notice')
+  notice.innerHTML = `${text} the <a href="https://github.com/adamreisnz/seki">Seki Go Player</a>`
+  element.appendChild(notice)
 }
 
 //Export static seki board initialiser
@@ -78,6 +100,11 @@ export function sekiBoardStatic(element, config = {}) {
 
   //Bootstrap board
   board.bootstrap(element)
+
+  //Append notice
+  if (config.showNotice) {
+    appendNotice(element)
+  }
 
   //Load game info from data attribute (always go to last position)
   if (game) {
@@ -123,6 +150,11 @@ export function sekiBoardDynamic(element, config = {}) {
   //Bootstrap player
   player.bootstrap(element)
 
+  //Append notice
+  if (config.showNotice) {
+    appendNotice(element)
+  }
+
   //Load game info from data attribute
   if (element.dataset.game) {
     player.load(element.dataset.game)
@@ -158,7 +190,7 @@ export function sekiPlayer(element, config = {}) {
   //Create HTML structure for player
   element.classList.add('seki-player-container')
   element.innerHTML = `
-    <div class="seki-player">
+    <div class="seki-player-wrapper">
       <div class="seki-player-board-and-controls">
         <div class="seki-player-board"></div>
         <div class="seki-controls">
@@ -195,7 +227,7 @@ export function sekiPlayer(element, config = {}) {
               <div class="seki-color seki-color-black"></div>
               <div class="seki-name-and-rank">
                 <span class="seki-name seki-name-black">Black</span>
-                <small class="seki-small seki-rank-black"></small>
+                <small class="seki-rank seki-rank-black"></small>
               </div>
             </div>
             <div class="seki-score">
@@ -207,7 +239,7 @@ export function sekiPlayer(element, config = {}) {
               <div class="seki-color seki-color-white"></div>
               <div class="seki-name-and-rank">
                 <span class="seki-name seki-name-white">White</span>
-                <small class="seki-small seki-rank-white"></small>
+                <small class="seki-rank seki-rank-white"></small>
               </div>
             </div>
             <div class="seki-score">
@@ -228,7 +260,12 @@ export function sekiPlayer(element, config = {}) {
             </div>
             <div class="seki-info-group">
               <label class="seki-label">event</label>
-              <div class="seki-event"></div>
+              <div class="seki-event-without-link">
+                <span class="seki-event"></span>
+              </div>
+              <div class="seki-event-with-link seki-hidden">
+                <a class="seki-event seki-event-link seki-link" target="_blank" href="#"></a>
+              </div>
             </div>
             <div class="seki-info-group">
               <label class="seki-label">result</label>
@@ -244,6 +281,9 @@ export function sekiPlayer(element, config = {}) {
     </div>
   `
 
+  //Append notice
+  appendNotice(element, `Powered by`)
+
   //Helper to find elements by class name within this player instance
   const findElements = (className) => {
     return Array.from(element.getElementsByClassName(`seki-${className}`))
@@ -252,6 +292,11 @@ export function sekiPlayer(element, config = {}) {
   //Helper to set text content of an element by class name
   const setText = (className, text) => {
     findElements(className).forEach(el => el.textContent = text)
+  }
+
+  //Helper to set attribute of element by classname
+  const setAttr = (className, attr, value) => {
+    findElements(className).forEach(el => el.setAttribute(attr, value))
   }
 
   //Apply click handler
@@ -274,35 +319,40 @@ export function sekiPlayer(element, config = {}) {
 
   //Game load handler
   player.on('gameLoad', () => {
+
+    //Get data
     const {game} = player
     const {black, white} = game.getPlayers()
     const komi = game.getKomi()
     const result = game.getGameResult()
     const name = game.getGameName()
     const date = game.getGameDate()
-    const eventName = game.getEventName()
-    const eventLocation = game.getEventLocation()
-    const eventRound = game.getEventRound()
+
+    //Clear comments
     setText('comments', '')
+
+    //Set player information
     setText('name-black', black.name || 'Black')
     setText('name-white', white.name || 'White')
     setText('rank-black', black.rank || '')
     setText('rank-white', white.rank || '')
     setText('komi', komi ? `+${komi}` : '')
+
+    //Set game information
     setText('game-result', result || '')
     setText('game-name', name || '')
     setText('game-date', date || '')
-    setText('event', '')
-    if (eventName || eventLocation || eventRound) {
-      const parts = [
-        eventName,
-        eventLocation,
-        eventRound,
-      ].filter(p => !!p)
-      if (parts.length > 0) {
-        setText('event', parts.join(', '))
-      }
-    }
+
+    //Set event details
+    const [eventStr, eventLink] = eventStringAndLink(
+      game.getEventName(),
+      game.getEventLocation(),
+      game.getEventRound(),
+    )
+    setText('event', eventStr || '')
+    setAttr('event-link', 'href', eventLink || '#')
+    toggleHidden('event-without-link', !!eventLink)
+    toggleHidden('event-with-link', !eventLink)
   })
 
   //Path change handler
@@ -363,4 +413,17 @@ export function sekiPlayer(element, config = {}) {
 
   //Return player
   return {player}
+}
+
+//Auto bootstrap all seki boards and players
+export function bootstrap() {
+  Array
+    .from(document.getElementsByClassName('seki-board-static'))
+    .forEach(el => sekiBoardStatic(el))
+  Array
+    .from(document.getElementsByClassName('seki-board-dynamic'))
+    .forEach(el => sekiBoardDynamic(el))
+  Array
+    .from(document.getElementsByClassName('seki-player'))
+    .forEach(el => sekiPlayer(el))
 }
