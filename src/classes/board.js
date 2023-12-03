@@ -14,8 +14,6 @@ import {
   createElement,
   createCanvasContext,
   mergeCanvases,
-  downloadImage,
-  dateTimeString,
 } from '../helpers/util.js'
 
 /**
@@ -1048,14 +1046,10 @@ export default class Board extends Base {
     }
   }
 
-  /**************************************************************************
-   * To image
-   ***/
-
   /**
-   * Download board image
+   * Get merged canvas of board
    */
-  downloadImage() {
+  getCanvas() {
 
     //Get canvases and merged them
     const {layers} = this
@@ -1063,11 +1057,7 @@ export default class Board extends Base {
       .from(layers.values())
       .map(layer => layer.context.canvas)
 
-    //Merge canvases and generate filename
-    const merged = mergeCanvases(canvases)
-    const filename = `seki board ${dateTimeString()}.png`
-
-    //Download image
-    downloadImage(merged, filename)
+    //Return merged canvasses
+    return mergeCanvases(canvases)
   }
 }

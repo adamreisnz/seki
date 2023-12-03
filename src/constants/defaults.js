@@ -1,4 +1,4 @@
-import {appName, appVersion, kifuFormats} from './app.js'
+import {appName, appVersion} from './app.js'
 import {mouseEvents} from './util.js'
 import {gameTypes} from './game.js'
 import {playerModes, playerActions} from './player.js'
@@ -111,9 +111,6 @@ export const defaultPlayerConfig = {
 
   //Number of moves to skip at a time
   numSkipMoves: 10,
-
-  //Default kifu format
-  defaultKifuFormat: kifuFormats.SGF,
 }
 
 //Default star point locations

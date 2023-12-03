@@ -7,10 +7,6 @@ import {playerModes} from '../constants/player.js'
 import {defaultPlayerConfig} from '../constants/defaults.js'
 import {
   getPixelRatio,
-  openFile,
-  getUrl,
-  parseGameUrl,
-  downloadFile,
   isKeyDownEvent,
   isMouseEvent,
 } from '../helpers/util.js'
@@ -298,80 +294,22 @@ export default class Player extends Base {
    * Start new game
    */
   newGame(info) {
+    const game = new Game(info)
+    this.loadGame(game)
+  }
 
-    //Reset game
-    this.initGame(null, info)
-    this.processLoadedGame()
+  /**
+   * Load game from data
+   */
+  loadData(data) {
+    const game = Game.fromData(data)
+    this.loadGame(game)
   }
 
   /**
    * Load game
    */
-  async loadGame() {
-
-    //Load file
-    const file = await openFile()
-    const data = await file.text()
-    const {name} = file
-
-    //Trigger event and load data
-    this.triggerEvent('loadGame', {file, name, data})
-    this.load(data)
-  }
-
-  /**
-   * Load game from URL
-   */
-  async loadGameFromUrl(url) {
-
-    //Load data
-    if (!url) {
-      url = getUrl('Enter game URL')
-      if (!url) {
-        return
-      }
-    }
-
-    //Parse URL
-    url = parseGameUrl(url)
-
-    //Load URL
-    const result = await fetch(url)
-    const data = await result.text()
-
-    //Trigger event and load data
-    this.triggerEvent('loadGameFromUrl', {url, data})
-    this.load(data)
-  }
-
-  /**
-   * Download game
-   */
-  downloadGame(format) {
-
-    //Use default format
-    if (!format) {
-      format = this.getConfig('defaultKifuFormat')
-    }
-
-    //Get game info
-    const {game} = this
-    const data = game.toData(format)
-    const name = game.getFileName()
-
-    //Download file
-    downloadFile(data, name, format)
-  }
-
-  /**
-   * Load game data
-   */
-  load(data) {
-
-    //Create new game
-    const game = Game.fromData(data)
-
-    //Init
+  loadGame(game) {
     this.initGame(game)
     this.processLoadedGame()
   }
@@ -712,16 +650,6 @@ export default class Player extends Base {
     const position = game.getPosition()
     if (board) {
       board.updatePosition(position)
-    }
-  }
-
-  /**
-   * Download image of board position
-   */
-  downloadImage() {
-    const {board} = this
-    if (board) {
-      board.downloadImage()
     }
   }
 

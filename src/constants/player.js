@@ -51,13 +51,6 @@ export const playerActions = {
   //General
   CANCEL_ACTION: 'cancelAction',
 
-  //Game handling
-  NEW_GAME: 'newGame',
-  LOAD_GAME: 'openGame',
-  LOAD_GAME_FROM_URL: 'loadGameFromUrl',
-  DOWNLOAD_GAME: 'downloadGame',
-  DOWNLOAD_IMAGE: 'downloadImage',
-
   //Mode selection
   SET_MODE_REPLAY: 'setModeReplay',
   SET_MODE_EDIT: 'setModeEdit',

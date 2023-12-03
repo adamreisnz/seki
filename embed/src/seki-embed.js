@@ -64,8 +64,47 @@ const appendNotice = (element, text = 'Generated using') => {
   element.appendChild(notice)
 }
 
+//Parse URL
+function parseUrl(url) {
+  if (url) {
+    const match = url.match(/https:\/\/online-go\.com\/game\/([0-9]+)/)
+    if (match) {
+      return `https://online-go.com/api/v1/games/${match[1]}/sgf`
+    }
+  }
+  return url
+}
+
+//Load game from data attributes
+const loadGame = async(dataset) => {
+  if (dataset.game) {
+    const data = dataset.game
+    return Game.fromData(data)
+  }
+  else if (dataset.gameUrl) {
+    const url = parseUrl(dataset.gameUrl)
+    const file = await fetch(url)
+    const data = await file.text()
+    return Game.fromData(data)
+  }
+  return null
+}
+
+//Load game into player
+const loadGameIntoPlayer = async(player, dataset) => {
+  const game = await loadGame(dataset)
+  if (game) {
+    player.loadGame(game)
+    player.setMode(playerModes.REPLAY)
+  }
+  else {
+    player.newGame()
+    player.setMode(playerModes.EDIT)
+  }
+}
+
 //Export static seki board initialiser
-export function sekiBoardStatic(element, config = {}) {
+export async function sekiBoardStatic(element, config = {}) {
 
   //Extend given config with defaults
   config = Object.assign({
@@ -84,7 +123,7 @@ export function sekiBoardStatic(element, config = {}) {
 
   //Instantiate static board
   const board = new BoardStatic(config)
-  const game = element.dataset.game ? Game.fromData(element.dataset.game) : null
+  const game = await loadGame(element.dataset)
 
   //Bootstrap board
   board.bootstrap(element)
@@ -115,7 +154,7 @@ export function sekiBoardStatic(element, config = {}) {
 }
 
 //Export dynamic seki board initialiser
-export function sekiBoardDynamic(element, config = {}) {
+export async function sekiBoardDynamic(element, config = {}) {
 
   //Extend given config with defaults
   config = Object.assign({
@@ -143,21 +182,15 @@ export function sekiBoardDynamic(element, config = {}) {
     appendNotice(element)
   }
 
-  //Load game info from data attribute
-  if (element.dataset.game) {
-    player.load(element.dataset.game)
-    player.setMode(playerModes.REPLAY)
-  }
-  else {
-    player.setMode(playerModes.EDIT)
-  }
+  //Load game into player
+  await loadGameIntoPlayer(player, element.dataset)
 
   //Return player
   return {player}
 }
 
 //Export seki player initialiser
-export function sekiPlayer(element, config = {}) {
+export async function sekiPlayer(element, config = {}) {
 
   //Extend given config with defaults
   config = Object.assign({
@@ -470,14 +503,8 @@ export function sekiPlayer(element, config = {}) {
     showResult()
   }
 
-  //Load game info from data attribute
-  if (element.dataset.game) {
-    player.load(element.dataset.game)
-    player.setMode(playerModes.REPLAY)
-  }
-  else {
-    player.setMode(playerModes.EDIT)
-  }
+  //Load game into player
+  await loadGameIntoPlayer(player, element.dataset)
 
   //Return player
   return {player}

@@ -3,8 +3,9 @@
 <head>
   <title>Seki Embeddable Go Player</title>
   <meta charset="utf-8">
-  <meta name="author" content="Adam Reis"><link rel="stylesheet" type="text/css" media="screen" href="css/seki.css">
+  <meta name="author" content="Adam Reis">
   <link rel="stylesheet" type="text/css" media="screen" href="css/demo.css">
+  <link rel="stylesheet" type="text/css" media="screen" href="css/seki.css">
   <link rel="icon" type="image/png" sizes="32x32" href="images/favicon.png">
 </head>
 <body lang="en">
@@ -22,6 +23,20 @@
       <li><a href="example-game-boards.html">Game boards</a></li>
       <li><a href="example-full-player.html">Full player</a></li>
     </ul>
+    <hr>
+
+    <div
+      class="seki-player"
+      data-game-url="https://online-go.com/game/57818013"
+      data-config="{
+        'showCoordinates': true,
+        'showLastMoveNumber': true
+      }"
+    ></div>
   </div>
+  <script type="module">
+    import {bootstrap} from './seki-embed.js'
+    bootstrap()
+  </script>
 </body>
 </html>

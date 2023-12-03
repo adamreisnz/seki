@@ -72,17 +72,6 @@ export function mergeCanvases(canvases) {
 }
 
 /**
- * Download image
- */
-export function downloadImage(canvas, filename = 'seki.png') {
-  const dataURL = canvas.toDataURL('image/png')
-  const link = document.createElement('a')
-  link.download = filename
-  link.href = dataURL.replace('image/png', 'image/octet-stream')
-  link.click()
-}
-
-/**
  * Helper wrapper
  */
 export function editClassList(element, action, ...args) {
@@ -123,59 +112,6 @@ export function removeClass(element, className) {
  */
 export function toggleClass(element, className, value) {
   editClassList(element, 'toggle', className, value)
-}
-
-/**************************************************************************
- * File handling
- ***/
-
-/**
- * Get URL
- */
-export function getUrl(text = 'Enter URL') {
-  return prompt(text)
-}
-
-/**
- * Open file
- */
-export function openFile(accept = `.jgf,.sgf,.gib`) {
-  return new Promise((resolve) => {
-    const input = document.createElement('input')
-    input.type = 'file'
-    input.accept = accept
-    input.onchange = () => {
-      const files = Array.from(input.files)
-      if (files.length) {
-        resolve(files[0])
-      }
-    }
-    input.click()
-  })
-}
-
-/**
- * Download file
- */
-export function downloadFile(data, name, type) {
-  const link = document.createElement('a')
-  link.href = `data:text/${type};charset=utf-8,${encodeURI(data)}`
-  link.target = '_blank'
-  link.download = `${name}.${type}`
-  link.click()
-}
-
-/**
- * Parse game URL
- */
-export function parseGameUrl(url) {
-  if (url) {
-    const match = url.match(/https:\/\/online-go\.com\/game\/([0-9]+)/)
-    if (match) {
-      return `https://online-go.com/api/v1/games/${match[1]}/sgf`
-    }
-  }
-  return url
 }
 
 /**************************************************************************
@@ -269,17 +205,4 @@ export function dateString(date = new Date()) {
   const month = date.getMonth() + 1
   const year = date.getFullYear()
   return `${year}-${month}-${day}`
-}
-
-/**
- * Date and time string generator
- */
-export function dateTimeString(date = new Date()) {
-  const day = date.getDate()
-  const month = date.getMonth() + 1
-  const year = date.getFullYear()
-  const hours = date.getHours()
-  const minutes = date.getMinutes()
-  const seconds = date.getSeconds()
-  return `${year}-${month}-${day} at ${hours}.${minutes}.${seconds}`
 }
