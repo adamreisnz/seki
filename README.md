@@ -1,8 +1,7 @@
-# seki
-Seki – A powerful Go/Baduk/Weiqi Player for the modern age. Simple, Elegant, Compact and Intuitive.
+# The Seki Embeddable Go Player
+Seki is a powerful embeddable Go/Baduk/Weiqi player for the modern age. It's Simple, Elegant, Compact and Intuitive.
 
-## About
-Seki is a Javascript library for reading, parsing, displaying, editing and replaying Go/Baduk/Weiqi game records.
+It provides functionality for reading, parsing, displaying, editing and replaying Go/Baduk/Weiqi game records.
 
 It is a continuation of the defunct [ngGo](https://github.com/adamreisnz/ngGo) project, but has undergone a full rewrite to decouple it from Angular and update it to a modern modular code base using the latest Javascript features.
 
