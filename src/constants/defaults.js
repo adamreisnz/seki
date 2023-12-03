@@ -111,6 +111,9 @@ export const defaultPlayerConfig = {
 
   //Number of moves to skip at a time
   numSkipMoves: 10,
+
+  //Auto play delay (in ms)
+  autoPlayDelay: 1000,
 }
 
 //Default star point locations
