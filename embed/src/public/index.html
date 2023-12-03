@@ -3,7 +3,8 @@
 <head>
   <title>Seki Embeddable Go Player</title>
   <meta charset="utf-8">
-  <meta name="author" content="Adam Reis"><link rel="stylesheet" type="text/css" media="screen" href="css/seki.css">
+  <meta name="author" content="Adam Reis">
+  <link rel="stylesheet" type="text/css" media="screen" href="css/seki.css">
   <link rel="stylesheet" type="text/css" media="screen" href="css/demo.css">
   <link rel="icon" type="image/png" sizes="32x32" href="images/favicon.png">
 </head>
@@ -13,7 +14,7 @@
 
     <h2>Usage</h2>
     <ul>
-      <li><a href="usage-instructions.html">Usage instructions</a></li>
+      <li><a href="index.html">Usage instructions</a></li>
     </ul>
 
     <h2>Examples</h2>
@@ -22,6 +23,66 @@
       <li><a href="example-game-boards.html">Game boards</a></li>
       <li><a href="example-full-player.html">Full player</a></li>
     </ul>
+    <hr>
+    <p>Add the following to the <code class="inline">&lt;head&gt;</code> of your site:</p>
+<code class="block">&lt;link rel="stylesheet" type="text/css" media="screen" href="https://www.sekiplayer.com/css/seki.css"&gt;
+&lt;script type="module" src="https://www.sekiplayer.com/js/seki.js"&gt;&lt;/script&gt;
+</code>
+    <p>
+      Create elements with the <code class="inline">seki-board-static</code> class for static boards:
+    </p>
+<code class="block">&lt;div
+  class=&quot;seki-board-static&quot;
+  data-game=&quot;(;
+    FF[4]
+    CA[UTF-8]
+    AP[Seki v1.3.17]
+    GM[1]
+    XL[2]
+    XR[0]
+    XT[3]
+    XB[0]
+    KM[0]
+    HA[0]
+    TM[0]
+    ST[2]
+    SZ[9]
+    PB[Black]
+    PW[White]
+    ;AB[fh][gg][fg][hf][ge][dg]AW[gh][hg][hi][ih]
+  )&quot;
+  data-config=&quot;{
+    &#39;showCoordinates&#39;: false,
+    &#39;showStarPoints&#39;: false
+  }&quot;
+&gt;&lt;/div&gt;
+</code>
+    <p>
+      Or with the <code class="inline">seki-board-dynamic</code> class for dynamic boards:
+    </p>
+<code class="block">&lt;div
+  class=&quot;seki-board-dynamic fixed-size square&quot;
+  data-config=&quot;{
+    &#39;showCoordinates&#39;: false,
+    &#39;board&#39;: {
+      &#39;size&#39;: 9
+    }
+  }&quot;
+&gt;&lt;/div&gt;
+</code>
+    <p>
+      For a full player, use the <code class="inline">seki-player</code> class:
+    </p>
+<code class="block">&lt;div
+  class=&quot;seki-player&quot;
+  data-game-url=&quot;https://online-go.com/game/57818013&quot;
+  data-config=&quot;{
+    &#39;showCoordinates&#39;: true,
+    &#39;showLastMoveNumber&#39;: true
+  }&quot;
+&gt;&lt;/div&gt;
+</code>
+    <p>See the various examples for more details.</p>
   </div>
 </body>
 </html>
