@@ -2,16 +2,17 @@
 
 /* Variables */
 :root {
-  --seki-url-background: url('/images/wood-1.jpg');
-  --seki-box-shadow: 1px 1px 8px rgba(0, 0, 0, 0.25);
-  --seki-padding-element: 8px;
-  --seki-color-background: #d6ae60;
+  --seki-background-url: url('/images/wood-1.jpg');
+  --seki-background-size: 25% 25%;
+  --seki-background-color: #d6ae60;
   --seki-color-element: #f3cf89;
   --seki-color-highlight: #fff1d5;
   --seki-color-black-player: #222;
   --seki-color-white-player: #fff;
   --seki-color-kanji: rgba(0, 0, 0, 0.05);
   --seki-font-family: 'Lexend', sans-serif;
+  --seki-box-shadow: 1px 1px 8px rgba(0, 0, 0, 0.25);
+  --seki-padding-element: 8px;
 }
 
 /* Board */
@@ -57,11 +58,12 @@
 .seki-player {
   display: flex;
   flex-direction: column-reverse;
-  background: var(--seki-color-background);
-  background-image: var(--seki-url-background);
-  background-size: 25% 25%;
+  background: var(--seki-background-color);
+  background-image: var(--seki-background-url);
+  background-size: var(--seki-background-size);
   box-shadow: var(--seki-box-shadow);
-  font-family: var(--seki-font-family)
+  font-family: var(--seki-font-family);
+  font-size: 1rem;
 }
 .seki-player .seki-board {
   box-shadow: none;
@@ -75,7 +77,7 @@
 }
 
 /* Controls */
-.seki-controls-container {
+.seki-controls {
   display: flex;
   justify-content: center;
   width: 100%;
@@ -113,14 +115,29 @@
 .seki-info-container {
   padding: var(--seki-padding-element);
   width: 100%;
+  display: flex;
 }
-.seki-info-blocks {
+.seki-info-players {
   max-width: 100%;
+  flex: 1;
   display: flex;
   justify-content: space-between;
 }
+.seki-info-game-details, .seki-info-comments {
+  display: none;
+}
+.seki-info-comments {
+  flex: 1;
+}
+.seki-info-comments .seki-info-block {
+  height: 100%;
+}
 .seki-info-block {
   position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  flex: 0 0 calc(50% - var(--seki-padding-element) / 2);
   padding: var(--seki-padding-element);
   background: var(--seki-color-element);
   border-radius: 8px;
@@ -140,11 +157,8 @@
 .seki-info-block-white:after {
   content: '白';
 }
-.seki-info-block-half {
-  flex: 0 0 calc(50% - var(--seki-padding-element) / 2);
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
+.seki-info-group {
+  margin-bottom: 12px;
 }
 .seki-identity {
   display: flex;
@@ -207,13 +221,20 @@
   .seki-player-board {
     height: calc(100% - 52px);
   }
-  .seki-controls-container {
+  .seki-controls {
     padding-right: 0;
   }
-  .seki-info-blocks {
+  .seki-info-container {
     flex-direction: column;
   }
-  .seki-info-block-half {
+  .seki-info-players {
+    flex: 0;
+    flex-direction: column;
+  }
+  .seki-info-game-details, .seki-info-comments {
+    display: block;
+  }
+  .seki-info-block {
     flex: 1;
     margin-bottom: var(--seki-padding-element);
   }
@@ -222,4 +243,15 @@
 /* Utility */
 .seki-hidden {
   display: none;
+}
+.seki-small, .seki-label {
+  font-size: .8125rem;
+  opacity: 0.5;
+}
+.seki-label {
+  display: block;
+  margin-bottom: 4px;
+}
+.seki-link {
+  cursor: pointer;
 }
