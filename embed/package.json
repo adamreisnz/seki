@@ -1,5 +1,6 @@
 {
   "name": "@reis/seki-embed",
+  "type": "module",
   "description": "Seki Embeddable Go Player",
   "version": "1.0.0",
   "homepage": "https://github.com/adamreisnz/seki#readme",
@@ -9,6 +10,17 @@
   },
   "license": "MIT",
   "browserslist": "> 0.5%, last 2 versions, not dead",
+  "files": [
+    "dist"
+  ],
+  "main": "./dist/seki-embed.umd.cjs",
+  "module": "./dist/seki-embed.js",
+  "exports": {
+    ".": {
+      "import": "./dist/seki-embed.js",
+      "require": "./dist/seki-embed.umd.cjs"
+    }
+  },
   "scripts": {
     "dev": "vite",
     "build": "vite build",
@@ -16,6 +28,7 @@
     "buildpreview": "vite build && vite preview --open"
   },
   "devDependencies": {
+    "rollup-plugin-cleanup": "^3.2.1",
     "vite": "^4.4.11"
   }
 }

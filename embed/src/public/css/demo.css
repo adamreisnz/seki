@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Lexend:wght@300&display=swap');
 
 /* General */
 * {
@@ -10,7 +11,7 @@
 html, body {
   background: #fff;
   position: relative;
-  font-family: Helvetica, sans-serif;
+  font-family: "Lexend", sans-serif;
   font-size: 16px;
 }
 

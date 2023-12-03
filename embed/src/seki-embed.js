@@ -1,12 +1,3 @@
-import imageWood1 from './assets/images/wood-1.jpg'
-import imageBackwardFast from './assets/images/backward-fast.svg'
-import imageBackwardSkip from './assets/images/backward-skip.svg'
-import imageBackwardStep from './assets/images/backward-step.svg'
-import imageForwardFast from './assets/images/forward-fast.svg'
-import imageForwardSkip from './assets/images/forward-skip.svg'
-import imageForwardStep from './assets/images/forward-step.svg'
-import imagePlay from './assets/images/play.svg'
-import imagePause from './assets/images/pause.svg'
 import {
   Player,
   Game,
@@ -83,7 +74,7 @@ export function sekiBoardStatic(element, config = {}) {
   config = Object.assign({
     theme: {
       board: {
-        backgroundImage: imageWood1,
+        backgroundImage: 'images/wood-1.jpg',
       },
     },
   }, config || {})
@@ -133,7 +124,7 @@ export function sekiBoardDynamic(element, config = {}) {
   config = Object.assign({
     theme: {
       board: {
-        backgroundImage: imageWood1,
+        backgroundImage: 'images/wood-1.jpg',
       },
     },
   }, config || {})
@@ -195,28 +186,28 @@ export function sekiPlayer(element, config = {}) {
         <div class="seki-player-board"></div>
         <div class="seki-controls">
           <button class="seki-button seki-button-first" title="Go to first position">
-            <img src="${imageBackwardFast}" />
+            <img src="images/backward-fast.svg" />
           </button>
           <button class="seki-button seki-button-back" title="Skip backward">
-            <img src="${imageBackwardSkip}" />
+            <img src="images/backward-skip.svg" />
           </button>
           <button class="seki-button seki-button-previous" title="Go back">
-            <img src="${imageBackwardStep}" />
+            <img src="images/backward-step.svg" />
           </button>
           <button class="seki-button seki-button-play" title="Start auto play">
-            <img src="${imagePlay}" />
+            <img src="images/play.svg" />
           </button>
           <button class="seki-button seki-button-pause seki-hidden" title="Pause auto play">
-            <img src="${imagePause}" />
+            <img src="images/pause.svg" />
           </button>
           <button class="seki-button seki-button-next" title="Go forward">
-            <img src="${imageForwardStep}" />
+            <img src="images/forward-step.svg" />
           </button>
           <button class="seki-button seki-button-forward" title="Skip forward">
-            <img src="${imageForwardSkip}" />
+            <img src="images/forward-skip.svg" />
           </button>
           <button class="seki-button seki-button-last" title="Go to last position">
-            <img src="${imageForwardFast}" />
+            <img src="images/forward-fast.svg" />
           </button>
         </div>
       </div>
