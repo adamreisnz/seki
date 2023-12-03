@@ -98,7 +98,6 @@ const loadGameIntoPlayer = async(player, dataset) => {
     player.setMode(playerModes.REPLAY)
   }
   else {
-    player.newGame()
     player.setMode(playerModes.EDIT)
   }
 }
