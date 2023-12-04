@@ -27,6 +27,7 @@
     <hr>
 
     <div
+      id="seki-player"
       class="seki-player"
       data-game-url="https://online-go.com/game/57818013"
       data-config="{
@@ -38,8 +39,9 @@
     <br><br>
   </div>
   <script type="module">
-    import {bootstrap} from './seki-embed.js'
-    bootstrap()
+    import {sekiPlayer} from './seki-embed.js'
+    const element = document.getElementById('seki-player')
+    const {player} = await sekiPlayer(element)
   </script>
 </body>
 </html>

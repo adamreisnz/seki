@@ -203,7 +203,7 @@ export default class PlayerModeEdit extends PlayerModeReplay {
     }
 
     //If markup tool, clear cell to properly redraw grid
-    else if (this.isUsingMarkupTool()) {
+    else if (this.isUsingMarkupTool() || this.isUsingClearTool()) {
       board.clearHoverCell(x, y)
     }
   }
