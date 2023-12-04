@@ -11,6 +11,7 @@ import {
 const {
   player: {playerModes, playerActions},
   board: {boardLayerTypes},
+  stone: {stoneColors},
   markup: {markupTypes},
   util: {keyValues},
 } = constants
@@ -32,13 +33,13 @@ const capturesString = (count) => `${count} capture${count === 1 ? '' : 's'}`
 //Generate event string
 const eventString = (...parts) => parts.filter(p => !!p).join(', ')
 
-//Extract event link
+//Extract event string and link
 const eventStringAndLink = (...parts) => {
   const str = eventString(...parts)
-  const regex = /:?\s?(https?:\/\/(.*?(?=\s|$)))/
+  const regex = /(:\s|\sat\s)?(https?:\/\/(.*?(?=\s|$)))/
   const match = str.match(regex)
   if (match) {
-    return [str.replace(regex, ''), match[1]]
+    return [str.replace(regex, ''), match[2]]
   }
   return [str, null]
 }
@@ -65,7 +66,7 @@ const appendNotice = (element, text = 'Generated using') => {
 }
 
 //Parse URL
-function parseUrl(url) {
+const parseUrl = url => {
   if (url) {
     const match = url.match(/https:\/\/online-go\.com\/game\/([0-9]+)/)
     if (match) {
@@ -73,6 +74,32 @@ function parseUrl(url) {
     }
   }
   return url
+}
+
+/**
+ * Parse time
+ */
+const parseTime = (time = 0) => {
+  time = Math.floor(time)
+  if (time >= 24 * 3600) {
+    const days = String(Math.floor(time / (24 * 3600)))
+    return (days === '1') ? `1 day` : `${days} days`
+  }
+  else if (time >= 3600) {
+    const hours = String(Math.floor(time / 3600)).padStart(2, '0')
+    const minutes = String(Math.floor((time % 3600) / 60)).padStart(2, '0')
+    const seconds = String(time % 60).padStart(2, '0')
+    return `${hours}:${minutes}:${seconds}`
+  }
+  else if (time >= 60) {
+    const minutes = String(Math.floor(time / 60)).padStart(2, '0')
+    const seconds = String(time % 60).padStart(2, '0')
+    return `${minutes}:${seconds}`
+  }
+  else {
+    const seconds = String(time).padStart(2, '0')
+    return `00:${seconds}`
+  }
 }
 
 //Load game from data attributes
@@ -315,24 +342,30 @@ export async function sekiPlayer(element, config = {}) {
       <div class="seki-info-container">
         <div class="seki-info-players">
           <div class="seki-info-block seki-info-block-black">
-            <div class="seki-identity">
-              <div class="seki-color seki-color-black"></div>
-              <div class="seki-name-and-rank">
-                <span class="seki-name seki-name-black">Black</span>
-                <small class="seki-rank seki-rank-black"></small>
+            <div class="seki-identity-and-time">
+              <div class="seki-identity">
+                <div class="seki-color seki-color-black"></div>
+                <div class="seki-name-and-rank">
+                  <span class="seki-name seki-name-black">Black</span>
+                  <small class="seki-rank seki-rank-black"></small>
+                </div>
               </div>
+              <div class="seki-time seki-time-black"></div>
             </div>
             <div class="seki-score">
               <span class="seki-captures-black">0 captures</span>
             </div>
           </div>
           <div class="seki-info-block seki-info-block-white">
-            <div class="seki-identity">
-              <div class="seki-color seki-color-white"></div>
-              <div class="seki-name-and-rank">
-                <span class="seki-name seki-name-white">White</span>
-                <small class="seki-rank seki-rank-white"></small>
+            <div class="seki-identity-and-time">
+              <div class="seki-identity">
+                <div class="seki-color seki-color-white"></div>
+                <div class="seki-name-and-rank">
+                  <span class="seki-name seki-name-white">White</span>
+                  <small class="seki-rank seki-rank-white"></small>
+                </div>
               </div>
+              <div class="seki-time seki-time-white"></div>
             </div>
             <div class="seki-score">
               <span class="seki-captures-white">0 captures</span>
@@ -342,16 +375,16 @@ export async function sekiPlayer(element, config = {}) {
         </div>
         <div class="seki-info-game-details">
           <div class="seki-info-block">
-            <div class="seki-info-group">
+            <div class="seki-info-group seki-info-group-name">
               <label class="seki-label">game</label>
               <div class="seki-game-name"></div>
             </div>
-            <div class="seki-info-group">
-              <label class="seki-label">date</label>
+            <div class="seki-info-group seki-info-group-date">
+              <label class="seki-label">played on</label>
               <div class="seki-game-date"></div>
             </div>
-            <div class="seki-info-group">
-              <label class="seki-label">event</label>
+            <div class="seki-info-group seki-info-group-event">
+              <label class="seki-label">played at</label>
               <div class="seki-event-without-link">
                 <span class="seki-event"></span>
               </div>
@@ -359,15 +392,17 @@ export async function sekiPlayer(element, config = {}) {
                 <a class="seki-event seki-event-link seki-link" target="_blank" href="#"></a>
               </div>
             </div>
-            <div class="seki-info-group">
+            <div class="seki-info-group seki-info-group-result">
               <label class="seki-label">result</label>
-              <a class="seki-link seki-result-toggle">show</a>
+              <a class="seki-link seki-result-toggle">Show result</a>
               <div class="seki-game-result seki-hidden"></div>
             </div>
           </div>
         </div>
         <div class="seki-info-comments">
-          <div class="seki-info-block seki-comments"></div>
+          <div class="seki-info-block">
+            <textarea class="seki-comments" readonly></textarea>
+          </div>
         </div>
       </div>
     </div>
@@ -451,6 +486,12 @@ export async function sekiPlayer(element, config = {}) {
     setAttr('event-link', 'href', eventLink || '#')
     toggleHidden('event-without-link', !!eventLink)
     toggleHidden('event-with-link', !eventLink)
+
+    //Hide info groups with no content
+    toggleHidden('info-group-name', !name)
+    toggleHidden('info-group-date', !date)
+    toggleHidden('info-group-event', !eventStr)
+    toggleHidden('info-group-result', !result)
   })
 
   //Path change handler
@@ -460,6 +501,10 @@ export async function sekiPlayer(element, config = {}) {
     const {game} = player
     const {black, white} = game.getCaptureCount()
     const node = game.getCurrentNode()
+    const blackTimeLeft = game.getTimeLeft(stoneColors.BLACK)
+    const whiteTimeLeft = game.getTimeLeft(stoneColors.WHITE)
+    const blackPeriodsLeft = game.getPeriodsLeft(stoneColors.BLACK)
+    const whitePeriodsLeft = game.getPeriodsLeft(stoneColors.WHITE)
 
     //Show result
     if (node.isMainPath() && !node.hasChildren()) {
@@ -480,6 +525,26 @@ export async function sekiPlayer(element, config = {}) {
     //Set captures
     setText('captures-black', capturesString(black))
     setText('captures-white', capturesString(white))
+
+    //Set time left
+    if (blackTimeLeft && blackPeriodsLeft) {
+      setText('time-black', `${blackPeriodsLeft} x ${blackTimeLeft}s`)
+    }
+    else if (blackTimeLeft) {
+      setText('time-black', parseTime(blackTimeLeft))
+    }
+    else {
+      setText('time-black', '')
+    }
+    if (whiteTimeLeft && whitePeriodsLeft) {
+      setText('time-white', `${whitePeriodsLeft} x ${whiteTimeLeft}s`)
+    }
+    else if (whiteTimeLeft) {
+      setText('time-white', parseTime(whiteTimeLeft))
+    }
+    else {
+      setText('time-white', '')
+    }
   })
 
   //Auto play toggle handler
