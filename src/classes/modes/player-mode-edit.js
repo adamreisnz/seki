@@ -230,7 +230,12 @@ export default class PlayerModeEdit extends PlayerModeReplay {
 
     //Move tool
     if (this.isUsingMoveTool()) {
-      this.playMove(x, y)
+      if (!isDragging) {
+        this.playMove(x, y)
+      }
+      else {
+        this.showHoverStone()
+      }
       return //Return to preserve move markers
     }
 
