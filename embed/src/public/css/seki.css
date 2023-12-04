@@ -114,8 +114,8 @@
   flex: 1;
 }
 .seki-button img {
-  width: 24px;
-  height: 24px;
+  width: 20px;
+  height: 20px;
 }
 .seki-button:hover {
   transform: scale(1.05);
