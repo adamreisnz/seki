@@ -85,12 +85,6 @@ export const defaultPlayerConfig = {
   //Key bindings
   keyBindings: [],
 
-  //Audio
-  audio: {
-    move: null,
-    capture: null,
-  },
-
   //Player configuration
   showLastMove: true,
   showNextMove: false,
@@ -102,7 +96,14 @@ export const defaultPlayerConfig = {
   showSiblingVariations: false,
   rememberVariationPaths: true,
   allowPlayerConfig: true,
+
+  //Sounds
   playSounds: true,
+  soundVolume: 1,
+  sounds: {
+    move: null,
+    capture: null,
+  },
 
   //Board configuration
   showCoordinates: true,

@@ -686,16 +686,16 @@ export default class Player extends Base {
   createAudioElements() {
 
     //Get audio config
-    const audio = this.getConfig('audio')
+    const sounds = this.getConfig('sounds')
     const {container} = this.elements
 
     //Create audio elements
-    for (const key in audio) {
-      if (!audio[key]) {
+    for (const key in sounds) {
+      if (!sounds[key]) {
         continue
       }
       const audioElement = document.createElement('audio')
-      audioElement.src = audio[key]
+      audioElement.src = sounds[key]
       container.appendChild(audioElement)
       this.audioElements[key] = audioElement
     }
@@ -713,13 +713,18 @@ export default class Player extends Base {
 
     //Get audio element
     const audioElement = this.audioElements[type]
-    if (audioElement) {
-      try {
-        audioElement.play()
-      }
-      catch (error) {
-        //Fall through
-      }
+    if (!audioElement) {
+      return
+    }
+
+    //Get volume and play sound
+    const volume = this.getConfig('soundVolume')
+    try {
+      audioElement.volume = volume
+      audioElement.play()
+    }
+    catch (error) {
+      //Fall through
     }
   }
 
