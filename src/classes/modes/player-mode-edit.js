@@ -28,12 +28,9 @@ export default class PlayerModeEdit extends PlayerModeReplay {
   lastGridDetail
 
   /**
-   * Constructor
+   * Initialise
    */
-  constructor(player) {
-
-    //Parent method
-    super(player)
+  init() {
 
     //Extend player
     this.extendPlayer()

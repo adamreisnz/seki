@@ -35,6 +35,8 @@ export default class PlayerModeFactory {
    */
   static create(mode, ...args) {
     const PlayerModeClass = this.getClass(mode)
-    return new PlayerModeClass(...args)
+    const playerMode = new PlayerModeClass(...args)
+    playerMode.init()
+    return playerMode
   }
 }

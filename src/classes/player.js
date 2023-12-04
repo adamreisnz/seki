@@ -60,6 +60,7 @@ export default class Player extends Base {
       playerModes.STATIC,
       playerModes.REPLAY,
       playerModes.EDIT,
+      playerModes.PLAY,
     ]
 
     //Instantiate

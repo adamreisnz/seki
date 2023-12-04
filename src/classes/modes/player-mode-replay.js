@@ -20,12 +20,9 @@ export default class PlayerModeReplay extends PlayerMode {
   markers = []
 
   /**
-   * Constructor
+   * Initialise
    */
-  constructor(player) {
-
-    //Parent method
-    super(player)
+  init() {
 
     //Extend player
     this.extendPlayer()

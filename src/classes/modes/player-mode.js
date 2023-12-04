@@ -22,6 +22,11 @@ export default class PlayerMode extends Base {
   }
 
   /**
+   * Init
+   */
+  init() {}
+
+  /**
    * Game virtual shortcut
    */
   get game() {

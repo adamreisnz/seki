@@ -11,12 +11,9 @@ export default class PlayerModePlay extends PlayerModeReplay {
   mode = playerModes.PLAY
 
   /**
-   * Constructor
+   * Initialise
    */
-  constructor(player) {
-
-    //Parent method
-    super(player)
+  init() {
 
     //Create bound event listeners
     this.createBoundListeners({
