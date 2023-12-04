@@ -27,6 +27,11 @@ export {
   helpers,
 }
 
+//Regexes
+const regexSgf = /\(;[A-Za-z0-9[\]]*FF\[[1-4]\](.*)\)/
+const regexEventUrl = /(:\s|\sat\s)?(https?:\/\/(.*?(?=\s|$)))/
+const regexOgsUrl = /https:\/\/online-go\.com\/game\/([0-9]+)/
+
 //Generate captures string
 const capturesString = (count) => `${count} capture${count === 1 ? '' : 's'}`
 
@@ -36,10 +41,9 @@ const eventString = (...parts) => parts.filter(p => !!p).join(', ')
 //Extract event string and link
 const eventStringAndLink = (...parts) => {
   const str = eventString(...parts)
-  const regex = /(:\s|\sat\s)?(https?:\/\/(.*?(?=\s|$)))/
-  const match = str.match(regex)
+  const match = str.match(regexEventUrl)
   if (match) {
-    return [str.replace(regex, ''), match[2]]
+    return [str.replace(regexEventUrl, ''), match[2]]
   }
   return [str, null]
 }
@@ -68,12 +72,23 @@ const appendNotice = (element, text = 'Generated using') => {
 //Parse URL
 const parseUrl = url => {
   if (url) {
-    const match = url.match(/https:\/\/online-go\.com\/game\/([0-9]+)/)
+    const match = url.match(regexOgsUrl)
     if (match) {
       return `https://online-go.com/api/v1/games/${match[1]}/sgf`
     }
   }
   return url
+}
+
+//Parse content loaded from URL
+const parseUrlContent = content => {
+  if (content) {
+    const match = content.match(regexSgf)
+    if (match) {
+      return match[1]
+    }
+  }
+  return content
 }
 
 /**
@@ -102,6 +117,36 @@ const parseTime = (time = 0) => {
   }
 }
 
+//Over time parser
+// const parseOverTime = overTime => {
+//   if (!overTime) {
+//     return ''
+//   }
+//   const match = overTime.match(/[0-9]+x([0-9]+)([a-z -]+)/i)
+//   if (match) {
+//     const time = match[1]
+//     const suffix = match[2]
+//     if (time >= 24 * 3600) {
+//       const days = String(Math.floor(time / (24 * 3600)))
+//       return (days === '1') ? `1 day ${suffix}` : `${days} days ${suffix}`
+//     }
+//     else if (time >= 3600) {
+//       const hours = String(Math.floor(time / 3600))
+//       const minutes = String(Math.floor((time % 3600) / 60))
+//       const seconds = String(time % 60)
+//       return `${hours}h ${minutes}m ${seconds}s ${suffix}`
+//     }
+//     else if (time >= 60) {
+//       const minutes = String(Math.floor(time / 60))
+//       const seconds = String(time % 60)
+//       return `${minutes}m ${seconds}s ${suffix}`
+//     }
+//     else {
+//       return `${time}s ${suffix}`
+//     }
+//   }
+// }
+
 //Load game from data attributes
 const loadGame = async(dataset) => {
   if (dataset.game) {
@@ -111,7 +156,8 @@ const loadGame = async(dataset) => {
   else if (dataset.gameUrl) {
     const url = parseUrl(dataset.gameUrl)
     const file = await fetch(url)
-    const data = await file.text()
+    const raw = await file.text()
+    const data = parseUrlContent(raw)
     return Game.fromData(data)
   }
   return null
