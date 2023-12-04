@@ -461,6 +461,11 @@ export async function sekiPlayer(element, config = {}) {
     const {black, white} = game.getCaptureCount()
     const node = game.getCurrentNode()
 
+    //Show result
+    if (node.isMainPath() && !node.hasChildren()) {
+      showResult()
+    }
+
     //Set comments
     if (node.hasComments()) {
       const comments = node
