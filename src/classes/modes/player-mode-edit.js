@@ -5,6 +5,7 @@ import {markupTypes} from '../../constants/markup.js'
 import {stoneColors} from '../../constants/stone.js'
 import {
   playerModes,
+  playerActions,
   editTools,
 } from '../../constants/player.js'
 
@@ -213,6 +214,80 @@ export default class PlayerModeEdit extends PlayerModeReplay {
   /**************************************************************************
    * Actions
    ***/
+
+  /**
+   * Process an action
+   */
+  processAction(action, event) {
+
+    //Parent method
+    if (super.processAction(action, event)) {
+      return true
+    }
+
+    //Get data
+    const {player} = this
+
+    //Determine action
+    switch (action) {
+
+      //Edit tools
+      case playerActions.SET_EDIT_TOOL_MOVE:
+        player.setEditTool(editTools.MOVE)
+        return true
+      case playerActions.SET_EDIT_TOOL_STONE:
+        player.setEditTool(editTools.STONE)
+        return true
+      case playerActions.SET_EDIT_TOOL_BLACK:
+        player.setEditTool(editTools.BLACK)
+        return true
+      case playerActions.SET_EDIT_TOOL_WHITE:
+        player.setEditTool(editTools.WHITE)
+        return true
+      case playerActions.SET_EDIT_TOOL_CLEAR:
+        player.setEditTool(editTools.CLEAR)
+        return true
+      case playerActions.SET_EDIT_TOOL_CLEAR_AREA:
+        player.setEditTool(editTools.CLEAR_AREA)
+        return true
+      case playerActions.SET_EDIT_TOOL_TRIANGLE:
+        player.setEditTool(editTools.TRIANGLE)
+        return true
+      case playerActions.SET_EDIT_TOOL_CIRCLE:
+        player.setEditTool(editTools.CIRCLE)
+        return true
+      case playerActions.SET_EDIT_TOOL_SQUARE:
+        player.setEditTool(editTools.SQUARE)
+        return true
+      case playerActions.SET_EDIT_TOOL_DIAMOND:
+        player.setEditTool(editTools.DIAMOND)
+        return true
+      case playerActions.SET_EDIT_TOOL_MARK:
+        player.setEditTool(editTools.MARK)
+        return true
+      case playerActions.SET_EDIT_TOOL_HAPPY:
+        player.setEditTool(editTools.HAPPY)
+        return true
+      case playerActions.SET_EDIT_TOOL_SAD:
+        player.setEditTool(editTools.SAD)
+        return true
+      case playerActions.SET_EDIT_TOOL_LETTER:
+        player.setEditTool(editTools.LETTER)
+        return true
+      case playerActions.SET_EDIT_TOOL_NUMBER:
+        player.setEditTool(editTools.NUMBER)
+        return true
+      case playerActions.SET_EDIT_TOOL_DRAW:
+        player.setEditTool(editTools.DRAW)
+        return true
+      case playerActions.REMOVE_ALL_MARKUP:
+        player.removeAllMarkup()
+        return true
+    }
+
+    //No action was performed
+    return false
+  }
 
   /**
    * Edit a position

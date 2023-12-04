@@ -26,7 +26,6 @@ export default class Player extends Base {
   modeHandlers = {}
   audioElements = {}
   activeMode
-  previousMode
 
   //Mouse event helper vars
   lastDetail = null
@@ -266,24 +265,9 @@ export default class Player extends Base {
     }
 
     //Set active mode
-    this.previousMode = this.activeMode
     this.activeMode = mode
     this.triggerEvent('modeChange', {mode})
     return
-  }
-
-  /**
-   * Toggle in and out of a mode (remembering the previous mode)
-   */
-  toggleMode(mode) {
-
-    //Compare against previous mode
-    if (this.activeMode !== mode) {
-      this.setMode(mode)
-    }
-    else {
-      this.setMode(this.previousMode)
-    }
   }
 
   /*****************************************************************************

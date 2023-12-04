@@ -2,11 +2,7 @@ import Base from '../base.js'
 import StoneFactory from '../stone-factory.js'
 import MarkupFactory from '../markup-factory.js'
 import {stoneModifierStyles} from '../../constants/stone.js'
-import {
-  playerActions,
-  playerModes,
-  editTools,
-} from '../../constants/player.js'
+import {playerActions, playerModes} from '../../constants/player.js'
 
 /**
  * Base player mode class
@@ -156,7 +152,7 @@ export default class PlayerMode extends Base {
   }
 
   /**
-   * Process a global action
+   * Process an action
    */
   processAction(action, event) {
 
@@ -184,9 +180,6 @@ export default class PlayerMode extends Base {
         return true
       case playerActions.SET_MODE_EDIT:
         player.setMode(playerModes.EDIT)
-        return true
-      case playerActions.TOGGLE_MODE_EDIT:
-        player.toggleMode(playerModes.EDIT)
         return true
 
       //Board config
@@ -232,87 +225,6 @@ export default class PlayerMode extends Base {
         return true
       case playerActions.SELECT_PREV_VARIATION:
         player.selectPreviousVariation()
-        return true
-
-      //Auto play
-      case playerActions.START_AUTO_PLAY:
-        player.startAutoPlay()
-        return true
-      case playerActions.STOP_AUTO_PLAY:
-        player.stopAutoPlay()
-        return true
-      case playerActions.TOGGLE_AUTO_PLAY:
-        player.toggleAutoPlay()
-        return true
-
-      //Edit tools
-      case playerActions.SET_EDIT_TOOL_MOVE:
-        player.setMode(playerModes.EDIT)
-        player.setEditTool(editTools.MOVE)
-        return true
-      case playerActions.SET_EDIT_TOOL_STONE:
-        player.setMode(playerModes.EDIT)
-        player.setEditTool(editTools.STONE)
-        return true
-      case playerActions.SET_EDIT_TOOL_BLACK:
-        player.setMode(playerModes.EDIT)
-        player.setEditTool(editTools.BLACK)
-        return true
-      case playerActions.SET_EDIT_TOOL_WHITE:
-        player.setMode(playerModes.EDIT)
-        player.setEditTool(editTools.WHITE)
-        return true
-      case playerActions.SET_EDIT_TOOL_CLEAR:
-        player.setMode(playerModes.EDIT)
-        player.setEditTool(editTools.CLEAR)
-        return true
-      case playerActions.SET_EDIT_TOOL_CLEAR_AREA:
-        player.setMode(playerModes.EDIT)
-        player.setEditTool(editTools.CLEAR_AREA)
-        return true
-      case playerActions.SET_EDIT_TOOL_TRIANGLE:
-        player.setMode(playerModes.EDIT)
-        player.setEditTool(editTools.TRIANGLE)
-        return true
-      case playerActions.SET_EDIT_TOOL_CIRCLE:
-        player.setMode(playerModes.EDIT)
-        player.setEditTool(editTools.CIRCLE)
-        return true
-      case playerActions.SET_EDIT_TOOL_SQUARE:
-        player.setMode(playerModes.EDIT)
-        player.setEditTool(editTools.SQUARE)
-        return true
-      case playerActions.SET_EDIT_TOOL_DIAMOND:
-        player.setMode(playerModes.EDIT)
-        player.setEditTool(editTools.DIAMOND)
-        return true
-      case playerActions.SET_EDIT_TOOL_MARK:
-        player.setMode(playerModes.EDIT)
-        player.setEditTool(editTools.MARK)
-        return true
-      case playerActions.SET_EDIT_TOOL_HAPPY:
-        player.setMode(playerModes.EDIT)
-        player.setEditTool(editTools.HAPPY)
-        return true
-      case playerActions.SET_EDIT_TOOL_SAD:
-        player.setMode(playerModes.EDIT)
-        player.setEditTool(editTools.SAD)
-        return true
-      case playerActions.SET_EDIT_TOOL_LETTER:
-        player.setMode(playerModes.EDIT)
-        player.setEditTool(editTools.LETTER)
-        return true
-      case playerActions.SET_EDIT_TOOL_NUMBER:
-        player.setMode(playerModes.EDIT)
-        player.setEditTool(editTools.NUMBER)
-        return true
-      case playerActions.SET_EDIT_TOOL_DRAW:
-        player.setMode(playerModes.EDIT)
-        player.setEditTool(editTools.DRAW)
-        return true
-      case playerActions.REMOVE_ALL_MARKUP:
-        player.setMode(playerModes.EDIT)
-        player.removeAllMarkup()
         return true
     }
 

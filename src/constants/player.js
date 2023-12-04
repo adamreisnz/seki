@@ -55,7 +55,6 @@ export const playerActions = {
   SET_MODE_REPLAY: 'setModeReplay',
   SET_MODE_EDIT: 'setModeEdit',
   SET_MODE_PLAY: 'setModePlay',
-  TOGGLE_MODE_EDIT: 'toggleModeEdit',
 
   //Board config
   TOGGLE_COORDINATES: 'toggleCoordinates',

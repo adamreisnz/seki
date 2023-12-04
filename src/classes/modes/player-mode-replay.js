@@ -2,7 +2,7 @@ import PlayerMode from './player-mode.js'
 import MarkupFactory from '../markup-factory.js'
 import {boardLayerTypes} from '../../constants/board.js'
 import {markupTypes} from '../../constants/markup.js'
-import {playerModes} from '../../constants/player.js'
+import {playerModes, playerActions} from '../../constants/player.js'
 
 /**
  * Replay game records with this mode
@@ -190,6 +190,38 @@ export default class PlayerModeReplay extends PlayerMode {
   /**************************************************************************
    * Actions
    ***/
+
+  /**
+   * Process an action
+   */
+  processAction(action, event) {
+
+    //Parent method
+    if (super.processAction(action, event)) {
+      return true
+    }
+
+    //Get data
+    const {player} = this
+
+    //Determine action
+    switch (action) {
+
+      //Auto play
+      case playerActions.START_AUTO_PLAY:
+        player.startAutoPlay()
+        return true
+      case playerActions.STOP_AUTO_PLAY:
+        player.stopAutoPlay()
+        return true
+      case playerActions.TOGGLE_AUTO_PLAY:
+        player.toggleAutoPlay()
+        return true
+    }
+
+    //No action was performed
+    return false
+  }
 
   /**
    * Toggle auto play
