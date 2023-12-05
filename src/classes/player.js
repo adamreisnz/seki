@@ -46,7 +46,7 @@ export default class Player extends Base {
 
     //Initialise
     this.initBoard(config.board, config.theme)
-    this.initGame()
+    this.initGame(null, config.game)
     this.initConfig(config)
   }
 

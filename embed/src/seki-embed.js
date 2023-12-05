@@ -393,7 +393,7 @@ export async function sekiPlayer(element, config = {}) {
                 <div class="seki-color seki-color-black"></div>
                 <div class="seki-name-and-rank">
                   <span class="seki-name seki-name-black">Black</span>
-                  <small class="seki-rank seki-rank-black"></small>
+                  <span class="seki-rank seki-rank-black"></span>
                 </div>
               </div>
               <div class="seki-time seki-time-black"></div>
@@ -408,7 +408,7 @@ export async function sekiPlayer(element, config = {}) {
                 <div class="seki-color seki-color-white"></div>
                 <div class="seki-name-and-rank">
                   <span class="seki-name seki-name-white">White</span>
-                  <small class="seki-rank seki-rank-white"></small>
+                  <span class="seki-rank seki-rank-white"></span>
                 </div>
               </div>
               <div class="seki-time seki-time-white"></div>

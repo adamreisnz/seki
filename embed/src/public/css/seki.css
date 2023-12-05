@@ -12,7 +12,7 @@
   --seki-color-highlight: #fff1d5;
   --seki-color-black-player: #222;
   --seki-color-white-player: #fff;
-  --seki-color-kanji: rgba(0, 0, 0, 0.05);
+  --seki-color-kanji: #ad90571a;
   --seki-font-family: 'Lexend', sans-serif;
   --seki-font-size: .9rem;
   --seki-font-size-large: 1rem;
@@ -168,7 +168,7 @@
 }
 .seki-info-block:after {
   position: absolute;
-  right: 8px;
+  left: calc(50% - 24px);
   top: -12px;
   display: block;
   font-size: 4rem;
@@ -190,6 +190,10 @@
 .seki-identity-and-time {
   display: flex;
   align-items: flex-start;
+}
+.seki-time {
+  font-size: var(--seki-font-size-small);
+  color: var(--seki-color-muted);
 }
 .seki-identity {
   flex: 1;
