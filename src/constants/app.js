@@ -2,8 +2,8 @@
 //App details
 export const appIdentifier = 'seki'
 export const appName = 'Seki'
-export const appVersion = '1.5.3'
-export const configVersion = '1.5'
+export const appVersion = '1.6.3'
+export const configVersion = '1.6'
 
 //Supported kifu formats
 export const kifuFormats = {
