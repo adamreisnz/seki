@@ -16,7 +16,7 @@ import {
   parseMainTime,
   parseKomi,
   parseHandicap,
-} from '../../helpers/parsing.js'
+} from '../helpers/parsing.js'
 import {isValidColor} from '../helpers/color.js'
 import {stoneColors} from '../constants/stone.js'
 import {handicapPlacements} from '../constants/game.js'
