@@ -11,6 +11,12 @@ import ConvertToJgf from './converters/convert-to-jgf.js'
 import ConvertToJson from './converters/convert-to-json.js'
 import ConvertToSgf from './converters/convert-to-sgf.js'
 import {copy, get, set, merge, isObject} from '../helpers/object.js'
+import {
+  parseRank,
+  parseMainTime,
+  parseKomi,
+  parseHandicap,
+} from '../../helpers/parsing.js'
 import {isValidColor} from '../helpers/color.js'
 import {stoneColors} from '../constants/stone.js'
 import {handicapPlacements} from '../constants/game.js'
@@ -732,11 +738,7 @@ export default class Game extends Base {
    * Set/get komi
    */
   setKomi(komi = 0) {
-    komi = parseFloat(komi)
-    if (isNaN(komi)) {
-      komi = 0
-    }
-    this.komi = komi
+    this.komi = parseKomi(komi)
   }
   getKomi() {
     return this.komi
@@ -746,11 +748,7 @@ export default class Game extends Base {
    * Set/get handicap
    */
   setHandicap(handicap = 0) {
-    handicap = parseInt(handicap)
-    if (isNaN(handicap)) {
-      handicap = 0
-    }
-    this.handicap = handicap
+    this.handicap = parseHandicap(handicap)
   }
   getHandicap() {
     return this.handicap
@@ -760,11 +758,7 @@ export default class Game extends Base {
    * Set/get main time
    */
   setMainTime(mainTime = 0) {
-    mainTime = parseFloat(mainTime)
-    if (isNaN(mainTime)) {
-      mainTime = 0
-    }
-    this.mainTime = mainTime
+    this.mainTime = parseMainTime(mainTime)
   }
   getMainTime() {
     return this.mainTime
@@ -843,32 +837,35 @@ export default class Game extends Base {
   }
 
   /**
-   * Set/get players
-   */
-  setPlayers(players = {}) {
-    this.players = copy(players)
-  }
-  getPlayers() {
-    return this.players
-  }
-
-  /**
    * Set/get player of a specific color
    */
   setPlayer(color, info) {
     if (isObject(info)) {
-      this.players[color] = copy(info)
+      const {name, rank, team} = info
+      this.players[color] = {
+        name,
+        rank: parseRank(rank),
+        team,
+      }
+    }
+  }
+  updatePlayer(color, info) {
+    if (isObject(info)) {
+      for (const key in info) {
+        this.players[color][key] = (key === 'rank') ?
+          parseRank(info[key]) : info[key]
+      }
     }
   }
   getPlayer(color) {
     return this.players[color]
   }
-  updatePlayer(color, info) {
-    if (isObject(info)) {
-      for (const key in info) {
-        this.players[color][key] = info[key]
-      }
-    }
+
+  /**
+   * Get all players
+   */
+  getPlayers() {
+    return this.players
   }
 
   /**************************************************************************

@@ -124,13 +124,9 @@ export default class ConvertFromGib extends Converter {
    * Player parser function
    */
   parsePlayer(game, match) {
-
-    //Determine player color
     const color = this.determinePlayerColor(match[1])
     const name = match[2]
-    const rank = match[3].toLowerCase()
-
-    //Set on game
+    const rank = match[3]
     game.setPlayer(color, {name, rank})
   }
 

@@ -396,25 +396,14 @@ export default class ConvertFromSgf extends Converter {
    * Game result parser
    */
   parseResult(info, node, key, values) {
-    const result = values[0]
-      .replace(/0\.03'/, 'F') //Fox use 0.03 result for a Forfeit
-      .replace(/0\.02'/, 'T') //Fox use 0.02 result for a Timeout
-      .replace('¼', '.25')
-      .replace('½', '.5')
-      .replace('¾', '.75')
-    set(info, 'game.result', result)
+    set(info, 'game.result', values[0])
   }
 
   /**
    * Komi parser
    */
   parseKomi(info, node, key, values) {
-    const komi = values[0]
-      .replace(/375/, '7.5') //Fox use chinese half-area counting
-      .replace('¼', '.25')
-      .replace('½', '.5')
-      .replace('¾', '.75')
-    set(info, 'rules.komi', komi)
+    set(info, 'rules.komi', values[0])
   }
 
   /**
@@ -516,23 +505,9 @@ export default class ConvertFromSgf extends Converter {
    */
   parsePlayerRank(info, node, key, values) {
 
-    //Determine player color and normalise rank
+    //Determine player color and rank
     const color = this.convertPlayerColor(key)
     const rank = values[0]
-      .replace('段', 'd')
-      .replace('級', 'k')
-      .replace('级', 'k')
-      .replace('一', '1')
-      .replace('二', '2')
-      .replace('三', '3')
-      .replace('四', '4')
-      .replace('五', '5')
-      .replace('六', '6')
-      .replace('七', '7')
-      .replace('八', '8')
-      .replace('九', '9')
-      .replace('十', '10')
-      .toLowerCase()
 
     //Set on info
     set(info, `players.${color}.rank`, rank)
