@@ -768,7 +768,7 @@ export default class Game extends Base {
    * Set/get over time
    */
   setOverTime(overTime = '') {
-    this.overTime = overTime
+    this.overTime = overTime || ''
     const match = overTime.match(/([0-9]+)x([0-9.]+)/)
     if (match) {
       this.setNumberOfPeriods(match[1])
