@@ -32,6 +32,15 @@ import MarkupFactory from './classes/markup-factory.js'
 import PlayerModeFactory from './classes/player-mode-factory.js'
 import StoneFactory from './classes/stone-factory.js'
 
+//Converters
+import ConvertFromJgf from './classes/converters/convert-from-jgf.js'
+import ConvertFromJson from './classes/converters/convert-from-json.js'
+import ConvertFromSgf from './classes/converters/convert-from-sgf.js'
+import ConvertFromGib from './classes/converters/convert-from-gib.js'
+import ConvertToJgf from './classes/converters/convert-to-jgf.js'
+import ConvertToJson from './classes/converters/convert-to-json.js'
+import ConvertToSgf from './classes/converters/convert-to-sgf.js'
+
 //Helpers
 import * as color from './helpers/color.js'
 import * as coordinates from './helpers/coordinates.js'
@@ -116,6 +125,15 @@ export {
   MarkupFactory,
   PlayerModeFactory,
   StoneFactory,
+
+  //Converters
+  ConvertFromJgf,
+  ConvertFromJson,
+  ConvertFromSgf,
+  ConvertFromGib,
+  ConvertToJgf,
+  ConvertToJson,
+  ConvertToSgf,
 
   //Helpers and constants
   helpers,

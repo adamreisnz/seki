@@ -1,7 +1,7 @@
 {
   "name": "@reis/seki",
   "description": "Seki – A modern javascript based Go board renderer and player, that is simple to use, extensible, compact and intuitive.",
-  "version": "1.5.6",
+  "version": "1.5.7",
   "homepage": "https://github.com/adamreisnz/seki#readme",
   "author": {
     "name": "Adam Reis",
