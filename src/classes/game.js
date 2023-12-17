@@ -1209,7 +1209,7 @@ export default class Game extends Base {
    * Get current move number
    */
   getCurrentMoveNumber() {
-    this.node.getMoveNumber()
+    return this.node.getMoveNumber()
   }
 
   /**

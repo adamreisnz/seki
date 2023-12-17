@@ -466,6 +466,14 @@ export default class Player extends Base {
   }
 
   /**
+   * Go to a move number
+   */
+  goToMoveNumber(number) {
+    this.game.goToMoveNumber(number)
+    this.processPathChange()
+  }
+
+  /**
    * Select the previous variation
    */
   selectNextVariation() {
