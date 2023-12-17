@@ -1808,7 +1808,7 @@ export default class Game extends Base {
     }
 
     //Get path to the named node
-    const path = this.getPathToMoveNumber(name)
+    const path = this.getPathToMoveNumber(number)
     this.goToPath(path)
   }
 
