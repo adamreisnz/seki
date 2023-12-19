@@ -499,6 +499,14 @@ export default class Game extends Base {
    * Set/get source name
    */
   setSourceName(sourceName = '') {
+    if (sourceName) {
+      const regexUrl = /(:\s|,\s|\sat\s)?(https?:\/\/(.*?(?=\s|$)))/
+      const match = sourceName.match(regexUrl)
+      if (match) {
+        sourceName = sourceName.replace(regexUrl, '')
+        this.setSourceUrl(match[2])
+      }
+    }
     this.sourceName = sourceName
   }
   getSourceName() {

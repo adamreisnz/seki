@@ -76,6 +76,7 @@ export default class ConvertToSgf extends Converter {
 
     //Append data
     this.appendGenerator(root)
+    this.appendSource(root, game)
     this.appendBoardSize(root, game)
     this.appendPlayers(root, game)
 
@@ -101,6 +102,31 @@ export default class ConvertToSgf extends Converter {
    */
   appendGenerator(root) {
     root.AP = this.getGeneratorSignature()
+  }
+
+  /**
+   * Append source info
+   */
+  appendSource(root, game) {
+
+    //Get source data
+    const name = game.getSourceName()
+    const url = game.getSourceUrl()
+    const copyright = game.getSourceCopyright()
+
+    //Set
+    if (name && url) {
+      root.SO = `${name || ''}, ${url || ''}`
+    }
+    else if (name) {
+      root.SO = name
+    }
+    else if (url) {
+      root.SO = url
+    }
+    if (copyright) {
+      root.CP = copyright
+    }
   }
 
   /**
