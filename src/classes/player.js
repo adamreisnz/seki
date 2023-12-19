@@ -675,6 +675,16 @@ export default class Player extends Base {
   }
 
   /**
+   * Tear down
+   */
+  teardown() {
+
+    //Remove listeners
+    this.teardownDocumentListeners()
+    this.teardownElementListeners()
+  }
+
+  /**
    * Bootstrap board
    */
   bootstrapBoard() {
@@ -787,6 +797,15 @@ export default class Player extends Base {
   }
 
   /**
+   * Tear down document listeners
+   */
+  teardownDocumentListeners() {
+    if (this.documentEventHandler) {
+      this.documentEventHandler.removeAllEventListeners()
+    }
+  }
+
+  /**
    * Setup element listeners
    */
   setupElementListeners() {
@@ -816,6 +835,15 @@ export default class Player extends Base {
         event.preventDefault()
         this.triggerEvent(type, {nativeEvent: event})
       })
+    }
+  }
+
+  /**
+   * Tear down element listeners
+   */
+  teardownElementListeners() {
+    if (this.elementEventHandler) {
+      this.elementEventHandler.removeAllEventListeners()
     }
   }
 

@@ -75,4 +75,17 @@ export default class EventHandler {
     this.handlers.delete(event)
     this.throttles.delete(event)
   }
+
+  /**
+   * Remove all event listeners
+   */
+  removeAllEventListeners() {
+    const {element} = this
+    this.handlers.forEach((fn, event) => {
+      const type = event.split('.')[0]
+      element.removeEventListener(type, fn)
+    })
+    this.handlers.clear()
+    this.throttles.clear()
+  }
 }
