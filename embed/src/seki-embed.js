@@ -27,6 +27,9 @@ export {
   helpers,
 }
 
+//Code source location (images not loading correctly otherwise)
+const baseUrl = `https://sekiplayer.com`
+
 //Regexes
 const regexSgf = /\(;[A-Za-z0-9[\]]*FF\[[1-4]\](.*)\)/
 const regexEventUrl = /(:\s|\sat\s)?(https?:\/\/(.*?(?=\s|$)))/
@@ -360,28 +363,28 @@ export async function sekiPlayer(element, config = {}) {
         <div class="seki-player-board"></div>
         <div class="seki-controls">
           <button class="seki-button seki-button-first" title="Go to first position">
-            <img src="images/backward-fast.svg" />
+            <img src="${baseUrl}/images/backward-fast.svg" />
           </button>
           <button class="seki-button seki-button-back" title="Skip backward">
-            <img src="images/backward-skip.svg" />
+            <img src="${baseUrl}/images/backward-skip.svg" />
           </button>
           <button class="seki-button seki-button-previous" title="Go back">
-            <img src="images/backward-step.svg" />
+            <img src="${baseUrl}/images/backward-step.svg" />
           </button>
           <button class="seki-button seki-button-play" title="Start auto play">
-            <img src="images/play.svg" />
+            <img src="${baseUrl}/images/play.svg" />
           </button>
           <button class="seki-button seki-button-pause seki-hidden" title="Pause auto play">
-            <img src="images/pause.svg" />
+            <img src="${baseUrl}/images/pause.svg" />
           </button>
           <button class="seki-button seki-button-next" title="Go forward">
-            <img src="images/forward-step.svg" />
+            <img src="${baseUrl}/images/forward-step.svg" />
           </button>
           <button class="seki-button seki-button-forward" title="Skip forward">
-            <img src="images/forward-skip.svg" />
+            <img src="${baseUrl}/images/forward-skip.svg" />
           </button>
           <button class="seki-button seki-button-last" title="Go to last position">
-            <img src="images/forward-fast.svg" />
+            <img src="${baseUrl}/images/forward-fast.svg" />
           </button>
         </div>
       </div>
