@@ -12,7 +12,6 @@ import ConvertToJson from './converters/convert-to-json.js'
 import ConvertToSgf from './converters/convert-to-sgf.js'
 import {copy, get, set, merge, isObject} from '../helpers/object.js'
 import {
-  parseRank,
   parseMainTime,
   parseKomi,
   parseHandicap,
@@ -852,7 +851,7 @@ export default class Game extends Base {
       const {name, rank, team} = info
       this.players[color] = {
         name,
-        rank: parseRank(rank),
+        rank,
         team,
       }
     }
@@ -860,8 +859,7 @@ export default class Game extends Base {
   updatePlayer(color, info) {
     if (isObject(info)) {
       for (const key in info) {
-        this.players[color][key] = (key === 'rank') ?
-          parseRank(info[key]) : info[key]
+        this.players[color][key] = info[key]
       }
     }
   }
