@@ -27,17 +27,13 @@ export default class EventHandler {
    */
   on(event, fn, throttleDelay = 0) {
 
-    //Store in handlers and throttles map
-    this.handlers.set(event, fn)
-    this.throttles.set(event, false)
-
     //Get element and split off namespace from event
     const {element} = this
     const type = event.split('.')[0]
     const isThrottling = (throttleDelay > 0)
 
-    //Add listener
-    element.addEventListener(type, (...args) => {
+    //Create handler
+    const handler = (...args) => {
 
       //Not throttled, call function
       if (!isThrottling || !this.throttles.has(event)) {
@@ -61,17 +57,24 @@ export default class EventHandler {
         //Set in throttles
         this.throttles.set(event, timeout)
       }
-    })
+    }
+
+    //Store in handlers and throttles map
+    this.handlers.set(event, handler)
+    this.throttles.set(event, false)
+
+    //Add listener
+    element.addEventListener(type, handler)
   }
 
   /**
    * Remove event listener
    */
   off(event) {
-    const fn = this.handlers.get(event)
+    const handler = this.handlers.get(event)
     const type = event.split('.')[0]
     const {element} = this
-    element.removeEventListener(type, fn)
+    element.removeEventListener(type, handler)
     this.handlers.delete(event)
     this.throttles.delete(event)
   }
@@ -81,9 +84,9 @@ export default class EventHandler {
    */
   removeAllEventListeners() {
     const {element} = this
-    this.handlers.forEach((fn, event) => {
+    this.handlers.forEach((handler, event) => {
       const type = event.split('.')[0]
-      element.removeEventListener(type, fn)
+      element.removeEventListener(type, handler)
     })
     this.handlers.clear()
     this.throttles.clear()
