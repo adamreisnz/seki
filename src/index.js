@@ -77,6 +77,8 @@ import * as utilConstants from './constants/util.js'
 
 //Extract constants
 const {
+  appVersion,
+  configVersion,
   kifuFormats,
 } = app
 const {
@@ -173,8 +175,10 @@ export {
   helpers,
 
   //Constants
+  appVersion,
   boardLayerTypes,
   boardSides,
+  configVersion,
   editTools,
   gameTypes,
   hangulNumbers,
