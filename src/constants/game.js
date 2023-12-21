@@ -11,16 +11,6 @@ export const gameTypes = {
   UNKNOWN: 'unknown',
 }
 
-//Possible score states
-export const scoreState = {
-  UNKNOWN: 0,
-  BLACK_STONE: 1,
-  WHITE_STONE: -1,
-  BLACK_CANDIDATE: 2,
-  WHITE_CANDIDATE: -2,
-  NEUTRAL: 3,
-}
-
 //Default handicap placements for standard board sizes
 export const handicapPlacements = {
   9: {

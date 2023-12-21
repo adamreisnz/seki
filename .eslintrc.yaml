@@ -18,6 +18,7 @@ rules:
     - code: 82
       tabWidth: 2
       ignoreComments: true
+      ignoreImports: true
       ignoreUrls: true
       ignoreTemplateLiterals: true
       ignoreRegExpLiterals: true

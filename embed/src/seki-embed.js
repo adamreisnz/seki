@@ -1,31 +1,21 @@
 import {
-  Player,
-  Game,
-  BoardStatic,
-  MarkupFactory,
-  constants,
+  SekiPlayer,
+  SekiGame,
+  SekiBoardStatic,
+  SekiMarkupFactory,
   helpers,
+  playerModes,
+  playerActions,
+  boardLayerTypes,
+  stoneColors,
+  markupTypes,
+  keyValues,
 } from '../../src/index.js'
-
-//Get constants
-const {
-  player: {playerModes, playerActions},
-  board: {boardLayerTypes},
-  stone: {stoneColors},
-  markup: {markupTypes},
-  util: {keyValues},
-} = constants
 
 //Get helpers
 const {
   util: {toggleClass},
 } = helpers
-
-//Re-export Seki constants and helpers
-export {
-  constants,
-  helpers,
-}
 
 //Code source location (images not loading correctly otherwise)
 const baseUrl = `https://sekiplayer.com`
@@ -59,7 +49,7 @@ const showAllMoveNumbers = (game, board) => {
       const {x, y} = node.move
       const number = i + 1
       board
-        .add(boardLayerTypes.MARKUP, x, y, MarkupFactory
+        .add(boardLayerTypes.MARKUP, x, y, SekiMarkupFactory
           .create(markupTypes.MOVE_NUMBER, board, {number}))
     })
 }
@@ -154,14 +144,14 @@ const parseTime = (time = 0) => {
 const loadGame = async(dataset) => {
   if (dataset.game) {
     const data = dataset.game
-    return Game.fromData(data)
+    return SekiGame.fromData(data)
   }
   else if (dataset.gameUrl) {
     const url = parseUrl(dataset.gameUrl)
     const file = await fetch(url)
     const raw = await file.text()
     const data = parseUrlContent(raw)
-    return Game.fromData(data)
+    return SekiGame.fromData(data)
   }
   return null
 }
@@ -197,7 +187,7 @@ export async function sekiBoardStatic(element, config = {}) {
   }
 
   //Instantiate static board
-  const board = new BoardStatic(config)
+  const board = new SekiBoardStatic(config)
   const game = await loadGame(element.dataset)
 
   //Bootstrap board
@@ -247,7 +237,7 @@ export async function sekiBoardDynamic(element, config = {}) {
   }
 
   //Instantiate player
-  const player = new Player(config)
+  const player = new SekiPlayer(config)
 
   //Bootstrap player
   player.bootstrap(element)
@@ -492,7 +482,7 @@ export async function sekiPlayer(element, config = {}) {
   }
 
   //Instantiate player and get board element
-  const player = new Player(config)
+  const player = new SekiPlayer(config)
   const boardElement = element
     .getElementsByClassName('seki-player-board')[0]
 

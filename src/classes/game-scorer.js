@@ -1,7 +1,7 @@
 import Grid from './grid.js'
 import GameScore from './game-score.js'
 import {stoneColors} from '../constants/stone.js'
-import {scoreState} from '../constants/game.js'
+import {scoreStates} from '../constants/score.js'
 
 /**
  * This class is used to determine the score of a certain game position.
@@ -90,19 +90,19 @@ export default class GameScorer {
         color = game.position.stones.get(x, y)
 
         //Black stone
-        if (state === scoreState.BLACK_STONE && color === stoneColors.BLACK) {
+        if (state === scoreStates.BLACK_STONE && color === stoneColors.BLACK) {
           score.black.stones++
           continue
         }
 
         //White stone
-        if (state === scoreState.WHITE_STONE && color === stoneColors.WHITE) {
+        if (state === scoreStates.WHITE_STONE && color === stoneColors.WHITE) {
           score.white.stones++
           continue
         }
 
         //Black candidate
-        if (state === scoreState.BLACK_CANDIDATE) {
+        if (state === scoreStates.BLACK_CANDIDATE) {
           score.black.territory++
           points.set(x, y, stoneColors.BLACK)
 
@@ -115,7 +115,7 @@ export default class GameScorer {
         }
 
         //White candidate
-        if (state === scoreState.WHITE_CANDIDATE) {
+        if (state === scoreStates.WHITE_CANDIDATE) {
           score.white.territory++
           points.set(x, y, stoneColors.WHITE)
 
@@ -146,9 +146,9 @@ export default class GameScorer {
     if (color === stoneColors.WHITE) {
 
       //Was white, mark it and any territory it's in as black's
-      if (state === scoreState.WHITE_STONE) {
+      if (state === scoreStates.WHITE_STONE) {
         this.territorySet(
-          x, y, scoreState.BLACK_CANDIDATE, scoreState.BLACK_STONE,
+          x, y, scoreStates.BLACK_CANDIDATE, scoreStates.BLACK_STONE,
         )
       }
 
@@ -162,9 +162,9 @@ export default class GameScorer {
     else if (color === stoneColors.BLACK) {
 
       //Was black, mark it and any territory it's in as white's
-      if (state === scoreState.BLACK_STONE) {
+      if (state === scoreStates.BLACK_STONE) {
         this.territorySet(
-          x, y, scoreState.WHITE_CANDIDATE, scoreState.WHITE_STONE,
+          x, y, scoreStates.WHITE_CANDIDATE, scoreStates.WHITE_STONE,
         )
       }
 
@@ -262,9 +262,9 @@ export default class GameScorer {
 
           //Unknown or candiates?
           if (
-            curState === scoreState.UNKNOWN ||
-            curState === scoreState.BLACK_CANDIDATE ||
-            curState === scoreState.WHITE_CANDIDATE
+            curState === scoreStates.UNKNOWN ||
+            curState === scoreStates.BLACK_CANDIDATE ||
+            curState === scoreStates.WHITE_CANDIDATE
           ) {
 
             //Get state in adjacent positions
@@ -281,31 +281,31 @@ export default class GameScorer {
             //Loop adjacent squares
             for (a = 0; a < 4; a++) {
               if (
-                adjacent[a] === scoreState.BLACK_STONE ||
-                adjacent[a] === scoreState.BLACK_CANDIDATE
+                adjacent[a] === scoreStates.BLACK_STONE ||
+                adjacent[a] === scoreStates.BLACK_CANDIDATE
               ) {
                 b = true
               }
               else if (
-                adjacent[a] === scoreState.WHITE_STONE ||
-                adjacent[a] === scoreState.WHITE_CANDIDATE
+                adjacent[a] === scoreStates.WHITE_STONE ||
+                adjacent[a] === scoreStates.WHITE_CANDIDATE
               ) {
                 w = true
               }
-              else if (adjacent[a] === scoreState.NEUTRAL) {
+              else if (adjacent[a] === scoreStates.NEUTRAL) {
                 b = w = true
               }
             }
 
             //Determine new state
             if (b && w) {
-              newState = scoreState.NEUTRAL
+              newState = scoreStates.NEUTRAL
             }
             else if (b) {
-              newState = scoreState.BLACK_CANDIDATE
+              newState = scoreStates.BLACK_CANDIDATE
             }
             else if (w) {
-              newState = scoreState.WHITE_CANDIDATE
+              newState = scoreStates.WHITE_CANDIDATE
             }
             else {
               newState = false
