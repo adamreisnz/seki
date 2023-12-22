@@ -133,8 +133,11 @@ export const defaultStarPoints = {
     {x: 2, y: 6}, {x: 6, y: 2},
     {x: 6, y: 6},
   ],
-  5: [
+  7: [
     {x: 3, y: 3},
+  ],
+  5: [
+    {x: 2, y: 2},
   ],
 }
 
