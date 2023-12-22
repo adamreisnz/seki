@@ -23,6 +23,11 @@ export function parseResult(result) {
  */
 export function parseKomi(komi) {
 
+  //Undefined
+  if (typeof komi === 'undefined') {
+    return
+  }
+
   //String given
   if (typeof komi === 'string') {
     komi = komi
@@ -47,6 +52,11 @@ export function parseKomi(komi) {
  */
 export function parseHandicap(handicap) {
 
+  //Undefined
+  if (typeof handicap === 'undefined') {
+    return
+  }
+
   //Parse handicap
   handicap = parseInt(handicap, 10)
   if (isNaN(handicap)) {
@@ -61,6 +71,11 @@ export function parseHandicap(handicap) {
  * Parse main time
  */
 export function parseMainTime(mainTime) {
+
+  //Undefined
+  if (typeof mainTime === 'undefined') {
+    return
+  }
 
   //Parse main time
   mainTime = parseFloat(mainTime)

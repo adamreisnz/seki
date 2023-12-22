@@ -51,6 +51,15 @@ export default class ConvertToSgf extends Converter {
       CA: 'UTF-8',
     }
 
+    //Keys whose zero values get ignored
+    const ignoreZeroValues = [
+      'XL', 'XR',
+      'XT', 'XB',
+      'KM', 'HA',
+      'TM', 'OT',
+      'TC', 'TT',
+    ]
+
     //Loop SGF game info map
     for (const key in sgfGameInfoMap) {
 
@@ -60,6 +69,11 @@ export default class ConvertToSgf extends Converter {
 
       //No value
       if (typeof value === 'undefined') {
+        continue
+      }
+
+      //Zero value
+      if (value === 0 && ignoreZeroValues.includes(key)) {
         continue
       }
 

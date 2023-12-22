@@ -432,24 +432,6 @@ export default class Game extends Base {
     this.initPositionStack()
   }
 
-  /**
-   * Clone this game
-   */
-  clone() {
-
-    //Create new kifu object and get properties
-    const clone = new Game()
-    const props = Object.getOwnPropertyNames(this)
-
-    //Copy all properties
-    for (const prop of props) {
-      clone[prop] = JSON.parse(JSON.stringify(this[prop]))
-    }
-
-    //Return clone
-    return clone
-  }
-
   /**************************************************************************
    * Game info getters and setters
    ***/
@@ -744,7 +726,7 @@ export default class Game extends Base {
   /**
    * Set/get komi
    */
-  setKomi(komi = 0) {
+  setKomi(komi) {
     this.komi = parseKomi(komi)
   }
   getKomi() {
@@ -754,7 +736,7 @@ export default class Game extends Base {
   /**
    * Set/get handicap
    */
-  setHandicap(handicap = 0) {
+  setHandicap(handicap) {
     this.handicap = parseHandicap(handicap)
   }
   getHandicap() {
