@@ -64,7 +64,7 @@ export default class ConvertToSgf extends Converter {
     }
 
     //Keys whose zero values get ignored
-    const ignoreZeroValues = includeZeroValues ? [
+    const ignoreZeroValues = !includeZeroValues ? [
       'XL', 'XR',
       'XT', 'XB',
       'KM', 'HA',
