@@ -1,8 +1,9 @@
+import pkg from '../../package.json'
 
 //App details
-export const appIdentifier = 'seki'
+export const appIdentifier = pkg.name
 export const appName = 'Seki'
-export const appVersion = '1.7.4'
+export const appVersion = pkg.version
 export const configVersion = '1.7'
 
 //Supported kifu formats
