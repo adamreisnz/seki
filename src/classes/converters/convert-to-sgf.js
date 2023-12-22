@@ -29,6 +29,12 @@ const nodeParsingMap = {
   comments: 'parseComments',
 }
 
+//Default options
+const defaultOptions = {
+  includeVariationSettings: false,
+  includeZeroValues: false,
+}
+
 /**
  * Converter to SGF
  */
@@ -37,12 +43,18 @@ export default class ConvertToSgf extends Converter {
   /**
    * Convert Seki game object to SGF
    */
-  convert(game) {
+  convert(game, options = {}) {
 
     //Not a game instance
     if (!(game instanceof Game)) {
       throw new Error('Not a game instance')
     }
+
+    //Get options
+    const {
+      includeVariationSettings,
+      includeZeroValues
+    } = Object.assign({}, defaultOptions, options || {})
 
     //Get game info and initialize sgf root properties object
     const info = game.getInfo()
@@ -52,13 +64,13 @@ export default class ConvertToSgf extends Converter {
     }
 
     //Keys whose zero values get ignored
-    const ignoreZeroValues = [
+    const ignoreZeroValues = includeZeroValues ? [
       'XL', 'XR',
       'XT', 'XB',
       'KM', 'HA',
       'TM', 'OT',
       'TC', 'TT',
-    ]
+    ] : []
 
     //Loop SGF game info map
     for (const key in sgfGameInfoMap) {
@@ -69,6 +81,11 @@ export default class ConvertToSgf extends Converter {
 
       //No value
       if (typeof value === 'undefined') {
+        continue
+      }
+
+      //Ignore variation settings?
+      if (!includeVariationSettings && key === 'ST') {
         continue
       }
 
