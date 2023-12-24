@@ -271,8 +271,6 @@ export default class Board extends Base {
       return
     }
 
-    console.log('set size', width, this.width, height, this.height)
-
     //No change
     if (width === this.width && height === this.height) {
       return

@@ -927,7 +927,6 @@ export default class Player extends Base {
 
     //Torn down?
     if (this.isTornDown) {
-      console.log('helaas')
       return
     }
 

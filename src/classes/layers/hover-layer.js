@@ -39,7 +39,6 @@ export default class HoverLayer extends BoardLayer {
 
     //Validate coordinates
     if (!grid.isOnGrid(x, y)) {
-      console.log('not on grid', x, y, grid)
       return
     }
 
