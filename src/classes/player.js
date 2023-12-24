@@ -675,11 +675,6 @@ export default class Player extends Base {
    */
   bootstrap(container) {
 
-    //Already bootstrapped
-    if (this.elements.container) {
-      throw new Error(`Player has already been bootstrapped`)
-    }
-
     //Link element
     this.elements.container = container
 
@@ -688,6 +683,10 @@ export default class Player extends Base {
 
     //Bootstrap board
     this.bootstrapBoard()
+
+    //Remove any old listeners
+    this.teardownDocumentListeners()
+    this.teardownElementListeners()
 
     //Setup listeners
     this.setupDocumentListeners()
