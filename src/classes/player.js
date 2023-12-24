@@ -314,11 +314,6 @@ export default class Player extends Base {
     //Go to first position
     game.goToFirstPosition()
 
-    //Place handicap stones if specified in rules and no positions yet
-    if (game.getHandicap() > 1 && !game.position.hasStones()) {
-      game.placeDefaultHandicapStones()
-    }
-
     //Board present
     if (board) {
 
@@ -332,6 +327,16 @@ export default class Player extends Base {
 
       //Process path change
       this.processPathChange()
+    }
+
+    //Check handicap
+    const handicap = game.getHandicap()
+    const hasStones = game.position.hasStones()
+
+    //Place handicap stones if specified in rules and no positions yet
+    if (handicap > 1 && !hasStones) {
+      game.placeDefaultHandicapStones()
+      this.updateBoardPosition()
     }
   }
 
