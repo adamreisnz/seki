@@ -314,10 +314,23 @@ export default class Player extends Base {
     //Go to first position
     game.goToFirstPosition()
 
-    //Reset board
+    //Place handicap stones if specified in rules and no positions yet
+    if (game.getHandicap() > 1 && !game.position.hasStones()) {
+      game.placeDefaultHandicapStones()
+    }
+
+    //Board present
     if (board) {
+
+      //Reset board
       board.reset()
       board.loadConfigFromGame(game)
+
+      //Redraw board in case cut-off changed
+      board.recalculateDrawSize()
+      board.computeAndRedraw()
+
+      //Process path change
       this.processPathChange()
     }
   }

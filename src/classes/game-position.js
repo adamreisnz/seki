@@ -77,6 +77,20 @@ export default class GamePosition {
     this.markup.set(x, y, markup)
   }
 
+  /**
+   * Has stones check
+   */
+  hasStones() {
+    return !this.stones.isEmpty()
+  }
+
+  /**
+   * Has markup check
+   */
+  hasMarkup() {
+    return !this.markup.isEmpty()
+  }
+
   /*****************************************************************************
    * Liberties and capturing
    ***/
