@@ -6,7 +6,7 @@ parserOptions:
     impliedStrict: true
   sourceType: module
 env:
-  es6: true
+  es2022: true
   browser: true
   node: true
 rules:

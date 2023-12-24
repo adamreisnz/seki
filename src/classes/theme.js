@@ -42,6 +42,13 @@ export default class Theme extends Base {
   }
 
   /**
+   * Merge theme config
+   */
+  merge(config) {
+    this.config = merge(this.config, config)
+  }
+
+  /**
    * Check if a theme property exists
    */
   has(property) {

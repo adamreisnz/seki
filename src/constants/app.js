@@ -1,4 +1,4 @@
-import pkg from '../../package.json' assert {type: "json"};
+import pkg from '../../package.json' assert {type: "json"}
 
 //App details
 export const appIdentifier = pkg.name
