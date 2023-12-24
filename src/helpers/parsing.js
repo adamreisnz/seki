@@ -10,12 +10,13 @@ export function parseResult(result) {
   }
 
   //Make some replacements
-  result = result
+  return result
     .replace(/0\.03'/, 'F') //Fox uses 0.03 result for a Forfeit
     .replace(/0\.02'/, 'T') //Fox uses 0.02 result for a Timeout
     .replace('¼', '.25')
     .replace('½', '.5')
     .replace('¾', '.75')
+    .toUpperCase()
 }
 
 /**
