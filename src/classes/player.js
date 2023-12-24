@@ -311,6 +311,15 @@ export default class Player extends Base {
     this.loadConfigFromGame(game)
     this.triggerEvent('gameLoad', {game})
 
+    //Check handicap
+    const handicap = game.getHandicap()
+    const hasStones = game.position.hasStones()
+
+    //Place handicap stones if specified in rules and no positions yet
+    if (handicap > 1 && !hasStones) {
+      game.placeDefaultHandicapStones()
+    }
+
     //Go to first position
     game.goToFirstPosition()
 
@@ -325,17 +334,8 @@ export default class Player extends Base {
       board.recalculateDrawSize()
       board.computeAndRedraw()
 
-      //Process path change
+      //Process path change and update board position
       this.processPathChange()
-    }
-
-    //Check handicap
-    const handicap = game.getHandicap()
-    const hasStones = game.position.hasStones()
-
-    //Place handicap stones if specified in rules and no positions yet
-    if (handicap > 1 && !hasStones) {
-      game.placeDefaultHandicapStones()
       this.updateBoardPosition()
     }
   }
