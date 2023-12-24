@@ -318,13 +318,13 @@ export default class Player extends Base {
     const handicap = game.getHandicap()
     const hasStones = game.position.hasStones()
 
+    //Go to first position
+    game.goToFirstPosition()
+
     //Place handicap stones if specified in rules and no positions yet
     if (handicap > 1 && !hasStones) {
       game.placeDefaultHandicapStones()
     }
-
-    //Go to first position
-    game.goToFirstPosition()
 
     //Board present
     if (board) {
