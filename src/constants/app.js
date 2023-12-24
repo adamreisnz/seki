@@ -4,7 +4,6 @@ import pkg from '../../package.json' assert {type: "json"}
 export const appIdentifier = pkg.name
 export const appName = 'Seki'
 export const appVersion = pkg.version
-export const configVersion = '1.7'
 
 //Supported kifu formats
 export const kifuFormats = {
