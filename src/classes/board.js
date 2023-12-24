@@ -68,6 +68,9 @@ export default class Board extends Base {
     this.theme = new Theme(themeConfig)
     this.layers = new Map()
 
+    //Debug
+    this.debug('initialising board')
+
     //Initialize board
     this.init()
     this.initConfig(boardConfig)
@@ -82,8 +85,8 @@ export default class Board extends Base {
   init() {
 
     //Initialize board size
-    this.width = 0
-    this.height = 0
+    this.width = 19
+    this.height = 19
   }
 
   /**
@@ -222,7 +225,6 @@ export default class Board extends Base {
 
     //Load size from config
     this.loadSizeFromConfig()
-    this.computeAndRedraw()
   }
 
   /**
@@ -236,7 +238,6 @@ export default class Board extends Base {
     //Load it and redraw
     this.loadConfig(config)
     this.loadSizeFromConfig()
-    this.computeAndRedraw()
   }
 
   /**
@@ -270,6 +271,8 @@ export default class Board extends Base {
       return
     }
 
+    console.log('set size', width, this.width, height, this.height)
+
     //No change
     if (width === this.width && height === this.height) {
       return
@@ -283,7 +286,7 @@ export default class Board extends Base {
     this.layers.forEach(layer => layer.setGridSize(width, height))
 
     //Compute and redraw
-    this.computeAndRedraw()
+    this.computeAndRedraw('setSize')
   }
 
   /**
@@ -301,7 +304,7 @@ export default class Board extends Base {
     this.drawHeight = drawHeight
 
     //Redraw
-    this.computeAndRedraw()
+    this.computeAndRedraw('setDrawSize')
   }
 
   /**
@@ -642,12 +645,15 @@ export default class Board extends Base {
    * Compute draw parameters and redraw board
    * Called after a board size change, draw size change, section change or margin change
    */
-  computeAndRedraw() {
+  computeAndRedraw(calledFrom) {
 
     //If we can't redraw, then this doesn't make sense either
     if (!this.canDraw()) {
       return
     }
+
+    //Debug
+    this.debug(`compute & redraw, called from: ${calledFrom}`)
 
     //Get data
     const {
@@ -1000,12 +1006,12 @@ export default class Board extends Base {
       //Need to recalculate draw size?
       if (needsDrawSize.includes(key)) {
         this.recalculateDrawSize()
-        this.computeAndRedraw()
+        this.computeAndRedraw(`config ${key} changed`)
       }
 
       //Need to reprocess position?
       else if (needsRedraw.includes(key)) {
-        this.computeAndRedraw()
+        this.computeAndRedraw(`config ${key} changed`)
       }
     }, 100)
 

@@ -877,6 +877,7 @@ export default class Game extends Base {
   setTurn(color) {
     const {position} = this
     if (position) {
+      this.debug(`setting turn to ${color}`)
       position.setTurn(color)
       this.triggerEvent('positionChange', {position})
     }
@@ -888,6 +889,7 @@ export default class Game extends Base {
   switchTurn() {
     const {position} = this
     if (position) {
+      this.debug(`switching turn`)
       position.switchTurn()
       this.triggerEvent('positionChange', {position})
     }
@@ -992,6 +994,9 @@ export default class Game extends Base {
     if (!handicapPlacements[width] || !handicapPlacements[width][handicap]) {
       return
     }
+
+    //Debug
+    this.debug(`placing ${handicap} handicap stones`)
 
     //Add stones
     for (const {x, y} of handicapPlacements[width][handicap]) {

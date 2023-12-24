@@ -307,6 +307,9 @@ export default class Player extends Base {
     //Get game and board
     const {game, board} = this
 
+    //Debug
+    this.debug('processing loaded game')
+
     //Load game config and trigger event
     this.loadConfigFromGame(game)
     this.triggerEvent('gameLoad', {game})
@@ -327,12 +330,11 @@ export default class Player extends Base {
     if (board) {
 
       //Reset board
-      board.reset()
+      board.removeAll()
       board.loadConfigFromGame(game)
 
-      //Redraw board in case cut-off changed
+      //Recalculate draw size in case cut-off changed
       board.recalculateDrawSize()
-      board.computeAndRedraw()
 
       //Process path change and update board position
       this.processPathChange()
@@ -697,6 +699,15 @@ export default class Player extends Base {
    */
   teardown() {
 
+    //Flag as torn down
+    this.isTornDown = true
+
+    //Deactivate current mode
+    const currentHandler = this.getCurrentModeHandler()
+    if (currentHandler) {
+      currentHandler.deactivate()
+    }
+
     //Remove listeners
     this.teardownDocumentListeners()
     this.teardownElementListeners()
@@ -913,6 +924,12 @@ export default class Player extends Base {
    * Trigger an event
    */
   triggerEvent(type, detail) {
+
+    //Torn down?
+    if (this.isTornDown) {
+      console.log('helaas')
+      return
+    }
 
     //No detail provided, or not a mouse event, just trigger
     if (!detail || !type.match(/^mouse|click/)) {

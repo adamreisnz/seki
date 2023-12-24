@@ -77,18 +77,6 @@ export default class PlayerModeEdit extends PlayerModeReplay {
     this.findUsedMarkupLabels()
   }
 
-  /**
-   * Deactivate this mode
-   */
-  deactivate() {
-
-    //Parent method
-    super.deactivate()
-
-    //Clear edit tool
-    this.setEditTool(null)
-  }
-
   /**************************************************************************
    * Event listeners
    ***/
