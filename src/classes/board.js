@@ -67,6 +67,7 @@ export default class Board extends Base {
     //Instantiate theme and layers map
     this.theme = new Theme(themeConfig)
     this.layers = new Map()
+    this.elements = {}
 
     //Debug
     this.debug('initialising board')
@@ -869,6 +870,11 @@ export default class Board extends Base {
    * Recalculate draw size
    */
   recalculateDrawSize() {
+
+    //Can only recalculate when we've been bootstrapped onto a container element
+    if (!this.elements.container) {
+      return
+    }
 
     //Get data
     const {lastDrawWidth, lastDrawHeight} = this
