@@ -44,7 +44,7 @@ export function parseKomi(komi) {
     return 0
   }
 
-  //Fix to 2 decimals
+  //Fix to 2 decimals at most and convert back to number
   return Number(komi.toFixed(2))
 }
 
