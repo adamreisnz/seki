@@ -809,27 +809,28 @@ export default class Player extends Base {
 
     //Handle mouse up events that occurred outside of the board element
     this.documentEventHandler.on('mousedown', event => {
-      if (event.button !== 0) {
-        return //Only left mouse button
+      if (event.button === 0) {
+        this.isMouseDown = true
       }
-      this.isMouseDown = true
     })
     this.documentEventHandler.on('mousemove', event => {
-      if (event.button !== 0) {
-        return //Only left mouse button
+      if (event.button === 0) {
+        if (this.isMouseDown) {
+          this.isDragging = true
+        }
       }
-      if (this.isMouseDown) {
+    })
+    this.documentEventHandler.on('mouseup', event => {
+      if (event.button === 0) {
+        this.isMouseDown = false
         this.isDragging = true
       }
     })
-
-    //Handle mouse up events that occurred outside of the board element
     this.documentEventHandler.on('click', event => {
-      if (event.button !== 0) {
-        return //Only left mouse button
+      if (event.button === 0) {
+        this.isMouseDown = false
+        this.isDragging = false
       }
-      this.isMouseDown = false
-      this.isDragging = false
     })
   }
 
