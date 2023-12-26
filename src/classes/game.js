@@ -11,11 +11,7 @@ import ConvertToJgf from './converters/convert-to-jgf.js'
 import ConvertToJson from './converters/convert-to-json.js'
 import ConvertToSgf from './converters/convert-to-sgf.js'
 import {copy, get, set, merge, isObject} from '../helpers/object.js'
-import {
-  parseMainTime,
-  parseKomi,
-  parseHandicap,
-} from '../helpers/parsing.js'
+import {parseMainTime, parseKomi, parseHandicap, parseEvent} from '../helpers/parsing.js'
 import {isValidColor} from '../helpers/color.js'
 import {stoneColors} from '../constants/stone.js'
 import {handicapPlacements} from '../constants/game.js'
@@ -518,7 +514,18 @@ export default class Game extends Base {
    * Set/get event name
    */
   setEventName(eventName = '') {
-    this.eventName = eventName
+
+    //Check for URL presence
+    const [name, location] = parseEvent(eventName)
+    if (name && location) {
+      this.eventName = name
+      this.eventLocation = location
+    }
+
+    //Set as given
+    else {
+      this.eventName = eventName
+    }
   }
   getEventName() {
     return this.eventName
@@ -528,7 +535,18 @@ export default class Game extends Base {
    * Set/get event location
    */
   setEventLocation(eventLocation = '') {
-    this.eventLocation = eventLocation
+
+    //Check for URL presence
+    const [name, location] = parseEvent(eventLocation)
+    if (name && location) {
+      this.eventName = name
+      this.eventLocation = location
+    }
+
+    //Set as given
+    else {
+      this.eventLocation = eventLocation
+    }
   }
   getEventLocation() {
     return this.eventLocation
@@ -2162,14 +2180,14 @@ export default class Game extends Base {
       .map(player => {
         const {name, rank} = player
         if (rank) {
-          return `${name} [${rank}]`
+          return `[${name} ${rank}]`
         }
-        return name
+        return `[${name}]`
       })
       .join(' vs ')
 
     //Return filename
-    return `${date} ${numMoves > 0 ? `- ${numMoves}` : ''} - ${playerInfo}`
+    return `${date} - ${playerInfo}${numMoves > 0 ? ` - ${numMoves}` : ''}`
   }
 
   /**************************************************************************

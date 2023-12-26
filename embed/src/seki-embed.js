@@ -22,8 +22,8 @@ const baseUrl = `https://sekiplayer.com`
 
 //Regexes
 const regexSgf = /\(;[A-Za-z0-9[\]]*FF\[[1-4]\](.*)\)/
-const regexEventUrl = /(:\s|\sat\s)?(https?:\/\/(.*?(?=\s|$)))/
 const regexOgsUrl = /https:\/\/online-go\.com\/game\/([0-9]+)/
+const {regexEventUrl} = helpers.parsing
 
 //Generate captures string
 const capturesString = (count) => `${count} capture${count === 1 ? '' : 's'}`

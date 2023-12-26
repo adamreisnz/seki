@@ -1,4 +1,20 @@
 
+//Regex to match event urls
+export const regexEventUrl = /(:\s|\sat\s)?(https?:\/\/(.*?(?=\s|$)))/
+
+/**
+ * Parse event string
+ */
+export function parseEvent(str) {
+  const match = str.match(regexEventUrl)
+  if (!match) {
+    return [str]
+  }
+  const name = str.replace(regexEventUrl, '')
+  const location = match[2]
+  return [name, location]
+}
+
 /**
  * Parse a game result
  */
