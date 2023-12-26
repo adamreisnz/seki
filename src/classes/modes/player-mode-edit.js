@@ -337,6 +337,7 @@ export default class PlayerModeEdit extends PlayerModeReplay {
     const outcome = player.playMove(x, y)
     if (outcome.isValid) {
       player.playSound('move')
+      this.triggerEditedEvent()
       if (game.position.hasCaptures()) {
         const num = Math.min(game.position.getTotalCaptureCount(), 10)
         for (let i = 0; i < num; i++) {
@@ -360,11 +361,13 @@ export default class PlayerModeEdit extends PlayerModeReplay {
     //Erase markup first if it is present
     if (game.hasMarkup(x, y)) {
       this.removeMarkup(x, y)
+      this.triggerEditedEvent()
     }
 
     //Erase stones otherwise
     else if (game.hasStone(x, y)) {
       this.removeStone(x, y)
+      this.triggerEditedEvent()
     }
   }
 
@@ -375,16 +378,24 @@ export default class PlayerModeEdit extends PlayerModeReplay {
 
     //Get data
     const {game} = this
+    let hasErased = false
 
     //Loop area, erasing both markup and stones indiscriminantly
     area.forEach(({x, y}) => {
       if (game.hasMarkup(x, y)) {
         this.removeMarkup(x, y)
+        hasErased = true
       }
       if (game.hasStone(x, y)) {
         this.removeStone(x, y)
+        hasErased = true
       }
     })
+
+    //Trigger edited event
+    if (hasErased) {
+      this.triggerEditedEvent()
+    }
   }
 
   /**
@@ -406,6 +417,9 @@ export default class PlayerModeEdit extends PlayerModeReplay {
     //Remove existing stone and add new stone
     this.removeStone(x, y)
     game.addStone(x, y, color)
+
+    //Trigger edited event
+    this.triggerEditedEvent()
   }
 
   /**
@@ -419,6 +433,9 @@ export default class PlayerModeEdit extends PlayerModeReplay {
     //Remove from game and board
     game.removeStone(x, y)
     board.removeStone(x, y)
+
+    //Trigger edited event
+    this.triggerEditedEvent()
   }
 
   /**
@@ -444,6 +461,7 @@ export default class PlayerModeEdit extends PlayerModeReplay {
 
     //Track used markup label
     this.addUsedMarkupLabel(text)
+    this.triggerEditedEvent()
   }
 
   /**
@@ -471,6 +489,9 @@ export default class PlayerModeEdit extends PlayerModeReplay {
     //Remove from game and board
     game.removeMarkup(x, y)
     board.removeMarkup(x, y)
+
+    //Trigger edited event
+    this.triggerEditedEvent()
   }
 
   /**
@@ -488,6 +509,9 @@ export default class PlayerModeEdit extends PlayerModeReplay {
     game.removeAllMarkup()
     board.removeAllMarkup()
     board.eraseDrawLayer()
+
+    //Trigger edited event
+    this.triggerEditedEvent()
   }
 
   /**
@@ -850,5 +874,12 @@ export default class PlayerModeEdit extends PlayerModeReplay {
     else if (Object.values(markupTypes).includes(tool)) {
       return tool
     }
+  }
+
+  /**
+   * Trigger edited event
+   */
+  triggerEditedEvent() {
+    this.player.triggerEvent('edited')
   }
 }
