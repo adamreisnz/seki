@@ -95,6 +95,11 @@ export default class ConvertFromSgf extends Converter {
    */
   convert(sgf) {
 
+    //No data
+    if (!sgf) {
+      throw new Error(`No SGF data supplied`)
+    }
+
     //Initialize
     const game = new Game()
     const info = {}

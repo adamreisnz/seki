@@ -14,6 +14,11 @@ export default class ConvertFromJgf extends Converter {
    */
   convert(jgf) {
 
+    //No data
+    if (!jgf) {
+      throw new Error(`No JGF data supplied`)
+    }
+
     //Initialize
     const game = new Game()
     const root = this.parseTree(jgf.tree)

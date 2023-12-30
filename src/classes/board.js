@@ -501,7 +501,7 @@ export default class Board extends Base {
    */
   canDraw() {
     const {width, height, drawWidth, drawHeight} = this
-    return (width && height && drawWidth && drawHeight)
+    return Boolean(width && height && drawWidth && drawHeight)
   }
 
   /**************************************************************************
@@ -1005,17 +1005,18 @@ export default class Board extends Base {
     const fn = throttle(event => {
 
       //Check what has changed
-      const {key} = event.detail
+      const {key, value} = event.detail
+      this.debug(`${key} changed to ${value}`)
 
       //Need to recalculate draw size?
       if (needsDrawSize.includes(key)) {
         this.recalculateDrawSize()
-        this.computeAndRedraw(`config ${key} changed`)
+        this.computeAndRedraw(`${key} value changed`)
       }
 
       //Need to reprocess position?
       else if (needsRedraw.includes(key)) {
-        this.computeAndRedraw(`config ${key} changed`)
+        this.computeAndRedraw(`${key} value changed`)
       }
     }, 100)
 

@@ -26,6 +26,11 @@ export default class ConvertFromGib extends Converter {
    */
   convert(gib) {
 
+    //No data
+    if (!gib) {
+      throw new Error(`No GIB data supplied`)
+    }
+
     //Initialize
     const game = new Game()
 

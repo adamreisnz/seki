@@ -586,10 +586,7 @@ export default class Game extends Base {
    * Set/get game result
    */
   setGameResult(gameResult = '') {
-    const match = gameResult
-      .toUpperCase()
-      .match(/^((B|W)\+([0-9]+(\.[0-9]+)?|R|T|F))/)
-    this.gameResult = match ? match[1] : '?'
+    this.gameResult = gameResult || '?'
   }
   getGameResult() {
     return this.gameResult
@@ -601,7 +598,7 @@ export default class Game extends Base {
   setGameDate(gameDate = '') {
     const match = gameDate
       .match(/^(([0-9]{4})(-[0-9]{2})?(-[0-9]{2})?)/)
-    this.gameDate = match ? match[1] : '?'
+    this.gameDate = match ? match[1] : ''
   }
   getGameDate() {
     return this.gameDate
