@@ -16,14 +16,6 @@ export const defaultGameInfo = {
     type: gameTypes.GO,
     date: dateString(),
   },
-  players: {
-    black: {
-      name: 'Black',
-    },
-    white: {
-      name: 'White',
-    },
-  },
   board: {
     size: 19,
   },
