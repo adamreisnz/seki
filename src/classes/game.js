@@ -11,7 +11,7 @@ import ConvertToJgf from './converters/convert-to-jgf.js'
 import ConvertToJson from './converters/convert-to-json.js'
 import ConvertToSgf from './converters/convert-to-sgf.js'
 import {copy, get, set, merge, isObject} from '../helpers/object.js'
-import {parseMainTime, parseKomi, parseHandicap, parseEvent} from '../helpers/parsing.js'
+import {parseMainTime, parseKomi, parseHandicap, parseEvent, parseResult} from '../helpers/parsing.js'
 import {isValidColor} from '../helpers/color.js'
 import {stoneColors} from '../constants/stone.js'
 import {handicapPlacements} from '../constants/game.js'
@@ -586,7 +586,7 @@ export default class Game extends Base {
    * Set/get game result
    */
   setGameResult(gameResult = '') {
-    this.gameResult = gameResult || '?'
+    this.gameResult = parseResult(gameResult)
   }
   getGameResult() {
     return this.gameResult
