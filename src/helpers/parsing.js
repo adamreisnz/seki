@@ -27,6 +27,9 @@ export function parseResult(result) {
 
   //Make some replacements
   return result
+    .replace(/resign/i, 'R')
+    .replace(/time/i, 'T')
+    .replace(/forfeit/i, 'F')
     .replace(/0\.03'/, 'F') //Fox uses 0.03 result for a Forfeit
     .replace(/0\.02'/, 'T') //Fox uses 0.02 result for a Timeout
     .replace(/¼/, '.25')

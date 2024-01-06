@@ -41,6 +41,9 @@ export default class ConvertFromGib extends Converter {
     this.findGameResult(gib, game)
     this.findMoves(gib, game, game.root)
 
+    //Set event location
+    game.setEventLocation('Tygem Go Server')
+
     //Return game
     return game
   }
