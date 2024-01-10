@@ -93,12 +93,15 @@ export default class ConvertFromSgf extends Converter {
   /**
    * Convert SGF string into a seki game object
    */
-  convert(sgf) {
+  convert(sgf, verbose = false) {
 
     //No data
     if (!sgf) {
       throw new Error(`No SGF data supplied`)
     }
+
+    //Set verbose flag
+    this.verbose = verbose
 
     //Initialize
     const game = new Game()
@@ -196,7 +199,9 @@ export default class ConvertFromSgf extends Converter {
       }
 
       //Unknown property
-      console.warn(`Unknown property encountered while parsing SGF: ${key} =>`, values)
+      if (this.verbose) {
+        console.warn(`Unknown property encountered while parsing SGF: ${key} =>`, values)
+      }
     }
   }
 

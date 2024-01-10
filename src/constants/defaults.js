@@ -107,6 +107,7 @@ export const defaultPlayerConfig = {
 
   //Auto play delay (in ms)
   autoPlayDelay: 1000,
+  autoPlayStartsImmediately: true,
 }
 
 //Default star point locations

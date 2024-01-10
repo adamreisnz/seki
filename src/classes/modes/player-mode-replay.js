@@ -239,10 +239,16 @@ export default class PlayerModeReplay extends PlayerMode {
 
     //Get data
     const {player, game, isAutoPlaying} = this
+    const autoPlayStartsImmediately = player.getConfig('autoPlayStartsImmediately')
 
     //Already auto playing or no next position?
     if (isAutoPlaying || !game.hasNextPosition()) {
       return
+    }
+
+    //If starting immediately, go to the next position right away
+    if (autoPlayStartsImmediately) {
+      player.goToNextPosition()
     }
 
     //Toggle flag and queue next move
