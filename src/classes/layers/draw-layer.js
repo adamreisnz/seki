@@ -14,6 +14,9 @@ export default class DrawLayer extends BoardLayer {
   lastX = null
   lastY = null
 
+  //Check if we've drawn anything
+  hasDrawn = false
+
   /**
    * Unneeded methods
    */
@@ -55,6 +58,9 @@ export default class DrawLayer extends BoardLayer {
     context.lineTo(x, y)
     context.stroke()
     context.closePath()
+
+    //Flag as having drawn
+    this.hasDrawn = true
   }
 
   /**
@@ -63,5 +69,13 @@ export default class DrawLayer extends BoardLayer {
   stopDrawing() {
     this.lastX = null
     this.lastY = null
+  }
+
+  /**
+   * Erase wrapper
+   */
+  erase() {
+    super.erase()
+    this.hasDrawn = false
   }
 }

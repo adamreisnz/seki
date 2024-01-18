@@ -636,6 +636,15 @@ export default class Board extends Base {
       ?.erase()
   }
 
+  /**
+   * Check if we have free drawn something
+   */
+  hasFreeDrawn()  {
+    return this
+      .getLayer(boardLayerTypes.DRAW)
+      ?.hasDrawn
+  }
+
   /*****************************************************************************
    * Drawing helpers
    ***/

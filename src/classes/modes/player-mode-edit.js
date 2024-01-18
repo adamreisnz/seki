@@ -502,13 +502,18 @@ export default class PlayerModeEdit extends PlayerModeReplay {
     //Get data
     const {game, board} = this
 
+    //Free drawn something? Erase that first (and leave markup)
+    if (board.hasFreeDrawn()) {
+      board.eraseDrawLayer()
+      return
+    }
+
     //Reset used markup labels
     this.resetUsedMarkupLabels()
 
     //Remove all from game and board
     game.removeAllMarkup()
     board.removeAllMarkup()
-    board.eraseDrawLayer()
 
     //Trigger edited event
     this.triggerEditedEvent()
