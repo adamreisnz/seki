@@ -20,7 +20,7 @@ const regexSequence = /\(|\)|(;(\s*[A-Z]+\s*((\[\])|(\[(.|\s)*?([^\\]\])))+)*)/g
 const regexNode = /[A-Z]+\s*((\[\])|(\[(.|\s)*?([^\\]\])))+/g
 const regexProperty = /[A-Z]+/
 const regexValues = /(\[\])|(\[(.|\s)*?([^\\]\]))/g
-const regexMove = /^;[B|W]\[/i
+const regexMove = /(;|\])[B|W]\[/i
 const regexBlackPlayer = /PB|BT|BR|BL|OB/i
 const regexWhitePlayer = /PW|WT|WR|WL|OW/i
 

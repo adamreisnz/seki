@@ -290,7 +290,7 @@ export default class PlayerModeEdit extends PlayerModeReplay {
 
     //Move tool
     if (this.isUsingMoveTool()) {
-      if (!isDragging || area.length === 1) {
+      if (!isDragging) {
         this.playMove(x, y)
       }
       else {

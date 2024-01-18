@@ -298,7 +298,6 @@ export const defaultTheme = {
     base: {
       radius(cellSize) {
         if (!cellSize) {
-          console.log(arguments)
           throw new Error('No cell size!')
         }
         return Math.floor(cellSize / 2)

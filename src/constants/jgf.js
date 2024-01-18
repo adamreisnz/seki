@@ -42,6 +42,5 @@ export const jgfPaths = [
 //Node paths to copy over
 export const jgfNodePaths = [
   'name',
-  'solution',
   'comments',
 ]

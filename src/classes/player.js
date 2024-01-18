@@ -823,7 +823,7 @@ export default class Player extends Base {
     this.documentEventHandler.on('mouseup', event => {
       if (event.button === 0) {
         this.isMouseDown = false
-        this.isDragging = true
+        this.isDragging = false
       }
     })
     this.documentEventHandler.on('click', event => {

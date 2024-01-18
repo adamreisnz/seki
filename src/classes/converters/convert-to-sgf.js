@@ -249,10 +249,13 @@ export default class ConvertToSgf extends Converter {
 
     //Just one child
     else if (node.hasChildren()) {
+
       //Already have content? Add separator
       if (sgf !== '') {
-        sgf += '\n;'
+        sgf += ';'
       }
+
+      //Add node contents
       sgf += this.parseNode(node.getChild(), sgf)
     }
 
@@ -371,20 +374,19 @@ export default class ConvertToSgf extends Converter {
    */
   parseComments(comments) {
 
-    //Flatten comment objects
-    const flattened = comments
-      .map(comment => {
-        if (typeof comment === 'string') {
-          return comment
-        }
-        else if (typeof comment === 'object' && comment.comment) {
-          return comment.comment
-        }
-      })
-      .filter(comment => !!comment)
+    //No comments
+    if (!comments) {
+      return ''
+    }
 
-    //Nothing
-    if (flattened.length === 0) {
+    //Not an array
+    if (!Array.isArray(comments)) {
+      comments = [comments]
+    }
+
+    //Filter out empty comments
+    comments = comments.filter(Boolean)
+    if (comments.length === 0) {
       return ''
     }
 
@@ -396,6 +398,9 @@ export default class ConvertToSgf extends Converter {
    * Node name parser
    */
   parseNodeName(nodeName) {
+    if (!nodeName) {
+      return ''
+    }
     return this.makeSgfGroup('N', nodeName, true)
   }
 
