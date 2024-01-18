@@ -7,6 +7,11 @@ import {
   jgfNodePaths,
 } from '../../constants/jgf.js'
 
+//Default options
+const defaultOptions = {
+  rawJs: false,
+}
+
 /**
  * Converter to JGF
  */
@@ -15,12 +20,17 @@ export default class ConvertToJgf extends Converter {
   /**
    * Convert Seki game object to JGF
    */
-  convert(game) {
+  convert(game, options = {}) {
 
     //Not a game instance
     if (!(game instanceof Game)) {
       throw new Error('Not a game instance')
     }
+
+    //Get options
+    const {
+      rawJs,
+    } = Object.assign({}, defaultOptions, options || {})
 
     //Get game info and initialize JGF object
     const info = game.getInfo()
@@ -28,7 +38,10 @@ export default class ConvertToJgf extends Converter {
 
     //Copy over relevant game info
     for (const path of jgfPaths) {
-      set(jgf, path, copy(get(info, path)))
+      const value = get(info, path)
+      if (value !== undefined && value !== null && value !== '') {
+        set(jgf, path, copy(value))
+      }
     }
 
     //Create tree
@@ -38,8 +51,13 @@ export default class ConvertToJgf extends Converter {
     this.addNodeToContainer(game.root, jgf.tree)
     this.appendGenerator(jgf)
 
+    //Raw JS?
+    if (rawJs) {
+      return jgf
+    }
+
     //Return JGF
-    return jgf
+    return JSON.stringify(jgf, null, 2)
   }
 
   /**
@@ -47,9 +65,10 @@ export default class ConvertToJgf extends Converter {
    */
   appendGenerator(jgf) {
     jgf.record = jgf.record || {}
-    jgf.record.generator = this.getGeneratorSignature()
+    jgf.record.format = 'JGF'
     jgf.record.version = jgfVersion
     jgf.record.charset = 'UTF-8'
+    jgf.record.generator = this.getGeneratorSignature()
   }
 
   /**
@@ -93,7 +112,7 @@ export default class ConvertToJgf extends Converter {
 
     //Copy over relevant node paths
     for (const path of jgfNodePaths) {
-      set(jgfNode, path, copy(node, path))
+      set(jgfNode, path, copy(node[path]))
     }
 
     //Move
@@ -120,5 +139,8 @@ export default class ConvertToJgf extends Converter {
     if (Array.isArray(node.score)) {
       jgfNode.score = node.score.map(entry => copy(entry))
     }
+
+    //Return node
+    return jgfNode
   }
 }

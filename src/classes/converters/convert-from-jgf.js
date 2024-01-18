@@ -19,6 +19,21 @@ export default class ConvertFromJgf extends Converter {
       throw new Error(`No JGF data supplied`)
     }
 
+    //Parse JSON
+    if (typeof jgf === 'string') {
+      try {
+        jgf = JSON.parse(jgf)
+      }
+      catch (error) {
+        throw new Error(`Unable to parse JSON: ${error.message}`)
+      }
+    }
+
+    //Validate
+    if (typeof jgf !== 'object') {
+      throw new Error(`Invalid JGF data supplied`)
+    }
+
     //Initialize
     const game = new Game()
     const root = this.parseTree(jgf.tree)
@@ -82,7 +97,10 @@ export default class ConvertFromJgf extends Converter {
 
     //Copy over relevant node paths
     for (const path of jgfNodePaths) {
-      set(node, path, copy(get(jgfNode, path)))
+      const value = get(jgfNode, path)
+      if (value !== undefined && value !== null && value !== '') {
+        set(node, path, copy(value))
+      }
     }
 
     //Move

@@ -7,7 +7,6 @@ export const appVersion = pkg.version
 
 //Supported kifu formats
 export const kifuFormats = {
-  JSON: 'json',
   JGF: 'jgf',
   SGF: 'sgf',
   GIB: 'gib',

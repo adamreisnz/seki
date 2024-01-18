@@ -4,11 +4,9 @@ import GamePath from './game-path.js'
 import GameNode from './game-node.js'
 import GamePosition from './game-position.js'
 import ConvertFromJgf from './converters/convert-from-jgf.js'
-import ConvertFromJson from './converters/convert-from-json.js'
 import ConvertFromSgf from './converters/convert-from-sgf.js'
 import ConvertFromGib from './converters/convert-from-gib.js'
 import ConvertToJgf from './converters/convert-to-jgf.js'
-import ConvertToJson from './converters/convert-to-json.js'
 import ConvertToSgf from './converters/convert-to-sgf.js'
 import {copy, get, set, merge, isObject} from '../helpers/object.js'
 import {parseMainTime, parseKomi, parseHandicap, parseEvent, parseResult} from '../helpers/parsing.js'
@@ -2129,14 +2127,6 @@ export default class Game extends Base {
   }
 
   /**
-   * Convert to JGF JSON
-   */
-  toJson() {
-    const converter = new ConvertToJson()
-    return converter.convert(this)
-  }
-
-  /**
    * Convert to SGF
    */
   toSgf() {
@@ -2155,57 +2145,14 @@ export default class Game extends Base {
         return this.toSgf()
       case kifuFormats.JGF:
         return this.toJgf()
-      case kifuFormats.JSON:
-        return this.toJson()
       default:
         throw new Error(`Unsupported data format`)
     }
   }
 
-  /**
-   * Generate file name from game info
-   */
-  getFileName() {
-
-    //Get info
-    const date = this.getGameDate()
-    const {black, white} = this.getPlayers()
-    const numMoves = this.getTotalNumberOfMoves()
-
-    //Parse players
-    const playerInfo = [black, white]
-      .map(player => {
-        const {name, rank} = player
-        if (rank) {
-          return `[${name} ${rank}]`
-        }
-        return `[${name}]`
-      })
-      .join(' vs ')
-
-    //Return filename
-    return `${date} - ${playerInfo}${numMoves > 0 ? ` - ${numMoves}` : ''}`
-  }
-
   /**************************************************************************
    * Static helpers to create game instances from different formats
    ***/
-
-  /**
-   * Load from SGF data
-   */
-  static fromJson(json) {
-
-    //Create converter
-    const converter = new ConvertFromJson()
-    const game = converter.convert(json)
-    if (!game) {
-      throw new Error(`Unable to parse JSON data`)
-    }
-
-    //Return game
-    return game
-  }
 
   /**
    * Load from JGF data
@@ -2277,7 +2224,7 @@ export default class Game extends Base {
         return kifuFormats.SGF
       }
       else if (c === '{' || c === '[') {
-        return kifuFormats.JSON
+        return kifuFormats.JGF
       }
       else if (c === '\\') {
         return kifuFormats.GIB
@@ -2305,8 +2252,6 @@ export default class Game extends Base {
         return this.fromJgf(data)
       case kifuFormats.GIB:
         return this.fromGib(data)
-      case kifuFormats.JSON:
-        return this.fromJson(data)
       default:
         throw new Error(`Unsupported data format`)
     }
