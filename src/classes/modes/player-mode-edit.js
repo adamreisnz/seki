@@ -26,6 +26,7 @@ export default class PlayerModeEdit extends PlayerModeReplay {
   //Track current and last gird event detail
   currentGridDetail
   lastGridDetail
+  lastEditedGridDetail
 
   /**
    * Initialise
@@ -103,13 +104,21 @@ export default class PlayerModeEdit extends PlayerModeReplay {
   onClick(event) {
 
     //Get data
-    const {board} = this
+    const {player, board} = this
+
+    //Re-apply focus on player
+    player.elements.container.focus()
 
     //Stop free draw
     board.stopFreeDraw()
 
     //Only process if valid coordinates
     if (!this.hasValidCoordinates(event)) {
+      return
+    }
+
+    //Only process if not same grid detail as last time
+    if (this.isLastEditedGridDetail(event)) {
       return
     }
 
@@ -124,13 +133,16 @@ export default class PlayerModeEdit extends PlayerModeReplay {
   onMouseMove(event) {
 
     //Get data
-    const {board} = this
+    const {player, board} = this
     const {nativeEvent, isDragging} = event.detail
 
     //Only process if dragging and using free draw tool
     if (!isDragging || !this.isUsingDrawTool()) {
       return
     }
+
+    //Re-apply focus on player
+    player.elements.container.focus()
 
     //Draw directly on drawing layer
     const {offsetX, offsetY} = nativeEvent
@@ -157,8 +169,21 @@ export default class PlayerModeEdit extends PlayerModeReplay {
     //Show eraser always
     this.showHoverEraser()
 
-    //Dragging? Use edit tool
+    //Dragging?
     if (isDragging) {
+
+      //Move tool, action will be handled by the click handler
+      //Just display the hover stone though
+      if (this.isUsingMoveTool()) {
+        this.showHoverStone()
+        return
+      }
+
+      //Store last edited grid detail. This is to prevent the click event
+      //from double triggering the edit event when it fires on the same cell
+      this.lastEditedGridDetail = event.detail
+
+      //Use edit tool
       this.edit(event)
       return
     }
@@ -292,9 +317,6 @@ export default class PlayerModeEdit extends PlayerModeReplay {
     if (this.isUsingMoveTool()) {
       if (!isDragging) {
         this.playMove(x, y)
-      }
-      else {
-        this.showHoverStone()
       }
       return //Return to preserve move markers
     }
@@ -886,5 +908,24 @@ export default class PlayerModeEdit extends PlayerModeReplay {
    */
   triggerEditedEvent() {
     this.player.triggerEvent('edited')
+  }
+
+  /**
+   * Check if event has the same coordinates as last grid detail
+   */
+  isLastEditedGridDetail(event) {
+
+    //Get last detail
+    const {lastEditedGridDetail} = this
+    if (!lastEditedGridDetail) {
+      return false
+    }
+
+    //Reset it for next time
+    this.lastEditedGridDetail = null
+
+    //Check detail
+    const {x, y} = lastEditedGridDetail
+    return (x === event.detail.x && y === event.detail.y)
   }
 }

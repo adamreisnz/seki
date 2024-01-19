@@ -677,6 +677,7 @@ export default class Player extends Base {
 
     //Link element
     this.elements.container = container
+    container.tabIndex = -1 //To allow it to receive focus
 
     //Create audio elements
     this.createAudioElements()
