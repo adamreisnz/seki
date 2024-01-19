@@ -18,7 +18,7 @@ export default class StoneGlass extends Stone {
     this.loadProperties()
 
     //Get data
-    const {radius, color} = this
+    const {radius, displayColor} = this
     const absX = this.getAbsX(x)
     const absY = this.getAbsY(y)
 
@@ -29,7 +29,7 @@ export default class StoneGlass extends Stone {
     context.beginPath()
 
     //Determine stone texture
-    if (color === stoneColors.WHITE) {
+    if (displayColor === stoneColors.WHITE) {
       context.fillStyle = context.createRadialGradient(
         absX - 2 * radius / 5,
         absY - 2 * radius / 5,

@@ -52,7 +52,8 @@ export default class Theme extends Base {
    * Check if a theme property exists
    */
   has(property) {
-    return Boolean(get(this.config, property))
+    const value = get(this.config, property)
+    return (typeof value !== 'undefined')
   }
 
   /**

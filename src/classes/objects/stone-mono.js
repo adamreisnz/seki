@@ -60,12 +60,12 @@ export default class StoneMono extends Stone {
     )
     context.fill()
 
-    //Configure context
-    context.lineWidth = lineWidth
-    context.strokeStyle = lineColor
-
     //Draw outline
-    context.stroke()
+    if (lineWidth) {
+      context.lineWidth = lineWidth
+      context.strokeStyle = lineColor
+      context.stroke()
+    }
 
     //Restore context
     this.restoreContext(context)

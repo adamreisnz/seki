@@ -108,6 +108,10 @@ export const defaultPlayerConfig = {
   //Auto play delay (in ms)
   autoPlayDelay: 1000,
   autoPlayStartsImmediately: true,
+
+  //Apply listeners
+  applyElementListeners: true,
+  applyDocumentListeners: true,
 }
 
 //Default star point locations
@@ -231,9 +235,6 @@ export const defaultTheme = {
     //Glass stones
     glass: {
       shadow: true,
-      color(cellSize, stoneColor) {
-        return (stoneColor === stoneColors.BLACK) ? '#111' : '#cfcfca'
-      },
     },
 
     //Mono stones

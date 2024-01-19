@@ -799,6 +799,11 @@ export default class Player extends Base {
    */
   setupDocumentListeners() {
 
+    //Not needed
+    if (!this.getConfig('applyDocumentListeners')) {
+      return
+    }
+
     //Create event handler
     this.documentEventHandler = new EventHandler(document)
 
@@ -847,6 +852,11 @@ export default class Player extends Base {
    * Setup element listeners
    */
   setupElementListeners() {
+
+    //Not needed
+    if (!this.getConfig('applyElementListeners')) {
+      return
+    }
 
     //Get board
     const {board} = this
