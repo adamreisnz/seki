@@ -142,6 +142,7 @@ export const defaultTheme = {
     margin: 0.25, //cells
     backgroundColor: '#e2b768',
     backgroundImage: '',
+    backgroundImageScale: 1,
     stoneStyle: stoneStyles.SLATE_SHELL,
   },
 

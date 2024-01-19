@@ -30,6 +30,7 @@ export default class BackgroundLayer extends BoardLayer {
     const {theme, context} = this
     const backgroundColor = theme.get('board.backgroundColor')
     const backgroundImage = theme.get('board.backgroundImage')
+    const backgroundImageScale = theme.get('board.backgroundImageScale')
     const {width, height} = context.canvas
 
     //Background color
@@ -47,8 +48,8 @@ export default class BackgroundLayer extends BoardLayer {
         //Create image scaling canvas to upscale background image
         const scalingCanvas = document.createElement('canvas')
         const scalingContext = scalingCanvas.getContext('2d')
-        const scaledWidth = img.width / 2
-        const scaledHeight = img.height / 2
+        const scaledWidth = img.width * backgroundImageScale
+        const scaledHeight = img.height * backgroundImageScale
 
         //Set the size and draw image on it
         scalingCanvas.width = scaledWidth
