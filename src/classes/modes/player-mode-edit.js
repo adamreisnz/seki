@@ -583,7 +583,7 @@ export default class PlayerModeEdit extends PlayerModeReplay {
     }
 
     //Show hover, in case we're still over the board with mouse and
-    //the tool changed via hotkey
+    //the tool or move color changed via hotkey
     this.showHoverEraser()
     this.showHoverMarkup()
     this.showHoverStone()
