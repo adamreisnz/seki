@@ -352,14 +352,18 @@ export default class PlayerModeEdit extends PlayerModeReplay {
    */
   playMove(x, y) {
 
-    //Get player
+    //Get player and play move
     const {player, game} = this
-
-    //Play move
     const outcome = player.playMove(x, y)
+
+    //Handle valid outcome
     if (outcome.isValid) {
+
+      //Play move sound and trigger edited event
       player.playSound('move')
       this.triggerEditedEvent()
+
+      //Play capture sounds
       if (game.position.hasCaptures()) {
         const num = Math.min(game.position.getTotalCaptureCount(), 10)
         for (let i = 0; i < num; i++) {

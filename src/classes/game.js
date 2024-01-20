@@ -1663,10 +1663,17 @@ export default class Game extends Base {
     //Get color
     const color = this.position.getTurn()
 
-    //Already have a variation here? Just advance position
+    //Already have a variation here?
     if (this.node.hasMoveVariation(x, y)) {
+
+      //Get variation node
       const i = this.node.getMoveVariationIndex(x, y)
-      return this.goToNextPosition(i)
+      const child = this.node.getChild(i)
+
+      //If this was the same color as current color, just go to the variation
+      if (color === child.getMoveColor()) {
+        return this.goToNextPosition(i)
+      }
     }
 
     //Validate move and get new position
