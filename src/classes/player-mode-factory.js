@@ -2,6 +2,7 @@ import PlayerModeStatic from './modes/player-mode-static.js'
 import PlayerModePlay from './modes/player-mode-play.js'
 import PlayerModeReplay from './modes/player-mode-replay.js'
 import PlayerModeEdit from './modes/player-mode-edit.js'
+import PlayerModeScore from './modes/player-mode-score.js'
 import PlayerModeSolve from './modes/player-mode-solve.js'
 import {playerModes} from '../constants/player.js'
 
@@ -21,6 +22,8 @@ export default class PlayerModeFactory {
         return PlayerModeReplay
       case playerModes.EDIT:
         return PlayerModeEdit
+      case playerModes.SCORE:
+        return PlayerModeScore
       case playerModes.SOLVE:
         return PlayerModeSolve
       case playerModes.STATIC:

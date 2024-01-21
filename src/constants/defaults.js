@@ -48,6 +48,7 @@ export const defaultPlayerConfig = {
     playerModes.PLAY,
     playerModes.REPLAY,
     playerModes.EDIT,
+    playerModes.SCORE,
     playerModes.SOLVE,
   ],
 

@@ -1,12 +1,10 @@
 import Base from './base.js'
 import Board from './board.js'
 import Game from './game.js'
-import GameScoreState from './game-score-state.js'
-import GameScoreEstimator from './game-score-estimator.js'
+
 import EventHandler from './event-handler.js'
 import PlayerModeFactory from './player-mode-factory.js'
 import {playerModes} from '../constants/player.js'
-import {boardLayerTypes} from '../constants/board.js'
 import {defaultPlayerConfig} from '../constants/defaults.js'
 import {
   getPixelRatio,
@@ -64,6 +62,7 @@ export default class Player extends Base {
       playerModes.REPLAY,
       playerModes.EDIT,
       playerModes.PLAY,
+      playerModes.SCORE,
     ]
 
     //Instantiate
@@ -638,79 +637,6 @@ export default class Player extends Base {
     if (board) {
       board.updatePosition(position)
     }
-  }
-
-  /**************************************************************************
-   * Scoring
-   ***/
-
-  /**
-   * Estimate score based on probability map
-   *
-   * Probability map is an array of arrays of numbers between -1 and 1, as per
-   * the output of Sabaki's deadstones library.
-   */
-  estimateScore(probabilityMap, threshold) {
-
-    //Get board and game and initialise estimator
-    const {game} = this
-    const estimator = new GameScoreEstimator(game)
-
-    //Use probability map
-    estimator.useProbabilityMap(probabilityMap, threshold)
-
-    //Estimate score
-    return estimator.estimate()
-  }
-
-  /**
-   * Calculate score based on given dead stones
-   *
-   * The dead stones are an array of x and y coordinates of estimated dead
-   * stones, as per the output of Sabaki's deadstones library.
-   */
-  calculateScore(deadStones) {
-
-    //Get board and game and initialise estimator
-    const {game} = this
-    const estimator = new GameScoreEstimator(game)
-    const state = new GameScoreState(game)
-
-    //Set dead stones in state and feed state to estimator
-    state.setDeadStones(deadStones)
-    estimator.useGameScoreState(state)
-
-    //Estimate score
-    return estimator.estimate()
-  }
-
-  /**
-   * Display territory and captures on the scoring layer of the board
-   * based on the output of a score estimate or calculation
-   */
-  displayScore(result) {
-
-    //Get data
-    const {board} = this
-    const {territory, captures} = result
-
-    //Remove markup and setup score layer
-    board.removeAll(boardLayerTypes.MARKUP)
-    board.setAll(boardLayerTypes.SCORE, territory, captures)
-    board.redraw()
-  }
-
-  /**
-   * Clear the scoring layer
-   */
-  clearScore() {
-
-    //Get board and game
-    const {board} = this
-
-    //Remove all scoring
-    board.removeAll(boardLayerTypes.SCORE)
-    board.redraw()
   }
 
   /*****************************************************************************

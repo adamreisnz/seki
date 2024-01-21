@@ -61,3 +61,12 @@ export const coordinateGenerators = {
   index,
   lowercase,
 }
+
+//Normalisation of coordinates object
+export function normalizeCoordinatesObject(obj) {
+  if (Array.isArray(obj)) {
+    const [x, y] = obj
+    return {x, y}
+  }
+  return obj
+}

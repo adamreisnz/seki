@@ -17,17 +17,6 @@ export default class GameScoreState {
   }
 
   /**
-   * Set dead stones
-   */
-  setDeadStones(deadStones) {
-    if (Array.isArray(deadStones)) {
-      for (const [x, y] of deadStones) {
-        this.markDead(x, y)
-      }
-    }
-  }
-
-  /**
    * Mark stones as dead
    */
   markDead(x, y) {
