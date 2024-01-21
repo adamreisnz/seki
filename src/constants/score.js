@@ -9,10 +9,15 @@ export const scoreTypes = {
 
 //Possible score states
 export const scoreStates = {
-  UNKNOWN: 0,
-  BLACK_STONE: 1,
-  WHITE_STONE: -1,
-  BLACK_CANDIDATE: 2,
-  WHITE_CANDIDATE: -2,
-  NEUTRAL: 3,
+  BLACK_STONE: stoneColors.BLACK,
+  WHITE_STONE: stoneColors.WHITE,
+  BLACK_CANDIDATE: `candidate_${stoneColors.BLACK}`,
+  WHITE_CANDIDATE: `candidate_${stoneColors.WHITE}`,
+  NEUTRAL: 'neutral',
+}
+
+//Scoring methods
+export const scoringMethods = {
+  AREA: 'area',
+  TERRITORY: 'territory',
 }

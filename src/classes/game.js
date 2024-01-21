@@ -10,7 +10,7 @@ import ConvertToJgf from './converters/convert-to-jgf.js'
 import ConvertToSgf from './converters/convert-to-sgf.js'
 import {copy, get, set, merge, isObject} from '../helpers/object.js'
 import {parseMainTime, parseKomi, parseHandicap, parseEvent, parseResult} from '../helpers/parsing.js'
-import {isValidColor} from '../helpers/color.js'
+import {isValidColor, colorToNumeric} from '../helpers/color.js'
 import {stoneColors} from '../constants/stone.js'
 import {handicapPlacements} from '../constants/game.js'
 import {kifuFormats} from '../constants/app.js'
@@ -1170,6 +1170,13 @@ export default class Game extends Base {
    */
   getPosition() {
     return this.position
+  }
+
+  /**
+   * Get position matrix
+   */
+  getPositionMatrix() {
+    return this.position.stones.toMatrix(colorToNumeric)
   }
 
   /**

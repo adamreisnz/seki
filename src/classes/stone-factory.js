@@ -1,3 +1,4 @@
+import Stone from './objects/stone.js'
 import StoneSlateShell from './objects/stone-slate-shell.js'
 import StoneGlass from './objects/stone-glass.js'
 import StoneMono from './objects/stone-mono.js'
@@ -36,6 +37,9 @@ export default class StoneFactory {
    * Create modified copy of existing stone
    */
   static createCopy(stone, modifierStyle) {
+    if (!stone instanceof Stone) {
+      throw new Error(`Unexpected input: ${stone}`)
+    }
     const {board, stoneColor} = stone
     return new stone.constructor(board, stoneColor, modifierStyle)
   }

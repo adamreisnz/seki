@@ -1,5 +1,6 @@
 import BoardLayer from './board-layer.js'
 import StoneFactory from '../stone-factory.js'
+import Grid from '../grid.js'
 import {boardLayerTypes} from '../../constants/board.js'
 import {stoneModifierStyles} from '../../constants/stone.js'
 
@@ -12,28 +13,31 @@ export default class ScoreLayer extends BoardLayer {
   type = boardLayerTypes.SCORE
 
   //Helper vars
-  points = []
-  captures = []
+  territory = null
+  captures = null
 
   /**
-   * Set points and captures
+   * Set territory and captures
    */
-  setAll(pointsGrid, capturesGrid) {
+  setAll(territory, captures) {
 
     //Remove all existing
     this.removeAll()
 
     //Set
-    this.points = pointsGrid.getAll()
-    this.captures = capturesGrid.getAll()
+    this.territory = territory
+    this.captures = captures
+    this.removedStones = new Grid(captures.width, captures.height)
 
     //Get data
-    const {board, captures} = this
+    const {board} = this
 
     //Remove captures from stones layer
     for (const entry of captures) {
       const {x, y} = entry
+      const stone = board.get(boardLayerTypes.STONES, x, y)
       board.remove(boardLayerTypes.STONES, x, y)
+      this.removedStones.set(x, y, stone)
     }
   }
 
@@ -43,20 +47,33 @@ export default class ScoreLayer extends BoardLayer {
   removeAll() {
 
     //Get data
-    const {board, captures} = this
+    const {board, removedStones} = this
 
-    //If there were captures, add them back onto the stones layer
-    for (const entry of captures) {
-      const {x, y, value} = entry
-      board.add(boardLayerTypes.STONES, x, y, value)
+    //Restore any removed stones
+    if (removedStones) {
+      for (const entry of removedStones) {
+        const {x, y, value: stone} = entry
+        board.add(boardLayerTypes.STONES, x, y, stone)
+      }
+      removedStones.clear()
     }
 
     //Erase the layer
     this.erase()
 
-    //Clear points and captures
-    this.points = []
-    this.captures = []
+    //Clear territory and captures
+    this.territory = null
+    this.captures = null
+  }
+
+  /**
+   * Can draw check
+   */
+  canDraw() {
+    if (!super.canDraw()) {
+      return false
+    }
+    return (this.territory && this.captures)
   }
 
   /**
@@ -70,22 +87,27 @@ export default class ScoreLayer extends BoardLayer {
     }
 
     //Get data
-    const {context, captures, points} = this
+    const {context, board, captures, territory} = this
+    const style = board.theme.get('board.stoneStyle')
 
     //Draw captures first
     for (const entry of captures) {
-      const {x, y, value: stone} = entry
-      const capture = StoneFactory
-        .createCopy(stone, stoneModifierStyles.CAPTURES)
+      const {x, y, value: {color}} = entry
+      const stone = StoneFactory.create(style, color, board)
+      const capture = StoneFactory.createCopy(stone, stoneModifierStyles.CAPTURES)
       capture.draw(context, x, y)
     }
 
-    //Draw points on top of it
-    for (const entry of points) {
-      const {x, y, value: stone} = entry
-      const point = StoneFactory
-        .createCopy(stone, stoneModifierStyles.POINTS)
-      point.draw(context, x, y)
+    //Draw territory on top of it
+    for (const entry of territory) {
+      const {x, y, value: {color, probability}} = entry
+      const stone = StoneFactory.create(style, color, board)
+      const point = StoneFactory.createCopy(stone, stoneModifierStyles.POINTS)
+
+      //Don't draw on top of existing stones that remain (and which are alive)
+      if (!board.has(boardLayerTypes.STONES, x, y)) {
+        point.draw(context, x, y)
+      }
     }
   }
 }

@@ -629,7 +629,7 @@ export default class GameNode {
     }
 
     //Add to existing entry
-    entry.coords.push({x, y})
+    entry.coords.push({x, y, text})
   }
 
   /**

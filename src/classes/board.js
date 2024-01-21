@@ -372,10 +372,10 @@ export default class Board extends Base {
   /**
    * Set all objects (grid) for a given layer
    */
-  setAll(type, grid) {
+  setAll(type, ...args) {
     const layer = this.getLayer(type)
     if (layer) {
-      layer.setAll(grid)
+      layer.setAll(...args)
     }
   }
 

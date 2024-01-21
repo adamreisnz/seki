@@ -19,3 +19,15 @@ export function swapColor(color) {
 export function isValidColor(color) {
   return validStoneColors.includes(color)
 }
+
+//Transform color to numeric value
+export function colorToNumeric(color) {
+  switch (color) {
+    case stoneColors.BLACK:
+      return 1
+    case stoneColors.WHITE:
+      return -1
+    default:
+      return 0
+  }
+}

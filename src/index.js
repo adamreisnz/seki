@@ -9,8 +9,10 @@ import {default as SekiGame} from './classes/game.js'
 import {default as SekiGameNode} from './classes/game-node.js'
 import {default as SekiGamePath} from './classes/game-path.js'
 import {default as SekiGamePosition} from './classes/game-position.js'
+import {GameColorScore as SekiGameColorScore} from './classes/game-score.js'
 import {default as SekiGameScore} from './classes/game-score.js'
-import {default as SekiGameScorer} from './classes/game-scorer.js'
+import {default as SekiGameScoreState} from './classes/game-score-state.js'
+import {default as SekiGameScoreEstimator} from './classes/game-score-estimator.js'
 
 //Base classes for layers, modes and objects
 import {default as SekiBoardLayer} from './classes/layers/board-layer.js'
@@ -103,6 +105,7 @@ const {
 const {
   scoreStates,
   scoreTypes,
+  scoringMethods,
 } = score
 const {
   setupTypes,
@@ -134,8 +137,10 @@ export {
   SekiGameNode,
   SekiGamePath,
   SekiGamePosition,
+  SekiGameColorScore,
   SekiGameScore,
-  SekiGameScorer,
+  SekiGameScoreState,
+  SekiGameScoreEstimator,
 
   //Base classes for layers, modes and objects
   SekiBoardLayer,
@@ -186,6 +191,7 @@ export {
   playerModes,
   scoreStates,
   scoreTypes,
+  scoringMethods,
   setupTypes,
   stoneColors,
   stoneModifierStyles,

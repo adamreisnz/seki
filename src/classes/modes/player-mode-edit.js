@@ -65,19 +65,6 @@ export default class PlayerModeEdit extends PlayerModeReplay {
     player.extend('removeAllMarkup', mode)
   }
 
-  /**
-   * Activate this mode
-   */
-  activate() {
-
-    //Parent method
-    super.activate()
-
-    //Find used markup labels
-    this.resetUsedMarkupLabels()
-    this.findUsedMarkupLabels()
-  }
-
   /**************************************************************************
    * Event listeners
    ***/
@@ -485,8 +472,7 @@ export default class PlayerModeEdit extends PlayerModeReplay {
     this.removeMarkup(x, y)
     game.addMarkup(x, y, {type, text})
 
-    //Track used markup label
-    this.addUsedMarkupLabel(text)
+    //Trigger event
     this.triggerEditedEvent()
   }
 
@@ -501,15 +487,6 @@ export default class PlayerModeEdit extends PlayerModeReplay {
     //No markup here
     if (!game.hasMarkup(x, y)) {
       return
-    }
-
-    //Get markup label
-    const markup = game.getMarkup(x, y)
-    const {text} = markup
-
-    //Remove used markup label
-    if (text) {
-      this.removeUsedMarkupLabel(text)
     }
 
     //Remove from game and board
@@ -533,9 +510,6 @@ export default class PlayerModeEdit extends PlayerModeReplay {
       board.eraseDrawLayer()
       return
     }
-
-    //Reset used markup labels
-    this.resetUsedMarkupLabels()
 
     //Remove all from game and board
     game.removeAllMarkup()
@@ -704,8 +678,8 @@ export default class PlayerModeEdit extends PlayerModeReplay {
    */
   getNextLetter() {
 
-    //Get data
-    const {usedMarkupLabels} = this
+    //Get used labels
+    const usedMarkupLabels = this.findUsedMarkupLabels()
 
     //Initialise
     let i = 0
@@ -743,8 +717,8 @@ export default class PlayerModeEdit extends PlayerModeReplay {
    */
   getNextNumber() {
 
-    //Get data
-    const {usedMarkupLabels} = this
+    //Get used labels
+    const usedMarkupLabels = this.findUsedMarkupLabels()
 
     //Initialise
     let num = 0
@@ -761,39 +735,12 @@ export default class PlayerModeEdit extends PlayerModeReplay {
   }
 
   /**
-   * Add used markup label
-   */
-  addUsedMarkupLabel(text) {
-    if (text) {
-      this.usedMarkupLabels.push(text)
-    }
-  }
-
-  /**
-   * Remove used markup label
-   */
-  removeUsedMarkupLabel(text) {
-    if (!text) {
-      return
-    }
-    if (Array.isArray(text)) {
-      text.forEach(label => this.removeUsedMarkupLabel(label))
-      return
-    }
-    const {usedMarkupLabels} = this
-    const i = usedMarkupLabels.indexOf(text)
-    if (i !== -1) {
-      usedMarkupLabels.splice(i, 1)
-    }
-  }
-
-  /**
    * Find all the used markup labels in current position
    */
   findUsedMarkupLabels() {
 
     //Get data
-    const {game, usedMarkupLabels} = this
+    const {game} = this
     const markup = game.position.markup.getAll()
 
     //Filter function
@@ -802,16 +749,9 @@ export default class PlayerModeEdit extends PlayerModeReplay {
       entry.value.text
 
     //Loop
-    markup
+    return markup
       .filter(isLabel)
-      .forEach(item => usedMarkupLabels.push(item.value.text))
-  }
-
-  /**
-   * Reset used markup labels
-   */
-  resetUsedMarkupLabels() {
-    this.usedMarkupLabels = []
+      .map(item => item.value.text)
   }
 
   /**

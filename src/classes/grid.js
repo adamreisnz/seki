@@ -102,6 +102,16 @@ export default class Grid {
    ***/
 
   /**
+   * Iterator
+   */
+  *[Symbol.iterator]() {
+    for (const [key, value] of this.grid) {
+      const {x, y} = this.getCoords(key)
+      yield {x, y, value}
+    }
+  }
+
+  /**
    * Get all items in the grid. If you specify a value key, a list of objects
    * with coordinates and the value in the given value key will be returned.
    */
@@ -272,6 +282,41 @@ export default class Grid {
 
     //Return changes
     return changes
+  }
+
+  /**
+   * Convert position to a matrix of arrays, compatible with
+   * for example https://github.com/SabakiHQ/deadstones
+   */
+  toMatrix(transformFn) {
+
+    //Get size and initialise matrix
+    const {width, height} = this
+    const matrix = []
+
+    //Loop through each column
+    for (let y = 0; y < height; y++) {
+
+      //Create row
+      const row = []
+
+      //Loop through each row
+      for (let x = 0; x < width; x++) {
+
+        //Get value and transform it if needed
+        const value = this.getGridMapValue(x, y)
+        const transformed = transformFn ? transformFn(value) : value
+
+        //Push value
+        row.push(transformed)
+      }
+
+      //Add to matrix
+      matrix.push(row)
+    }
+
+    //Return
+    return matrix
   }
 
   /*****************************************************************************
