@@ -60,6 +60,10 @@ export default class Base extends EventTarget {
    * Set a config flag
    */
   setConfig(key, value) {
+    if (this.config[key] === value) {
+      this.debug(`config ${key} not changed from`, value)
+      return
+    }
     this.config[key] = value
     this.debug(`config ${key} changed to`, value)
     this.triggerEvent('config', {key, value})

@@ -3,6 +3,7 @@ import MarkupFactory from '../markup-factory.js'
 import {boardLayerTypes} from '../../constants/board.js'
 import {markupTypes} from '../../constants/markup.js'
 import {playerModes, playerActions} from '../../constants/player.js'
+import {throttle} from '../../helpers/util.js'
 
 /**
  * Replay game records with this mode
@@ -37,6 +38,16 @@ export default class PlayerModeReplay extends PlayerMode {
       variationChange: 'onVariationChange',
       gameLoad: 'onGameLoad',
     })
+
+    //Create throttled config change handler
+    const fn = throttle(event => {
+      if (event.detail.key = 'autoPlayDelay' && this.isAutoPlaying) {
+        this.queueNextAutoPlay() //This will reset the timeout
+      }
+    }, 100)
+
+    //Config change listener
+    this.player.on('config', fn)
   }
 
   /**
