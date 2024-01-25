@@ -22,6 +22,9 @@
 }
 
 /* Board */
+.seki-board-container {
+  outline: none;
+}
 .seki-board-wrapper {
   display: flex;
   width: auto;

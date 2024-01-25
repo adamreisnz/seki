@@ -1,12 +1,12 @@
 import Base from './base.js'
 import Board from './board.js'
 import Game from './game.js'
-
 import EventHandler from './event-handler.js'
 import PlayerModeFactory from './player-mode-factory.js'
 import {playerModes} from '../constants/player.js'
 import {defaultPlayerConfig} from '../constants/defaults.js'
 import {
+  addClass,
   getPixelRatio,
   isKeyDownEvent,
   isMouseEvent,
@@ -656,9 +656,8 @@ export default class Player extends Base {
    */
   bootstrap(container) {
 
-    //Link element
-    this.elements.container = container
-    container.tabIndex = -1 //To allow it to receive focus
+    //Setup container element
+    this.setupContainerElement(container)
 
     //Create audio elements
     this.createAudioElements()
@@ -692,6 +691,15 @@ export default class Player extends Base {
     //Remove listeners
     this.teardownDocumentListeners()
     this.teardownElementListeners()
+  }
+
+  /**
+   * Setup the container element
+   */
+  setupContainerElement(container) {
+    this.elements.container = container
+    container.tabIndex = -1 //To allow it to receive focus
+    addClass(container, 'seki-board-container')
   }
 
   /**
