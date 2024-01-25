@@ -1,4 +1,9 @@
 # Seki – An Embeddable Go Player
+
+### Usage instructions
+See [sekiplayer.com](https://sekiplayer.com/)
+
+### About
 Seki is a powerful embeddable Go/Baduk/Weiqi player for the modern age. It's Simple, Elegant, Compact and Intuitive.
 
 It provides functionality for reading, parsing, displaying, editing and replaying Go/Baduk/Weiqi game records.
