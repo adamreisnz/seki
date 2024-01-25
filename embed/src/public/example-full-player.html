@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Seki Embeddable Go Player</title>
+  <title>Seki – An Embeddable Go Player</title>
   <meta charset="utf-8">
   <meta name="author" content="Adam Reis">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,22 +10,36 @@
   <link rel="icon" type="image/png" sizes="32x32" href="favicon.png">
 </head>
 <body lang="en">
+  <div class="header">
+    <div class="logo">
+      <img src="images/logo.png" />
+    </div>
+    <div class="center">
+      <h1>Seki – An Embeddable Go Player</h1>
+      <small class="subheader">
+        <span><a href="https://github.com/adamreisnz">Created by Adam Reis</a></span>
+        <span>&bull;</span>
+        <span class="github">
+          <img src="images/github-mark.svg" />
+          <a href="https://github.com/adamreisnz/seki">View on GitHub</a>
+        </span>
+        <span>&bull;</span>
+        <span><a href="https://github.com/adamreisnz/seki/issues">Report an issue</a></span>
+      </small>
+    </div>
+    <div class="promo">
+      <a href="https://letsplaygo.com/editor" class="pill banner">
+        See it in action on Let’s Play Go
+      </a>
+    </div>
+  </div>
+  <div class="nav">
+    <a href="index.html" class="pill">Usage instructions</a>
+    <a href="example-static-positions.html" class="pill">Static positions</a>
+    <a href="example-game-boards.html" class="pill">Game boards</a>
+    <a href="example-full-player.html" class="pill active">Full player</a>
+  </div>
   <div class="main">
-    <h1>Seki Embeddable Go Player</h1>
-
-    <h2>Usage</h2>
-    <ul>
-      <li><a href="index.html">Usage instructions</a></li>
-    </ul>
-
-    <h2>Examples</h2>
-    <ul>
-      <li><a href="example-static-positions.html">Static positions</a></li>
-      <li><a href="example-game-boards.html">Game boards</a></li>
-      <li><a href="example-full-player.html">Full player</a></li>
-    </ul>
-    <hr>
-
     <div
       id="seki-player"
       class="seki-player"

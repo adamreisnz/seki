@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Lexend:wght@300&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Lexend:wght@200;300&display=swap');
 
 /* General */
 * {
@@ -7,19 +7,21 @@
   margin: 0;
 }
 html, body {
-  background: #f6e6c8;
+  background: #f6eedf;
   position: relative;
   font-family: "Lexend", sans-serif;
-  font-size: 16px;
+  font-size: 16px !important;
 }
 
 h1 {
   font-size: 1.5rem;
-  margin-bottom: 2rem;
+  font-weight: 200;
+  margin: 0;
   color: #333;
 }
 h2 {
   font-size: 1.25rem;
+  font-weight: 200;
   margin-bottom: 0.5rem;
   color: #333;
 }
@@ -39,14 +41,17 @@ ul {
 a {
   color: #006f98;
   text-decoration: none;
+  &:hover {
+    text-decoration: underline;
+  }
 }
 hr {
   margin: 1rem 0;
   border: none;
-  border-top: 1px solid #e4d4b5;
+  border-top: 1px solid #e9e2d3;
 }
 code {
-  background: #e4d4b5;
+  background: #e7dece;
   font-size: 0.9rem;
 }
 code.inline {
@@ -56,22 +61,93 @@ code.block {
   white-space: pre-wrap;
   display: block;
   padding: 1rem;
-  background: #e4d4b5;
+  background: #e7dece;
   line-height: 1.5rem;
   margin-bottom: 1rem;
 }
-
-.main {
-  padding: 1rem;
+ul li {
+  margin-bottom: 0.25rem;
+  list-style-type: none;
 }
+small {
+  color: #a09e9e;
+}
+
+.header {
+  padding: 1rem 2rem;
+  background: #e9e2d3;
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+}
+.logo, .logo img {
+  height: 50px;
+  width: 50px;
+}
+.center {
+  flex: 1;
+}
+.nav {
+  display: flex;
+  gap: 1rem;
+  padding: 1rem 2rem 0;
+}
+.pill {
+  display: inline-block;
+  padding: 0.25rem 1.5rem;
+  border-radius: 2rem;
+  font-size: 0.875rem;
+  background: none;
+  color: #62757c;
+  border: 1px solid #728389;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+.pill:hover, .pill.active {
+  background: #728389;
+  color: #fff;
+  text-decoration: none;
+}
+.pill:hover {
+  background: #62757c;
+}
+.banner {
+  display: block;
+  padding: 0.75rem 1.5rem;
+  background: #728389;
+  color: #fff;
+}
+.subheader {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  margin-top: 0.5rem;
+}
+.subheader a {
+  color: #728389;
+}
+.github {
+  display: flex;
+  align-items: center;
+  padding: 0;
+}
+.github img {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  margin-right: 0.25rem;
+}
+.main {
+  padding: 2rem;
+}
+
 .examples {
   display: flex;
   flex-wrap: wrap;
+  gap: 1rem;
 }
 .example {
-  flex: 0 0 50%;
-  max-width: 50%;
-  padding: 1rem;
+  flex: 0 0 calc(50% - 1rem);
+  max-width: calc(50% - 1rem);
 }
 
 .fixed-size {
