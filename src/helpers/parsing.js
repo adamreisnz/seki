@@ -1,6 +1,6 @@
 
 //Regex to match event urls
-export const regexEventUrl = /(:\s|\sat\s)?(https?:\/\/(.*?(?=\s|$)))/
+export const regexEventUrl = /(,\s|:\s|\sat\s)?(https?:\/\/(.*?(?=\s|$)))/
 
 /**
  * Parse event string

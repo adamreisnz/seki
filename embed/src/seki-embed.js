@@ -29,7 +29,7 @@ const {regexEventUrl} = helpers.parsing
 const capturesString = (count) => `${count} capture${count === 1 ? '' : 's'}`
 
 //Generate event string
-const eventString = (...parts) => parts.filter(p => !!p).join(', ')
+const eventString = (...parts) => parts.filter(Boolean).join(', ')
 
 //Extract event string and link
 const eventStringAndLink = (...parts) => {
