@@ -7,7 +7,8 @@ export default defineConfig({
   root: './src',
   server: {
     host: 'localhost',
-    port: 4040,
+    port: 4041,
+    open: true,
   },
   build: {
     outDir: '../dist',

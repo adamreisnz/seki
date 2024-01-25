@@ -78,7 +78,7 @@ const parseUrlContent = content => {
   if (content) {
     const match = content.match(regexSgf)
     if (match) {
-      return match[1]
+      return match[0]
     }
   }
   return content
