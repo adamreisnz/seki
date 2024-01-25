@@ -1187,6 +1187,13 @@ export default class Game extends Base {
   }
 
   /**
+   * Get the game path as a plain object
+   */
+  getPathObject() {
+    return this.path.toObject()
+  }
+
+  /**
    * Find a node by name
    */
   findNodeByName(name) {
@@ -1867,8 +1874,18 @@ export default class Game extends Base {
    */
   goToPath(path) {
 
+    //No path
+    if (!path) {
+      return
+    }
+
+    //Not an instance of a GamePath
+    if (!(path instanceof GamePath)) {
+      path = GamePath.fromObject(path)
+    }
+
     //No path or already here?
-    if (!path || this.path.isSameAs(path)) {
+    if (this.path.isSameAs(path)) {
       return
     }
 

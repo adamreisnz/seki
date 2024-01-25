@@ -496,6 +496,14 @@ export default class Player extends Base {
   }
 
   /**
+   * Go to a path
+   */
+  goToPath(path) {
+    this.game.goToPath(path)
+    this.processPathChange()
+  }
+
+  /**
    * Select the previous variation
    */
   selectNextVariation() {
@@ -588,7 +596,7 @@ export default class Player extends Base {
 
     //Copy new path and trigger path change event
     this.path = path.clone()
-    this.triggerEvent('pathChange', {node})
+    this.triggerEvent('pathChange', {node, path: this.path})
 
     //Named node reached?
     if (node.name) {

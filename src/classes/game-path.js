@@ -121,30 +121,31 @@ export default class GamePath {
   /**
    * Compare to another path
    */
-  isSameAs(otherPath) {
+  isSameAs(other) {
+
+    //No other path
+    if (!other) {
+      return false
+    }
 
     //Invalid object?
-    if (
-      !otherPath ||
-      typeof otherPath !== 'object' ||
-      typeof otherPath.moveNo === 'undefined'
-    ) {
-      return
+    if (!(other instanceof GamePath)) {
+      throw new Error(`Not a GamePath object`)
     }
 
     //Get data
     const {path, moveNo, branches} = this
 
     //Different move number or path length?
-    if (moveNo !== otherPath.moveNo || branches !== otherPath.branches) {
+    if (moveNo !== other.moveNo || branches !== other.branches) {
       return false
     }
 
     //Check path
     for (const i in path) {
       if (
-        typeof otherPath.path[i] === 'undefined' ||
-        path[i] !== otherPath.path[i]
+        typeof other.path[i] === 'undefined' ||
+        path[i] !== other.path[i]
       ) {
         return false
       }
@@ -158,16 +159,34 @@ export default class GamePath {
    * Clone
    */
   clone() {
+    return GamePath.fromObject(this)
+  }
+
+  /**
+   * Convert to plain object
+   */
+  toObject() {
+    return {
+      moveNo: this.moveNo,
+      branches: this.branches,
+      path: JSON.parse(JSON.stringify(this.path)),
+    }
+  }
+
+  /**
+   * Convert plain object into a game path
+   */
+  static fromObject(obj) {
 
     //Create new instance
-    const newPath = new GamePath()
+    const path = new GamePath()
 
     //Set vars
-    newPath.moveNo = this.moveNo
-    newPath.branches = this.branches
-    newPath.path = JSON.parse(JSON.stringify(this.path))
+    path.moveNo = obj.moveNo
+    path.branches = obj.branches
+    path.path = JSON.parse(JSON.stringify(obj.path))
 
     //Return
-    return newPath
+    return path
   }
 }
