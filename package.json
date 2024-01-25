@@ -28,6 +28,7 @@
     "baduk",
     "board",
     "player",
+    "embeddable",
     "jgf",
     "sgf",
     "gib",
