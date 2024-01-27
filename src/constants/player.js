@@ -95,6 +95,9 @@ export const playerActions = {
   SET_EDIT_TOOL_SAD: 'setEditToolSad',
   SET_EDIT_TOOL_LETTER: 'setEditToolLetter',
   SET_EDIT_TOOL_NUMBER: 'setEditToolNumber',
+
+  //Removal/clearing
   REMOVE_ALL_MARKUP: 'removeAllMarkup',
+  ERASE_FREE_DRAW: 'eraseFreeDraw',
 }
 

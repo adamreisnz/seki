@@ -71,6 +71,8 @@ export default class PlayerModeEdit extends PlayerModeReplay {
     player.extend('getEditTool', mode)
     player.extend('setEditTool', mode)
     player.extend('removeAllMarkup', mode)
+    player.extend('eraseFreeDraw', mode)
+    player.extend('hasFreeDrawn', mode)
     player.extend('processEdit', mode)
   }
 
@@ -300,6 +302,8 @@ export default class PlayerModeEdit extends PlayerModeReplay {
         return true
       case playerActions.REMOVE_ALL_MARKUP:
         player.removeAllMarkup()
+      case playerActions.ERASE_FREE_DRAW:
+        player.eraseFreeDraw()
         return true
     }
 
@@ -325,6 +329,7 @@ export default class PlayerModeEdit extends PlayerModeReplay {
       'removeMarkup',
       'removeAllMarkup',
       'freeDraw',
+      'eraseFreeDraw',
     ]
 
     //Invalid action
@@ -559,14 +564,7 @@ export default class PlayerModeEdit extends PlayerModeReplay {
     //Get data
     const {game, board} = this
 
-    //Free drawn something? Erase that first (and leave markup)
-    if (board.hasFreeDrawn()) {
-      board.eraseDrawLayer()
-      this.triggerEditedEvent('removeAllMarkup')
-      return
-    }
-
-    //Remove all from game and board
+    //Remove all markup from game and board
     game.removeAllMarkup()
     board.removeAllMarkup()
 
@@ -602,6 +600,33 @@ export default class PlayerModeEdit extends PlayerModeReplay {
   stopFreeDraw() {
     this.lastFreeDrawX = null
     this.lastFreeDrawY = null
+  }
+
+  /**
+   * Erase free drawn lines
+   */
+  eraseFreeDraw() {
+
+    //Get board
+    const {board} = this
+
+    //Erase draw layer
+    board.eraseDrawLayer()
+
+    //Trigger edited event
+    this.triggerEditedEvent('eraseFreeDraw')
+  }
+
+  /**
+   * Check if we have free drawn
+   */
+  hasFreeDrawn() {
+
+    //Get data
+    const {board} = this
+
+    //Check
+    return board.hasFreeDrawn()
   }
 
   /**
