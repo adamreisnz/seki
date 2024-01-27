@@ -10,10 +10,6 @@ export default class DrawLayer extends BoardLayer {
   //Type
   type = boardLayerTypes.DRAW
 
-  //Last X and Y position
-  lastX = null
-  lastY = null
-
   //Check if we've drawn anything
   hasDrawn = false
 
@@ -28,47 +24,32 @@ export default class DrawLayer extends BoardLayer {
   /**
    * Draw a line to given coordinates
    */
-  drawLine(x, y) {
+  drawLine(fromX, fromY, toX, toY, color) {
 
     //Get data
-    const {context, theme, lastX, lastY} = this
+    const {context, theme} = this
     const pixelRatio = getPixelRatio()
 
     //Apply transformation
-    x *= pixelRatio
-    y *= pixelRatio
-
-    //Set new last position
-    this.lastX = x
-    this.lastY = y
-
-    //Must have last coordinates
-    if (lastX === null || lastY === null) {
-      return
-    }
+    fromX *= pixelRatio
+    fromY *= pixelRatio
+    toX *= pixelRatio
+    toY *= pixelRatio
 
     //Set style
-    context.strokeStyle = theme.get('draw.color')
+    context.strokeStyle = color || theme.get('draw.color')
     context.lineWidth = theme.get('draw.lineWidth') * pixelRatio
     context.lineCap = theme.get('draw.lineCap')
 
     //Draw line
     context.beginPath()
-    context.moveTo(lastX, lastY)
-    context.lineTo(x, y)
+    context.moveTo(fromX, fromY)
+    context.lineTo(toX, toY)
     context.stroke()
     context.closePath()
 
     //Flag as having drawn
     this.hasDrawn = true
-  }
-
-  /**
-   * Stop drawing
-   */
-  stopDrawing() {
-    this.lastX = null
-    this.lastY = null
   }
 
   /**

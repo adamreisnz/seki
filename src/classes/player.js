@@ -740,7 +740,7 @@ export default class Player extends Base {
   /**
    * Play sound
    */
-  playSound(type) {
+  async playSound(type) {
 
     //Check if enabled
     if (!this.getConfig('playSounds')) {
@@ -757,7 +757,7 @@ export default class Player extends Base {
     const volume = this.getConfig('soundVolume')
     try {
       audioElement.volume = volume
-      audioElement.play()
+      await audioElement.play()
     }
     catch (error) {
       //Fall through

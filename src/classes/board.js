@@ -610,21 +610,12 @@ export default class Board extends Base {
   }
 
   /**
-   * Free draw on board
+   * Draw line on board
    */
-  freeDraw(x, y) {
+  drawLine(fromX, fromY, toX, toY, color) {
     this
       .getLayer(boardLayerTypes.DRAW)
-      ?.drawLine(x, y)
-  }
-
-  /**
-   * Stop free draw
-   */
-  stopFreeDraw() {
-    this
-      .getLayer(boardLayerTypes.DRAW)
-      ?.stopDrawing()
+      ?.drawLine(fromX, fromY, toX, toY, color)
   }
 
   /**

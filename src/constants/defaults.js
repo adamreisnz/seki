@@ -110,6 +110,9 @@ export const defaultPlayerConfig = {
   autoPlayDelay: 1000,
   autoPlayStartsImmediately: true,
 
+  //Free draw events buffer delay (in ms)
+  freeDrawEventBufferDelay: 50,
+
   //Apply listeners
   applyElementListeners: true,
   applyDocumentListeners: true,

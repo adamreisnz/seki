@@ -28,6 +28,14 @@ export default class PlayerModeEdit extends PlayerModeReplay {
   lastGridDetail
   lastEditedGridDetail
 
+  //Track last free draw coordinates
+  lastFreeDrawX = null
+  lastFreeDrawY = null
+
+  //Free draw edits tracking (for throttling)
+  freeDrawEdits = []
+  freeDrawTimeout = null
+
   /**
    * Initialise
    */
@@ -63,6 +71,7 @@ export default class PlayerModeEdit extends PlayerModeReplay {
     player.extend('getEditTool', mode)
     player.extend('setEditTool', mode)
     player.extend('removeAllMarkup', mode)
+    player.extend('processEdit', mode)
   }
 
   /**************************************************************************
@@ -97,7 +106,7 @@ export default class PlayerModeEdit extends PlayerModeReplay {
     player.elements.container.focus()
 
     //Stop free draw
-    board.stopFreeDraw()
+    this.stopFreeDraw()
 
     //Only process if valid coordinates
     if (!this.hasValidCoordinates(event)) {
@@ -131,9 +140,21 @@ export default class PlayerModeEdit extends PlayerModeReplay {
     //Re-apply focus on player
     player.elements.container.focus()
 
-    //Draw directly on drawing layer
+    //Free draw
     const {offsetX, offsetY} = nativeEvent
-    board.freeDraw(offsetX, offsetY)
+    const {lastFreeDrawX, lastFreeDrawY} = this
+
+    //Update last coordinates
+    this.lastFreeDrawX = offsetX
+    this.lastFreeDrawY = offsetY
+
+    //Must have had previous coordinates to be able to draw
+    if (lastFreeDrawX === null || lastFreeDrawY === null) {
+      return
+    }
+
+    //Draw
+    this.freeDraw(lastFreeDrawX, lastFreeDrawY, offsetX, offsetY)
   }
 
   /**
@@ -287,6 +308,39 @@ export default class PlayerModeEdit extends PlayerModeReplay {
   }
 
   /**
+   * Process an edit
+   *
+   * This is compatible with the data emitted by the edited event and can be
+   * used to synchronise multiple instances of the same game.
+   */
+  processEdit(action, args) {
+
+    //Validate action (maps to method name)
+    const {player} = this
+    const validActions = [
+      'playMove',
+      'addStone',
+      'removeStone',
+      'addMarkup',
+      'removeMarkup',
+      'removeAllMarkup',
+      'freeDraw',
+    ]
+
+    //Invalid action
+    if (!validActions.includes(action)) {
+      throw new Error(`Invalid edit action: ${action}`)
+    }
+
+    //Process
+    this[action](...args, true)
+
+    //Update board position and render markers
+    player.updateBoardPosition()
+    this.renderMarkers()
+  }
+
+  /**
    * Edit a position
    */
   edit(event) {
@@ -369,24 +423,27 @@ export default class PlayerModeEdit extends PlayerModeReplay {
     const {player, game} = this
     const outcome = player.playMove(x, y)
 
-    //Handle valid outcome
-    if (outcome.isValid) {
+    //Not a valid outcome
+    if (!outcome.isValid) {
+      return
+    }
 
-      //Play move sound and trigger edited event
-      player.playSound('move')
-      this.triggerEditedEvent()
+    //Play move sound and trigger edited event
+    player.playSound('move')
 
-      //Play capture sounds
-      if (game.position.hasCaptures()) {
-        const num = Math.min(game.position.getTotalCaptureCount(), 10)
-        for (let i = 0; i < num; i++) {
-          setTimeout(() => {
-            player.stopSound('capture')
-            player.playSound('capture')
-          }, 150 + randomInt(30, 90) * i)
-        }
+    //Play capture sounds
+    if (game.position.hasCaptures()) {
+      const num = Math.min(game.position.getTotalCaptureCount(), 10)
+      for (let i = 0; i < num; i++) {
+        setTimeout(() => {
+          player.stopSound('capture')
+          player.playSound('capture')
+        }, 150 + randomInt(30, 90) * i)
       }
     }
+
+    //Trigger edited event
+    this.triggerEditedEvent('playMove', x, y)
   }
 
   /**
@@ -400,13 +457,11 @@ export default class PlayerModeEdit extends PlayerModeReplay {
     //Erase markup first if it is present
     if (game.hasMarkup(x, y)) {
       this.removeMarkup(x, y)
-      this.triggerEditedEvent()
     }
 
     //Erase stones otherwise
     else if (game.hasStone(x, y)) {
       this.removeStone(x, y)
-      this.triggerEditedEvent()
     }
   }
 
@@ -417,24 +472,16 @@ export default class PlayerModeEdit extends PlayerModeReplay {
 
     //Get data
     const {game} = this
-    let hasErased = false
 
     //Loop area, erasing both markup and stones indiscriminantly
     area.forEach(({x, y}) => {
       if (game.hasMarkup(x, y)) {
         this.removeMarkup(x, y)
-        hasErased = true
       }
       if (game.hasStone(x, y)) {
         this.removeStone(x, y)
-        hasErased = true
       }
     })
-
-    //Trigger edited event
-    if (hasErased) {
-      this.triggerEditedEvent()
-    }
   }
 
   /**
@@ -449,7 +496,7 @@ export default class PlayerModeEdit extends PlayerModeReplay {
     game.addStone(x, y, color)
 
     //Trigger edited event
-    this.triggerEditedEvent()
+    this.triggerEditedEvent('addStone', x, y, color)
   }
 
   /**
@@ -465,7 +512,7 @@ export default class PlayerModeEdit extends PlayerModeReplay {
     board.removeStone(x, y)
 
     //Trigger edited event
-    this.triggerEditedEvent()
+    this.triggerEditedEvent('removeStone', x, y)
   }
 
   /**
@@ -480,7 +527,7 @@ export default class PlayerModeEdit extends PlayerModeReplay {
     game.addMarkup(x, y, {type, text})
 
     //Trigger event
-    this.triggerEditedEvent()
+    this.triggerEditedEvent('addMarkup', x, y, type, text)
   }
 
   /**
@@ -501,7 +548,7 @@ export default class PlayerModeEdit extends PlayerModeReplay {
     board.removeMarkup(x, y)
 
     //Trigger edited event
-    this.triggerEditedEvent()
+    this.triggerEditedEvent('removeMarkup', x, y)
   }
 
   /**
@@ -515,6 +562,7 @@ export default class PlayerModeEdit extends PlayerModeReplay {
     //Free drawn something? Erase that first (and leave markup)
     if (board.hasFreeDrawn()) {
       board.eraseDrawLayer()
+      this.triggerEditedEvent('removeAllMarkup')
       return
     }
 
@@ -522,8 +570,69 @@ export default class PlayerModeEdit extends PlayerModeReplay {
     game.removeAllMarkup()
     board.removeAllMarkup()
 
+    //Re-render markers and trigger edited event
+    this.renderMarkers()
+    this.triggerEditedEvent('removeAllMarkup')
+  }
+
+  /**
+   * Free draw
+   */
+  freeDraw(fromX, fromY, toX, toY, color) {
+
+    //Array of coordinates
+    if (Array.isArray(fromX)) {
+      fromX.forEach(edit => this.freeDraw(...edit))
+      return
+    }
+
+    //Get data
+    const {board} = this
+
+    //Draw
+    board.drawLine(fromX, fromY, toX, toY, color)
+
     //Trigger edited event
-    this.triggerEditedEvent()
+    this.triggerFreeDrawEvent(fromX, fromY, toX, toY, color)
+  }
+
+  /**
+   * Stop free draw
+   */
+  stopFreeDraw() {
+    this.lastFreeDrawX = null
+    this.lastFreeDrawY = null
+  }
+
+  /**
+   * Process free draw event
+   */
+  triggerFreeDrawEvent(...args) {
+
+    //Get buffer delay
+    const {player} = this
+    const delay = player.getConfig('freeDrawEventBufferDelay')
+
+    //If no delay, emit immediately
+    if (!delay) {
+      this.triggerEditedEvent('freeDraw', ...args)
+      return
+    }
+
+    //Buffer the event
+    this.freeDrawEdits.push(args)
+
+    //Already have a timeout in place
+    if (this.freeDrawTimeout) {
+      return
+    }
+
+    //Create timeout
+    this.freeDrawTimeout = setTimeout(() => {
+      this.triggerEditedEvent('freeDraw', this.freeDrawEdits)
+      this.freeDrawTimeout = null
+      this.freeDrawEdits = []
+    }, delay)
   }
 
   /**
@@ -857,8 +966,8 @@ export default class PlayerModeEdit extends PlayerModeReplay {
   /**
    * Trigger edited event
    */
-  triggerEditedEvent() {
-    this.player.triggerEvent('edited')
+  triggerEditedEvent(action, ...args) {
+    this.player.triggerEvent('edited', {action, args})
   }
 
   /**
