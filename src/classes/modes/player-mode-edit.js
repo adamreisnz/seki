@@ -49,7 +49,7 @@ export default class PlayerModeEdit extends PlayerModeReplay {
       keydown: 'onKeyDown',
       click: 'onClick',
       wheel: 'onMouseWheel',
-      config: 'onPathChange',
+      config: 'onConfigChange',
       pathChange: 'onPathChange',
       variationChange: 'onVariationChange',
       gameLoad: 'onGameLoad',
@@ -586,7 +586,12 @@ export default class PlayerModeEdit extends PlayerModeReplay {
     }
 
     //Get data
-    const {board} = this
+    const {player, board} = this
+
+    //Load color from player config if not given
+    if (!color) {
+      color = player.getConfig('freeDrawColor')
+    }
 
     //Draw
     board.drawLine(fromX, fromY, toX, toY, color)

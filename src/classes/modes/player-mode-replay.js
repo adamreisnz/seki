@@ -33,7 +33,7 @@ export default class PlayerModeReplay extends PlayerMode {
       keydown: 'onKeyDown',
       click: 'onClick',
       wheel: 'onMouseWheel',
-      config: 'onPathChange',
+      config: 'onConfigChange',
       pathChange: 'onPathChange',
       variationChange: 'onVariationChange',
       gameLoad: 'onGameLoad',
@@ -41,7 +41,7 @@ export default class PlayerModeReplay extends PlayerMode {
 
     //Create throttled config change handler
     const fn = throttle(event => {
-      if (event.detail.key = 'autoPlayDelay' && this.isAutoPlaying) {
+      if (event.detail.key === 'autoPlayDelay' && this.isAutoPlaying) {
         this.queueNextAutoPlay() //This will reset the timeout
       }
     }, 100)
@@ -152,7 +152,30 @@ export default class PlayerModeReplay extends PlayerMode {
   }
 
   /**
-   * Position update event
+   * Config change event
+   */
+  onConfigChange(event) {
+
+    //The following config keys require a board redraw
+    const redrawKeys = [
+      'showLastMove',
+      'showNextMove',
+      'showVariations',
+      'showSiblingVariations',
+      'showAllMoveNumbers',
+      'showLastMoveNumber',
+      'showVariationMoveNumbers',
+      'rememberVariationPaths',
+    ]
+
+    //Redraw board if needed
+    if (redrawKeys.includes(event.detail.key)) {
+      this.onPathChange()
+    }
+  }
+
+  /**
+   * Path change event
    */
   onPathChange() {
 

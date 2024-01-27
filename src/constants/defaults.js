@@ -110,8 +110,9 @@ export const defaultPlayerConfig = {
   autoPlayDelay: 1000,
   autoPlayStartsImmediately: true,
 
-  //Free draw events buffer delay (in ms)
+  //Free draw events buffer delay (in ms) and color
   freeDrawEventBufferDelay: 50,
+  freeDrawColor: '#2688e4',
 
   //Apply listeners
   applyElementListeners: true,
