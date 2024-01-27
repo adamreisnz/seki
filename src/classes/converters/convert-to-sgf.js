@@ -391,7 +391,7 @@ export default class ConvertToSgf extends Converter {
     }
 
     //Make group
-    return this.makeSgfGroup('C', flattened, true)
+    return this.makeSgfGroup('C', comments, true)
   }
 
   /**

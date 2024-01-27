@@ -83,6 +83,8 @@ const parsingMap = {
   MA: 'parseMarkup',
   SL: 'parseMarkup',
   LB: 'parseMarkup',
+  MH: 'parseMarkup',
+  MS: 'parseMarkup',
 }
 
 /**
@@ -119,17 +121,15 @@ export default class ConvertFromSgf extends Converter {
   /**
    * Parse SGF
    */
-  parseSgf(sgf, info, parentNode = null) {
+  parseSgf(sgf, info) {
 
-    //Get sequence and initialise stack for parent nodes
+    //Get sequence and initialise stack
     const sequence = sgf.match(regexSequence)
     const stack = []
     const root = new GameNode()
 
-    //No parent node? Use root node
-    if (!parentNode) {
-      parentNode = root
-    }
+    //Initialise parent node to root node
+    let parentNode = root
 
     //Loop sequence
     for (const str of sequence) {
@@ -148,8 +148,11 @@ export default class ConvertFromSgf extends Converter {
         continue
       }
 
-      //Is this a move?
-      if (str.match(regexMove)) {
+      //Create a new node if the parent node already has instructions, or if
+      //the string contains a move node. Otherwise, the instructions are set
+      //on the parent node. This allows for setup instructions to be set on
+      //the root node without creating a new node.
+      if (parentNode.hasInstructions() || str.match(regexMove)) {
         const node = new GameNode()
         parentNode.appendChild(node)
         parentNode = node

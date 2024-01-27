@@ -287,6 +287,14 @@ export default class GameNode {
   }
 
   /**
+   * Check if this node has move instructions
+   */
+  hasMoveInstructions() {
+    const {move} = this
+    return Boolean(move)
+  }
+
+  /**
    * Check if this is a move node
    */
   isMove() {
@@ -783,9 +791,22 @@ export default class GameNode {
   }
 
   /**
-   * Check if we have a turn indicator
+   * Check if we have turn instructions
    */
-  hasTurnIndicator() {
+  hasTurnInstructions() {
     return (typeof this.turn !== 'undefined')
+  }
+
+  /**
+   * Check if there are any instructions in this node
+   */
+  hasInstructions() {
+    return (
+      this.hasMoveInstructions() ||
+      this.hasTurnInstructions() ||
+      this.hasSetupInstructions() ||
+      this.hasMarkupInstructions() ||
+      this.hasComments()
+    )
   }
 }

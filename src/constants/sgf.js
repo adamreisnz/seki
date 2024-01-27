@@ -92,6 +92,8 @@ export const sgfMarkupTypes = {
   [markupTypes.CIRCLE]: 'CR',
   [markupTypes.TRIANGLE]: 'TR',
   [markupTypes.MARK]: 'MA',
+  [markupTypes.HAPPY]: 'MH',
+  [markupTypes.SAD]: 'MS',
 }
 
 //Setup types

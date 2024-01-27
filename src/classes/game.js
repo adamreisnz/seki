@@ -2109,7 +2109,7 @@ export default class Game extends Base {
     }
 
     //Handle turn instructions
-    if (node.hasTurnIndicator()) {
+    if (node.hasTurnInstructions()) {
       newPosition.setTurn(node.turn)
     }
 
