@@ -1803,6 +1803,8 @@ export default class Game extends Base {
   goToPreviousPosition() {
     if (this.goToPreviousNode()) {
       return new ValidOutcome()
+      // NOTE: There doesn't seem to be be a need to re-execute the node
+      // return this.processCurrentNode()
     }
     return new ErrorOutcome(`No previous position`)
   }
@@ -2021,7 +2023,6 @@ export default class Game extends Base {
     }
 
     //Advance path and set pointer of current node
-    //TODO create helper for this as it's repeated often
     this.path.advance(i)
     this.node = node.getChild(i)
     return true
@@ -2045,6 +2046,8 @@ export default class Game extends Base {
     this.node = node.getParent()
 
     //Remove last position from stack
+    // NOTE: Need to do it twice if the current node is going to be re-executed
+    // this.removeLastPositionFromStack()
     this.removeLastPositionFromStack()
     return true
   }

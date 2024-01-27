@@ -325,9 +325,8 @@ export default class PlayerModeReplay extends PlayerMode {
     const showLastMoveNumber = player.getConfig('showLastMoveNumber')
     const showVariationMoveNumbers = player.getConfig('showVariationMoveNumbers')
 
-    //Clear hover layer and last move markers
+    //Clear hover layer
     board.clearHoverLayer()
-    this.clearMarkers()
 
     //Show sibling variations
     if (showVariations && showSiblingVariations) {
@@ -388,6 +387,11 @@ export default class PlayerModeReplay extends PlayerMode {
         return
       }
 
+      //Already has markup on this coordinate, preserve it
+      if (node.hasMarkup(x, y)) {
+        return
+      }
+
       //Construct data for factory
       const index = i
       const isSelected = node.isSelectedPath(variation)
@@ -430,6 +434,11 @@ export default class PlayerModeReplay extends PlayerMode {
     const {board, markers} = this
     const {x, y} = node.move
 
+    //Already has markup on this coordinate, preserve it
+    if (node.hasMarkup(x, y)) {
+      return
+    }
+
     //Store
     markers.push({x, y})
 
@@ -454,6 +463,11 @@ export default class PlayerModeReplay extends PlayerMode {
       //Get node data
       const {x, y} = node.move
       const number = i + 1
+
+      //Already has markup on this coordinate, preserve it
+      if (node.hasMarkup(x, y)) {
+        return
+      }
 
       //Store
       markers.push({x, y})
@@ -481,6 +495,11 @@ export default class PlayerModeReplay extends PlayerMode {
       const {x, y} = node.move
       const number = i + 1
 
+      //Already has markup on this coordinate, preserve it
+      if (node.hasMarkup(x, y)) {
+        return
+      }
+
       //Store
       markers.push({x, y})
 
@@ -505,6 +524,11 @@ export default class PlayerModeReplay extends PlayerMode {
     const {board, markers} = this
     const {x, y} = node.move
     const number = node.getMoveNumber()
+
+    //Already has markup on this coordinate, preserve it
+    if (node.hasMarkup(x, y)) {
+      return
+    }
 
     //Store
     markers.push({x, y})

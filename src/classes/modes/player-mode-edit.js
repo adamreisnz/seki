@@ -297,7 +297,7 @@ export default class PlayerModeEdit extends PlayerModeReplay {
     }
 
     //Get data
-    const {player} = this
+    const {player, game} = this
     const {x, y, area, isDragging} = event.detail
 
     //Move tool
@@ -322,16 +322,42 @@ export default class PlayerModeEdit extends PlayerModeReplay {
 
     //Markup tool
     else if (this.isUsingMarkupTool()) {
-      this.addMarkup(x, y, isDragging)
+
+      //Get markup data
+      const type = this.getEditingMarkupType()
+      const text = this.getText()
+
+      //If not dragging, check if there's an existing markup of same type
+      //In that case, removal is enough
+      if (!isDragging && game.hasMarkup(x, y, type)) {
+        this.removeMarkup(x, y)
+      }
+      else {
+        this.removeMarkup(x, y)
+        this.addMarkup(x, y, type, text)
+      }
     }
 
     //Stone tool
     else if (this.isUsingStoneTool()) {
-      this.addStone(x, y, isDragging)
+
+      //Get color
+      const color = this.getEditingColor()
+
+      //If not dragging, check if there's an existing stone of same color
+      //In that case, removal is enough
+      if (!isDragging && game.hasStone(x, y, color)) {
+        this.removeStone(x, y)
+      }
+      else {
+        this.removeStone(x, y)
+        this.addStone(x, y, color)
+      }
     }
 
     //Update board position
     player.updateBoardPosition()
+    this.renderMarkers()
   }
 
   /**
@@ -414,21 +440,12 @@ export default class PlayerModeEdit extends PlayerModeReplay {
   /**
    * Add stone
    */
-  addStone(x, y, isDragging) {
+  addStone(x, y, color) {
 
     //Get data
     const {game} = this
-    const color = this.getEditingColor()
 
-    //If not dragging, check if there's an existing stone of same color
-    //In that case, removal is enough
-    if (!isDragging && game.hasStone(x, y, color)) {
-      this.removeStone(x, y)
-      return
-    }
-
-    //Remove existing stone and add new stone
-    this.removeStone(x, y)
+    //Add stone
     game.addStone(x, y, color)
 
     //Trigger edited event
@@ -454,22 +471,12 @@ export default class PlayerModeEdit extends PlayerModeReplay {
   /**
    * Helper to add markup
    */
-  addMarkup(x, y, isDragging) {
+  addMarkup(x, y, type, text) {
 
     //Get data
     const {game} = this
-    const type = this.getEditingMarkupType()
-    const text = this.getText()
 
-    //If not dragging, check if there's an existing markup of same type
-    //In that case, removal is enough
-    if (!isDragging && game.hasMarkup(x, y, type)) {
-      this.removeMarkup(x, y)
-      return
-    }
-
-    //Remove existing markup and add new markup
-    this.removeMarkup(x, y)
+    //Add new markup
     game.addMarkup(x, y, {type, text})
 
     //Trigger event
