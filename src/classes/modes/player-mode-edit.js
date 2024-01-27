@@ -73,6 +73,7 @@ export default class PlayerModeEdit extends PlayerModeReplay {
     player.extend('removeAllMarkup', mode)
     player.extend('eraseFreeDraw', mode)
     player.extend('hasFreeDrawn', mode)
+    player.extend('getFreeDrawnLines', mode)
     player.extend('processEdit', mode)
   }
 
@@ -621,12 +622,16 @@ export default class PlayerModeEdit extends PlayerModeReplay {
    * Check if we have free drawn
    */
   hasFreeDrawn() {
-
-    //Get data
     const {board} = this
-
-    //Check
     return board.hasFreeDrawn()
+  }
+
+  /**
+   * Get free drawn lines
+   */
+  getFreeDrawnLines() {
+    const {board} = this
+    return board.getFreeDrawnLines()
   }
 
   /**

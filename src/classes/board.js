@@ -633,7 +633,16 @@ export default class Board extends Base {
   hasFreeDrawn()  {
     return this
       .getLayer(boardLayerTypes.DRAW)
-      ?.hasDrawn
+      ?.hasLines()
+  }
+
+  /**
+   * Get free drawn lines
+   */
+  getFreeDrawnLines()  {
+    return this
+      .getLayer(boardLayerTypes.DRAW)
+      ?.lines || []
   }
 
   /*****************************************************************************

@@ -10,8 +10,8 @@ export default class DrawLayer extends BoardLayer {
   //Type
   type = boardLayerTypes.DRAW
 
-  //Check if we've drawn anything
-  hasDrawn = false
+  //Track all lines that are currently on the board
+  lines = []
 
   /**
    * Unneeded methods
@@ -48,8 +48,8 @@ export default class DrawLayer extends BoardLayer {
     context.stroke()
     context.closePath()
 
-    //Flag as having drawn
-    this.hasDrawn = true
+    //Store line
+    this.lines.push([fromX, fromY, toX, toY, color])
   }
 
   /**
@@ -57,6 +57,13 @@ export default class DrawLayer extends BoardLayer {
    */
   erase() {
     super.erase()
-    this.hasDrawn = false
+    this.lines = []
+  }
+
+  /**
+   * Has lines check
+   */
+  hasLines() {
+    return this.lines.length > 0
   }
 }
