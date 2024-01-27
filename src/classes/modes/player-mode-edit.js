@@ -1,5 +1,5 @@
 import PlayerModeReplay from './player-mode-replay.js'
-import {randomInt} from '../../helpers/util.js'
+import {randomInt, getPixelRatio} from '../../helpers/util.js'
 import {aCharUc, aCharLc} from '../../constants/util.js'
 import {markupTypes} from '../../constants/markup.js'
 import {stoneColors} from '../../constants/stone.js'
@@ -145,11 +145,22 @@ export default class PlayerModeEdit extends PlayerModeReplay {
 
     //Free draw
     const {offsetX, offsetY} = nativeEvent
+    const pixelRatio = getPixelRatio()
+
+    //Apply pixel ratio factor
+    const absX = offsetX * pixelRatio
+    const absY = offsetY * pixelRatio
+
+    //Get un-rounded board grid coordinates
+    const x = board.getGridX(absX, false)
+    const y = board.getGridY(absY, false)
+
+    //Get last coordinates
     const {lastFreeDrawX, lastFreeDrawY} = this
 
     //Update last coordinates
-    this.lastFreeDrawX = offsetX
-    this.lastFreeDrawY = offsetY
+    this.lastFreeDrawX = x
+    this.lastFreeDrawY = y
 
     //Must have had previous coordinates to be able to draw
     if (lastFreeDrawX === null || lastFreeDrawY === null) {
@@ -157,7 +168,7 @@ export default class PlayerModeEdit extends PlayerModeReplay {
     }
 
     //Draw
-    this.freeDraw(lastFreeDrawX, lastFreeDrawY, offsetX, offsetY)
+    this.freeDraw(lastFreeDrawX, lastFreeDrawY, x, y)
   }
 
   /**

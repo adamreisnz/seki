@@ -746,20 +746,22 @@ export default class Board extends Base {
   /**
    * Convert pixel coordinate to grid coordinate
    */
-  getGridX(absX) {
+  getGridX(absX, rounded = true) {
     const {cutOffLeft, drawMarginHor, cellSize} = this
     const offset = -cutOffLeft
-    const x = Math.round((absX - drawMarginHor) / cellSize - offset)
+    const val = (absX - drawMarginHor) / cellSize - offset
+    const x = rounded ? Math.round(val) : val
     return Object.is(x, -0) ? 0 : x
   }
 
   /**
    * Convert pixel coordinate to grid coordinate
    */
-  getGridY(absY) {
+  getGridY(absY, rounded = true) {
     const {cutOffTop, drawMarginVer, cellSize} = this
     const offset = -cutOffTop
-    const y = Math.round((absY - drawMarginVer) / cellSize - offset)
+    const val = (absY - drawMarginVer) / cellSize - offset
+    const y = rounded ? Math.round(val) : val
     return Object.is(y, -0) ? 0 : y
   }
 

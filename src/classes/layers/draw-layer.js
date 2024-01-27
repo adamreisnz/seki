@@ -27,8 +27,14 @@ export default class DrawLayer extends BoardLayer {
   drawLine(fromX, fromY, toX, toY, color) {
 
     //Get data
-    const {context, theme} = this
+    const {context, theme, board} = this
     const pixelRatio = getPixelRatio()
+
+    //Get absolute coordinates
+    fromX = board.getAbsX(fromX)
+    fromY = board.getAbsY(fromY)
+    toX = board.getAbsX(toX)
+    toY = board.getAbsY(toY)
 
     //Apply transformation
     fromX *= pixelRatio
