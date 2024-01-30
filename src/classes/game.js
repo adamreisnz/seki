@@ -313,9 +313,6 @@ export default class Game extends Base {
     if (typeof settings !== 'undefined') {
       this.setSettings(settings)
     }
-
-    //Trigger event
-    this.triggerEvent('info')
   }
 
   /**
@@ -435,6 +432,7 @@ export default class Game extends Base {
    */
   setRecordVersion(recordVersion = '') {
     this.recordVersion = recordVersion
+    this.triggerEvent('info', {recordVersion})
   }
   getRecordVersion() {
     return this.recordVersion
@@ -445,6 +443,7 @@ export default class Game extends Base {
    */
   setRecordCharset(recordCharset = '') {
     this.recordCharset = recordCharset
+    this.triggerEvent('info', {recordCharset})
   }
   getRecordCharset() {
     return this.recordCharset
@@ -455,6 +454,7 @@ export default class Game extends Base {
    */
   setRecordGenerator(recordGenerator = '') {
     this.recordGenerator = recordGenerator
+    this.triggerEvent('info', {recordGenerator})
   }
   getRecordGenerator() {
     return this.recordGenerator
@@ -465,6 +465,7 @@ export default class Game extends Base {
    */
   setRecordTranscriber(recordTranscriber = '') {
     this.recordTranscriber = recordTranscriber
+    this.triggerEvent('info', {recordTranscriber})
   }
   getRecordTranscriber() {
     return this.recordTranscriber
@@ -483,6 +484,7 @@ export default class Game extends Base {
       }
     }
     this.sourceName = sourceName
+    this.triggerEvent('info', {sourceName})
   }
   getSourceName() {
     return this.sourceName
@@ -493,6 +495,7 @@ export default class Game extends Base {
    */
   setSourceUrl(sourceUrl = '') {
     this.sourceUrl = sourceUrl
+    this.triggerEvent('info', {sourceUrl})
   }
   getSourceUrl() {
     return this.sourceUrl
@@ -503,6 +506,7 @@ export default class Game extends Base {
    */
   setSourceCopyright(sourceCopyright = '') {
     this.sourceCopyright = sourceCopyright
+    this.triggerEvent('info', {sourceCopyright})
   }
   getSourceCopyright() {
     return this.sourceCopyright
@@ -518,11 +522,13 @@ export default class Game extends Base {
     if (name && location) {
       this.eventName = name
       this.eventLocation = location
+      this.triggerEvent('info', {eventName, eventLocation})
     }
 
     //Set as given
     else {
       this.eventName = eventName
+      this.triggerEvent('info', {eventName})
     }
   }
   getEventName() {
@@ -539,11 +545,13 @@ export default class Game extends Base {
     if (name && location) {
       this.eventName = name
       this.eventLocation = location
+      this.triggerEvent('info', {eventName, eventLocation})
     }
 
     //Set as given
     else {
       this.eventLocation = eventLocation
+      this.triggerEvent('info', {eventLocation})
     }
   }
   getEventLocation() {
@@ -555,6 +563,7 @@ export default class Game extends Base {
    */
   setEventRound(eventRound = '') {
     this.eventRound = eventRound
+    this.triggerEvent('info', {eventRound})
   }
   getEventRound() {
     return this.eventRound
@@ -565,6 +574,7 @@ export default class Game extends Base {
    */
   setGameType(gameType = '') {
     this.gameType = gameType
+    this.triggerEvent('info', {gameType})
   }
   getGameType() {
     return this.gameType
@@ -575,6 +585,7 @@ export default class Game extends Base {
    */
   setGameName(gameName = '') {
     this.gameName = gameName
+    this.triggerEvent('info', {gameName})
   }
   getGameName() {
     return this.gameName
@@ -585,6 +596,7 @@ export default class Game extends Base {
    */
   setGameResult(gameResult = '') {
     this.gameResult = parseResult(gameResult)
+    this.triggerEvent('info', {gameResult: this.gameResult})
   }
   getGameResult() {
     return this.gameResult
@@ -597,6 +609,7 @@ export default class Game extends Base {
     const match = gameDate
       .match(/^(([0-9]{4})(-[0-9]{2})?(-[0-9]{2})?)/)
     this.gameDate = match ? match[1] : ''
+    this.triggerEvent('info', {gameDate: this.gameDate})
   }
   getGameDate() {
     return this.gameDate
@@ -607,6 +620,7 @@ export default class Game extends Base {
    */
   setGameOpening(gameOpening = '') {
     this.gameOpening = gameOpening
+    this.triggerEvent('info', {gameOpening})
   }
   getGameOpening() {
     return this.gameOpening
@@ -617,6 +631,7 @@ export default class Game extends Base {
    */
   setGameAnnotator(gameAnnotator = '') {
     this.gameAnnotator = gameAnnotator
+    this.triggerEvent('info', {gameAnnotator})
   }
   getGameAnnotator() {
     return this.gameAnnotator
@@ -627,6 +642,7 @@ export default class Game extends Base {
    */
   setGameDescription(gameDescription = '') {
     this.gameDescription = gameDescription
+    this.triggerEvent('info', {gameDescription})
   }
   getGameDescription() {
     return this.gameDescription
@@ -651,6 +667,10 @@ export default class Game extends Base {
     else if (width) {
       this.boardWidth = this.boardHeight = width
     }
+    this.triggerEvent('info', {
+      boardWidth: this.boardWidth,
+      boardHeight: this.boardHeight,
+    })
   }
   getBoardSize() {
     const {boardWidth: width, boardHeight: height} = this
@@ -669,6 +689,12 @@ export default class Game extends Base {
     this.boardCutOffRight = isNaN(right) ? 0 : right
     this.boardCutOffTop = isNaN(top) ? 0 : top
     this.boardCutOffBottom = isNaN(bottom) ? 0 : bottom
+    this.triggerEvent('info', {
+      boardCutOffLeft: this.boardCutOffLeft,
+      boardCutOffRight: this.boardCutOffRight,
+      boardCutOffTop: this.boardCutOffTop,
+      boardCutOffBottom: this.boardCutOffBottom,
+    })
   }
   getBoardCutOff() {
     const {
@@ -711,6 +737,7 @@ export default class Game extends Base {
    */
   setRuleSet(ruleSet = '') {
     this.ruleSet = ruleSet
+    this.triggerEvent('info', {ruleSet})
   }
   getRuleSet() {
     return this.ruleSet
@@ -721,6 +748,7 @@ export default class Game extends Base {
    */
   setAllowSuicide(allowSuicide = false) {
     this.allowSuicide = Boolean(allowSuicide)
+    this.triggerEvent('info', {allowSuicide: this.allowSuicide})
   }
   getAllowSuicide() {
     return this.allowSuicide
@@ -731,6 +759,7 @@ export default class Game extends Base {
    */
   setDisallowRepeats(disallowRepeats = false) {
     this.disallowRepeats = Boolean(disallowRepeats)
+    this.triggerEvent('info', {disallowRepeats: this.disallowRepeats})
   }
   getDisallowRepeats() {
     return this.disallowRepeats
@@ -741,6 +770,7 @@ export default class Game extends Base {
    */
   setKomi(komi) {
     this.komi = parseKomi(komi)
+    this.triggerEvent('info', {komi: this.komi})
   }
   getKomi() {
     return this.komi
@@ -751,6 +781,7 @@ export default class Game extends Base {
    */
   setHandicap(handicap) {
     this.handicap = parseHandicap(handicap)
+    this.triggerEvent('info', {handicap: this.handicap})
   }
   getHandicap() {
     return this.handicap
@@ -761,6 +792,7 @@ export default class Game extends Base {
    */
   setMainTime(mainTime = 0) {
     this.mainTime = parseMainTime(mainTime)
+    this.triggerEvent('info', {mainTime: this.mainTime})
   }
   getMainTime() {
     return this.mainTime
@@ -771,6 +803,7 @@ export default class Game extends Base {
    */
   setOverTime(overTime = '') {
     this.overTime = overTime || ''
+    this.triggerEvent('info', {overTime: this.overTime})
     const match = overTime.match(/([0-9]+)x([0-9.]+)/)
     if (match) {
       this.setNumberOfPeriods(match[1])
@@ -849,6 +882,7 @@ export default class Game extends Base {
         rank,
         team,
       }
+      this.triggerEvent('info', {players: this.players})
     }
   }
   updatePlayer(color, info) {
@@ -856,6 +890,7 @@ export default class Game extends Base {
       for (const key in info) {
         this.players[color][key] = info[key]
       }
+      this.triggerEvent('info', {players: this.players})
     }
   }
   getPlayer(color) {
