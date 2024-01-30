@@ -489,52 +489,8 @@ export async function sekiPlayer(element, config = {}) {
   //Bootstrap player onto board element
   player.bootstrap(boardElement)
 
-  //Game load handler
-  player.on('gameLoad', () => {
-
-    //Get data
-    const {game} = player
-    const {black, white} = game.getPlayers()
-    const komi = game.getKomi()
-    const result = game.getGameResult()
-    const name = game.getGameName()
-    const date = game.getGameDate()
-
-    //Clear comments
-    setText('comments', '')
-
-    //Set player information
-    setText('name-black', black.name || 'Black')
-    setText('name-white', white.name || 'White')
-    setText('rank-black', black.rank || '')
-    setText('rank-white', white.rank || '')
-    setText('komi', komi ? `+${komi}` : '')
-
-    //Set game information
-    setText('game-result', result || '')
-    setText('game-name', name || '')
-    setText('game-date', date || '')
-
-    //Set event details
-    const [eventStr, eventLink] = eventStringAndLink(
-      game.getEventName(),
-      game.getEventLocation(),
-      game.getEventRound(),
-    )
-    setText('event', eventStr || '')
-    setAttr('event-link', 'href', eventLink || '#')
-    toggleHidden('event-without-link', !!eventLink)
-    toggleHidden('event-with-link', !eventLink)
-
-    //Hide info groups with no content
-    toggleHidden('info-group-name', !name)
-    toggleHidden('info-group-date', !date)
-    toggleHidden('info-group-event', !eventStr)
-    toggleHidden('info-group-result', !result)
-  })
-
   //Path change handler
-  player.on('pathChange', () => {
+  const onPathChange = () => {
 
     //Get data
     const {game} = player
@@ -584,14 +540,66 @@ export async function sekiPlayer(element, config = {}) {
     else {
       setText('time-white', '')
     }
-  })
+  }
 
-  //Auto play toggle handler
-  player.on('autoPlayToggle', event => {
+  //Game load handler
+  const onGameLoad = () => {
+
+    //Get data
+    const {game} = player
+    const {black, white} = game.getPlayers()
+    const komi = game.getKomi()
+    const result = game.getGameResult()
+    const name = game.getGameName()
+    const date = game.getGameDate()
+
+    //Clear comments
+    setText('comments', '')
+
+    //Set player information
+    setText('name-black', black.name || 'Black')
+    setText('name-white', white.name || 'White')
+    setText('rank-black', black.rank || '')
+    setText('rank-white', white.rank || '')
+    setText('komi', komi ? `+${komi}` : '')
+
+    //Set game information
+    setText('game-result', result || '')
+    setText('game-name', name || '')
+    setText('game-date', date || '')
+
+    //Set event details
+    const [eventStr, eventLink] = eventStringAndLink(
+      game.getEventName(),
+      game.getEventLocation(),
+      game.getEventRound(),
+    )
+    setText('event', eventStr || '')
+    setAttr('event-link', 'href', eventLink || '#')
+    toggleHidden('event-without-link', !!eventLink)
+    toggleHidden('event-with-link', !eventLink)
+
+    //Hide info groups with no content
+    toggleHidden('info-group-name', !name)
+    toggleHidden('info-group-date', !date)
+    toggleHidden('info-group-event', !eventStr)
+    toggleHidden('info-group-result', !result)
+
+    //Call path change handler as well to load comments etc.
+    onPathChange()
+  }
+
+  //On auto play toggle
+  const onAutoPlayToggle = event => {
     const {isAutoPlaying} = event.detail
     toggleHidden('button-play', isAutoPlaying)
     toggleHidden('button-pause', !isAutoPlaying)
-  })
+  }
+
+  //Apply handlers
+  player.on('gameLoad', onGameLoad)
+  player.on('pathChange', onPathChange)
+  player.on('autoPlayToggle', onAutoPlayToggle)
 
   //Bind click handlers for controls
   onClick('button-first', () => player.goToFirstPosition())

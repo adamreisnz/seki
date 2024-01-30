@@ -339,7 +339,7 @@ export default class Player extends Base {
       board.recalculateDrawSize()
 
       //Process path change and update board position
-      this.processPathChange()
+      this.processPathChange(true)
       this.updateBoardPosition()
     }
   }
@@ -574,7 +574,7 @@ export default class Player extends Base {
   /**
    * Process path change
    */
-  processPathChange() {
+  processPathChange(isGameLoad = false) {
 
     //Check if path changed
     const path = this.game.getPath()
@@ -594,9 +594,13 @@ export default class Player extends Base {
     //Update board position
     this.updateBoardPosition()
 
-    //Copy new path and trigger path change event
+    //Copy new path
     this.path = path.clone()
-    this.triggerEvent('pathChange', {node, path: this.path})
+
+    //Trigger path change event if this was not a game load
+    if (!isGameLoad) {
+      this.triggerEvent('pathChange', {node, path: this.path})
+    }
 
     //Named node reached?
     if (node.name) {
