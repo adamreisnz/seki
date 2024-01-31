@@ -425,12 +425,16 @@ export default class Board extends Base {
       .map(({type, text}) => MarkupFactory
         .create(type, this, {text}))
 
+    //Get lines
+    const {lines} = position
+
     //Redraw gird
     this.redrawLayer(boardLayerTypes.GRID)
 
     //Set new stones and markup grids
     this.setAll(boardLayerTypes.STONES, stones)
     this.setAll(boardLayerTypes.MARKUP, markup)
+    this.setAll(boardLayerTypes.DRAW, lines)
   }
 
   /*****************************************************************************
@@ -468,12 +472,8 @@ export default class Board extends Base {
     //Debug
     this.debug('🎨 redrawing')
 
-    //Erase the board first
-    this.erase()
-
-    //Now draw all layers again in the correct order
-    this.layers
-      .forEach(layer => layer.draw())
+    //Redraw all layers
+    this.layers.forEach(layer => layer.redraw())
   }
 
   /**
@@ -610,39 +610,19 @@ export default class Board extends Base {
   }
 
   /**
-   * Draw line on board
+   * Draw line directly on board
    */
   drawLine(fromX, fromY, toX, toY, color) {
     this
       .getLayer(boardLayerTypes.DRAW)
-      ?.drawLine(fromX, fromY, toX, toY, color)
+      .drawLine(fromX, fromY, toX, toY, color)
   }
 
   /**
-   * Erase free draw layer
+   * Remove all lines
    */
-  eraseDrawLayer() {
-    this
-      .getLayer(boardLayerTypes.DRAW)
-      ?.erase()
-  }
-
-  /**
-   * Check if we have free drawn something
-   */
-  hasFreeDrawn()  {
-    return this
-      .getLayer(boardLayerTypes.DRAW)
-      ?.hasLines()
-  }
-
-  /**
-   * Get free drawn lines
-   */
-  getFreeDrawnLines()  {
-    return this
-      .getLayer(boardLayerTypes.DRAW)
-      ?.lines || []
+  removeAllLines() {
+    this.removeAll(boardLayerTypes.DRAW)
   }
 
   /*****************************************************************************

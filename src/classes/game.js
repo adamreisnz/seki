@@ -1682,6 +1682,37 @@ export default class Game extends Base {
   }
 
   /**
+   * Add line to position (does not trigger a board redraw, to allow the line
+   * to be drawn on the board simultaneously in real time)
+   */
+  addLine(...args) {
+    this.node.addLine(...args)
+    this.position.addLine(...args)
+  }
+
+  /**
+   * Has lines check
+   */
+  hasLines() {
+    return this.position.hasLines()
+  }
+
+  /**
+   * Get lines
+   */
+  getLines() {
+    return this.position.getLines()
+  }
+
+  /**
+   * Remove all lines
+   */
+  removeAllLines() {
+    this.node.removeLines()
+    this.position.removeLines()
+  }
+
+  /**
    * Helper to handle the creation of a new setup node
    */
   handleNewSetupNodeCreation(i) {
@@ -1786,6 +1817,20 @@ export default class Game extends Base {
     //Add new position to stack
     this.addPositionToStack(newPosition)
     return new ValidOutcome()
+  }
+
+  /**
+   * Get comments from current node
+   */
+  getComments() {
+    return this.node.getComments()
+  }
+
+  /**
+   * Set comments in current node
+   */
+  setComments(comments) {
+    this.node.setComments(comments)
   }
 
   /*****************************************************************************
@@ -2158,10 +2203,10 @@ export default class Game extends Base {
         for (const coord of coords) {
           const {x, y} = coord
           if (type === setupTypes.CLEAR) {
-            newPosition.stones.delete(x, y)
+            newPosition.removeStone(x, y)
           }
           else {
-            newPosition.stones.set(x, y, type)
+            newPosition.setStone(x, y, type)
           }
         }
       }
@@ -2173,9 +2218,14 @@ export default class Game extends Base {
         const {type, coords} = markup
         for (const coord of coords) {
           const {x, y, text} = coord
-          newPosition.markup.set(x, y, {type, text})
+          newPosition.setMarkup(x, y, {type, text})
         }
       }
+    }
+
+    //Lines
+    if (node.hasLines()) {
+      newPosition.setLines(node.lines)
     }
 
     //Add position to stack

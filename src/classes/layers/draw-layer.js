@@ -10,16 +10,40 @@ export default class DrawLayer extends BoardLayer {
   //Type
   type = boardLayerTypes.DRAW
 
-  //Track all lines that are currently on the board
+  //Track all lines to draw
   lines = []
 
   /**
-   * Unneeded methods
+   * Get all lines
    */
-  getAll() {}
-  setAll() {}
-  removeAll() {}
-  draw() {}
+  getAll() {
+    return this.lines
+  }
+
+  /**
+   * Set all lines at once
+   */
+  setAll(lines) {
+    this.lines = lines
+    this.redraw()
+  }
+
+  /**
+   * Remove all (erase layer and clear lines)
+   */
+  removeAll() {
+    this.erase()
+    this.lines = []
+  }
+
+  /**
+   * Draw handler
+   */
+  draw() {
+    for (const line of this.lines) {
+      this.drawLine(...line)
+    }
+  }
 
   /**
    * Draw a line to given coordinates
@@ -31,16 +55,10 @@ export default class DrawLayer extends BoardLayer {
     const pixelRatio = getPixelRatio()
 
     //Get absolute coordinates
-    fromX = board.getAbsX(fromX)
-    fromY = board.getAbsY(fromY)
-    toX = board.getAbsX(toX)
-    toY = board.getAbsY(toY)
-
-    //Apply transformation
-    fromX *= pixelRatio
-    fromY *= pixelRatio
-    toX *= pixelRatio
-    toY *= pixelRatio
+    const absFromX = board.getAbsX(fromX) * pixelRatio
+    const absFromY = board.getAbsY(fromY) * pixelRatio
+    const absToX = board.getAbsX(toX) * pixelRatio
+    const absToY = board.getAbsY(toY) * pixelRatio
 
     //Set style
     context.strokeStyle = color || theme.get('draw.color')
@@ -49,27 +67,9 @@ export default class DrawLayer extends BoardLayer {
 
     //Draw line
     context.beginPath()
-    context.moveTo(fromX, fromY)
-    context.lineTo(toX, toY)
+    context.moveTo(absFromX, absFromY)
+    context.lineTo(absToX, absToY)
     context.stroke()
     context.closePath()
-
-    //Store line
-    this.lines.push([fromX, fromY, toX, toY, color])
-  }
-
-  /**
-   * Erase wrapper
-   */
-  erase() {
-    super.erase()
-    this.lines = []
-  }
-
-  /**
-   * Has lines check
-   */
-  hasLines() {
-    return this.lines.length > 0
   }
 }

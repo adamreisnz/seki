@@ -20,6 +20,7 @@ export default class GamePosition {
     this.height = 0
     this.stones = new Grid()
     this.markup = new Grid()
+    this.lines = []
     this.turn = stoneColors.BLACK
 
     //Initialize captures
@@ -61,6 +62,7 @@ export default class GamePosition {
   clear() {
     this.stones.clear()
     this.markup.clear()
+    this.lines = []
   }
 
   /**
@@ -71,10 +73,10 @@ export default class GamePosition {
   }
 
   /**
-   * Sets markup type at given coordinates
+   * Remove stone at given coordinates
    */
-  setMarkup(x, y, markup) {
-    this.markup.set(x, y, markup)
+  removeStone(x, y) {
+    this.stones.delete(x, y)
   }
 
   /**
@@ -85,10 +87,59 @@ export default class GamePosition {
   }
 
   /**
+   * Sets markup type at given coordinates
+   */
+  setMarkup(x, y, markup) {
+    this.markup.set(x, y, markup)
+  }
+
+  /**
+   * Remove markup at given coordinates
+   */
+  removeMarkup(x, y) {
+    this.markup.delete(x, y)
+  }
+
+  /**
    * Has markup check
    */
   hasMarkup() {
     return !this.markup.isEmpty()
+  }
+
+  /**
+   * Add line
+   */
+  addLine(fromX, fromY, toX, toY, color) {
+    this.lines.push([fromX, fromY, toX, toY, color])
+  }
+
+  /**
+   * Set lines
+   */
+  setLines(lines) {
+    this.lines = lines
+  }
+
+  /**
+   * Has lines check
+   */
+  hasLines() {
+    return this.lines.length > 0
+  }
+
+  /**
+   * Get lines
+   */
+  getLines() {
+    return this.lines
+  }
+
+  /**
+   * Remove lines
+   */
+  removeLines() {
+    this.lines = []
   }
 
   /*****************************************************************************

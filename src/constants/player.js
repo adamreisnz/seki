@@ -98,6 +98,6 @@ export const playerActions = {
 
   //Removal/clearing
   REMOVE_ALL_MARKUP: 'removeAllMarkup',
-  ERASE_FREE_DRAW: 'eraseFreeDraw',
+  REMOVE_ALL_LINES: 'removeAllLines',
 }
 

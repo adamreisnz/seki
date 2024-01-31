@@ -187,9 +187,6 @@ export default class PlayerModeReplay extends PlayerMode {
       game.resetCurrentPathIndex()
     }
 
-    //Erase draw layer
-    board.eraseDrawLayer()
-
     //Check if auto playing
     if (isAutoPlaying) {
       if (!game.hasNextPosition()) {

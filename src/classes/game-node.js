@@ -295,11 +295,17 @@ export default class GameNode {
   }
 
   /**
-   * Check if this is a move node
+   * Check if we have turn instructions
+   */
+  hasTurnInstructions() {
+    return (typeof this.turn !== 'undefined')
+  }
+
+  /**
+   * Check if this is a move node (alias)
    */
   isMove() {
-    const {move} = this
-    return Boolean(move)
+    return this.hasMoveInstructions()
   }
 
   /**
@@ -790,12 +796,35 @@ export default class GameNode {
     return Array.isArray(this.setup)
   }
 
+  /**************************************************************************
+   * Line helpers
+   ***/
+
   /**
-   * Check if we have turn instructions
+   * Add line
    */
-  hasTurnInstructions() {
-    return (typeof this.turn !== 'undefined')
+  addLine(...args) {
+    this.lines ??= []
+    this.lines.push(args)
   }
+
+  /**
+   * Remove lines
+   */
+  removeLines() {
+    delete this.lines
+  }
+
+  /**
+   * Has lines
+   */
+  hasLines() {
+    return this.lines?.length > 0
+  }
+
+  /**************************************************************************
+   * Instruction checks
+   ***/
 
   /**
    * Check if there are any instructions in this node

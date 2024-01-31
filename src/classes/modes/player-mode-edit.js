@@ -32,9 +32,9 @@ export default class PlayerModeEdit extends PlayerModeReplay {
   lastFreeDrawX = null
   lastFreeDrawY = null
 
-  //Free draw edits tracking (for throttling)
-  freeDrawEdits = []
-  freeDrawTimeout = null
+  //Line tracking (for throttling)
+  linesAdded = []
+  lineAddTimeout = null
 
   /**
    * Initialise
@@ -71,9 +71,7 @@ export default class PlayerModeEdit extends PlayerModeReplay {
     player.extend('getEditTool', mode)
     player.extend('setEditTool', mode)
     player.extend('removeAllMarkup', mode)
-    player.extend('eraseFreeDraw', mode)
-    player.extend('hasFreeDrawn', mode)
-    player.extend('getFreeDrawnLines', mode)
+    player.extend('removeAllLines', mode)
     player.extend('processEdit', mode)
   }
 
@@ -109,7 +107,10 @@ export default class PlayerModeEdit extends PlayerModeReplay {
     player.elements.container.focus()
 
     //Stop free draw
-    this.stopFreeDraw()
+    if (this.isUsingDrawTool()) {
+      this.stopFreeDraw()
+      return
+    }
 
     //Only process if valid coordinates
     if (!this.hasValidCoordinates(event)) {
@@ -167,8 +168,8 @@ export default class PlayerModeEdit extends PlayerModeReplay {
       return
     }
 
-    //Draw
-    this.freeDraw(lastFreeDrawX, lastFreeDrawY, x, y)
+    //Add line
+    this.addLine(lastFreeDrawX, lastFreeDrawY, x, y)
   }
 
   /**
@@ -198,6 +199,11 @@ export default class PlayerModeEdit extends PlayerModeReplay {
       //Just display the hover stone though
       if (this.isUsingMoveTool()) {
         this.showHoverStone()
+        return
+      }
+
+      //Draw tool, action will be handled by the mouse move handler
+      if (this.isUsingDrawTool()) {
         return
       }
 
@@ -314,8 +320,9 @@ export default class PlayerModeEdit extends PlayerModeReplay {
         return true
       case playerActions.REMOVE_ALL_MARKUP:
         player.removeAllMarkup()
-      case playerActions.ERASE_FREE_DRAW:
-        player.eraseFreeDraw()
+        return true
+      case playerActions.REMOVE_ALL_LINES:
+        player.removeAllLines()
         return true
     }
 
@@ -334,14 +341,14 @@ export default class PlayerModeEdit extends PlayerModeReplay {
     //Validate action (maps to method name)
     const {player} = this
     const validActions = [
-      'playMove',
+      'addLine',
+      'addLines',
       'addStone',
-      'removeStone',
       'addMarkup',
+      'removeStone',
       'removeMarkup',
       'removeAllMarkup',
-      'freeDraw',
-      'eraseFreeDraw',
+      'removeAllLines',
     ]
 
     //Invalid action
@@ -350,7 +357,12 @@ export default class PlayerModeEdit extends PlayerModeReplay {
     }
 
     //Process
-    this[action](...args, true)
+    this[action](...args)
+
+    //Free draw event, done, as this is drawn directly onto the board
+    if (action === 'addLine' || action === 'addLines') {
+      return
+    }
 
     //Update board position and render markers
     player.updateBoardPosition()
@@ -374,7 +386,7 @@ export default class PlayerModeEdit extends PlayerModeReplay {
     //Move tool
     if (this.isUsingMoveTool()) {
       if (!isDragging) {
-        this.playMove(x, y)
+        player.playMove(x, y)
       }
       return //Return to preserve move markers
     }
@@ -432,38 +444,6 @@ export default class PlayerModeEdit extends PlayerModeReplay {
   }
 
   /**
-   * Play a move
-   */
-  playMove(x, y) {
-
-    //Get player and play move
-    const {player, game} = this
-    const outcome = player.playMove(x, y)
-
-    //Not a valid outcome
-    if (!outcome.isValid) {
-      return
-    }
-
-    //Play move sound and trigger edited event
-    player.playSound('move')
-
-    //Play capture sounds
-    if (game.position.hasCaptures()) {
-      const num = Math.min(game.position.getTotalCaptureCount(), 10)
-      for (let i = 0; i < num; i++) {
-        setTimeout(() => {
-          player.stopSound('capture')
-          player.playSound('capture')
-        }, 150 + randomInt(30, 90) * i)
-      }
-    }
-
-    //Trigger edited event
-    this.triggerEditedEvent('playMove', x, y)
-  }
-
-  /**
    * Erase cell
    */
   eraseCell(x, y) {
@@ -513,7 +493,7 @@ export default class PlayerModeEdit extends PlayerModeReplay {
     game.addStone(x, y, color)
 
     //Trigger edited event
-    this.triggerEditedEvent('addStone', x, y, color)
+    this.triggerEditEvent('addStone', x, y, color)
   }
 
   /**
@@ -524,12 +504,17 @@ export default class PlayerModeEdit extends PlayerModeReplay {
     //Get data
     const {game, board} = this
 
+    //No stone here
+    if (!game.hasStone(x, y)) {
+      return
+    }
+
     //Remove from game and board
     game.removeStone(x, y)
     board.removeStone(x, y)
 
     //Trigger edited event
-    this.triggerEditedEvent('removeStone', x, y)
+    this.triggerEditEvent('removeStone', x, y)
   }
 
   /**
@@ -544,7 +529,7 @@ export default class PlayerModeEdit extends PlayerModeReplay {
     game.addMarkup(x, y, {type, text})
 
     //Trigger event
-    this.triggerEditedEvent('addMarkup', x, y, type, text)
+    this.triggerEditEvent('addMarkup', x, y, type, text)
   }
 
   /**
@@ -564,8 +549,8 @@ export default class PlayerModeEdit extends PlayerModeReplay {
     game.removeMarkup(x, y)
     board.removeMarkup(x, y)
 
-    //Trigger edited event
-    this.triggerEditedEvent('removeMarkup', x, y)
+    //Trigger event
+    this.triggerEditEvent('removeMarkup', x, y)
   }
 
   /**
@@ -582,33 +567,65 @@ export default class PlayerModeEdit extends PlayerModeReplay {
 
     //Re-render markers and trigger edited event
     this.renderMarkers()
-    this.triggerEditedEvent('removeAllMarkup')
+    this.triggerEditEvent('removeAllMarkup')
   }
 
   /**
-   * Free draw
+   * Remove all free drawn lines
    */
-  freeDraw(fromX, fromY, toX, toY, color) {
+  removeAllLines() {
 
-    //Array of coordinates
-    if (Array.isArray(fromX)) {
-      fromX.forEach(edit => this.freeDraw(...edit))
-      return
+    //Get board
+    const {game, board} = this
+
+    //Remove all lines from game and board
+    game.removeAllLines()
+    board.removeAllLines()
+
+    //Trigger edited event
+    this.triggerEditEvent('removeAllLines')
+  }
+
+  /**
+   * Add line or lines
+   */
+  addLine(...args) {
+
+    //Process line and trigger event
+    this.processLine(...args)
+    this.triggerAddLineEvent(...args)
+  }
+
+  /**
+   * Add lines in bulk
+   */
+  addLines(lines) {
+
+    //Process lines
+    for (const line of lines) {
+      this.processLine(...line)
     }
 
+    //Trigger bulk add lines event
+    this.triggerEditEvent('addLines', lines)
+  }
+
+  /**
+   * Helper to process a line
+   */
+  processLine(fromX, fromY, toX, toY, color) {
+
     //Get data
-    const {player, board} = this
+    const {player, game, board} = this
 
     //Load color from player config if not given
     if (!color) {
       color = player.getConfig('freeDrawColor')
     }
 
-    //Draw
+    //Add to game and draw
+    game.addLine(fromX, fromY, toX, toY, color)
     board.drawLine(fromX, fromY, toX, toY, color)
-
-    //Trigger edited event
-    this.triggerFreeDrawEvent(fromX, fromY, toX, toY, color)
   }
 
   /**
@@ -620,40 +637,9 @@ export default class PlayerModeEdit extends PlayerModeReplay {
   }
 
   /**
-   * Erase free drawn lines
+   * Trigger free draw event
    */
-  eraseFreeDraw() {
-
-    //Get board
-    const {board} = this
-
-    //Erase draw layer
-    board.eraseDrawLayer()
-
-    //Trigger edited event
-    this.triggerEditedEvent('eraseFreeDraw')
-  }
-
-  /**
-   * Check if we have free drawn
-   */
-  hasFreeDrawn() {
-    const {board} = this
-    return board.hasFreeDrawn()
-  }
-
-  /**
-   * Get free drawn lines
-   */
-  getFreeDrawnLines() {
-    const {board} = this
-    return board.getFreeDrawnLines()
-  }
-
-  /**
-   * Process free draw event
-   */
-  triggerFreeDrawEvent(...args) {
+  triggerAddLineEvent(...args) {
 
     //Get buffer delay
     const {player} = this
@@ -661,23 +647,23 @@ export default class PlayerModeEdit extends PlayerModeReplay {
 
     //If no delay, emit immediately
     if (!delay) {
-      this.triggerEditedEvent('freeDraw', ...args)
+      this.triggerEditEvent('addLine', ...args)
       return
     }
 
     //Buffer the event
-    this.freeDrawEdits.push(args)
+    this.linesAdded.push(args)
 
     //Already have a timeout in place
-    if (this.freeDrawTimeout) {
+    if (this.lineAddTimeout) {
       return
     }
 
     //Create timeout
-    this.freeDrawTimeout = setTimeout(() => {
-      this.triggerEditedEvent('freeDraw', this.freeDrawEdits)
-      this.freeDrawTimeout = null
-      this.freeDrawEdits = []
+    this.lineAddTimeout = setTimeout(() => {
+      this.triggerEditEvent('addLines', this.linesAdded)
+      this.lineAddTimeout = null
+      this.linesAdded = []
     }, delay)
   }
 
@@ -1010,10 +996,10 @@ export default class PlayerModeEdit extends PlayerModeReplay {
   }
 
   /**
-   * Trigger edited event
+   * Trigger edit event
    */
-  triggerEditedEvent(action, ...args) {
-    this.player.triggerEvent('edited', {action, args})
+  triggerEditEvent(action, ...args) {
+    this.player.triggerEvent('edit', {action, args})
   }
 
   /**

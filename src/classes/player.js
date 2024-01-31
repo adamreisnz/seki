@@ -89,10 +89,10 @@ export default class Player extends Base {
 
     //Propagate events
     this.game.on('info', event => {
-      this.triggerEvent('gameInfo', event.detail)
+      this.triggerEvent('info', event.detail)
     })
     this.game.on('positionChange', event => {
-      this.triggerEvent('gamePositionChange', event.detail)
+      this.triggerEvent('positionChange', event.detail)
     })
 
     //Restricted nodes
@@ -523,21 +523,58 @@ export default class Player extends Base {
    * Play a move
    */
   playMove(x, y) {
-    const outcome = this.game.playMove(x, y)
+
+    //Play move
+    const {game} = this
+    const outcome = game.playMove(x, y)
+
+    //Valid outcome
     if (outcome.isValid) {
+
+      //Trigger move event and play sound
+      this.triggerEvent('move', {x, y})
+      this.playSound('move')
+
+      //Play capture sounds
+      if (game.position.hasCaptures()) {
+        const num = Math.min(game.position.getTotalCaptureCount(), 10)
+        for (let i = 0; i < num; i++) {
+          setTimeout(() => {
+            this.stopSound('capture')
+            this.playSound('capture')
+          }, 150 + randomInt(30, 90) * i)
+        }
+      }
+
+      //Process path change
       this.processPathChange()
     }
+
+    //Pass on outcome
     return outcome
   }
 
   /**
    * Play a pass move
    */
-  passMove(x, y) {
-    const outcome = this.game.passMove(x, y)
+  passMove() {
+
+    //Get outcome
+    const {game} = this
+    const outcome = game.passMove()
+
+    //Valid outcome
     if (outcome.isValid) {
+
+      //Trigger pass event and play sound
+      this.triggerEvent('pass')
+      this.playSound('pass')
+
+      //Process path change
       this.processPathChange()
     }
+
+    //Pass on outcome
     return outcome
   }
 
