@@ -339,7 +339,7 @@ export default class PlayerModeEdit extends PlayerModeReplay {
    * This is compatible with the data emitted by the edited event and can be
    * used to synchronise multiple instances of the same game.
    */
-  processEdit(action, args) {
+  processEdit(action, args = []) {
 
     //Validate action (maps to method name)
     const {player} = this
