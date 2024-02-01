@@ -168,8 +168,21 @@ export default class PlayerModeReplay extends PlayerMode {
       'rememberVariationPaths',
     ]
 
+    //Clear keys
+    const clearKeys = [
+      'showAllMoveNumbers',
+      'showVariationMoveNumbers',
+    ]
+
     //Redraw board if needed
     if (redrawKeys.includes(event.detail.key)) {
+
+      //Clear all markers
+      if (clearKeys.includes(event.detail.key)) {
+        this.clearMarkers()
+      }
+
+      //Use patch change event to render the markers
       this.onPathChange()
     }
   }
@@ -180,7 +193,7 @@ export default class PlayerModeReplay extends PlayerMode {
   onPathChange() {
 
     //Get data
-    const {player, game, board, isAutoPlaying} = this
+    const {player, game, isAutoPlaying} = this
 
     //Reset path index if not remembering
     if (!player.getConfig('rememberVariationPaths')) {
@@ -324,6 +337,7 @@ export default class PlayerModeReplay extends PlayerMode {
     //Create timeout for next move
     this.autoPlayTimeout = setTimeout(() => {
       player.goToNextPosition()
+      player.triggerEvent('autoPlayed')
     }, autoPlayDelay)
   }
 

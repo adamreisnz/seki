@@ -34,6 +34,9 @@ export default class Player extends Base {
   isMouseDown = false
   isDragging = false
 
+  //Bootstrapped state
+  isBootstrapped = false
+
   /**
    * Constructor
    */
@@ -522,7 +525,7 @@ export default class Player extends Base {
   /**
    * Play a move
    */
-  playMove(x, y) {
+  playMove(x, y, triggerEvent = true) {
 
     //Play move
     const {game} = this
@@ -531,8 +534,12 @@ export default class Player extends Base {
     //Valid outcome
     if (outcome.isValid) {
 
-      //Trigger move event and play sound
-      this.triggerEvent('move', {x, y})
+      //Trigger event
+      if (triggerEvent) {
+        this.triggerEvent('move', {x, y})
+      }
+
+      //Play sound
       this.playSound('move')
 
       //Play capture sounds
@@ -697,6 +704,9 @@ export default class Player extends Base {
    */
   bootstrap(container) {
 
+    //Debug
+    this.debug('🏗️ bootstrapping...')
+
     //Setup container element
     this.setupContainerElement(container)
 
@@ -713,12 +723,20 @@ export default class Player extends Base {
     //Setup listeners
     this.setupDocumentListeners()
     this.setupElementListeners()
+
+    //Emit event
+    this.isBootstrapped = true
+    this.debug('🏠 bootstrapped!')
+    this.triggerEvent('bootstrapped')
   }
 
   /**
    * Tear down
    */
   teardown() {
+
+    //Debug
+    this.debug('🧨 tearing down')
 
     //Flag as torn down
     this.isTornDown = true

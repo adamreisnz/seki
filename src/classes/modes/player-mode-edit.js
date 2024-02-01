@@ -357,7 +357,9 @@ export default class PlayerModeEdit extends PlayerModeReplay {
     }
 
     //Process
+    this.supressEditEvent = true
     this[action](...args)
+    this.supressEditEvent = false
 
     //Free draw event, done, as this is drawn directly onto the board
     if (action === 'addLine' || action === 'addLines') {
@@ -565,7 +567,7 @@ export default class PlayerModeEdit extends PlayerModeReplay {
     game.removeAllMarkup()
     board.removeAllMarkup()
 
-    //Re-render markers and trigger edited event
+    //Re-render markers and trigger event
     this.renderMarkers()
     this.triggerEditEvent('removeAllMarkup')
   }
@@ -582,18 +584,18 @@ export default class PlayerModeEdit extends PlayerModeReplay {
     game.removeAllLines()
     board.removeAllLines()
 
-    //Trigger edited event
+    //Trigger event
     this.triggerEditEvent('removeAllLines')
   }
 
   /**
    * Add line or lines
    */
-  addLine(...args) {
+  addLine(fromX, fromY, toX, toY, color) {
 
     //Process line and trigger event
-    this.processLine(...args)
-    this.triggerAddLineEvent(...args)
+    this.processLine(fromX, fromY, toX, toY, color)
+    this.triggerAddLineEvent(fromX, fromY, toX, toY, color)
   }
 
   /**
@@ -999,7 +1001,9 @@ export default class PlayerModeEdit extends PlayerModeReplay {
    * Trigger edit event
    */
   triggerEditEvent(action, ...args) {
-    this.player.triggerEvent('edit', {action, args})
+    if (!this.supressEditEvent) {
+      this.player.triggerEvent('edit', {action, args})
+    }
   }
 
   /**

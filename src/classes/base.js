@@ -28,6 +28,15 @@ export default class Base extends EventTarget {
     }
   }
 
+  /**
+   * Trace helper
+   */
+  trace(...args) {
+    if (getDebug()) {
+      console.trace(`${this.constructor.name}:`, ...args)
+    }
+  }
+
   /**************************************************************************
    * Configuration helpers
    ***/
