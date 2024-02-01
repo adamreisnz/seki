@@ -168,8 +168,11 @@ export default class PlayerModeEdit extends PlayerModeReplay {
       return
     }
 
+    //Get color
+    const color = player.getConfig('freeDrawColor')
+
     //Add line
-    this.addLine(lastFreeDrawX, lastFreeDrawY, x, y)
+    this.addLine(lastFreeDrawX, lastFreeDrawY, x, y, color)
   }
 
   /**
@@ -618,12 +621,7 @@ export default class PlayerModeEdit extends PlayerModeReplay {
   processLine(fromX, fromY, toX, toY, color) {
 
     //Get data
-    const {player, game, board} = this
-
-    //Load color from player config if not given
-    if (!color) {
-      color = player.getConfig('freeDrawColor')
-    }
+    const {game, board} = this
 
     //Add to game and draw
     game.addLine(fromX, fromY, toX, toY, color)
