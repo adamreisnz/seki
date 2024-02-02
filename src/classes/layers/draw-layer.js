@@ -55,10 +55,10 @@ export default class DrawLayer extends BoardLayer {
     const pixelRatio = getPixelRatio()
 
     //Get absolute coordinates
-    const absFromX = board.getAbsX(fromX) * pixelRatio
-    const absFromY = board.getAbsY(fromY) * pixelRatio
-    const absToX = board.getAbsX(toX) * pixelRatio
-    const absToY = board.getAbsY(toY) * pixelRatio
+    const absFromX = board.getAbsX(fromX)
+    const absFromY = board.getAbsY(fromY)
+    const absToX = board.getAbsX(toX)
+    const absToY = board.getAbsY(toY)
 
     //Set style
     context.strokeStyle = color || theme.get('draw.color')
