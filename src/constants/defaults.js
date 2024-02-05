@@ -277,7 +277,9 @@ export const defaultTheme = {
     //Points (modifier style)
     points: {
       shadow: false,
-      scale: 0.5,
+      scale(cellSize, stoneColor, probability) {
+        return Math.max(0.25, Math.min(0.5, probability))
+      },
     },
 
     //Captures (modifier style)

@@ -36,12 +36,16 @@ export default class StoneFactory {
   /**
    * Create modified copy of existing stone
    */
-  static createCopy(stone, modifierStyle) {
+  static createCopy(stone, modifierStyle, props) {
     if (!(stone instanceof Stone)) {
       throw new Error(`Unexpected input: ${stone}`)
     }
     const {board, stoneColor} = stone
-    return new stone.constructor(board, stoneColor, modifierStyle)
+    const copy = new stone.constructor(board, stoneColor, modifierStyle)
+    if (props) {
+      Object.assign(copy, props)
+    }
+    return copy
   }
 
   /**

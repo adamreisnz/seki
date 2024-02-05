@@ -27,6 +27,9 @@ export default class Stone extends GridObject {
     'shadow',
   ]
 
+  //Probability (for scoring)
+  probability = 1
+
   /**
    * Constructor
    */
@@ -57,7 +60,7 @@ export default class Stone extends GridObject {
   loadProperties() {
 
     //Get data
-    const {board, stoneColor} = this
+    const {board, stoneColor, probability} = this
 
     //Obtain cell size and stone color (which could be swapped)
     const cellSize = board.getCellSize()
@@ -65,7 +68,7 @@ export default class Stone extends GridObject {
 
     //Load basic theme props
     for (const prop of this.themeProps) {
-      this.loadThemeProp(prop, cellSize, displayColor)
+      this.loadThemeProp(prop, cellSize, displayColor, probability)
     }
 
     //Now load radius and remember display color

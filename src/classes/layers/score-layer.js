@@ -102,7 +102,9 @@ export default class ScoreLayer extends BoardLayer {
     for (const entry of territory) {
       const {x, y, value: {color, probability}} = entry
       const stone = StoneFactory.create(style, color, board)
-      const point = StoneFactory.createCopy(stone, stoneModifierStyles.POINTS)
+      const point = StoneFactory.createCopy(stone, stoneModifierStyles.POINTS, {
+        probability: Math.abs(probability),
+      })
 
       //Don't draw on top of existing stones that remain (and which are alive)
       if (!board.has(boardLayerTypes.STONES, x, y)) {
