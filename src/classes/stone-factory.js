@@ -37,7 +37,7 @@ export default class StoneFactory {
    * Create modified copy of existing stone
    */
   static createCopy(stone, modifierStyle) {
-    if (!stone instanceof Stone) {
+    if (!(stone instanceof Stone)) {
       throw new Error(`Unexpected input: ${stone}`)
     }
     const {board, stoneColor} = stone

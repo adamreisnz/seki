@@ -14,9 +14,9 @@ export default class CoordinatesLayer extends BoardLayer {
   /**
    * Unneeded methods
    */
-  getAll() {}
-  setAll() {}
-  removeAll() {}
+  getAll() {} // eslint-disable-line no-empty-function
+  setAll() {} // eslint-disable-line no-empty-function
+  removeAll() {} // eslint-disable-line no-empty-function
 
   /**
    * Draw

@@ -56,7 +56,7 @@ export default class StoneMono extends Stone {
       Math.max(0, radius - lineWidth),
       0,
       2 * Math.PI,
-      true,
+      true
     )
     context.fill()
 

@@ -69,7 +69,7 @@ export default class MarkupSad extends Markup {
       absX - dEye,
       absY - dEye,
       Math.round(radius / 6),
-      0, 2 * Math.PI, true,
+      0, 2 * Math.PI, true
     )
     context.fill()
     context.beginPath()
@@ -77,7 +77,7 @@ export default class MarkupSad extends Markup {
       absX + dEye,
       absY - dEye,
       Math.round(radius / 6),
-      0, 2 * Math.PI, true,
+      0, 2 * Math.PI, true
     )
     context.fill()
     context.beginPath()
@@ -88,7 +88,7 @@ export default class MarkupSad extends Markup {
       absX + dxCp,
       absY + dyCp,
       absX + dxMouth,
-      absY + dyMouth,
+      absY + dyMouth
     )
     context.stroke()
 

@@ -29,7 +29,7 @@ import {default as SekiEventHandler} from './classes/event-handler.js'
 import {
   Outcome as SekiOutcome,
   ValidOutcome as SekiValidOutcome,
-  ErrorOutcome as SekiErrorOutcome,
+  ErrorOutcome as SekiErrorOutcome
 } from './classes/outcomes.js'
 
 //Class factories
@@ -202,5 +202,5 @@ export {
   defaultGameInfo,
   defaultPlayerConfig,
   defaultStarPoints,
-  defaultTheme,
+  defaultTheme
 }

@@ -12,7 +12,7 @@ import {
   sgfGameInfoMap,
   sgfPlayerInfoMap,
   sgfGameTypes,
-  sgfMarkupTypes,
+  sgfMarkupTypes
 } from '../../constants/sgf.js'
 
 //Regexes
@@ -185,7 +185,7 @@ export default class ConvertFromSgf extends Converter {
         .match(regexValues)
         .map(value => value
           .substring(1, value.length - 1)
-          .replace(/\\(?!\\)/g, ''),
+          .replace(/\\(?!\\)/g, '')
         )
 
       //SGF parser present for this key?

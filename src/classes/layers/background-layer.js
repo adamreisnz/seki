@@ -12,9 +12,9 @@ export default class BackgroundLayer extends BoardLayer {
   /**
    * Unneeded methods
    */
-  getAll() {}
-  setAll() {}
-  removeAll() {}
+  getAll() {} // eslint-disable-line no-empty-function
+  setAll() {} // eslint-disable-line no-empty-function
+  removeAll() {} // eslint-disable-line no-empty-function
 
   /**
    * Draw method

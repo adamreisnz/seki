@@ -82,7 +82,7 @@ export default class GridObject {
   /**
    * Draw
    */
-  draw(/*context, x, y*/) {}
+  draw(/*context, x, y*/) {} // eslint-disable-line no-empty-function
 
   /**
    * Erase
@@ -102,7 +102,7 @@ export default class GridObject {
       absX - radius,
       absY - radius,
       2 * radius,
-      2 * radius,
+      2 * radius
     )
   }
 

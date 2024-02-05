@@ -28,14 +28,14 @@ export default class GameScoreState {
     //Was white, mark it and any territory it's in as black's
     if (color === stoneColors.WHITE) {
       this.territorySet(
-        x, y, scoreStates.BLACK_CANDIDATE, scoreStates.BLACK_STONE,
+        x, y, scoreStates.BLACK_CANDIDATE, scoreStates.BLACK_STONE
       )
     }
 
     //Was black, mark it and any territory it's in as white's
     else if (color === stoneColors.BLACK) {
       this.territorySet(
-        x, y, scoreStates.WHITE_CANDIDATE, scoreStates.WHITE_STONE,
+        x, y, scoreStates.WHITE_CANDIDATE, scoreStates.WHITE_STONE
       )
     }
   }
@@ -58,7 +58,7 @@ export default class GameScoreState {
       //Was white, mark it and any territory it's in as black's
       if (state === scoreStates.WHITE_STONE) {
         this.territorySet(
-          x, y, scoreStates.BLACK_CANDIDATE, scoreStates.BLACK_STONE,
+          x, y, scoreStates.BLACK_CANDIDATE, scoreStates.BLACK_STONE
         )
       }
 
@@ -74,7 +74,7 @@ export default class GameScoreState {
       //Was black, mark it and any territory it's in as white's
       if (state === scoreStates.BLACK_STONE) {
         this.territorySet(
-          x, y, scoreStates.WHITE_CANDIDATE, scoreStates.WHITE_STONE,
+          x, y, scoreStates.WHITE_CANDIDATE, scoreStates.WHITE_STONE
         )
       }
 
@@ -91,9 +91,9 @@ export default class GameScoreState {
   getCandidateState(color) {
     switch (color) {
       case stoneColors.BLACK:
-        return scoreStates.BLACK_CANDIDATE;
+        return scoreStates.BLACK_CANDIDATE
       case stoneColors.WHITE:
-        return scoreStates.WHITE_CANDIDATE;
+        return scoreStates.WHITE_CANDIDATE
     }
   }
 

@@ -13,9 +13,9 @@ export default class GridLayer extends BoardLayer {
   /**
    * Unneeded methods
    */
-  getAll() {}
-  setAll() {}
-  removeAll() {}
+  getAll() {} // eslint-disable-line no-empty-function
+  setAll() {} // eslint-disable-line no-empty-function
+  removeAll() {} // eslint-disable-line no-empty-function
 
   /**
    * Draw method
@@ -84,7 +84,7 @@ export default class GridLayer extends BoardLayer {
     if (board.getConfig('showStarPoints')) {
       for (let i = 0; i < starPoints.length; i++) {
         this.drawStarPoint(
-          starPoints[i].x, starPoints[i].y, starRadius, starColor,
+          starPoints[i].x, starPoints[i].y, starRadius, starColor
         )
       }
     }

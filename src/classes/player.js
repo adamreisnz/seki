@@ -7,9 +7,10 @@ import {playerModes} from '../constants/player.js'
 import {defaultPlayerConfig} from '../constants/defaults.js'
 import {
   addClass,
+  randomInt,
   getPixelRatio,
   isKeyDownEvent,
-  isMouseEvent,
+  isMouseEvent
 } from '../helpers/util.js'
 
 /**
@@ -115,7 +116,7 @@ export default class Player extends Base {
 
     //Debug
     this.debug(
-      `extending with ${method} method for ${mode} mode`,
+      `extending with ${method} method for ${mode} mode`
     )
 
     //Extend

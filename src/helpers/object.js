@@ -24,7 +24,7 @@ export function flip(obj) {
   return Object
     .fromEntries(Object
       .entries(obj)
-      .map(([key, value]) => [value, key]),
+      .map(([key, value]) => [value, key])
     )
 }
 

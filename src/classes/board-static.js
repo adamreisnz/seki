@@ -1,9 +1,9 @@
 import Board from './board.js'
 import {
-  boardLayerTypes,
+  boardLayerTypes
 } from '../constants/board.js'
 import {
-  addClass,
+  addClass
 } from '../helpers/util.js'
 
 /**
@@ -25,8 +25,8 @@ export default class BoardStatic extends Board {
   /**
    * Single layer ops not possible for static board
    */
-  eraseLayer() {}
-  redrawLayer() {}
+  eraseLayer() {} // eslint-disable-line no-empty-function
+  redrawLayer() {} // eslint-disable-line no-empty-function
 
   /**
    * Setup elements

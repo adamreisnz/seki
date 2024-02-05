@@ -295,7 +295,7 @@ export default class Game extends Base {
         boardCutOffLeft,
         boardCutOffRight,
         boardCutOffTop,
-        boardCutOffBottom,
+        boardCutOffBottom
       )
     }
 

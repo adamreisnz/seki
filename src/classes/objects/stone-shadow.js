@@ -87,7 +87,7 @@ export default class StoneShadow extends Stone {
       radius - 1 - blur,
       absX + offsetX,
       absY + offsetY,
-      radius + blur,
+      radius + blur
     )
     context.fillStyle.addColorStop(0, color)
     context.fillStyle.addColorStop(1, 'rgba(0,0,0,0)')
@@ -100,7 +100,7 @@ export default class StoneShadow extends Stone {
       radius + blur,
       0,
       2 * Math.PI,
-      true,
+      true
     )
     context.fill()
   }

@@ -69,7 +69,7 @@ export default class MarkupHappy extends Markup {
       absX - dEye,
       absY - dEye,
       Math.round(radius / 6),
-      0, 2 * Math.PI, true,
+      0, 2 * Math.PI, true
     )
     context.fill()
     context.beginPath()
@@ -77,7 +77,7 @@ export default class MarkupHappy extends Markup {
       absX + dEye,
       absY - dEye,
       Math.round(radius / 6),
-      0, 2 * Math.PI, true,
+      0, 2 * Math.PI, true
     )
     context.fill()
     context.beginPath()
@@ -88,7 +88,7 @@ export default class MarkupHappy extends Markup {
       absX + dxCp, //cp2x
       absY + dyCp, //cp2y
       absX + dxMouth, //x
-      absY + dyMouth, //y
+      absY + dyMouth //y
     )
     context.stroke()
 

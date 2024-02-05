@@ -36,7 +36,7 @@ export default class StoneGlass extends Stone {
         radius / 3,
         absX - radius / 5,
         absY - radius / 5,
-        5 * radius / 5,
+        5 * radius / 5
       )
       context.fillStyle.addColorStop(0, '#fff')
       context.fillStyle.addColorStop(1, '#aaa')
@@ -48,7 +48,7 @@ export default class StoneGlass extends Stone {
         1,
         absX - radius / 5,
         absY - radius / 5,
-        4 * radius / 5,
+        4 * radius / 5
       )
       context.fillStyle.addColorStop(0, '#666')
       context.fillStyle.addColorStop(1, '#111')

@@ -159,7 +159,7 @@ export default class BoardLayer {
       0,
       0,
       context.canvas.clientWidth * pixelRatio,
-      context.canvas.clientHeight * pixelRatio,
+      context.canvas.clientHeight * pixelRatio
     )
   }
 

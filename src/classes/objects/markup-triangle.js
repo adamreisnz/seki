@@ -38,11 +38,11 @@ export default class MarkupTriangle extends Markup {
     context.moveTo(absX, absY - dy * 1.25)
     context.lineTo(
       absX - dx,
-      absY + dy,
+      absY + dy
     )
     context.lineTo(
       absX + dx,
-      absY + dy,
+      absY + dy
     )
     context.closePath()
     context.stroke()

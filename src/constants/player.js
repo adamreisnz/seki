@@ -100,4 +100,3 @@ export const playerActions = {
   REMOVE_ALL_MARKUP: 'removeAllMarkup',
   REMOVE_ALL_LINES: 'removeAllLines',
 }
-

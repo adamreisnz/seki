@@ -38,7 +38,7 @@ export default class MarkupSquare extends Markup {
       absX - d,
       absY - d,
       2 * d,
-      2 * d,
+      2 * d
     )
     context.stroke()
 

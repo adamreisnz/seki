@@ -9,7 +9,7 @@ import {
   boardLayerTypes,
   stoneColors,
   markupTypes,
-  keyValues,
+  keyValues
 } from '../../src/index.js'
 
 //Get helpers
@@ -572,7 +572,7 @@ export async function sekiPlayer(element, config = {}) {
     const [eventStr, eventLink] = eventStringAndLink(
       game.getEventName(),
       game.getEventLocation(),
-      game.getEventRound(),
+      game.getEventRound()
     )
     setText('event', eventStr || '')
     setAttr('event-link', 'href', eventLink || '#')

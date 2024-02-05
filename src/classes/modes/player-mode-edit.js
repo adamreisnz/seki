@@ -1,12 +1,12 @@
 import PlayerModeReplay from './player-mode-replay.js'
-import {randomInt, getPixelRatio} from '../../helpers/util.js'
+import {getPixelRatio} from '../../helpers/util.js'
 import {aCharUc, aCharLc} from '../../constants/util.js'
 import {markupTypes} from '../../constants/markup.js'
 import {stoneColors} from '../../constants/stone.js'
 import {
   playerModes,
   playerActions,
-  editTools,
+  editTools
 } from '../../constants/player.js'
 
 /**

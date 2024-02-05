@@ -13,7 +13,7 @@ import {
   getPixelRatio,
   createElement,
   createCanvasContext,
-  mergeCanvases,
+  mergeCanvases
 } from '../helpers/util.js'
 
 /**
@@ -658,7 +658,7 @@ export default class Board extends Base {
     //Determine cell size now
     const cellSize = Math.floor(Math.min(
       drawWidth / numCellsHor,
-      drawHeight / numCellsVer,
+      drawHeight / numCellsVer
     ))
 
     //Determine actual grid draw size (taking off the margin again)
@@ -829,14 +829,14 @@ export default class Board extends Base {
     //Create for each layer
     layers.forEach(layer => {
       const context = createCanvasContext(
-        canvasses, `seki-board-layer-${layer.type}`,
+        canvasses, `seki-board-layer-${layer.type}`
       )
       layer.setContext(context)
     })
 
     //Store canvases as elements array
     elements.canvasses = Array.from(
-      canvasses.getElementsByTagName('canvas'),
+      canvasses.getElementsByTagName('canvas')
     )
   }
 
@@ -916,7 +916,7 @@ export default class Board extends Base {
       //Determine cell size now
       const cellSize = Math.min(
         availableWidth / numCellsHor,
-        availableHeight / numCellsVer,
+        availableHeight / numCellsVer
       )
 
       //Set draw size
@@ -968,7 +968,7 @@ export default class Board extends Base {
     //This will trigger a compute and redraw
     this.setDrawSize(
       width * pixelRatio,
-      height * pixelRatio,
+      height * pixelRatio
     )
   }
 

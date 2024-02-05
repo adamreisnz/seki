@@ -4,7 +4,7 @@ import {copy, get, set} from '../../helpers/object.js'
 import {
   jgfVersion,
   jgfPaths,
-  jgfNodePaths,
+  jgfNodePaths
 } from '../../constants/jgf.js'
 
 //Default options

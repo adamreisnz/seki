@@ -24,7 +24,7 @@ export default class PlayerMode extends Base {
   /**
    * Init
    */
-  init() {}
+  init() {} // eslint-disable-line no-empty-function
 
   /**
    * Game virtual shortcut

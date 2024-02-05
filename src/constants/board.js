@@ -19,4 +19,3 @@ export const boardLayerTypes = {
   DRAW: 'draw',
   HOVER: 'hover',
 }
-

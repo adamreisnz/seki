@@ -78,7 +78,7 @@ export default class StoneSlateShell extends Stone {
       0,
       absX + radius / 2,
       absY + radius / 2,
-      radius,
+      radius
     )
     context.fillStyle.addColorStop(0, 'rgba(32,32,32,1)')
     context.fillStyle.addColorStop(1, 'rgba(0,0,0,0)')
@@ -93,7 +93,7 @@ export default class StoneSlateShell extends Stone {
       1,
       absX - radius / 2,
       absY - radius / 2,
-      3 * radius / 2,
+      3 * radius / 2
     )
     context.fillStyle.addColorStop(0, 'rgba(90,90,90,1)')
     context.fillStyle.addColorStop(0.5, 'rgba(0,0,0,0.2)')
@@ -138,7 +138,7 @@ export default class StoneSlateShell extends Stone {
       radius / 6,
       absX - radius / 5,
       absY - radius / 5,
-      radius,
+      radius
     )
     context.fillStyle.addColorStop(0, 'rgba(255,255,255,0.95)')
     context.fillStyle.addColorStop(0.1, 'rgba(255,255,255,0.85)')
@@ -172,7 +172,7 @@ export default class StoneSlateShell extends Stone {
    * Helper to draw a shell line
    */
   drawShellLine(
-    context, style, x, y, startAngle, endAngle,
+    context, style, x, y, startAngle, endAngle
   ) {
 
     //Get data

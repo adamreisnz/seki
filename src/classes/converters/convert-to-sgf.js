@@ -8,7 +8,7 @@ import {
   sgfGameInfoMap,
   sgfGameTypes,
   sgfSetupTypes,
-  sgfMarkupTypes,
+  sgfMarkupTypes
 } from '../../constants/sgf.js'
 
 //Info properties parsing map
@@ -53,7 +53,7 @@ export default class ConvertToSgf extends Converter {
     //Get options
     const {
       includeVariationSettings,
-      includeZeroValues
+      includeZeroValues,
     } = Object.assign({}, defaultOptions, options || {})
 
     //Get game info and initialize sgf root properties object
