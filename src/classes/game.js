@@ -515,13 +515,13 @@ export default class Game extends Base {
   /**
    * Set/get event name
    */
-  setEventName(eventName = '') {
+  setEventName(name = '') {
 
     //Check for URL presence
-    const [name, location] = parseEvent(eventName)
-    if (name && location) {
-      this.eventName = name
-      this.eventLocation = location
+    const [eventName, eventLocation] = parseEvent(name)
+    if (eventName && eventLocation) {
+      this.eventName = eventName
+      this.eventLocation = eventLocation
       this.triggerEvent('info', {eventName, eventLocation})
     }
 
@@ -538,13 +538,13 @@ export default class Game extends Base {
   /**
    * Set/get event location
    */
-  setEventLocation(eventLocation = '') {
+  setEventLocation(location = '') {
 
     //Check for URL presence
-    const [name, location] = parseEvent(eventLocation)
-    if (name && location) {
-      this.eventName = name
-      this.eventLocation = location
+    const [eventName, eventLocation] = parseEvent(location)
+    if (eventName && eventLocation) {
+      this.eventName = eventName
+      this.eventLocation = eventLocation
       this.triggerEvent('info', {eventName, eventLocation})
     }
 
