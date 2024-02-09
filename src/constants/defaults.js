@@ -257,7 +257,7 @@ export const defaultTheme = {
 
     //Stone shadows
     shadow: {
-      color: 'rgba(30,20,10,0.55)',
+      color: 'rgba(30,20,10,.6)',
       scale: 0.97,
       size(cellSize) {
         //NOTE: Globally set on layer, hence no stone color here

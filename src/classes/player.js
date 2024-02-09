@@ -98,10 +98,6 @@ export default class Player extends Base {
     this.game.on('positionChange', event => {
       this.triggerEvent('positionChange', event.detail)
     })
-
-    //Restricted nodes
-    this.restrictedStartNode = null
-    this.restrictedEndNode = null
   }
 
   /**
@@ -362,11 +358,6 @@ export default class Player extends Base {
       return
     }
 
-    //At restricted end node
-    if (this.isAtRestrictedEndNode()) {
-      return
-    }
-
     //Get path index
     const i = this.game.getCurrentPathIndex()
 
@@ -382,11 +373,6 @@ export default class Player extends Base {
 
     //No previous position
     if (!this.game.hasPreviousPosition()) {
-      return
-    }
-
-    //At restricted start node
-    if (this.isAtRestrictedStartNode()) {
       return
     }
 
@@ -422,6 +408,22 @@ export default class Player extends Base {
 
     //Go to first position
     this.game.goToFirstPosition()
+    this.processPathChange()
+  }
+
+  /**
+   * Go to the previous variation
+   */
+  goToPreviousVariation() {
+    this.game.goToPreviousVariation()
+    this.processPathChange()
+  }
+
+  /**
+   * Go to the next variation
+   */
+  goToNextVariation() {
+    this.game.goToNextVariation()
     this.processPathChange()
   }
 
@@ -584,36 +586,6 @@ export default class Player extends Base {
 
     //Pass on outcome
     return outcome
-  }
-
-  /**
-   * Set the current node as restricted start node
-   */
-  setRestrictedStartNode() {
-    this.restrictedStartNode = this.game.node
-  }
-
-  /**
-   * Set the current node as restricted end node
-   */
-  setRestrictedEndNode() {
-    this.restrictedEndNode = this.game.node
-  }
-
-  /**
-   * Is restricted start node
-   */
-  isAtRestrictedStartNode() {
-    const {game, restrictedStartNode} = this
-    return (game && restrictedStartNode && game.node === restrictedStartNode)
-  }
-
-  /**
-   * Is restricted end node
-   */
-  isAtRestrictedEndNode() {
-    const {game, restrictedEndNode} = this
-    return (game && restrictedEndNode && game.node === restrictedEndNode)
   }
 
   /**

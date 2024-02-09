@@ -70,6 +70,8 @@ export const playerActions = {
   GO_TO_PREV_FORK: 'goToPrevFork',
   GO_TO_NEXT_COMMENT: 'goToNextComment',
   GO_TO_PREV_COMMENT: 'goToPrevComment',
+  GO_TO_NEXT_VARIATION: 'goToNextVariation',
+  GO_TO_PREV_VARIATION: 'goToPrevVariation',
   SELECT_NEXT_VARIATION: 'selectNextVariation',
   SELECT_PREV_VARIATION: 'selectPrevVariation',
 

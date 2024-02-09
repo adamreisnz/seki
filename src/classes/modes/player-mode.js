@@ -223,6 +223,12 @@ export default class PlayerMode extends Base {
       case playerActions.GO_TO_PREV_COMMENT:
         player.goToPreviousComment()
         return true
+      case playerActions.GO_TO_NEXT_VARIATION:
+        player.goToNextVariation()
+        return true
+      case playerActions.GO_TO_PREV_VARIATION:
+        player.goToPreviousVariation()
+        return true
 
       //Variation selection
       case playerActions.SELECT_NEXT_VARIATION:

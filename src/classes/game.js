@@ -1907,6 +1907,26 @@ export default class Game extends Base {
   }
 
   /**
+   * Go to next variation (if there is one)
+   */
+  goToNextVariation() {
+    const next = this.node.getNextSibling()
+    if (next) {
+      this.goToNode(next)
+    }
+  }
+
+  /**
+   * Go to previous variation (if there is one)
+   */
+  goToPreviousVariation() {
+    const previous = this.node.getPreviousSibling()
+    if (previous) {
+      this.goToNode(previous)
+    }
+  }
+
+  /**
    * Go to specific move number
    */
   goToMoveNumber(number) {

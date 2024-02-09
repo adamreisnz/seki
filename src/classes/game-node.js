@@ -202,6 +202,36 @@ export default class GameNode {
     this.variationRoot = null
   }
 
+  /**
+   * Siblings
+   */
+  hasSiblings() {
+    const {parent} = this
+    return (parent && parent.hasMultipleChildren())
+  }
+
+  /**
+   * Get next sibling
+   */
+  getNextSibling() {
+    const {parent} = this
+    if (parent) {
+      const i = parent.indexOf(this)
+      return parent.getChild(i + 1)
+    }
+  }
+
+  /**
+   * Get previous sibling
+   */
+  getPreviousSibling() {
+    const {parent} = this
+    if (parent) {
+      const i = parent.indexOf(this)
+      return parent.getChild(i - 1)
+    }
+  }
+
   /*****************************************************************************
    * Node manipulation
    ***/
