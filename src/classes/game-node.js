@@ -17,6 +17,7 @@ export default class GameNode {
 
   //The selected path index (for navigating variations)
   index = 0
+  isPath = false
 
   /**
    * Constructor
@@ -639,6 +640,15 @@ export default class GameNode {
   isSelectedPath(child) {
     const {children, index} = this
     return (child === children[index])
+  }
+
+  /**
+   * Mark path along whole nodes tree
+   */
+  markPath(isPath = true) {
+    const {children, index} = this
+    this.isPath = isPath
+    children.forEach((child, i) => child.markPath(isPath && i === index))
   }
 
   /**************************************************************************

@@ -1251,6 +1251,7 @@ export default class Game extends Base {
    */
   setCurrentPathIndex(i) {
     this.node.setPathIndex(i)
+    this.root.markPath()
   }
 
   /**
@@ -1258,6 +1259,7 @@ export default class Game extends Base {
    */
   resetCurrentPathIndex() {
     this.node.setPathIndex(0)
+    this.root.markPath()
     this.path.forgetPathChoice()
   }
 
@@ -1787,6 +1789,7 @@ export default class Game extends Base {
     //Advance path to the added node index
     this.node = node
     this.path.advance(i)
+    this.root.markPath()
 
     //Valid move
     this.addPositionToStack(newPosition)
@@ -2150,6 +2153,7 @@ export default class Game extends Base {
     //Retreat path and set pointer to current node
     this.path.retreat()
     this.node = node.getParent()
+    this.root.markPath()
 
     //Remove last position from stack
     this.removeLastPositionFromStack()
@@ -2164,6 +2168,7 @@ export default class Game extends Base {
     //Reset path and point to root
     this.path.reset()
     this.node = this.root
+    this.root.markPath()
 
     //Determine initial turn based on handicap
     //Can be overwritten by game record instructions
@@ -2183,10 +2188,11 @@ export default class Game extends Base {
   processCurrentNode(revertPositionOnFail = true) {
 
     //Get data
-    const {node, position} = this
+    const {node, root, position} = this
 
     //Make this node the path node on its parent
     node.setAsParentPathNode()
+    root.markPath()
 
     //Initialize new position
     const newPosition = position.clone()
