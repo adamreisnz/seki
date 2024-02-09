@@ -1250,14 +1250,15 @@ export default class Game extends Base {
    * Set current path index
    */
   setCurrentPathIndex(i) {
-    return this.node.setPathIndex(i)
+    this.node.setPathIndex(i)
   }
 
   /**
    * Reset current path index
    */
   resetCurrentPathIndex() {
-    return this.node.setPathIndex(0)
+    this.node.setPathIndex(0)
+    this.path.forgetPathChoice()
   }
 
   /**
@@ -1883,8 +1884,6 @@ export default class Game extends Base {
   goToPreviousPosition() {
     if (this.goToPreviousNode()) {
       return new ValidOutcome()
-      // NOTE: There doesn't seem to be be a need to re-execute the node
-      // return this.processCurrentNode()
     }
     return new ErrorOutcome(`No previous position`)
   }
@@ -2146,8 +2145,6 @@ export default class Game extends Base {
     this.node = node.getParent()
 
     //Remove last position from stack
-    // NOTE: Need to do it twice if the current node is going to be re-executed
-    // this.removeLastPositionFromStack()
     this.removeLastPositionFromStack()
     return true
   }

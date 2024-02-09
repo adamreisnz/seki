@@ -30,18 +30,34 @@ export default class GamePath {
   }
 
   /**
-   * Advance a move
+   * Remember path choice at current move number
    */
-  advance(i) {
-
-    //Get data
+  rememberPathChoice(i) {
     const {moveNo, path} = this
-
-    //Different child variation chosen? Remember
     if (i > 0) {
       path[moveNo] = i
       this.branches++
     }
+  }
+
+  /**
+   * Forget path choice at current move number
+   */
+  forgetPathChoice() {
+    const {moveNo, path} = this
+    if (path[moveNo] > 0) {
+      delete path[moveNo]
+      this.branches--
+    }
+  }
+
+  /**
+   * Advance a move
+   */
+  advance(i) {
+
+    //Remember path choice
+    this.rememberPathChoice(i)
 
     //Increment move no
     this.moveNo++
@@ -52,19 +68,14 @@ export default class GamePath {
    */
   retreat() {
 
-    //Get data
-    const {moveNo, path} = this
-
     //At start?
+    const {moveNo} = this
     if (moveNo === 0) {
       return
     }
 
-    //Delete path choice
-    if (path[moveNo] > 0) {
-      delete path[moveNo]
-      this.branches--
-    }
+    //Forget path choice
+    this.forgetPathChoice()
 
     //Decrement move
     this.moveNo--
