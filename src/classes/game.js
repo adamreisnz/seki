@@ -1269,6 +1269,13 @@ export default class Game extends Base {
   }
 
   /**
+   * Get current move color
+   */
+  getCurrentMoveColor() {
+    return this.node.getMoveColor()
+  }
+
+  /**
    * Get current node name
    */
   getCurrentNodeName() {
