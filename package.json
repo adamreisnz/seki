@@ -34,6 +34,7 @@
     "gib",
     "kifu"
   ],
+  "packageManager": "yarn@4.2.1",
   "devDependencies": {
     "@eslint/js": "^9.2.0",
     "eslint": "^9.2.0"
