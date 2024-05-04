@@ -27,6 +27,8 @@ export function parseResult(result) {
 
   //Make some replacements
   return result
+    .replace(/^0$/i, 'D')
+    .replace(/draw/i, 'D')
     .replace(/resign/i, 'R')
     .replace(/time/i, 'T')
     .replace(/forfeit/i, 'F')
