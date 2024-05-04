@@ -1,8 +1,9 @@
-import pkg from '../../package.json' assert {type: "json"}
+//Stage 3, so not yet supported in ESLint etc
+//import pkg from '../../package.json' with {type: 'json'}
 
 //App details
-export const appIdentifier = pkg.name
-export const appVersion = pkg.version
+export const appIdentifier = '@reis/seki' //pkg.name
+export const appVersion = '2.0.9' //pkg.version
 export const appName = 'Seki'
 
 //Supported kifu formats

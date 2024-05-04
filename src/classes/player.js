@@ -791,7 +791,7 @@ export default class Player extends Base {
       audioElement.volume = volume
       await audioElement.play()
     }
-    catch (error) {
+    catch {
       //Fall through
     }
   }
@@ -806,7 +806,7 @@ export default class Player extends Base {
         audioElement.pause()
         audioElement.currentTime = 0
       }
-      catch (error) {
+      catch {
         //Fall through
       }
     }
