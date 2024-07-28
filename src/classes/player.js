@@ -5,6 +5,7 @@ import EventHandler from './event-handler.js'
 import PlayerModeFactory from './player-mode-factory.js'
 import {playerModes} from '../constants/player.js'
 import {defaultPlayerConfig} from '../constants/defaults.js'
+import {lowercase} from '../helpers/coordinates.js'
 import {
   addClass,
   randomInt,
@@ -539,7 +540,8 @@ export default class Player extends Base {
 
       //Trigger event
       if (triggerEvent) {
-        this.triggerEvent('move', {x, y})
+        const str = `${lowercase(x)}${lowercase(y)}`
+        this.triggerEvent('move', {x, y, str})
       }
 
       //Play sound

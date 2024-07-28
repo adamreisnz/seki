@@ -18,13 +18,9 @@ export function numbers(i) {
 //Letter coordinates generator (capitalised)
 export function letters(i) {
 
-  //Initialize
-  let ch = ''
-
   //Beyond Z? Prepend with A
   if (i >= 25) {
-    ch = 'A'
-    i -= 25
+    return `A${letters(i - 25)}`
   }
 
   //The letter I is ommitted
@@ -33,7 +29,7 @@ export function letters(i) {
   }
 
   //Return
-  return ch + String.fromCharCode(aCharUc + i)
+  return String.fromCharCode(aCharUc + i)
 }
 
 //Index coordinates generator (starting at 0)
