@@ -92,7 +92,7 @@ export const defaultPlayerConfig = {
 
   //Sounds
   playSounds: true,
-  soundVolume: 1,
+  soundVolume: 0.5,
   sounds: {
     move: null,
     capture: null,
