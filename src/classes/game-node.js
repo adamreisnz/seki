@@ -13,7 +13,6 @@ export default class GameNode {
   root
   parent
   children = []
-  variationRoot
 
   //The selected path index (for navigating variations)
   index = 0
@@ -48,10 +47,19 @@ export default class GameNode {
   }
 
   /**
-   * Get variation root node
+   * Variation root getter
    */
-  getVariationRoot() {
-    return this.variationRoot
+  get variationRoot() {
+    if (!this.parent) {
+      return null
+    }
+    else if (this.parent.variationRoot) {
+      return this.parent.variationRoot
+    }
+    else if (this.parent.indexOf(this) > 0) {
+      return this
+    }
+    return null
   }
 
   /**************************************************************************
@@ -157,6 +165,34 @@ export default class GameNode {
     //Swap
     children[newIndex] = child
     children[currentIndex] = existing
+
+    //Reparent children to ensure variation root is correct
+    children.forEach(child => child.setParent(this))
+  }
+
+  /**
+   * Move a child one position up
+   */
+  moveChildUp(child) {
+
+    //Move child if index valid
+    const currentIndex = this.indexOf(child)
+    if (currentIndex > 0) {
+      this.moveChild(child, currentIndex - 1)
+    }
+  }
+
+  /**
+   * Move a child one position down
+   */
+  moveChildDown(child) {
+
+    //Move child if index valid
+    const {children} = this
+    const currentIndex = this.indexOf(child)
+    if (currentIndex > -1 && currentIndex < children.length - 1) {
+      this.moveChild(child, currentIndex + 1)
+    }
   }
 
   /**
@@ -177,21 +213,8 @@ export default class GameNode {
    * Set parent node
    */
   setParent(parent) {
-
-    //Set parent and root
     this.parent = parent
     this.root = parent.root
-    this.variationRoot = null
-
-    //If our parent has a variation root, set it
-    if (parent.variationRoot) {
-      this.variationRoot = parent.variationRoot
-    }
-
-    //If we're the start of a variation branch, we are the root
-    else if (parent.indexOf(this) > 0) {
-      this.variationRoot = this
-    }
   }
 
   /**
@@ -200,7 +223,6 @@ export default class GameNode {
   removeParent() {
     this.parent = null
     this.root = this
-    this.variationRoot = null
   }
 
   /**
@@ -245,6 +267,7 @@ export default class GameNode {
     if (parent) {
       parent.removeChild(this)
       this.removeParent()
+      return parent
     }
   }
 
@@ -259,13 +282,40 @@ export default class GameNode {
   }
 
   /**
-   * Append child node to this node.
+   * Append child node to this node
    */
   appendChild(node) {
     node.detachFromParent()
     this.addChild(node)
     node.setParent(this)
     return this.indexOf(node)
+  }
+
+  /**
+   * Move to node to a specific index in the parent's child tree
+   */
+  moveToIndex(index) {
+    if (this.parent) {
+      this.parent.moveChild(this, index)
+    }
+  }
+
+  /**
+   * Move the node up in the parent's child tree
+   */
+  moveUp() {
+    if (this.parent) {
+      this.parent.moveChildUp(this)
+    }
+  }
+
+  /**
+   * Move the node down in the parent's child tree
+   */
+  moveDown() {
+    if (this.parent) {
+      this.parent.moveChildDown(this)
+    }
   }
 
   /**************************************************************************
@@ -283,10 +333,24 @@ export default class GameNode {
   }
 
   /**
+   * Check if we're the variation root
+   */
+  isVariationRoot() {
+    return this === this.variationRoot
+  }
+
+  /**
    * Check if we're on a variation branch
    */
   isVariationBranch() {
     return Boolean(this.variationRoot)
+  }
+
+  /**
+   * Check if we're the main variation
+   */
+  isMainVariation() {
+    return !this.isVariationBranch()
   }
 
   /**
