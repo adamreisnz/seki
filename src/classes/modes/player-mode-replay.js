@@ -362,6 +362,9 @@ export default class PlayerModeReplay extends PlayerMode {
     //Clear hover layer
     board.clearHoverLayer()
 
+    //Clear exsting markers
+    this.clearMarkers()
+
     //Show sibling variations
     if (showVariations && showSiblingVariations) {
       if (node.parent && node.parent.hasMultipleMoveVariations()) {

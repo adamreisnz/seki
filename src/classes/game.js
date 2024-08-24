@@ -2114,6 +2114,39 @@ export default class Game extends Base {
   }
 
   /**
+   * Make a node the main variation
+   */
+  makeMainVariation(node) {
+
+    //Must be a variation branch
+    if (!node.isVariationBranch()) {
+      throw new Error('Node is not a variation branch')
+    }
+
+    //Move the variation root to index 0 and go to the variation root
+    node.variationRoot.moveToIndex(0)
+  }
+
+  /**
+   * Remove a node
+   */
+  removeNode(node) {
+
+    //Warn when trying to remove root node
+    if (node.isRoot()) {
+      throw new Error('Cannot remove root node')
+    }
+
+    //Detach node from parent
+    const parent = node.detachFromParent()
+
+    //Go to parent node if we were at the node being removed
+    if (this.isCurrentNode(node)) {
+      this.goToNode(parent)
+    }
+  }
+
+  /**
    * Go to the next node
    */
   goToNextNode(i) {

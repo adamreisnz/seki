@@ -534,6 +534,22 @@ export default class Player extends Base {
   }
 
   /**
+   * Make a node the main variation
+   */
+  makeMainVariation(node) {
+    this.game.makeMainVariation(node)
+    this.triggerEvent('variationChange')
+  }
+
+  /**
+   * Remove a node
+   */
+  removeNode(node) {
+    this.game.removeNode(node)
+    this.processPathChange()
+  }
+
+  /**
    * Play a move
    */
   playMove(x, y, triggerEvent = true) {
@@ -595,43 +611,6 @@ export default class Player extends Base {
 
     //Pass on outcome
     return outcome
-  }
-
-  /**
-   * Remove a node
-   */
-  removeNode(node) {
-
-    //Warn when trying to remove root node
-    if (node.isRoot()) {
-      throw new Error('Cannot remove root node')
-    }
-
-    //Detach node from parent
-    const parent = node.detachFromParent()
-    if (this.isAtNode(node)) {
-      this.goToNode(parent)
-    }
-
-    //Process path change
-    this.processPathChange()
-  }
-
-  /**
-   * Make a node the main variation
-   */
-  makeMainVariation(node) {
-
-    //Must be a variation branch
-    if (!node.isVariationBranch()) {
-      throw new Error('Node is not a variation branch')
-    }
-
-    //Move the variation root to index 0 and go to the variation root
-    node.variationRoot.moveToIndex(0)
-
-    //Process path change
-    this.processPathChange()
   }
 
   /**
