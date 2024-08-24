@@ -546,6 +546,7 @@ export default class Player extends Base {
    */
   removeNode(node) {
     this.game.removeNode(node)
+    this.triggerEvent('edit')
     this.processPathChange()
   }
 
