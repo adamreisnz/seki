@@ -557,6 +557,7 @@ export default class Player extends Base {
 
     //Play move
     const {game} = this
+    const color = game.getCurrentMoveColor()
     const outcome = game.playMove(x, y)
 
     //Valid outcome
@@ -565,7 +566,7 @@ export default class Player extends Base {
       //Trigger event
       if (triggerEvent) {
         const str = `${lowercase(x)}${lowercase(y)}`
-        this.triggerEvent('move', {x, y, str})
+        this.triggerEvent('move', {color, x, y, str})
       }
 
       //Play sound
