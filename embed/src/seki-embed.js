@@ -110,36 +110,6 @@ const parseTime = (time = 0) => {
   }
 }
 
-//Over time parser
-// const parseOverTime = overTime => {
-//   if (!overTime) {
-//     return ''
-//   }
-//   const match = overTime.match(/[0-9]+x([0-9]+)([a-z -]+)/i)
-//   if (match) {
-//     const time = match[1]
-//     const suffix = match[2]
-//     if (time >= 24 * 3600) {
-//       const days = String(Math.floor(time / (24 * 3600)))
-//       return (days === '1') ? `1 day ${suffix}` : `${days} days ${suffix}`
-//     }
-//     else if (time >= 3600) {
-//       const hours = String(Math.floor(time / 3600))
-//       const minutes = String(Math.floor((time % 3600) / 60))
-//       const seconds = String(time % 60)
-//       return `${hours}h ${minutes}m ${seconds}s ${suffix}`
-//     }
-//     else if (time >= 60) {
-//       const minutes = String(Math.floor(time / 60))
-//       const seconds = String(time % 60)
-//       return `${minutes}m ${seconds}s ${suffix}`
-//     }
-//     else {
-//       return `${time}s ${suffix}`
-//     }
-//   }
-// }
-
 //Load game from data attributes
 const loadGame = async(dataset) => {
   if (dataset.game) {

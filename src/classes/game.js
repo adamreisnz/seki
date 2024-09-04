@@ -9,7 +9,7 @@ import ConvertFromGib from './converters/convert-from-gib.js'
 import ConvertToJgf from './converters/convert-to-jgf.js'
 import ConvertToSgf from './converters/convert-to-sgf.js'
 import {copy, get, set, merge, isObject} from '../helpers/object.js'
-import {parseMainTime, parseKomi, parseHandicap, parseEvent, parseResult} from '../helpers/parsing.js'
+import {parseTime, parseKomi, parseHandicap, parseEvent, parseResult} from '../helpers/parsing.js'
 import {isValidColor, colorToNumeric} from '../helpers/color.js'
 import {stoneColors} from '../constants/stone.js'
 import {handicapPlacements} from '../constants/game.js'
@@ -93,13 +93,13 @@ export default class Game extends Base {
     this.boardCutOffBottom = 0
 
     //Rules
-    this.ruleSet = ''
+    this.ruleset = ''
     this.allowSuicide = false
     this.disallowRepeats = false
     this.komi = 0
     this.handicap = 0
-    this.mainTime = 0
-    this.overTime = ''
+    this.time = 0
+    this.overtime = ''
 
     //Meta data and player settings
     this.meta = {}
@@ -168,13 +168,13 @@ export default class Game extends Base {
     const boardCutOffBottom = get(info, 'board.cutOffBottom')
 
     //Extract rules
-    const ruleSet = get(info, 'rules.ruleSet')
+    const ruleset = get(info, 'rules.ruleset')
     const allowSuicide = get(info, 'rules.allowSuicide')
     const disallowRepeats = get(info, 'rules.disallowRepeats')
     const komi = get(info, 'rules.komi')
     const handicap = get(info, 'rules.handicap')
-    const mainTime = get(info, 'rules.mainTime')
-    const overTime = get(info, 'rules.overTime')
+    const time = get(info, 'rules.time')
+    const overtime = get(info, 'rules.overtime')
     const numberOfPeriods = get(info, 'rules.numberOfPeriods')
     const timePerPeriod = get(info, 'rules.timePerPeriod')
 
@@ -240,8 +240,8 @@ export default class Game extends Base {
     }
 
     //Set rules
-    if (typeof ruleSet !== 'undefined') {
-      this.setRuleSet(ruleSet)
+    if (typeof ruleset !== 'undefined') {
+      this.setRuleset(ruleset)
     }
     if (typeof allowSuicide !== 'undefined') {
       this.setAllowSuicide(allowSuicide)
@@ -255,11 +255,11 @@ export default class Game extends Base {
     if (typeof handicap !== 'undefined') {
       this.setHandicap(handicap)
     }
-    if (typeof mainTime !== 'undefined') {
-      this.setMainTime(mainTime)
+    if (typeof time !== 'undefined') {
+      this.setTime(time)
     }
-    if (typeof overTime !== 'undefined') {
-      this.setOverTime(overTime)
+    if (typeof overtime !== 'undefined') {
+      this.setOvertime(overtime)
     }
     if (typeof numberOfPeriods !== 'undefined') {
       this.setNumberOfPeriods(numberOfPeriods)
@@ -350,13 +350,13 @@ export default class Game extends Base {
       boardCutOffRight,
       boardCutOffTop,
       boardCutOffBottom,
-      ruleSet,
+      ruleset,
       allowSuicide,
       disallowRepeats,
       komi,
       handicap,
-      mainTime,
-      overTime,
+      time,
+      overtime,
       players,
       settings,
       meta,
@@ -398,13 +398,13 @@ export default class Game extends Base {
     set(info, 'board.cutOffBottom', boardCutOffBottom)
 
     //Extract rules
-    set(info, 'rules.ruleSet', ruleSet)
+    set(info, 'rules.ruleset', ruleset)
     set(info, 'rules.allowSuicide', allowSuicide)
     set(info, 'rules.disallowRepeats', disallowRepeats)
     set(info, 'rules.komi', komi)
     set(info, 'rules.handicap', handicap)
-    set(info, 'rules.mainTime', mainTime)
-    set(info, 'rules.overTime', overTime)
+    set(info, 'rules.time', time)
+    set(info, 'rules.overtime', overtime)
 
     //Extract players, settings and meta data
     set(info, 'players', players)
@@ -735,12 +735,12 @@ export default class Game extends Base {
   /**
    * Set/get ruleset
    */
-  setRuleSet(ruleSet = '') {
-    this.ruleSet = ruleSet
-    this.triggerEvent('info', {ruleSet})
+  setRuleset(ruleset = '') {
+    this.ruleset = ruleset
+    this.triggerEvent('info', {ruleset})
   }
-  getRuleSet() {
-    return this.ruleSet
+  getRuleset() {
+    return this.ruleset
   }
 
   /**
@@ -790,29 +790,29 @@ export default class Game extends Base {
   /**
    * Set/get main time
    */
-  setMainTime(mainTime = 0) {
-    this.mainTime = parseMainTime(mainTime)
-    this.triggerEvent('info', {mainTime: this.mainTime})
+  setTime(time = 0) {
+    this.time = parseTime(time)
+    this.triggerEvent('info', {time: this.time})
   }
-  getMainTime() {
-    return this.mainTime
+  getTime() {
+    return this.time
   }
 
   /**
    * Set/get over time
    */
-  setOverTime(overTime = '') {
-    this.overTime = overTime || ''
-    this.triggerEvent('info', {overTime: this.overTime})
-    const match = overTime.match(/([0-9]+)x([0-9.]+)/)
+  setOvertime(overtime = '') {
+    this.overtime = overtime || ''
+    this.triggerEvent('info', {overtime: this.overtime})
+    const match = overtime.match(/([0-9]+)x([0-9.]+)/)
     if (match) {
       this.setNumberOfPeriods(match[1])
       this.setTimePerPeriod(match[2])
     }
   }
-  getOverTime() {
-    if (this.overTime) {
-      return this.overTime
+  getOvertime() {
+    if (this.overtime) {
+      return this.overtime
     }
     if (this.numberOfPeriods && this.timePerPeriod) {
       return `${this.numberOfPeriods}x${this.timePerPeriod} byo-yomi`
@@ -978,7 +978,7 @@ export default class Game extends Base {
 
     //Root node? Return main time
     if (node.isRoot()) {
-      return this.getMainTime()
+      return this.getTime()
     }
 
     //Not a move node
@@ -990,7 +990,7 @@ export default class Game extends Base {
     if (node.getMoveColor() !== color) {
       node = node.getPreviousMove()
       if (!node) {
-        return this.getMainTime()
+        return this.getTime()
       }
     }
 

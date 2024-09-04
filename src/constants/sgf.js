@@ -44,9 +44,9 @@ export const sgfGameInfoMap = {
   //Rules
   KM: 'rules.komi',
   HA: 'rules.handicap',
-  RU: 'rules.ruleSet',
-  TM: 'rules.mainTime',
-  OT: 'rules.overTime',
+  RU: 'rules.ruleset',
+  TM: 'rules.time',
+  OT: 'rules.overtime',
   TC: 'rules.numberOfPeriods', //Fox
   TT: 'rules.timePerPeriod', //Fox
 

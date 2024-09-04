@@ -90,21 +90,21 @@ export function parseHandicap(handicap) {
 }
 
 /**
- * Parse main time
+ * Parse time
  */
-export function parseMainTime(mainTime) {
+export function parseTime(time) {
 
   //Undefined
-  if (typeof mainTime === 'undefined') {
+  if (typeof time === 'undefined') {
     return
   }
 
   //Parse main time
-  mainTime = parseFloat(mainTime)
-  if (isNaN(mainTime)) {
+  time = parseFloat(time)
+  if (isNaN(time)) {
     return 0
   }
 
   //Return
-  return mainTime
+  return time
 }

@@ -120,8 +120,8 @@
   //Game rules
   "rules": {
 
-    //The rule set used
-		"ruleSet": "Japanese",
+    //The ruleset used
+		"ruleset": "Japanese",
 
     //Whether suicide moves are allowed
     "allowSuicide": false,
@@ -136,10 +136,10 @@
 		"handicap": 0,
 
     //Main time (in seconds)
-    "mainTime": 7200,
+    "time": 7200,
 
     //Overtime
-    "overTime": "3x20 byo-yomi",
+    "overtime": "3x20 byo-yomi",
   },
 
 	//Board properties
