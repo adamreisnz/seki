@@ -2123,7 +2123,7 @@ export default class Game extends Base {
       throw new Error('Node is not a variation branch')
     }
 
-    //Move the variation root to index 0 and go to the variation root
+    //Move the variation root to index 0
     node.variationRoot.moveToIndex(0)
   }
 
@@ -2139,6 +2139,9 @@ export default class Game extends Base {
 
     //Detach node from parent
     const parent = node.detachFromParent()
+    if (!parent) {
+      throw new Error('Node has no parent')
+    }
 
     //Go to parent node if we were at the node being removed
     if (this.isCurrentNode(node)) {

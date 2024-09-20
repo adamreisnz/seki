@@ -13,6 +13,7 @@ export default class GameNode {
   root
   parent
   children = []
+  variationRoot
 
   //The selected path index (for navigating variations)
   index = 0
@@ -46,22 +47,6 @@ export default class GameNode {
     return this === this.root
   }
 
-  /**
-   * Variation root getter
-   */
-  get variationRoot() {
-    if (!this.parent) {
-      return null
-    }
-    else if (this.parent.variationRoot) {
-      return this.parent.variationRoot
-    }
-    else if (this.parent.indexOf(this) > 0) {
-      return this
-    }
-    return null
-  }
-
   /**************************************************************************
    * Child and parent controls
    ***/
@@ -92,13 +77,7 @@ export default class GameNode {
    */
   setChildren(children) {
     this.children = children
-  }
-
-  /**
-   * Merge children
-   */
-  mergeChildren(children) {
-    this.children = this.children.concat(children)
+    this.children.forEach(child => child.setParent(this))
   }
 
   /**
@@ -119,26 +98,40 @@ export default class GameNode {
    * Add a child (returns the index of the newly added child)
    */
   addChild(child) {
+    child.detachFromParent()
     this.children.push(child)
+    child.setParent(this)
     return this.children.length - 1
   }
 
   /**
-   * Remove a child node, either by instance or given index
+   * Remove a child node
    */
   removeChild(child) {
+    const i = this.indexOf(child)
+    this.removeChildAtIndex(i)
+  }
 
-    //Game node instance given
-    if (child instanceof GameNode) {
-      const i = this.indexOf(child)
-      return this.removeChild(i)
+  /**
+   * Remove a child node at given index
+   */
+  removeChildAtIndex(i) {
+
+    //Invalid index
+    if (i === -1 || !this.children[i]) {
+      return
     }
 
-    //Index given
-    const i = child
-    if (i !== -1 && this.children[i]) {
-      this.children[i].removeParent()
-      this.children.splice(i, 1)
+    //Get the child, remove its parent
+    const child = this.children[i]
+    child.removeParent()
+
+    //Remove it from our children array, and if we removed the main variation
+    //node, update the variation root of the new main variation node. THe rest
+    //of the child nodes remain unaffected.
+    this.children.splice(i, 1)
+    if (i === 0 && this.children.length > 0) {
+      this.children[0].updateVariationRoot()
     }
   }
 
@@ -166,7 +159,7 @@ export default class GameNode {
     children[newIndex] = child
     children[currentIndex] = existing
 
-    //Reparent children to ensure variation root is correct
+    //Reparent children to ensure variation roots are correct
     children.forEach(child => child.setParent(this))
   }
 
@@ -196,6 +189,29 @@ export default class GameNode {
   }
 
   /**
+   * Update the variation root
+   */
+  updateVariationRoot() {
+
+    //Get parent and current variation root
+    const {parent} = this
+
+    //Update as needed
+    if (parent && parent.variationRoot) {
+      this.variationRoot = parent.variationRoot
+    }
+    else if (parent && parent.indexOf(this) > 0) {
+      this.variationRoot = this
+    }
+    else {
+      this.variationRoot = null
+    }
+
+    //Update for all our children
+    this.children.forEach(child => child.updateVariationRoot())
+  }
+
+  /**
    * Check if the node has a parent
    */
   hasParent() {
@@ -215,6 +231,7 @@ export default class GameNode {
   setParent(parent) {
     this.parent = parent
     this.root = parent.root
+    this.updateVariationRoot()
   }
 
   /**
@@ -223,6 +240,7 @@ export default class GameNode {
   removeParent() {
     this.parent = null
     this.root = this
+    this.updateVariationRoot()
   }
 
   /**
@@ -266,7 +284,6 @@ export default class GameNode {
     const {parent} = this
     if (parent) {
       parent.removeChild(this)
-      this.removeParent()
       return parent
     }
   }
@@ -275,9 +292,7 @@ export default class GameNode {
    * Append this node to a parent node
    */
   appendToParent(node) {
-    this.detachFromParent()
     node.addChild(this)
-    this.setParent(node)
     return node.indexOf(this)
   }
 
@@ -285,9 +300,7 @@ export default class GameNode {
    * Append child node to this node
    */
   appendChild(node) {
-    node.detachFromParent()
     this.addChild(node)
-    node.setParent(this)
     return this.indexOf(node)
   }
 
