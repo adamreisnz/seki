@@ -2123,8 +2123,17 @@ export default class Game extends Base {
       throw new Error('Node is not a variation branch')
     }
 
-    //Move the variation root to index 0
-    node.variationRoot.moveToIndex(0)
+    //Traverse from node to root, moving each node to index 0 at every junction.
+    //This ensures the entire path from root to node becomes the main variation,
+    //even in deeply nested or multi-level variation trees.
+    const traverse = current => {
+      if (!current.parent) {
+        return
+      }
+      current.moveToIndex(0)
+      traverse(current.parent)
+    }
+    traverse(node)
   }
 
   /**
