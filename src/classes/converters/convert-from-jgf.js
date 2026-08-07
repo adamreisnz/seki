@@ -25,7 +25,7 @@ export default class ConvertFromJgf extends Converter {
         jgf = JSON.parse(jgf)
       }
       catch (error) {
-        throw new Error(`Unable to parse JSON: ${error.message}`)
+        throw new Error(`Unable to parse JSON: ${error.message}`, {cause: error})
       }
     }
 
