@@ -15,7 +15,7 @@ export default defineConfig({
     emptyOutDir: true,
     assetsInlineLimit: 0,
     lib: {
-      entry: resolve(__dirname, 'src/seki-embed.js'),
+      entry: resolve(import.meta.dirname, 'src/seki-embed.js'),
       name: 'Seki',
       fileName: 'seki-embed',
     },
