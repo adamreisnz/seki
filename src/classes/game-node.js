@@ -133,6 +133,16 @@ export default class GameNode {
     if (i === 0 && this.children.length > 0) {
       this.children[0].updateVariationRoot()
     }
+
+    //Removing a child shifts every sibling after it down one position, so the
+    //active path index has to follow, or it ends up pointing at a different
+    //child, or at nothing at all
+    if (i < this.index) {
+      this.index--
+    }
+    if (this.index >= this.children.length) {
+      this.index = Math.max(0, this.children.length - 1)
+    }
   }
 
   /**
@@ -158,6 +168,15 @@ export default class GameNode {
     //Swap
     children[newIndex] = child
     children[currentIndex] = existing
+
+    //Swap the active path index along with the children, so that it keeps
+    //pointing at the same child node
+    if (this.index === currentIndex) {
+      this.index = newIndex
+    }
+    else if (this.index === newIndex) {
+      this.index = currentIndex
+    }
 
     //Reparent children to ensure variation roots are correct
     children.forEach(child => child.setParent(this))

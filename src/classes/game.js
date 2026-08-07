@@ -1352,6 +1352,38 @@ export default class Game extends Base {
     return node ? path : null
   }
 
+  /**
+   * Find the node a given path leads to, without navigating to it
+   *
+   * This is the inverse of getPathToNode, and is what allows a path received
+   * from another instance of the same game to be resolved back into a node.
+   */
+  findNodeForPath(path) {
+
+    //No path given
+    if (!path) {
+      return null
+    }
+
+    //Not an instance of a GamePath
+    if (!(path instanceof GamePath)) {
+      path = GamePath.fromObject(path)
+    }
+
+    //Walk the tree, following the child index chosen at each step
+    let node = this.root
+    const n = path.getMoveNumber()
+    for (let m = 0; m < n; m++) {
+      node = node.getChild(path.indexAtMove(m))
+      if (!node) {
+        return null
+      }
+    }
+
+    //Found
+    return node
+  }
+
   /*****************************************************************************
    * Coordinate checkers
    ***/
