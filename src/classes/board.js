@@ -60,7 +60,7 @@ export default class Board extends Base {
     super()
 
     //Theme config passed via board config
-    if (!themeConfig && boardConfig.theme) {
+    if (!themeConfig && boardConfig?.theme) {
       themeConfig = boardConfig.theme
     }
 

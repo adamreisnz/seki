@@ -522,7 +522,7 @@ export default class Player extends Base {
    */
   selectNextVariation() {
     this.game.selectNextVariation()
-    this.triggerEvent('variationChange')
+    this.triggerSelectVariationEvent()
   }
 
   /**
@@ -530,24 +530,58 @@ export default class Player extends Base {
    */
   selectPreviousVariation() {
     this.game.selectPreviousVariation()
-    this.triggerEvent('variationChange')
+    this.triggerSelectVariationEvent()
   }
 
   /**
    * Make a node the main variation
    */
   makeMainVariation(node) {
+
+    //The path has to be captured before the tree is restructured, because the
+    //child indices it consists of only address this node in the current shape
+    //of the tree
+    const path = this.game.getPathToNode(node)
+
+    //Restructure and trigger event
     this.game.makeMainVariation(node)
-    this.triggerEvent('variationChange')
+    this.triggerEvent('variationChange', {
+      action: 'makeMainVariation',
+      args: [path ? path.toObject() : null],
+    })
   }
 
   /**
    * Remove a node
    */
   removeNode(node) {
+
+    //Same as above, but more so, as a detached node can no longer be located
+    //in the tree at all
+    const path = this.game.getPathToNode(node)
+
+    //Remove and trigger event
     this.game.removeNode(node)
-    this.triggerEvent('edit')
+    this.triggerEvent('edit', {
+      action: 'removeNode',
+      args: [path ? path.toObject() : null],
+    })
     this.processPathChange()
+  }
+
+  /**
+   * Trigger a variation change event for the current node
+   *
+   * The path identifies the node whose selected variation changed, which is
+   * what makes this event usable for synchronising other instances of the
+   * same game.
+   */
+  triggerSelectVariationEvent() {
+    const {game} = this
+    this.triggerEvent('variationChange', {
+      action: 'selectVariation',
+      args: [game.getPathObject(), game.getCurrentPathIndex()],
+    })
   }
 
   /**
