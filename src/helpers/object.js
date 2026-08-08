@@ -2,6 +2,11 @@ import {deepmerge} from './deepmerge.js'
 
 /**
  * Merge implementation
+ *
+ * Deep merges source into target and returns a new object, leaving both
+ * inputs untouched. Arrays in the source replace arrays in the target rather
+ * than being appended to them, so a caller can override a default array
+ * (e.g. availableModes, mouseBindings) instead of only adding to it.
  */
 export function merge(...args) {
   return deepmerge(...args)
