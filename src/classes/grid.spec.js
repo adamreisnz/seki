@@ -349,3 +349,35 @@ describe('Grid.setSize()', () => {
     expect(new Grid(0, 9).getSize()).toEqual({width: 0, height: 9})
   })
 })
+
+describe('Grid.compare() with a custom comparator', () => {
+
+  it('compares values by content when given one', () => {
+
+    //NOTE: markup values are objects created fresh for every position, so
+    //the default reference equality would report every entry as changed
+    const before = new Grid(9, 9)
+    const after = new Grid(9, 9)
+    before.set(1, 1, {type: 'circle'})
+    after.set(1, 1, {type: 'circle'})
+    after.set(2, 2, {type: 'square'})
+
+    const isEqual = (a, b) => a.type === b.type
+    const changes = before.compare(after, isEqual)
+
+    expect(changes.remove).toEqual([])
+    expect(changes.add).toEqual([{x: 2, y: 2, value: {type: 'square'}}])
+  })
+
+  it('still reports a changed value as a replacement', () => {
+    const before = new Grid(9, 9)
+    const after = new Grid(9, 9)
+    before.set(1, 1, {type: 'circle'})
+    after.set(1, 1, {type: 'square'})
+
+    const changes = before.compare(after, (a, b) => a.type === b.type)
+
+    expect(changes.remove).toEqual([{x: 1, y: 1, value: {type: 'circle'}}])
+    expect(changes.add).toEqual([{x: 1, y: 1, value: {type: 'square'}}])
+  })
+})

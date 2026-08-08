@@ -247,7 +247,7 @@ export default class Grid {
   /**
    * Compares this position with another position and return change object
    */
-  compare(newGrid) {
+  compare(newGrid, isEqual = (a, b) => (a === b)) {
 
     //Get data
     const {width, height, grid} = this
@@ -274,9 +274,11 @@ export default class Grid {
       //to be reported as both a removal and an addition so that whatever is
       //applying the changes replaces what is drawn there. NOTE: this used to
       //compare keys only, so a stone changing colour on the same coordinate
-      //came back as no change at all.
+      //came back as no change at all. The comparator can be overridden for
+      //grids whose values are objects created fresh for every position, like
+      //markup, where reference equality would report everything as changed.
       const newValue = newGrid.grid.get(key)
-      if (newValue !== value) {
+      if (!isEqual(value, newValue)) {
         const {x, y} = this.getCoords(key)
         changes.remove.push({x, y, value})
         changes.add.push({x, y, value: newValue})

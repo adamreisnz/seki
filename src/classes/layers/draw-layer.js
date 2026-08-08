@@ -40,6 +40,13 @@ export default class DrawLayer extends BoardLayer {
    * Draw handler
    */
   draw() {
+
+    //Check if can draw, like the base layer draw does
+    if (!this.canDraw()) {
+      return
+    }
+
+    //Draw lines
     for (const line of this.lines) {
       this.drawLine(...line)
     }
