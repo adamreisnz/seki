@@ -492,14 +492,6 @@ export default class GameNode {
   }
 
   /**
-   * Check if given coordinates are from one of the next child move nodes
-   * (alias of hasMoveVariation)
-   */
-  isMoveVariation(x, y) {
-    return this.hasMoveVariation(x, y)
-  }
-
-  /**
    * Get the move child node index for the given coordinates
    */
   getMoveVariationIndex(x, y) {

@@ -339,9 +339,11 @@ export default class Game extends Base {
       gameName,
       gameResult,
       gameDate,
+      gameDates,
       gameOpening,
       gameAnnotator,
       gameDescription,
+      boardSize,
       boardWidth,
       boardHeight,
       boardCutOffLeft,
@@ -381,11 +383,13 @@ export default class Game extends Base {
     set(info, 'game.name', gameName)
     set(info, 'game.result', gameResult)
     set(info, 'game.date', gameDate)
+    set(info, 'game.dates', gameDates)
     set(info, 'game.opening', gameOpening)
     set(info, 'game.annotator', gameAnnotator)
     set(info, 'game.description', gameDescription)
 
     //Extract board info
+    set(info, 'board.size', boardSize)
     set(info, 'board.width', boardWidth)
     set(info, 'board.height', boardHeight)
     set(info, 'board.cutOffLeft', boardCutOffLeft)
@@ -1399,7 +1403,7 @@ export default class Game extends Base {
    * Check if given coordinates are one of the next child node coordinates
    */
   isMoveVariation(x, y) {
-    return this.node.isMoveVariation(x, y)
+    return this.node.hasMoveVariation(x, y)
   }
 
   /**
@@ -1418,8 +1422,8 @@ export default class Game extends Base {
    */
   isValidMove(x, y, color) {
     const position = this.position.clone()
-    const outcome = this.validateMove(position, x, y, color)
-    return outcome.isValid
+    const {isValid} = this.validateMove(position, x, y, color)
+    return isValid
   }
 
   /**
@@ -2110,7 +2114,8 @@ export default class Game extends Base {
    */
   goForwardNumPositions(num) {
     for (let i = 0; i < num; i++) {
-      if (!this.goToNextPosition().isValid) {
+      const {isValid} = this.goToNextPosition()
+      if (!isValid) {
         return
       }
     }
@@ -2121,7 +2126,8 @@ export default class Game extends Base {
    */
   goBackNumPositions(num) {
     for (let i = 0; i < num; i++) {
-      if (!this.goToPreviousPosition().isValid) {
+      const {isValid} = this.goToPreviousPosition()
+      if (!isValid) {
         return
       }
     }
