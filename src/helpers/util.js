@@ -184,16 +184,48 @@ export function randomInt(min, max) {
 
 /**
  * Throttle a function call to run at most once every interval
+ *
+ * The call that opens a window runs immediately. Calls made during a window
+ * are collapsed into a single trailing call that runs when the window closes,
+ * so the last set of arguments is never dropped. That matters for things like
+ * resize handling, where the final size is the one that has to be applied.
  */
 export function throttle(fn, interval) {
-  fn.isRunning = false
-  return (...args) => {
-    if (fn.isRunning) {
+
+  //Throttle state lives in the closure, so throttling the same function twice
+  //produces two independent throttled versions rather than a shared flag
+  let timeout = null
+  let trailingArgs = null
+
+  //Helper to close the current window, running any collapsed trailing call
+  const closeWindow = () => {
+
+    //Nothing came in during the window, so we're idle again
+    if (!trailingArgs) {
+      timeout = null
       return
     }
-    fn.isRunning = true
+
+    //Run the trailing call and open a new window for it
+    const args = trailingArgs
+    trailingArgs = null
     fn(...args)
-    setTimeout(() => fn.isRunning = false, interval)
+    timeout = setTimeout(closeWindow, interval)
+  }
+
+  //Return throttled function
+  return (...args) => {
+
+    //Inside a window, remember the call for the trailing edge. Only the most
+    //recent set of arguments is kept.
+    if (timeout) {
+      trailingArgs = args
+      return
+    }
+
+    //Run immediately and open a window
+    fn(...args)
+    timeout = setTimeout(closeWindow, interval)
   }
 }
 
