@@ -3,7 +3,6 @@ import MarkupFactory from '../markup-factory.js'
 import {boardLayerTypes} from '../../constants/board.js'
 import {markupTypes} from '../../constants/markup.js'
 import {playerModes, playerActions} from '../../constants/player.js'
-import {throttle} from '../../helpers/util.js'
 
 /**
  * Replay game records with this mode
@@ -38,16 +37,14 @@ export default class PlayerModeReplay extends PlayerMode {
       variationChange: 'onVariationChange',
       gameLoad: 'onGameLoad',
     })
+  }
 
-    //Create throttled config change handler
-    const fn = throttle(event => {
-      if (event.detail.key === 'autoPlayDelay' && this.isAutoPlaying) {
-        this.queueNextAutoPlay() //This will reset the timeout
-      }
-    }, 100)
-
-    //Config change listener
-    this.player.on('config', fn)
+  /**
+   * Tear down
+   */
+  teardown() {
+    super.teardown()
+    this.stopAutoPlay()
   }
 
   /**
@@ -155,6 +152,14 @@ export default class PlayerModeReplay extends PlayerMode {
    * Config change event
    */
   onConfigChange(event) {
+
+    //Changing the auto play delay mid-play re-queues the next move, so that
+    //the new delay takes effect immediately. NOTE: this used to live on a
+    //second, separately registered config listener, which was never part of
+    //the event listeners map and so could never be removed again.
+    if (event.detail.key === 'autoPlayDelay' && this.isAutoPlaying) {
+      this.queueNextAutoPlay()
+    }
 
     //The following config keys require a board redraw
     const redrawKeys = [
