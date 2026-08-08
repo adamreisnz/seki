@@ -53,6 +53,7 @@
     "test:coverage": "vitest run --coverage",
     "check": "pnpm run lint && pnpm run test",
     "preversion": "pnpm run check",
+    "version": "node scripts/sync-version.js && git add src/constants/app.js",
     "postversion": "git push && git push --tags"
   },
   "devDependencies": {
@@ -60,6 +61,7 @@
     "@vitest/coverage-v8": "^4.0.18",
     "eslint": "^10.8.0",
     "globals": "^17.9.0",
+    "replace-in-file": "^9.0.0",
     "vitest": "^4.0.18"
   }
 }
