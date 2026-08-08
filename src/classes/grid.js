@@ -1,5 +1,11 @@
 import GridChanges from './grid-changes.js'
 
+//Factor used to combine two coordinates into a single numeric map key. SGF
+//caps board sizes at 52 lines, so this leaves ample headroom while keeping
+//every key a small integer. A fixed factor rather than the grid width keeps
+//keys valid on a grid that has not been sized yet.
+const KEY_FACTOR = 1024
+
 /**
  * This class represents a board grid of a given size. It acts as a
  * container for values (e.g. stone colors, markup types) for board layers,
@@ -381,9 +387,14 @@ export default class Grid {
 
   /**
    * Get grid key for a given coordinate
+   *
+   * NOTE: this used to build the string `x,y`, which allocates a fresh
+   * string on every single grid access and makes the map hash it character
+   * by character. A numeric key does neither, and these accesses are the
+   * innermost loop of everything the game does with a position.
    */
   getGridMapKey(x, y) {
-    return `${x},${y}`
+    return (x * KEY_FACTOR) + y
   }
 
   /**
@@ -398,7 +409,8 @@ export default class Grid {
    * Get coordinates based on map key
    */
   getCoords(mapKey) {
-    const [x, y] = mapKey.split(',')
-    return {x: parseInt(x), y: parseInt(y)}
+    const y = mapKey % KEY_FACTOR
+    const x = (mapKey - y) / KEY_FACTOR
+    return {x, y}
   }
 }

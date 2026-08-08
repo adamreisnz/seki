@@ -381,3 +381,31 @@ describe('Grid.compare() with a custom comparator', () => {
     expect(changes.add).toEqual([{x: 1, y: 1, value: {type: 'square'}}])
   })
 })
+
+describe('Grid map keys', () => {
+
+  it('keeps every coordinate pair distinct up to the SGF maximum', () => {
+
+    //NOTE: keys are numeric now, so this pins that no two coordinates on
+    //the largest possible board collide into the same key
+    const grid = new Grid(52, 52)
+    for (let x = 0; x < 52; x++) {
+      for (let y = 0; y < 52; y++) {
+        grid.set(x, y, `${x}-${y}`)
+      }
+    }
+
+    expect(grid.grid.size).toBe(52 * 52)
+    expect(grid.get(0, 51)).toBe('0-51')
+    expect(grid.get(51, 0)).toBe('51-0')
+    expect(grid.get(51, 51)).toBe('51-51')
+  })
+
+  it('round trips coordinates through the key', () => {
+    const grid = new Grid(19, 19)
+    grid.set(3, 15, 'black')
+
+    const objects = grid.getAll()
+    expect(objects).toEqual([{x: 3, y: 15, value: 'black'}])
+  })
+})
