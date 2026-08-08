@@ -1360,9 +1360,22 @@ export default class Game extends Base {
    * Get game path to a given move number
    */
   getPathToMoveNumber(number) {
-    const path = new GamePath()
-    path.setMove(number)
-    return path
+
+    //Move zero, or anything before it, is the start of the game
+    if (number <= 0) {
+      return new GamePath()
+    }
+
+    //Clamp to what the game actually has, so asking for more moves than there
+    //are still gets you as far as it goes
+    const total = this.getTotalNumberOfMoves()
+    const node = this.findNodeForMoveNumber(Math.min(number, total))
+
+    //NOTE: this used to build a path whose length was the move number itself.
+    //A path counts nodes, not moves, so any node in the line that isn't a move
+    //(a setup node, or one carrying only markup or a comment) put every move
+    //number after it out by one.
+    return node ? this.getPathToNode(node) : null
   }
 
   /**

@@ -1182,3 +1182,72 @@ describe('Game.resetCurrentPathIndex()', () => {
     expect(game.getPathObject().path).toEqual({0: 1})
   })
 })
+
+describe('Game.goToMoveNumber()', () => {
+
+  /**
+   * A record with a setup node sitting between two moves, which is what SGF
+   * writes for a node with AB/AE and no B or W
+   */
+  const createGameWithSetupNode = () => Game.fromSgf(
+    '(;GM[1]FF[4]SZ[19];B[dd];W[pp];AB[aa];B[dp];W[pd])'
+  )
+
+  it('counts moves rather than nodes', () => {
+
+    //NOTE: this used to build a path whose length was the move number itself.
+    //A path counts nodes, so the setup node in the middle put every move
+    //number after it out by one
+    const game = createGameWithSetupNode()
+
+    game.goToMoveNumber(3)
+    expect(game.getCurrentMoveNumber()).toBe(3)
+    expect(game.getCurrentNode().move).toEqual({color: BLACK, x: 3, y: 15})
+
+    game.goToMoveNumber(4)
+    expect(game.getCurrentMoveNumber()).toBe(4)
+    expect(game.getCurrentNode().move).toEqual({color: WHITE, x: 15, y: 3})
+  })
+
+  it('agrees with findNodeForMoveNumber', () => {
+    const game = createGameWithSetupNode()
+    for (let n = 1; n <= game.getTotalNumberOfMoves(); n++) {
+      game.goToMoveNumber(n)
+      expect(game.getCurrentNode()).toBe(game.findNodeForMoveNumber(n))
+    }
+  })
+
+  it('applies the setup instructions it passes on the way', () => {
+    const game = createGameWithSetupNode()
+    game.goToMoveNumber(4)
+    expect(game.hasStone(0, 0, BLACK)).toBe(true)
+  })
+
+  it('still works on a game of nothing but moves', () => {
+    const game = playMoves(new Game(), [[3, 3], [15, 15], [3, 15]])
+    game.goToMoveNumber(2)
+    expect(game.getCurrentMoveNumber()).toBe(2)
+    expect(game.hasStone(3, 15)).toBe(false)
+  })
+
+  it('goes back to the start for move zero', () => {
+    const game = playMoves(new Game(), [[3, 3], [15, 15]])
+    game.goToMoveNumber(0)
+    expect(game.getCurrentMoveNumber()).toBe(0)
+    expect(game.getPosition().hasStones()).toBe(false)
+  })
+
+  it('goes as far as it can for a move past the end', () => {
+    const game = playMoves(new Game(), [[3, 3], [15, 15]])
+    game.goToMoveNumber(0)
+    game.goToMoveNumber(99)
+    expect(game.getCurrentMoveNumber()).toBe(2)
+  })
+
+  it('does nothing when already there', () => {
+    const game = playMoves(new Game(), [[3, 3], [15, 15]])
+    const node = game.getCurrentNode()
+    game.goToMoveNumber(2)
+    expect(game.getCurrentNode()).toBe(node)
+  })
+})
