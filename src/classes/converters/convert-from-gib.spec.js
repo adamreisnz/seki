@@ -1,7 +1,7 @@
 import {describe, it, expect} from 'vitest'
-import Game from '../../src/classes/game.js'
-import ConvertFromGib from '../../src/classes/converters/convert-from-gib.js'
-import {stoneColors} from '../../src/constants/stone.js'
+import Game from '../game.js'
+import ConvertFromGib from './convert-from-gib.js'
+import {stoneColors} from '../../constants/stone.js'
 
 const {BLACK, WHITE} = stoneColors
 
