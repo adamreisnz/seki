@@ -223,9 +223,8 @@ describe('GameNode', () => {
       expect(root.getPathNodes()).toEqual([root, a, b])
     })
 
-    it('marks the selected path through the tree', () => {
-      const {root, a, b, c} = createTree()
-      root.markPath()
+    it('reports the selected path through the tree', () => {
+      const {a, b, c} = createTree()
       expect(a.isPath).toBe(true)
       expect(b.isPath).toBe(true)
       expect(c.isPath).toBe(false)
@@ -513,5 +512,48 @@ describe('GameNode setup instructions', () => {
 
     expect(node.setup).toEqual([{type: 'white', coords: [{x: 2, y: 2}]}])
     expect(node.hasSetupInstructions()).toBe(true)
+  })
+})
+
+describe('GameNode.isPath', () => {
+
+  /**
+   * A root with a main line of two nodes and a variation next to it
+   */
+  const createTree = () => {
+    const root = new GameNode()
+    const main = new GameNode()
+    const variation = new GameNode()
+    const leaf = new GameNode()
+    main.appendToParent(root)
+    variation.appendToParent(root)
+    leaf.appendToParent(main)
+    return {root, main, variation, leaf}
+  }
+
+  it('is true along the chain of path indices', () => {
+
+    //NOTE: this is computed from the path indices when read, rather than
+    //maintained as a flag by every navigation operation, so there is no
+    //marking step for anything to forget
+    const {root, main, variation, leaf} = createTree()
+
+    expect(root.isPath).toBe(true)
+    expect(main.isPath).toBe(true)
+    expect(leaf.isPath).toBe(true)
+    expect(variation.isPath).toBe(false)
+  })
+
+  it('follows a path index change as it is made', () => {
+    const {root, main, variation, leaf} = createTree()
+    root.setPathIndex(1)
+
+    expect(variation.isPath).toBe(true)
+    expect(main.isPath).toBe(false)
+    expect(leaf.isPath).toBe(false)
+  })
+
+  it('is true on a lone root', () => {
+    expect(new GameNode().isPath).toBe(true)
   })
 })

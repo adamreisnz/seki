@@ -17,7 +17,6 @@ export default class GameNode {
 
   //The selected path index (for navigating variations)
   index = 0
-  isPath = false
 
   /**
    * Constructor
@@ -743,12 +742,20 @@ export default class GameNode {
   }
 
   /**
-   * Mark path along whole nodes tree
+   * Check if this node is on the current path
+   *
+   * NOTE: this is computed from the path indices of the ancestors rather than
+   * maintained as a flag, so there is nothing to mark and nothing to go
+   * stale. This used to be a flag that every navigation operation had to
+   * remember to refresh with a walk over the whole tree, and tree edits that
+   * skipped the refresh left it describing a path that no longer existed.
    */
-  markPath(isPath = true) {
-    const {children, index} = this
-    this.isPath = isPath
-    children.forEach((child, i) => child.markPath(isPath && i === index))
+  get isPath() {
+    const {parent} = this
+    if (!parent) {
+      return true
+    }
+    return parent.getPathNode() === this && parent.isPath
   }
 
   /**************************************************************************

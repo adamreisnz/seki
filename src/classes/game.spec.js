@@ -1278,3 +1278,61 @@ describe('Game.goToMoveNumber()', () => {
     expect(game.getCurrentNode().move).toEqual({color: WHITE, x: 15, y: 15})
   })
 })
+
+describe('The path reported after navigation', () => {
+
+  const sgf = '(;GM[1]FF[4]SZ[19];B[dd];W[pp];B[dp])'
+
+  it('marks the line after running to the last position', () => {
+    const game = Game.fromSgf(sgf)
+    game.goToLastPosition()
+
+    const nodes = game.getRootNode().getPathNodes()
+    expect(nodes).toHaveLength(4)
+    expect(nodes.every(node => node.isPath)).toBe(true)
+  })
+
+  it('keeps the line marked when stepping back through it', () => {
+    const game = Game.fromSgf(sgf)
+    game.goToLastPosition()
+    game.goToPreviousPosition()
+
+    const nodes = game.getRootNode().getPathNodes()
+    expect(nodes.every(node => node.isPath)).toBe(true)
+  })
+
+  it('moves the marks when playing into a variation', () => {
+    const game = new Game()
+    game.playMove(3, 3)
+    game.goToPreviousPosition()
+    game.playMove(15, 15)
+
+    const [main, variation] = game.getRootNode().getChildren()
+    expect(variation.isPath).toBe(true)
+    expect(main.isPath).toBe(false)
+  })
+
+  it('moves the marks back when returning to the main line', () => {
+    const game = new Game()
+    game.playMove(3, 3)
+    game.goToPreviousPosition()
+    game.playMove(15, 15)
+    game.goToPreviousPosition()
+    game.goToNextPosition(0)
+
+    const [main, variation] = game.getRootNode().getChildren()
+    expect(main.isPath).toBe(true)
+    expect(variation.isPath).toBe(false)
+  })
+
+  it('marks the path a goToPath walk follows', () => {
+    const game = Game.fromSgf(sgf)
+    game.goToLastPosition()
+
+    const copy = Game.fromSgf(sgf)
+    copy.goToPath(game.getPathObject())
+
+    const nodes = copy.getRootNode().getPathNodes()
+    expect(nodes.every(node => node.isPath)).toBe(true)
+  })
+})

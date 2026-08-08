@@ -1278,7 +1278,6 @@ export default class Game extends Base {
    */
   setCurrentPathIndex(i) {
     this.node.setPathIndex(i)
-    this.root.markPath()
   }
 
   /**
@@ -1295,7 +1294,6 @@ export default class Game extends Base {
 
     //Reset
     this.node.setPathIndex(0)
-    this.root.markPath()
     this.path.forgetPathChoice(moveNo)
   }
 
@@ -1881,7 +1879,6 @@ export default class Game extends Base {
     //Advance path to the added node index
     this.node = node
     this.path.advance(i)
-    this.root.markPath()
 
     //Valid move
     this.addPositionToStack(newPosition)
@@ -1916,7 +1913,6 @@ export default class Game extends Base {
     //Advance path to the added node index
     this.node = node
     this.path.advance(i)
-    this.root.markPath()
 
     //Add new position to stack
     this.addPositionToStack(newPosition)
@@ -2320,7 +2316,6 @@ export default class Game extends Base {
     //Retreat path and set pointer to current node
     this.path.retreat()
     this.node = node.getParent()
-    this.root.markPath()
 
     //Remove last position from stack
     this.removeLastPositionFromStack()
@@ -2335,7 +2330,6 @@ export default class Game extends Base {
     //Reset path and point to root
     this.path.reset()
     this.node = this.root
-    this.root.markPath()
 
     //Determine initial turn based on handicap
     //Can be overwritten by game record instructions
@@ -2358,11 +2352,10 @@ export default class Game extends Base {
   processCurrentNode(revertPositionOnFail = true) {
 
     //Get data
-    const {node, root, position} = this
+    const {node, position} = this
 
     //Make this node the path node on its parent
     node.setAsParentPathNode()
-    root.markPath()
 
     //Initialize new position
     const newPosition = position.clone()
@@ -2388,7 +2381,6 @@ export default class Game extends Base {
         if (revertPositionOnFail && node.hasParent()) {
           this.path.retreat()
           this.node = node.getParent()
-          root.markPath()
         }
 
         //Return failure reason
