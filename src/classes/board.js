@@ -17,6 +17,29 @@ import {
 } from '../helpers/util.js'
 
 /**
+ * Compare two markup entries by content, as the position grids create fresh
+ * objects for every position and reference equality would report every piece
+ * of markup as changed on every update
+ */
+const isSameMarkup = (a, b) => (
+  a === b || (
+    Boolean(a) && Boolean(b) &&
+    a.type === b.type && a.text === b.text
+  )
+)
+
+/**
+ * Compare two sets of free form drawing lines by content
+ */
+const areSameLines = (a, b) => (
+  a.length === b.length &&
+  a.every((line, i) => (
+    line.length === b[i].length &&
+    line.every((value, j) => value === b[i][j])
+  ))
+)
+
+/**
  * This class represents the Go board. It is a placeholder for all the various
  * board layers and is used for placing and removing objects on the board.
  * The class has helpers to figure out the correct size of the grid cells and
@@ -50,6 +73,12 @@ export default class Board extends Base {
   //Last draw width/height values for change tracking
   lastDrawWidth = 0
   lastDrawHeight = 0
+
+  //The position as it was last rendered, kept as a baseline so that a
+  //position update only has to touch the cells that changed
+  renderedPosition = null
+  renderedLines = []
+  renderedStyle = null
 
   /**
    * Board constructor
@@ -281,6 +310,9 @@ export default class Board extends Base {
     this.width = width
     this.height = height
 
+    //The rendered baseline described a board of the old size
+    this.renderedPosition = null
+
     //Set size in each layer
     this.layers.forEach(layer => layer.setGridSize(width, height))
 
@@ -384,6 +416,19 @@ export default class Board extends Base {
    */
   removeAll(type) {
 
+    //The rendered baseline only describes the position layers, so only their
+    //clearing throws it away. NOTE: the hover layer in particular is cleared
+    //on every path change, which must leave the baseline standing.
+    const positionLayers = [
+      boardLayerTypes.STONES,
+      boardLayerTypes.SHADOW,
+      boardLayerTypes.MARKUP,
+      boardLayerTypes.DRAW,
+    ]
+    if (!type || positionLayers.includes(type)) {
+      this.renderedPosition = null
+    }
+
     //Specific layer type
     if (type) {
       const layer = this.getLayer(type)
@@ -403,6 +448,11 @@ export default class Board extends Base {
 
   /**
    * Update the board with a new position
+   *
+   * NOTE: when the previously rendered position is a valid baseline, only the
+   * cells that changed are touched. Rebuilding and redrawing every stone on
+   * every position change made stepping through a game cost a full board
+   * redraw per move, when a move changes one to a handful of cells.
    */
   updatePosition(position) {
 
@@ -411,9 +461,38 @@ export default class Board extends Base {
       this.setSize(position.width, position.height)
     }
 
-    //Get theme
-    const {theme} = this
+    //Get the stone style
+    const {theme, renderedPosition, renderedStyle} = this
     const style = theme.get('board.stoneStyle')
+
+    //The previous render is only a baseline to sync against while the board
+    //size and stone style still match it
+    const canSync = Boolean(
+      renderedPosition &&
+      renderedPosition.width === position.width &&
+      renderedPosition.height === position.height &&
+      renderedStyle === style
+    )
+
+    //Sync the changes, or rebuild the lot
+    if (canSync) {
+      this.syncChangedCells(position, style)
+    }
+    else {
+      this.syncFullPosition(position, style)
+    }
+
+    //Remember what was rendered, as a copy, because the live position is
+    //mutated in place by setup edits
+    this.renderedPosition = position.clone(true)
+    this.renderedLines = position.lines.slice()
+    this.renderedStyle = style
+  }
+
+  /**
+   * Build and draw the full position
+   */
+  syncFullPosition(position, style) {
 
     //Transform stones grid into actual stone instances of given style
     const stones = position.stones
@@ -440,6 +519,65 @@ export default class Board extends Base {
     this.setAll(boardLayerTypes.STONES, stones)
     this.setAll(boardLayerTypes.MARKUP, markup)
     this.setAll(boardLayerTypes.DRAW, lines)
+  }
+
+  /**
+   * Sync only the cells that changed since the last rendered position
+   */
+  syncChangedCells(position, style) {
+
+    //Compare against the rendered baseline
+    const {renderedPosition, renderedLines} = this
+    const stoneChanges = renderedPosition.stones
+      .compare(position.stones)
+    const markupChanges = renderedPosition.markup
+      .compare(position.markup, isSameMarkup)
+    const linesChanged = !areSameLines(renderedLines, position.lines)
+
+    //Nothing changed at all
+    if (!stoneChanges.has() && !markupChanges.has() && !linesChanged) {
+      return
+    }
+
+    //Clear the hover layer, as it may be covering cells about to change
+    this.clearHoverLayer()
+
+    //Apply the stone changes; the stones layer keeps the shadow layer in step
+    const stonesLayer = this.getLayer(boardLayerTypes.STONES)
+    if (stonesLayer) {
+      stonesLayer.applyChanges(stoneChanges, color => StoneFactory
+        .create(style, color, this))
+    }
+
+    //Apply the markup changes cell by cell. Erasing markup restores the grid
+    //underneath it, so the grid layer needs no redraw of its own.
+    const markupLayer = this.getLayer(boardLayerTypes.MARKUP)
+    if (markupLayer) {
+      for (const {x, y} of markupChanges.remove) {
+        markupLayer.remove(x, y)
+      }
+      for (const {x, y, value} of markupChanges.add) {
+        const {type, text} = value
+        markupLayer.add(x, y, MarkupFactory.create(type, this, {text}))
+      }
+
+      //Markup draws itself differently depending on the stone underneath it,
+      //so unchanged markup sitting on a changed cell has to be drawn again
+      const markupTouched = new Set(
+        markupChanges.remove.concat(markupChanges.add)
+          .map(({x, y}) => `${x},${y}`)
+      )
+      for (const {x, y} of stoneChanges.remove.concat(stoneChanges.add)) {
+        if (markupLayer.has(x, y) && !markupTouched.has(`${x},${y}`)) {
+          markupLayer.redrawCell(x, y)
+        }
+      }
+    }
+
+    //Replace the lines when they changed
+    if (linesChanged) {
+      this.setAll(boardLayerTypes.DRAW, position.lines)
+    }
   }
 
   /*****************************************************************************

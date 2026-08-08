@@ -1,6 +1,7 @@
 import {describe, it, expect, beforeEach, afterEach, vi} from 'vitest'
 import Board from './board.js'
 import Game from './game.js'
+import GamePosition from './game-position.js'
 import {boardLayerTypes} from '../constants/board.js'
 import {stoneColors} from '../constants/stone.js'
 
@@ -276,5 +277,198 @@ describe('Board teardown', () => {
   it('can be destroyed without ever having been bootstrapped', () => {
     const board = new Board({size: 19})
     expect(() => board.destroy()).not.toThrow()
+  })
+})
+
+describe('Board position updates', () => {
+
+  const {BLACK, WHITE} = stoneColors
+
+  //Drawing lines reads the device pixel ratio off the window, which isn't
+  //there outside a browser
+  beforeEach(() => {
+    vi.stubGlobal('window', {devicePixelRatio: 1})
+  })
+
+  afterEach(() => {
+    vi.unstubAllGlobals()
+  })
+
+  const createBoardWithLayers = () => {
+    const board = createBoard()
+    board.createLayers()
+    return board
+  }
+
+  const createPosition = (stones = [], markup = []) => {
+    const position = new GamePosition(19, 19)
+    stones.forEach(([x, y, color]) => position.stones.set(x, y, color))
+    markup.forEach(([x, y, value]) => position.markup.set(x, y, value))
+    return position
+  }
+
+  it('builds the full board on the first update', () => {
+    const board = createBoardWithLayers()
+    board.updatePosition(createPosition([[3, 3, BLACK], [15, 15, WHITE]]))
+
+    expect(board.has(boardLayerTypes.STONES, 3, 3)).toBe(true)
+    expect(board.has(boardLayerTypes.STONES, 15, 15)).toBe(true)
+    expect(board.has(boardLayerTypes.SHADOW, 3, 3)).toBe(true)
+    expect(board.has(boardLayerTypes.SHADOW, 15, 15)).toBe(true)
+  })
+
+  it('only touches the changed cells on the next update', () => {
+
+    //NOTE: this used to rebuild every stone and redraw every layer in full
+    //on every position change, so stepping through a game cost a whole
+    //board redraw per move
+    const board = createBoardWithLayers()
+    board.updatePosition(createPosition([[3, 3, BLACK]]))
+
+    const stonesLayer = board.getLayer(boardLayerTypes.STONES)
+    const setAll = vi.spyOn(stonesLayer, 'setAll')
+
+    board.updatePosition(createPosition([[3, 3, BLACK], [15, 15, WHITE]]))
+
+    expect(setAll).not.toHaveBeenCalled()
+    expect(board.has(boardLayerTypes.STONES, 3, 3)).toBe(true)
+    expect(board.has(boardLayerTypes.STONES, 15, 15)).toBe(true)
+  })
+
+  it('removes captured stones, along with their shadows', () => {
+    const board = createBoardWithLayers()
+    board.updatePosition(createPosition([[3, 3, BLACK], [3, 4, WHITE]]))
+    board.updatePosition(createPosition([[3, 4, WHITE]]))
+
+    expect(board.has(boardLayerTypes.STONES, 3, 3)).toBe(false)
+    expect(board.has(boardLayerTypes.SHADOW, 3, 3)).toBe(false)
+    expect(board.has(boardLayerTypes.STONES, 3, 4)).toBe(true)
+  })
+
+  it('redraws the shadow layer in full rather than cell by cell', () => {
+
+    //NOTE: erasing a single cell on the shadow layer also clips the shadow
+    //blur spilling over from neighbouring stones, so the layer has to be
+    //erased and drawn as a whole
+    const board = createBoardWithLayers()
+    board.updatePosition(createPosition([[3, 3, BLACK]]))
+
+    const shadowLayer = board.getLayer(boardLayerTypes.SHADOW)
+    const redraw = vi.spyOn(shadowLayer, 'redraw')
+
+    board.updatePosition(createPosition([[3, 3, BLACK], [15, 15, WHITE]]))
+
+    expect(redraw).toHaveBeenCalled()
+  })
+
+  it('does nothing at all when nothing changed', () => {
+    const board = createBoardWithLayers()
+    board.updatePosition(createPosition([[3, 3, BLACK]]))
+
+    const stonesLayer = board.getLayer(boardLayerTypes.STONES)
+    const applyChanges = vi.spyOn(stonesLayer, 'applyChanges')
+    const clearHover = vi.spyOn(board, 'clearHoverLayer')
+
+    board.updatePosition(createPosition([[3, 3, BLACK]]))
+
+    expect(applyChanges).not.toHaveBeenCalled()
+    expect(clearHover).not.toHaveBeenCalled()
+  })
+
+  it('leaves identical markup alone and replaces changed markup', () => {
+    const board = createBoardWithLayers()
+    board.updatePosition(createPosition(
+      [],
+      [[3, 3, {type: 'circle'}], [5, 5, {type: 'label', text: 'A'}]]
+    ))
+
+    const markupLayer = board.getLayer(boardLayerTypes.MARKUP)
+    const remove = vi.spyOn(markupLayer, 'remove')
+    const add = vi.spyOn(markupLayer, 'add')
+
+    board.updatePosition(createPosition(
+      [],
+      [[3, 3, {type: 'circle'}], [5, 5, {type: 'label', text: 'B'}]]
+    ))
+
+    expect(remove).toHaveBeenCalledTimes(1)
+    expect(remove).toHaveBeenCalledWith(5, 5)
+    expect(add).toHaveBeenCalledTimes(1)
+  })
+
+  it('redraws markup sitting on a cell whose stone changed', () => {
+
+    //NOTE: markup draws itself differently depending on the stone underneath
+    //it, so it has to be drawn again when that stone appears or disappears
+    const board = createBoardWithLayers()
+    board.updatePosition(createPosition([], [[3, 3, {type: 'circle'}]]))
+
+    const markupLayer = board.getLayer(boardLayerTypes.MARKUP)
+    const redrawCell = vi.spyOn(markupLayer, 'redrawCell')
+
+    board.updatePosition(createPosition(
+      [[3, 3, BLACK]],
+      [[3, 3, {type: 'circle'}]]
+    ))
+
+    expect(redrawCell).toHaveBeenCalledWith(3, 3)
+  })
+
+  it('redraws the lines only when they changed', () => {
+    const board = createBoardWithLayers()
+    const withLines = () => {
+      const position = createPosition([[3, 3, BLACK]])
+      position.lines = [[0, 0, 5, 5, 'red']]
+      return position
+    }
+    board.updatePosition(withLines())
+
+    const drawLayer = board.getLayer(boardLayerTypes.DRAW)
+    const setAll = vi.spyOn(drawLayer, 'setAll')
+
+    board.updatePosition(withLines())
+    expect(setAll).not.toHaveBeenCalled()
+
+    const changed = withLines()
+    changed.lines = [[0, 0, 9, 9, 'blue']]
+    board.updatePosition(changed)
+    expect(setAll).toHaveBeenCalledTimes(1)
+  })
+
+  it('rebuilds in full when the stone style changes', () => {
+    const board = createBoardWithLayers()
+    board.updatePosition(createPosition([[3, 3, BLACK]]))
+
+    const full = vi.spyOn(board, 'syncFullPosition')
+    board.theme.set('board.stoneStyle', 'mono')
+    board.updatePosition(createPosition([[3, 3, BLACK]]))
+
+    expect(full).toHaveBeenCalled()
+  })
+
+  it('rebuilds in full after the board is cleared', () => {
+    const board = createBoardWithLayers()
+    board.updatePosition(createPosition([[3, 3, BLACK]]))
+    board.removeAll()
+
+    const full = vi.spyOn(board, 'syncFullPosition')
+    board.updatePosition(createPosition([[3, 3, BLACK]]))
+
+    expect(full).toHaveBeenCalled()
+    expect(board.has(boardLayerTypes.STONES, 3, 3)).toBe(true)
+  })
+
+  it('is not fooled by the live position being mutated', () => {
+
+    //NOTE: setup edits mutate the current position in place, so the baseline
+    //has to be a copy taken at render time, not a reference
+    const board = createBoardWithLayers()
+    const position = createPosition([[3, 3, BLACK]])
+    board.updatePosition(position)
+
+    position.stones.set(5, 5, WHITE)
+    board.updatePosition(position)
+
+    expect(board.has(boardLayerTypes.STONES, 5, 5)).toBe(true)
   })
 })
