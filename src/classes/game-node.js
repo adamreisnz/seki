@@ -267,7 +267,7 @@ export default class GameNode {
    */
   hasSiblings() {
     const {parent} = this
-    return (parent && parent.hasMultipleChildren())
+    return Boolean(parent && parent.hasMultipleChildren())
   }
 
   /**
@@ -602,7 +602,7 @@ export default class GameNode {
    */
   hasComments() {
     const {comments} = this
-    return (comments && comments.length > 0)
+    return Boolean(comments && comments.length > 0)
   }
 
   /**
@@ -804,7 +804,7 @@ export default class GameNode {
     //No markup instructions container in this node?
     const {markup} = this
     if (typeof markup === 'undefined') {
-      return
+      return false
     }
 
     //Go over markup and check
@@ -910,7 +910,7 @@ export default class GameNode {
     //No setup instructions container in this node?
     const {setup} = this
     if (typeof setup === 'undefined') {
-      return
+      return false
     }
 
     //Go over setup and check
