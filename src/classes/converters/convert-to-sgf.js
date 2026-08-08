@@ -354,7 +354,7 @@ export default class ConvertToSgf extends Converter {
     for (const entry of score) {
       const color = this.convertColor(entry.color)
       const key = `T${color}`
-      const coords = this.extractCoordinates(entry.coordinates)
+      const coords = this.extractCoordinates(entry.coords)
       sgf += this.makeSgfGroup(key, coords)
     }
 

@@ -339,11 +339,9 @@ export default class Game extends Base {
       gameName,
       gameResult,
       gameDate,
-      gameDates,
       gameOpening,
       gameAnnotator,
       gameDescription,
-      boardSize,
       boardWidth,
       boardHeight,
       boardCutOffLeft,
@@ -383,13 +381,11 @@ export default class Game extends Base {
     set(info, 'game.name', gameName)
     set(info, 'game.result', gameResult)
     set(info, 'game.date', gameDate)
-    set(info, 'game.dates', gameDates)
     set(info, 'game.opening', gameOpening)
     set(info, 'game.annotator', gameAnnotator)
     set(info, 'game.description', gameDescription)
 
     //Extract board info
-    set(info, 'board.size', boardSize)
     set(info, 'board.width', boardWidth)
     set(info, 'board.height', boardHeight)
     set(info, 'board.cutOffLeft', boardCutOffLeft)
@@ -550,8 +546,8 @@ export default class Game extends Base {
 
     //Set as given
     else {
-      this.eventLocation = eventLocation
-      this.triggerEvent('info', {eventLocation})
+      this.eventLocation = location
+      this.triggerEvent('info', {eventLocation: location})
     }
   }
   getEventLocation() {
@@ -802,9 +798,9 @@ export default class Game extends Base {
    * Set/get over time
    */
   setOvertime(overtime = '') {
-    this.overtime = overtime || ''
+    this.overtime = overtime ? String(overtime) : ''
     this.triggerEvent('info', {overtime: this.overtime})
-    const match = overtime.match(/([0-9]+)x([0-9.]+)/)
+    const match = this.overtime.match(/([0-9]+)x([0-9.]+)/)
     if (match) {
       this.setNumberOfPeriods(match[1])
       this.setTimePerPeriod(match[2])
@@ -1403,7 +1399,7 @@ export default class Game extends Base {
    * Check if given coordinates are one of the next child node coordinates
    */
   isMoveVariation(x, y) {
-    this.node.isMoveVariation(x, y)
+    return this.node.isMoveVariation(x, y)
   }
 
   /**
@@ -1422,8 +1418,8 @@ export default class Game extends Base {
    */
   isValidMove(x, y, color) {
     const position = this.position.clone()
-    const [isValid] = this.validateMove(position, x, y, color)
-    return isValid
+    const outcome = this.validateMove(position, x, y, color)
+    return outcome.isValid
   }
 
   /**
@@ -1614,7 +1610,11 @@ export default class Game extends Base {
     if (typeof color === 'undefined') {
       return position.stones.has(x, y)
     }
-    return position.stones.is(x, y, {color})
+
+    //NOTE: the stones grid holds bare color values, not objects, so this
+    //compares the value directly rather than going through Grid#is, which
+    //only does a keyed comparison for object values
+    return (position.stones.get(x, y) === color)
   }
 
   /**
@@ -2110,7 +2110,7 @@ export default class Game extends Base {
    */
   goForwardNumPositions(num) {
     for (let i = 0; i < num; i++) {
-      if (!this.goToNextPosition()) {
+      if (!this.goToNextPosition().isValid) {
         return
       }
     }
@@ -2121,7 +2121,7 @@ export default class Game extends Base {
    */
   goBackNumPositions(num) {
     for (let i = 0; i < num; i++) {
-      if (!this.goToPreviousPosition()) {
+      if (!this.goToPreviousPosition().isValid) {
         return
       }
     }

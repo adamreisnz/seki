@@ -44,7 +44,7 @@ export default class PlayerMode extends Base {
    * Whether this mode is active
    */
   get isActive() {
-    return (this.player.mode === this.mode)
+    return (this.player.activeMode === this.mode)
   }
 
   /**************************************************************************

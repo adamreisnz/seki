@@ -495,10 +495,10 @@ export default class PlayerModeReplay extends PlayerMode {
     const nodes = node.getVariationMoveNodes()
 
     //Loop each
-    nodes.forEach((node, i) => {
+    nodes.forEach((moveNode, i) => {
 
       //Get node data
-      const {x, y} = node.move
+      const {x, y} = moveNode.move
       const number = i + 1
 
       //Already has markup on this coordinate, preserve it
@@ -526,10 +526,10 @@ export default class PlayerModeReplay extends PlayerMode {
     const nodes = node.getAllMoveNodes()
 
     //Loop each
-    nodes.forEach((node, i) => {
+    nodes.forEach((moveNode, i) => {
 
       //Get node data
-      const {x, y} = node.move
+      const {x, y} = moveNode.move
       const number = i + 1
 
       //Already has markup on this coordinate, preserve it

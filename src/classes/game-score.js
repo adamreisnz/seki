@@ -79,8 +79,11 @@ export default class GameScore {
     if (komi > 0) {
       this[stoneColors.WHITE].komi = komi
     }
+
+    //Reverse komi is awarded to black, so it counts as points in black's
+    //favour rather than as a penalty
     else if (komi < 0) {
-      this[stoneColors.BLACK].komi = komi
+      this[stoneColors.BLACK].komi = Math.abs(komi)
     }
   }
 

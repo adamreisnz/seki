@@ -360,9 +360,9 @@ export default class PlayerModeEdit extends PlayerModeReplay {
     }
 
     //Process
-    this.supressEditEvent = true
+    this.suppressEditEvent = true
     this[action](...args)
-    this.supressEditEvent = false
+    this.suppressEditEvent = false
 
     //Free draw event, done, as this is drawn directly onto the board
     if (action === 'addLine' || action === 'addLines') {
@@ -999,7 +999,7 @@ export default class PlayerModeEdit extends PlayerModeReplay {
    * Trigger edit event
    */
   triggerEditEvent(action, ...args) {
-    if (!this.supressEditEvent) {
+    if (!this.suppressEditEvent) {
       this.player.triggerEvent('edit', {action, args})
     }
   }
