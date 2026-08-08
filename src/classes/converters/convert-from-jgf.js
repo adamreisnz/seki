@@ -19,10 +19,13 @@ export default class ConvertFromJgf extends Converter {
       throw new Error(`No JGF data supplied`)
     }
 
-    //Parse JSON
+    //Parse JSON. NOTE: the string is trimmed first because JSON.parse accepts
+    //leading whitespace but not a byte order mark, which trim() does strip.
+    //Format detection already looks past both, so without this a JGF file
+    //starting with a BOM was recognised and then failed to parse anyway.
     if (typeof jgf === 'string') {
       try {
-        jgf = JSON.parse(jgf)
+        jgf = JSON.parse(jgf.trim())
       }
       catch (error) {
         throw new Error(`Unable to parse JSON: ${error.message}`, {cause: error})
@@ -32,6 +35,13 @@ export default class ConvertFromJgf extends Converter {
     //Validate
     if (typeof jgf !== 'object') {
       throw new Error(`Invalid JGF data supplied`)
+    }
+
+    //A record without a tree has nothing to navigate. NOTE: this used to fall
+    //straight through into reading the length of undefined, which surfaced as
+    //a TypeError rather than as a parsing error the caller can act on.
+    if (!Array.isArray(jgf.tree) || jgf.tree.length === 0) {
+      throw new Error(`Invalid JGF data supplied: no game tree found`)
     }
 
     //Initialize

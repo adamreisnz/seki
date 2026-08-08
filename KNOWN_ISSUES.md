@@ -53,3 +53,48 @@ date records, which is the overwhelming majority, are unaffected.
 `YYYY`, `YYYY-MM` or `YYYY-MM-DD` form and silently truncates anything else.
 The SGF spec allows shorthand within a list, where `2024-03-01,02` means the
 first and second of March, which the parser does not currently expand.
+
+---
+
+## Reordering a variation swaps rather than moves it
+
+**Where:** `src/classes/game-node.js` (`moveChild`)
+
+`moveChild` puts the child at the target index and the child that was there at
+the child's old index, so it is a swap. `moveChildUp` and `moveChildDown` only
+ever move by one place, where a swap and a move are the same thing, so those
+are unaffected.
+
+`Game#makeMainVariation` is not. It calls `moveToIndex(0)` on each node up to
+the root, so promoting the third variation of a node leaves the variation that
+used to be first sitting in third place, rather than second.
+
+**Effect:** the promoted variation does become the main line, which is what the
+method is for. The remaining variations change order relative to each other,
+which a UI listing them will show.
+
+**What a fix involves:** splice the child out and back in at the target index
+instead of swapping, keeping the active path index pointing at whichever child
+it pointed at before. `src/classes/game-node.spec.js` documents the current
+swap behaviour and would need updating along with it.
+
+---
+
+## Canvas drawing is not covered by the test suite
+
+**Where:** `src/classes/layers/*`, `src/classes/objects/markup-*.js`,
+`src/classes/objects/stone-*.js`
+
+The suite covers everything these classes decide, being which theme properties
+apply, what gets erased and redrawn, and what ends up on which layer. It does
+not cover what they actually paint, because that needs a real canvas and a way
+to compare the result against a reference image.
+
+**Effect:** a change to the drawing code itself, as opposed to the bookkeeping
+around it, can pass the whole suite and still be visibly wrong. Statement
+coverage sits at roughly 65% overall, and nearly all of what is missing is
+these draw methods.
+
+**What a fix involves:** a browser test environment with a canvas, and image
+comparison against committed reference renders for a handful of positions.
+That is a project in itself rather than a change, hence its being listed here.

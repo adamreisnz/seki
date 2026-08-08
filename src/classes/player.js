@@ -340,12 +340,15 @@ export default class Player extends Base {
     this.loadConfigFromGame(game)
     this.triggerEvent('gameLoad', {game})
 
-    //Check handicap
-    const handicap = game.getHandicap()
-    const hasStones = game.position.hasStones()
-
     //Go to first position
     game.goToFirstPosition()
+
+    //Check handicap. NOTE: this is read after rewinding, because that is what
+    //applies the root node's setup instructions. Reading it before meant the
+    //record's own handicap stones were never seen, and a record with freely
+    //placed handicap stones had the default star points added on top of them.
+    const handicap = game.getHandicap()
+    const hasStones = game.position.hasStones()
 
     //Place handicap stones if specified in rules and no positions yet
     if (handicap > 1 && !hasStones) {

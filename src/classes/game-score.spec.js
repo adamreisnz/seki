@@ -70,7 +70,13 @@ describe('GameScore', () => {
   it('has no winner on a tie', () => {
     const score = new GameScore()
     expect(score.getWinningColor(TERRITORY)).toBeUndefined()
-    expect(score.getResult(TERRITORY)).toBe('?')
+  })
+
+  it('reports a tie as a draw, spelled the way SGF spells it', () => {
+    const score = new GameScore()
+    score.setCaptures(BLACK, 10)
+    score.setCaptures(WHITE, 10)
+    expect(score.getResult(TERRITORY)).toBe('0')
   })
 
   it('formats the result with the margin', () => {

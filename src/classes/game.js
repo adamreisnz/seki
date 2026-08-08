@@ -100,6 +100,8 @@ export default class Game extends Base {
     this.handicap = 0
     this.time = 0
     this.overtime = ''
+    this.numberOfPeriods = 0
+    this.timePerPeriod = 0
 
     //Meta data and player settings
     this.meta = {}
@@ -357,6 +359,8 @@ export default class Game extends Base {
       handicap,
       time,
       overtime,
+      numberOfPeriods,
+      timePerPeriod,
       players,
       settings,
       meta,
@@ -406,6 +410,12 @@ export default class Game extends Base {
     set(info, 'rules.time', time)
     set(info, 'rules.overtime', overtime)
 
+    //NOTE: these two are read back in by setInfo and are carried by both the
+    //SGF (TC/TT) and JGF formats, so leaving them out here meant a record with
+    //byo-yomi periods lost them on every save and reload
+    set(info, 'rules.numberOfPeriods', numberOfPeriods)
+    set(info, 'rules.timePerPeriod', timePerPeriod)
+
     //Extract players, settings and meta data
     set(info, 'players', players)
     set(info, 'settings', settings)
@@ -417,9 +427,16 @@ export default class Game extends Base {
 
   /**
    * Reset game (but preserve info)
+   *
+   * NOTE: init() wipes the game info along with everything else, so the info
+   * has to be captured and put back. Without that this cleared the board size,
+   * players, komi and handicap as well, which is not what a reset of the game
+   * tree is meant to do.
    */
   reset() {
+    const info = this.getInfo()
     this.init()
+    this.setInfo(info)
     this.initPositionStack()
   }
 
@@ -1181,9 +1198,19 @@ export default class Game extends Base {
 
   /**
    * Set root node
+   *
+   * NOTE: this also rewinds to the first position. The current node, path and
+   * position stack all describe the tree that was just replaced, so leaving
+   * them alone pointed the game at a node that is no longer part of it. That
+   * made a freshly converted game report no next position at all, and left the
+   * position stack sized for the previous board.
+   *
+   * Rewinding reads the board size and handicap off the game info, so set the
+   * info before the root node, the way the converters do.
    */
   setRootNode(root) {
     this.root = root
+    this.goToFirstPosition()
   }
 
   /**
@@ -1258,9 +1285,18 @@ export default class Game extends Base {
    * Reset current path index
    */
   resetCurrentPathIndex() {
+
+    //The choice to forget is the one recorded at the move we're on, being the
+    //step from here to the next node, which is the same thing the path index
+    //below is reset to. The choices that got us here are left alone, as the
+    //path still has to describe where we are. NOTE: this used to call
+    //forgetPathChoice() with no arguments, which looked up path[undefined].
+    const moveNo = this.path.getMoveNumber()
+
+    //Reset
     this.node.setPathIndex(0)
     this.root.markPath()
-    this.path.forgetPathChoice()
+    this.path.forgetPathChoice(moveNo)
   }
 
   /**
@@ -1327,9 +1363,22 @@ export default class Game extends Base {
    * Get game path to a given move number
    */
   getPathToMoveNumber(number) {
-    const path = new GamePath()
-    path.setMove(number)
-    return path
+
+    //Move zero, or anything before it, is the start of the game
+    if (number <= 0) {
+      return new GamePath()
+    }
+
+    //Clamp to what the game actually has, so asking for more moves than there
+    //are still gets you as far as it goes
+    const total = this.getTotalNumberOfMoves()
+    const node = this.findNodeForMoveNumber(Math.min(number, total))
+
+    //NOTE: this used to build a path whose length was the move number itself.
+    //A path counts nodes, not moves, so any node in the line that isn't a move
+    //(a setup node, or one carrying only markup or a comment) put every move
+    //number after it out by one.
+    return node ? this.getPathToNode(node) : null
   }
 
   /**
@@ -1547,8 +1596,10 @@ export default class Game extends Base {
    */
   addMarkup(x, y, markup) {
 
-    //No markup here
-    if (this.hasMarkup(x, y, markup)) {
+    //Already have markup of this type here. NOTE: this used to hand the whole
+    //markup object to hasMarkup() where a type is expected, so the check
+    //compared a type against an object and never matched.
+    if (this.hasMarkup(x, y, markup.type)) {
       this.debug(`already has markup of type ${markup.type} on (${x},${y})`)
       return
     }
@@ -1649,7 +1700,7 @@ export default class Game extends Base {
     this.debug(`adding ${color} stone at (${x},${y})`)
 
     //Get data and validate placement
-    const {position, node} = this
+    const {node} = this
     const [newPosition, reason] = this.validateSetupPlacement(x, y, color)
 
     //Invalid placement
@@ -1661,18 +1712,20 @@ export default class Game extends Base {
     //Add to node as a setup instruction
     const newNodeIndex = node.addSetup(x, y, {type: color})
 
-    //Replace the position if a new node was created
+    //Replace the position if a new node was created. NOTE: the event carries
+    //this.position rather than the one captured before the change, which is
+    //the position the stone was just added to and no longer on the stack.
     if (typeof newNodeIndex !== 'undefined') {
       this.debug(`new node was created with index ${newNodeIndex}`)
       this.handleNewSetupNodeCreation(newNodeIndex)
       this.replaceLastPositionInStack(newPosition)
-      this.triggerEvent('positionChange', {position})
+      this.triggerEvent('positionChange', {position: this.position})
       return
     }
 
     //Just set stone on current position
-    position.stones.set(x, y, color)
-    this.triggerEvent('positionChange', {position})
+    this.position.stones.set(x, y, color)
+    this.triggerEvent('positionChange', {position: this.position})
   }
 
   /**
@@ -1694,9 +1747,12 @@ export default class Game extends Base {
 
     //Check if stone is present in setup instructions
     //If so, just remove it from the setup
+    //NOTE: this branch used to return without an event, so removing a stone
+    //that was placed by the current node left it drawn on the board
     if (node.hasSetup(x, y)) {
       node.removeSetup(x, y)
       position.stones.delete(x, y)
+      this.triggerEvent('positionChange', {position})
       return
     }
 
@@ -1713,7 +1769,7 @@ export default class Game extends Base {
     //Replace current position
     this.handleNewSetupNodeCreation(newNodeIndex)
     this.replaceLastPositionInStack(newPosition)
-    this.triggerEvent('positionChange', {position})
+    this.triggerEvent('positionChange', {position: this.position})
   }
 
   /**
@@ -1860,6 +1916,7 @@ export default class Game extends Base {
     //Advance path to the added node index
     this.node = node
     this.path.advance(i)
+    this.root.markPath()
 
     //Add new position to stack
     this.addPositionToStack(newPosition)
@@ -1938,8 +1995,16 @@ export default class Game extends Base {
    * Go to the last position
    */
   goToLastPosition() {
+
+    //NOTE: the outcome has to be checked here, like every other loop that
+    //walks forward does. Processing a node that fails puts us back on the node
+    //we came from, so without this the loop steps onto the same broken node
+    //again and again and never returns.
     while (this.goToNextNode()) {
-      this.processCurrentNode()
+      const outcome = this.processCurrentNode()
+      if (!outcome.isValid) {
+        break
+      }
     }
   }
 
@@ -1976,12 +2041,10 @@ export default class Game extends Base {
    */
   goToMoveNumber(number) {
 
-    //Already here
-    if (this.getCurrentMoveNumber() === number) {
-      return
-    }
-
-    //Get path to the named node
+    //Resolve the path and navigate. NOTE: matching move numbers is not proof
+    //of already being there, as a setup node sitting after move n carries move
+    //number n as well, while the node to be on is the move itself. goToPath()
+    //recognises an unchanged path, so it is the no-op check.
     const path = this.getPathToMoveNumber(number)
     this.goToPath(path)
   }
@@ -2184,16 +2247,37 @@ export default class Game extends Base {
       throw new Error('Cannot remove root node')
     }
 
+    //Check whether we're standing anywhere inside the branch about to be
+    //removed, which has to happen before it is detached, as afterwards it no
+    //longer connects to the tree at all. NOTE: this used to only check for the
+    //node itself, so removing an ancestor of the current node left the game
+    //pointing into a subtree that was no longer part of the game.
+    const isOnRemovedBranch = this.isNodeOnPathToCurrentNode(node)
+
     //Detach node from parent
     const parent = node.detachFromParent()
     if (!parent) {
       throw new Error('Node has no parent')
     }
 
-    //Go to parent node if we were at the node being removed
-    if (this.isCurrentNode(node)) {
+    //Go to the parent node if the node we were on has just been removed
+    if (isOnRemovedBranch) {
       this.goToNode(parent)
     }
+  }
+
+  /**
+   * Check if a given node is the current node, or an ancestor of it
+   */
+  isNodeOnPathToCurrentNode(target) {
+    let node = this.node
+    while (node) {
+      if (node === target) {
+        return true
+      }
+      node = node.getParent()
+    }
+    return false
   }
 
   /**
@@ -2296,9 +2380,15 @@ export default class Game extends Base {
       //New position is not valid
       if (!outcome.isValid) {
 
-        //Revert position on failure?
-        if (revertPositionOnFail) {
-          this.goToPreviousNode()
+        //Step back to the node we came from. NOTE: this used to go through
+        //goToPreviousNode(), which also pops a position off the stack. No
+        //position was ever pushed for this node, so what came off was the one
+        //belonging to the node being stepped back to, leaving the game showing
+        //a position one step behind the node it was on.
+        if (revertPositionOnFail && node.hasParent()) {
+          this.path.retreat()
+          this.node = node.getParent()
+          root.markPath()
         }
 
         //Return failure reason
@@ -2452,9 +2542,11 @@ export default class Game extends Base {
       return kifuFormats.JGF
     }
 
-    //String given, could be stringified JGF, an SGF or GIB file
+    //String given, could be stringified JGF, an SGF or GIB file. NOTE: files
+    //routinely start with a byte order mark or a blank line, and looking at
+    //the very first character of the raw string rejected every one of them.
     if (typeof data === 'string') {
-      const c = data.charAt(0)
+      const c = data.trim().charAt(0)
       if (c === '(') {
         return kifuFormats.SGF
       }

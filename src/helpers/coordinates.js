@@ -50,8 +50,11 @@ export function lowercase(i) {
 }
 
 //Map of coordinate generators
+//NOTE: hangul belongs here as much as kanji does. Leaving it out meant that
+//asking for it by name in a theme silently fell back to bare indices.
 export const coordinateGenerators = {
   kanji,
+  hangul,
   numbers,
   letters,
   index,

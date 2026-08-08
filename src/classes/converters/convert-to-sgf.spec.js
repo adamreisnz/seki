@@ -95,3 +95,40 @@ describe('SGF export of territory markup', () => {
     expect(out).toContain('TW[ss]')
   })
 })
+
+describe('ConvertToSgf, label text', () => {
+
+  const writeLabel = text => {
+    const game = new Game()
+    game.addMarkup(3, 3, {type: 'label', text})
+    return write(game)
+  }
+
+  it('escapes a closing bracket in the text', () => {
+
+    //NOTE: label text is written into the property value, and used to go in
+    //raw. A ] in a label closed the property early, so everything after it in
+    //the file was lost, or worse, read back as something else entirely
+    expect(writeLabel('a]b')).toContain('LB[dd:a\\]b]')
+  })
+
+  it('escapes a backslash in the text', () => {
+    expect(writeLabel('a\\b')).toContain('LB[dd:a\\\\b]')
+  })
+
+  it('round trips a label containing a bracket', () => {
+    const game = parse(writeLabel('a]b'))
+    game.goToFirstPosition()
+    expect(game.getMarkup(3, 3)).toEqual({type: 'label', text: 'a]b'})
+  })
+
+  it('round trips a label containing a backslash', () => {
+    const game = parse(writeLabel('a\\b'))
+    game.goToFirstPosition()
+    expect(game.getMarkup(3, 3)).toEqual({type: 'label', text: 'a\\b'})
+  })
+
+  it('leaves ordinary text alone', () => {
+    expect(writeLabel('A1')).toContain('LB[dd:A1]')
+  })
+})

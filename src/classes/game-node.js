@@ -805,8 +805,16 @@ export default class GameNode {
       }
     })
 
-    //Remove empty entries
-    this.markup = markup.filter(entry => entry.coords.length > 0)
+    //Remove empty entries, and the container itself once nothing is left in
+    //it. NOTE: an empty array still counts as having markup instructions, so
+    //leaving one behind made a node that had all its markup removed go on
+    //reporting that it had some.
+    const remaining = markup.filter(entry => entry.coords.length > 0)
+    if (remaining.length === 0) {
+      delete this.markup
+      return
+    }
+    this.markup = remaining
   }
 
   /**
@@ -911,8 +919,14 @@ export default class GameNode {
       }
     })
 
-    //Remove empty entries
-    this.setup = setup.filter(entry => entry.coords.length > 0)
+    //Remove empty entries, and the container itself once nothing is left in
+    //it, for the same reason as removeMarkup above
+    const remaining = setup.filter(entry => entry.coords.length > 0)
+    if (remaining.length === 0) {
+      delete this.setup
+      return
+    }
+    this.setup = remaining
   }
 
   /**

@@ -46,7 +46,11 @@ describe('coordinate generators', () => {
 
   it('exposes the generators by name', () => {
     expect(Object.keys(coordinateGenerators).sort())
-      .toEqual(['index', 'kanji', 'letters', 'lowercase', 'numbers'])
+      .toEqual(['hangul', 'index', 'kanji', 'letters', 'lowercase', 'numbers'])
+  })
+
+  it('exposes hangul by name, so a theme can select it', () => {
+    expect(coordinateGenerators.hangul).toBe(hangul)
   })
 
   it('normalises coordinate pairs into objects', () => {
