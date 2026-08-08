@@ -1,0 +1,64 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - v*
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    name: Publish to npm
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      #Required to mint the OIDC token that npm trades for publish rights
+      id-token: write
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      #Reads the packageManager field from package.json, so the version stays
+      #pinned in one place
+      - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24.x
+          cache: pnpm
+          registry-url: https://registry.npmjs.org
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      #Re-run the checks against the tagged commit, rather than trusting that
+      #whatever was green on main is what got tagged
+      - name: Lint
+        run: pnpm run lint
+
+      - name: Test
+        run: pnpm run test
+
+      #Specs sit next to the code they cover, so they are one packing rule away
+      #from being published. This is the last chance to catch that.
+      - name: Check no specs are published
+        run: |
+          npm pack --dry-run --json > /tmp/pack.json
+          if grep -q '\.spec\.js' /tmp/pack.json; then
+            echo "Spec files found in the package:"
+            grep -o '"path": "[^"]*\.spec\.js"' /tmp/pack.json
+            exit 1
+          fi
+          echo "No spec files in the package"
+
+      #Trusted publishing needs npm 11.5.1 or higher
+      - name: Update npm
+        run: npm install -g npm@latest
+
+      #Publishes via OIDC, so there is no token to store or rotate, and npm
+      #generates a provenance attestation automatically
+      - name: Publish
+        run: npm publish
