@@ -101,3 +101,32 @@ describe('JGF round trip', () => {
     })
   })
 })
+
+describe('Problem records', () => {
+
+  it('round trips the solution flag', () => {
+
+    //NOTE: solution was missing from jgfNodePaths, so a problem record lost
+    //which of its branches were the correct ones on a round trip
+    const jgf = {
+      tree: [
+        {},
+        {move: {x: 3, y: 3, color: stoneColors.BLACK}, solution: true},
+      ],
+    }
+
+    const game = new ConvertFromJgf().convert(jgf)
+    expect(game.root.getChild(0).solution).toBe(true)
+
+    const out = new ConvertToJgf().convert(game, {rawJs: true})
+    expect(out.tree[1].solution).toBe(true)
+  })
+
+  it('leaves nodes without the flag alone', () => {
+    const game = new ConvertFromJgf().convert({
+      tree: [{}, {move: {x: 3, y: 3, color: stoneColors.BLACK}}],
+    })
+    const out = new ConvertToJgf().convert(game, {rawJs: true})
+    expect('solution' in out.tree[1]).toBe(false)
+  })
+})

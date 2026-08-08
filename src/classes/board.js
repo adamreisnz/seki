@@ -428,7 +428,12 @@ export default class Board extends Base {
     //Get lines
     const {lines} = position
 
-    //Redraw gird
+    //Clear the hover layer before the grids underneath it are replaced.
+    //Anything it displaced belongs to the position being replaced, and would
+    //otherwise be restored on top of the new one.
+    this.clearHoverLayer()
+
+    //Redraw grid
     this.redrawLayer(boardLayerTypes.GRID)
 
     //Set new stones and markup grids

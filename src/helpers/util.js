@@ -27,12 +27,12 @@ export function createCanvasContext(element, className) {
   //Create canvas element and get context
   const canvas = createElement(element, className, 'canvas')
   const context = canvas.getContext('2d')
-  const pixelRatio = getPixelRatio()
 
-  //Scale context depending on pixel ratio
-  if (pixelRatio > 1) {
-    context.scale(pixelRatio, pixelRatio)
-  }
+  //NOTE: no pixel ratio scaling here. Assigning to canvas.width or height
+  //resets the context transform, and the board does exactly that in
+  //propagateDrawSize before anything is ever drawn, so scaling at this point
+  //was thrown away again. The pixel ratio is instead folded into the draw
+  //size the board computes with.
 
   //Set class name
   if (className) {
@@ -51,14 +51,11 @@ export function mergeCanvases(canvases) {
   //Create merged canvas
   const merged = document.createElement('canvas')
   const context = merged.getContext('2d')
-  const pixelRatio = getPixelRatio()
 
-  //Scale context depending on pixel ratio
-  if (pixelRatio > 1) {
-    context.scale(pixelRatio, pixelRatio)
-  }
-
-  //Set dimensions based on first canvas
+  //Set dimensions based on first canvas. NOTE: the source canvases are
+  //already at their full pixel ratio size and are copied across one to one,
+  //so there is no scaling to apply. Doing so here had no effect anyway, as
+  //setting the dimensions below resets the context transform.
   merged.width = canvases[0].width
   merged.height = canvases[0].height
 

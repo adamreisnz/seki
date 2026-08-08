@@ -176,6 +176,14 @@ export default class BoardLayer {
    */
   drawCell(x, y) {
 
+    //Can't draw. NOTE: this guard is what draw() and erase() already have.
+    //Without it here, adding or removing an object before the board has been
+    //bootstrapped throws on the missing context, even though the grid
+    //bookkeeping itself is perfectly valid at that point.
+    if (!this.canDraw()) {
+      return
+    }
+
     //Get object
     const object = this.grid.get(x, y)
     const {board, context} = this
@@ -203,6 +211,11 @@ export default class BoardLayer {
    * Erase cell
    */
   eraseCell(x, y) {
+
+    //Can't draw
+    if (!this.canDraw()) {
+      return
+    }
 
     //Get object
     const object = this.grid.get(x, y)

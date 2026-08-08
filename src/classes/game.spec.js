@@ -4,6 +4,8 @@ import GameNode from './game-node.js'
 import {stoneColors} from '../constants/stone.js'
 import {setupTypes} from '../constants/setup.js'
 import {kifuFormats} from '../constants/app.js'
+import {defaultGameInfo} from '../constants/defaults.js'
+import {dateString} from '../helpers/util.js'
 
 const {BLACK, WHITE} = stoneColors
 
@@ -786,5 +788,30 @@ describe('Default handicap stone placement', () => {
     expect(game.getStone(3, 3)).toBe(BLACK)
     expect(game.getStone(15, 15)).toBe(BLACK)
     expect(game.getTurn()).toBe(WHITE)
+  })
+})
+
+describe('Default game date', () => {
+
+  it('is today, not the day the module was first imported', () => {
+
+    //NOTE: this used to be a plain value computed at import time, so a page
+    //left open across midnight went on stamping the previous day's date
+    const descriptor = Object.getOwnPropertyDescriptor(
+      defaultGameInfo.game, 'date'
+    )
+    expect(descriptor.get).toBeTypeOf('function')
+    expect(new Game().getGameDate()).toBe(dateString())
+  })
+
+  it('is still overridden by a date given in the info', () => {
+    expect(new Game({game: {date: '2020-01-02'}}).getGameDate()).toBe('2020-01-02')
+  })
+
+  it('re-evaluates for each game created', () => {
+    const first = new Game().getGameDate()
+    const second = new Game().getGameDate()
+    expect(first).toBe(second)
+    expect(first).toBe(dateString())
   })
 })

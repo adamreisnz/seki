@@ -14,7 +14,14 @@ export const defaultGameInfo = {
   },
   game: {
     type: gameTypes.GO,
-    date: dateString(),
+
+    //NOTE: a getter, so that the date is worked out when a game is created
+    //rather than when this module is first imported. As a plain value it was
+    //fixed for the lifetime of the page, so a long running one went on
+    //stamping yesterday's date after midnight.
+    get date() {
+      return dateString()
+    },
   },
   board: {
     size: 19,
@@ -162,13 +169,16 @@ export const defaultTheme = {
     margin: 1.75, //cells
 
     //Vertical coordinates
+    //NOTE: size is called with the character and cell size, like any other
+    //theme handler. It used to be a function returning a function, which meant
+    //overriding it with a plain value like '12px' threw.
     vertical: {
       color: 'rgb(68, 44, 20)',
       font: 'Arial',
       type: 'numbers',
       inverse: true,
-      size() {
-        return (ch, cellSize) => Math.floor((cellSize * 0.4) + 3) + 'px'
+      size(ch, cellSize) {
+        return Math.floor((cellSize * 0.4) + 3) + 'px'
       },
     },
 
@@ -178,8 +188,8 @@ export const defaultTheme = {
       font: 'Arial',
       type: 'letters',
       inverse: false,
-      size() {
-        return (ch, cellSize) => Math.floor((cellSize * 0.4) + 3) + 'px'
+      size(ch, cellSize) {
+        return Math.floor((cellSize * 0.4) + 3) + 'px'
       },
     },
   },

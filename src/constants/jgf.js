@@ -45,4 +45,5 @@ export const jgfPaths = [
 export const jgfNodePaths = [
   'name',
   'comments',
+  'solution',
 ]

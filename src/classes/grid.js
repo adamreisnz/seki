@@ -267,6 +267,19 @@ export default class Grid {
       if (!newGrid.grid.has(key)) {
         const {x, y} = this.getCoords(key)
         changes.remove.push({x, y, value})
+        continue
+      }
+
+      //Still there, but with a different value? That is a change, and it has
+      //to be reported as both a removal and an addition so that whatever is
+      //applying the changes replaces what is drawn there. NOTE: this used to
+      //compare keys only, so a stone changing colour on the same coordinate
+      //came back as no change at all.
+      const newValue = newGrid.grid.get(key)
+      if (newValue !== value) {
+        const {x, y} = this.getCoords(key)
+        changes.remove.push({x, y, value})
+        changes.add.push({x, y, value: newValue})
       }
     }
 

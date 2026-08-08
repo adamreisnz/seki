@@ -152,3 +152,44 @@ describe('object helpers', () => {
     })
   })
 })
+
+describe('copy() with values JSON cannot represent', () => {
+
+  it('keeps functions, which theme config is full of', () => {
+    const radius = cellSize => cellSize / 2
+    const copied = copy({grid: {radius}})
+
+    expect(copied.grid.radius).toBe(radius)
+    expect(copied.grid.radius(40)).toBe(20)
+  })
+
+  it('rebuilds dates rather than turning them into strings', () => {
+    const date = new Date('2024-03-09T00:00:00Z')
+    const copied = copy({date})
+
+    expect(copied.date).toBeInstanceOf(Date)
+    expect(copied.date.getTime()).toBe(date.getTime())
+    expect(copied.date).not.toBe(date)
+  })
+
+  it('rebuilds regexes', () => {
+    const copied = copy({pattern: /abc/gi})
+    expect(copied.pattern).toBeInstanceOf(RegExp)
+    expect(copied.pattern.source).toBe('abc')
+    expect(copied.pattern.flags).toBe('gi')
+  })
+
+  it('keeps undefined values instead of dropping the key', () => {
+    const copied = copy({a: undefined, b: 1})
+    expect('a' in copied).toBe(true)
+    expect(copied.a).toBeUndefined()
+  })
+
+  it('still deep copies nested structures', () => {
+    const original = {a: {b: [{c: 1}]}}
+    const copied = copy(original)
+
+    copied.a.b[0].c = 2
+    expect(original.a.b[0].c).toBe(1)
+  })
+})

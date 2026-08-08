@@ -62,6 +62,37 @@ const appendNotice = (element, text = 'Generated using') => {
   element.appendChild(notice)
 }
 
+//Extend a config object with the element's data-config attribute
+//
+//The attribute is conventionally written with single quotes, so it can sit in
+//an HTML attribute without escaping, e.g. data-config="{'showNotice': true}".
+//NOTE: that conversion used to be applied unconditionally, which broke on any
+//apostrophe inside a value, and a failure to parse took the whole board down
+//with it. Proper JSON is now tried first, the single quoted form second, and
+//an unparseable attribute is reported and skipped.
+const applyDatasetConfig = (config, element) => {
+
+  //Nothing to apply
+  const raw = element.dataset.config
+  if (!raw) {
+    return config
+  }
+
+  //Try as proper JSON first, then as the single quoted convention
+  for (const candidate of [raw, raw.replace(/'/g, '"')]) {
+    try {
+      return Object.assign(config, JSON.parse(candidate))
+    }
+    catch {
+      //Try the next one
+    }
+  }
+
+  //Neither worked
+  console.warn(`Seki: ignoring data-config attribute, unable to parse it`, raw)
+  return config
+}
+
 //Parse URL
 const parseUrl = url => {
   if (url) {
@@ -151,10 +182,7 @@ export async function sekiBoardStatic(element, config = {}) {
   }, config || {})
 
   //Extend with element data config
-  if (element.dataset.config) {
-    const json = element.dataset.config.replace(/'/g, '"')
-    config = Object.assign(config, JSON.parse(json))
-  }
+  config = applyDatasetConfig(config, element)
 
   //Instantiate static board
   const board = new SekiBoardStatic(config)
@@ -201,10 +229,7 @@ export async function sekiBoardDynamic(element, config = {}) {
   }, config || {})
 
   //Extend with element data config
-  if (element.dataset.config) {
-    const json = element.dataset.config.replace(/'/g, '"')
-    config = Object.assign(config, JSON.parse(json))
-  }
+  config = applyDatasetConfig(config, element)
 
   //Instantiate player
   const player = new SekiPlayer(config)
@@ -310,10 +335,7 @@ export async function sekiPlayer(element, config = {}) {
   }, config || {})
 
   //Extend with element data config
-  if (element.dataset.config) {
-    const json = element.dataset.config.replace(/'/g, '"')
-    config = Object.assign(config, JSON.parse(json))
-  }
+  config = applyDatasetConfig(config, element)
 
   //Create HTML structure for player
   element.classList.add('seki-player-container')

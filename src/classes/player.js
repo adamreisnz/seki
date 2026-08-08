@@ -27,6 +27,7 @@ export default class Player extends Base {
   board
   elements = {}
   modeHandlers = {}
+  extendedMethods = {}
   audioElements = {}
   soundTimeouts = []
   activeMode
@@ -107,8 +108,23 @@ export default class Player extends Base {
    */
   extend(method, mode) {
 
-    //Ensure doesn't already exist
+    //Already extended with this method by another mode? Register this one as
+    //providing it too, so the method dispatches to whichever of them is
+    //active. NOTE: this used to bail out here, leaving the method bound to the
+    //first mode that asked for it, so calling it while the other mode was
+    //active did nothing but log a warning.
+    const modes = this.extendedMethods[method]
+    if (modes) {
+      if (!modes.includes(mode)) {
+        modes.push(mode)
+        this.debug(`${mode} mode also provides the ${method} method`)
+      }
+      return
+    }
+
+    //Something else already occupies this name, so leave it alone
     if (typeof this[method] !== 'undefined') {
+      this.warn(`not extending with ${method} method, as it already exists`)
       return
     }
 
@@ -117,22 +133,28 @@ export default class Player extends Base {
       `extending with ${method} method for ${mode} mode`
     )
 
+    //Register the mode as providing this method
+    this.extendedMethods[method] = [mode]
+
     //Extend
     this[method] = (...args) => {
 
-      //Check if mode is active
-      if (!this.isModeActive(mode)) {
-        this.warn(`not calling ${method} method as ${mode} mode is not active`)
+      //Check if one of the modes providing this method is active
+      const {activeMode} = this
+      if (!this.extendedMethods[method].includes(activeMode)) {
+        this.warn(
+          `not calling ${method} method as no mode providing it is active`
+        )
         return
       }
 
       //Log
-      this.debug(`calling ${method} method for ${mode} mode`)
+      this.debug(`calling ${method} method for ${activeMode} mode`)
 
       //Get handler
-      const handler = this.getModeHandler(mode)
+      const handler = this.getModeHandler(activeMode)
       if (!handler) {
-        this.warn(`not calling ${method} method as ${mode} has no handler`)
+        this.warn(`not calling ${method} method as ${activeMode} has no handler`)
         return
       }
 

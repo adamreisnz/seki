@@ -84,3 +84,50 @@ describe('theme config', () => {
     expect(theme.get('grid.radius', 40)).toBe(7)
   })
 })
+
+describe('Theme config copies', () => {
+
+  it('survives a round trip through getConfigCopy', () => {
+
+    //NOTE: this used to go through a JSON round trip, which stripped every
+    //handler function out of the theme and left the copy unusable
+    const theme = new Theme()
+    const copy = theme.getConfigCopy()
+
+    expect(copy.grid.radius).toBeTypeOf('function')
+    expect(copy.grid.radius(40)).toBe(20)
+    expect(copy.stone.base.radius).toBeTypeOf('function')
+  })
+
+  it('produces a copy that can be fed back in as config', () => {
+    const theme = new Theme()
+    const rebuilt = new Theme(theme.getConfigCopy())
+
+    expect(rebuilt.get('grid.radius', 40)).toBe(20)
+    expect(rebuilt.get('board.stoneStyle')).toBe('slateShell')
+  })
+})
+
+describe('Coordinate size handler', () => {
+
+  it('is called with the character and cell size', () => {
+    const theme = new Theme()
+    expect(theme.get('coordinates.vertical.size', 'A', 40)).toBe('19px')
+    expect(theme.get('coordinates.horizontal.size', 'A', 40)).toBe('19px')
+  })
+
+  it('can be overridden with a plain value', () => {
+
+    //NOTE: the default used to be a function returning a function, so a plain
+    //value here produced "size is not a function" at draw time
+    const theme = new Theme({coordinates: {vertical: {size: '12px'}}})
+    expect(theme.get('coordinates.vertical.size', 'A', 40)).toBe('12px')
+  })
+
+  it('can be overridden with a function', () => {
+    const theme = new Theme({
+      coordinates: {vertical: {size: (ch, cellSize) => `${cellSize}px`}},
+    })
+    expect(theme.get('coordinates.vertical.size', 'A', 33)).toBe('33px')
+  })
+})

@@ -20,6 +20,16 @@
     "url": "https://github.com/adamreisnz/seki/issues"
   },
   "main": "src/index.js",
+  "exports": {
+    ".": "./src/index.js",
+    "./src/*": "./src/*",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "src",
+    "!src/**/*.spec.js",
+    "JGF.md"
+  ],
   "keywords": [
     "seki",
     "go",

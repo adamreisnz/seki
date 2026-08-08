@@ -122,6 +122,11 @@ export default class GridLayer extends BoardLayer {
    */
   eraseCell(x, y, radius) {
 
+    //Can't draw
+    if (!this.canDraw()) {
+      return
+    }
+
     //Get board and context
     const {board, theme, context} = this
 
@@ -158,6 +163,11 @@ export default class GridLayer extends BoardLayer {
    * Redraw a square cell area on the grid
    */
   redrawCell(x, y) {
+
+    //Can't draw
+    if (!this.canDraw()) {
+      return
+    }
 
     //Get board and context
     const {board, theme, context} = this
