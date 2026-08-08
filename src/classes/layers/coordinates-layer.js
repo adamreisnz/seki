@@ -55,9 +55,11 @@ export default class CoordinatesLayer extends BoardLayer {
     const xr = drawWidth - xl
 
     //Get theme data
+    //NOTE: size is deliberately not read here. It is passed the character
+    //being drawn, so it has to be looked up per coordinate rather than once
+    //up front like the rest of these.
     const color = theme.get('coordinates.vertical.color')
     const font = theme.get('coordinates.vertical.font')
-    const size = (ch, cellSize) => theme.get('coordinates.vertical.size', ch, cellSize)
     const style = theme.get('coordinates.vertical.style')
     const type = theme.get('coordinates.vertical.type')
     const inverse = theme.get('coordinates.vertical.inverse')
@@ -76,7 +78,8 @@ export default class CoordinatesLayer extends BoardLayer {
 
       //Draw
       const y = board.getAbsY(i)
-      context.font = `${style || ''} ${size(ch, cellSize)} ${font}`
+      const size = theme.get('coordinates.vertical.size', ch, cellSize)
+      context.font = `${style || ''} ${size} ${font}`
       context.fillText(ch, xl, y)
       context.fillText(ch, xr, y)
     }
@@ -99,9 +102,9 @@ export default class CoordinatesLayer extends BoardLayer {
     const yb = drawHeight - yt
 
     //Get theme data
+    //NOTE: size is deliberately not read here, see drawVertical
     const color = theme.get('coordinates.horizontal.color')
     const font = theme.get('coordinates.horizontal.font')
-    const size = (ch, cellSize) => theme.get('coordinates.horizontal.size', ch, cellSize)
     const style = theme.get('coordinates.horizontal.style')
     const type = theme.get('coordinates.horizontal.type')
     const inverse = theme.get('coordinates.horizontal.inverse')
@@ -120,7 +123,8 @@ export default class CoordinatesLayer extends BoardLayer {
 
       //Draw
       const x = board.getAbsX(i)
-      context.font = `${style || ''} ${size(ch, cellSize)} ${font}`
+      const size = theme.get('coordinates.horizontal.size', ch, cellSize)
+      context.font = `${style || ''} ${size} ${font}`
       context.fillText(ch, x, yt)
       context.fillText(ch, x, yb)
     }
