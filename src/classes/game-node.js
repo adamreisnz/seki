@@ -177,8 +177,16 @@ export default class GameNode {
       this.index = currentIndex
     }
 
-    //Reparent children to ensure variation roots are correct
-    children.forEach(child => child.setParent(this))
+    //Update the variation roots of the two children that changed position.
+    //NOTE: this used to re-parent every child, which walks each child's
+    //whole subtree twice over (once for the root, once for the variation
+    //root), even though a swap moves no other child and changes no parents
+    //and no roots. Only being the main variation or not can have changed,
+    //and only for the two swapped children.
+    child.updateVariationRoot()
+    if (existing !== child) {
+      existing.updateVariationRoot()
+    }
   }
 
   /**

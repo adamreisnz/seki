@@ -1,4 +1,4 @@
-import {describe, it, expect} from 'vitest'
+import {describe, it, expect, vi} from 'vitest'
 import GameNode from './game-node.js'
 import {stoneColors} from '../constants/stone.js'
 import {setupTypes} from '../constants/setup.js'
@@ -129,6 +129,54 @@ describe('GameNode', () => {
       const {a, b} = createTree()
       a.moveChild(b, 5)
       expect(a.getChild(0)).toBe(b)
+    })
+
+    it('swaps the variation roots along with the children', () => {
+
+      //NOTE: b starts as the main variation and c as a branch, so a swap has
+      //to turn c into the main variation and b into a branch, all the way
+      //down their subtrees
+      const {a, b, c} = createTree()
+      const belowB = move(3, 3)
+      belowB.appendToParent(b)
+
+      a.moveChild(c, 0)
+
+      expect(c.variationRoot).toBeFalsy()
+      expect(b.variationRoot).toBe(b)
+      expect(belowB.variationRoot).toBe(b)
+    })
+
+    it('leaves the children that did not move alone', () => {
+
+      //NOTE: a swap used to re-parent every child, walking each child's
+      //whole subtree twice over, when only the two swapped children can
+      //have changed
+      const {a, c} = createTree()
+      const d = move(3, 3, WHITE)
+      d.appendToParent(a)
+      const setParent = vi.spyOn(d, 'setParent')
+      const updateRoot = vi.spyOn(d, 'updateVariationRoot')
+
+      a.moveChild(c, 0)
+
+      expect(setParent).not.toHaveBeenCalled()
+      expect(updateRoot).not.toHaveBeenCalled()
+      expect(d.variationRoot).toBe(d)
+    })
+
+    it('keeps the variation roots straight when promoting deep down', () => {
+      const {root, a, b, c} = createTree()
+      const belowC = move(3, 3)
+      belowC.appendToParent(c)
+
+      a.moveChild(c, 0)
+      a.moveChild(b, 0)
+
+      expect(root.getChild(0)).toBe(a)
+      expect(b.variationRoot).toBeFalsy()
+      expect(c.variationRoot).toBe(c)
+      expect(belowC.variationRoot).toBe(c)
     })
   })
 
