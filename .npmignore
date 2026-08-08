@@ -4,3 +4,8 @@ node_modules
 dist
 demo
 .vscode
+coverage
+test
+embed
+vitest.config.js
+eslint.config.js
