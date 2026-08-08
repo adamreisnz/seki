@@ -179,3 +179,44 @@ describe('Player method extension', () => {
     expect(player.playMove).toBe(original)
   })
 })
+
+describe('loading a handicap game', () => {
+
+  const loadSgf = sgf => {
+    const player = new Player()
+    player.loadData(sgf)
+    return player.game
+  }
+
+  it('leaves a record that places its own handicap stones alone', () => {
+
+    //NOTE: the handicap check used to read whether the board had stones before
+    //rewinding, which is what applies the root node's setup instructions. It
+    //therefore always saw an empty board, and added the default star points on
+    //top of whatever the record had placed, editing the record in the process
+    const game = loadSgf('(;GM[1]FF[4]SZ[19]HA[2]AB[dd][pp];W[qf])')
+
+    expect(game.getRootNode().setup).toEqual([
+      {type: 'black', coords: [{x: 3, y: 3}, {x: 15, y: 15}]},
+    ])
+    expect(game.getPosition().stones.getAll()).toHaveLength(2)
+  })
+
+  it('still places the default stones when the record has none', () => {
+    const game = loadSgf('(;GM[1]FF[4]SZ[19]HA[2];W[qf])')
+    expect(game.getPosition().stones.getAll()).toHaveLength(2)
+    expect(game.hasStone(3, 15)).toBe(true)
+    expect(game.hasStone(15, 3)).toBe(true)
+  })
+
+  it('gives white the first move either way', () => {
+    expect(loadSgf('(;GM[1]FF[4]SZ[19]HA[2]AB[dd][pp])').getTurn()).toBe('white')
+    expect(loadSgf('(;GM[1]FF[4]SZ[19]HA[2])').getTurn()).toBe('white')
+  })
+
+  it('leaves a game without a handicap alone', () => {
+    const game = loadSgf('(;GM[1]FF[4]SZ[19];B[dd])')
+    expect(game.getPosition().hasStones()).toBe(false)
+    expect(game.getTurn()).toBe('black')
+  })
+})

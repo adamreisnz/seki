@@ -349,14 +349,21 @@ export default class Grid {
    */
   setSize(width, height) {
 
+    //Work out the actual dimensions first. NOTE: the check below used to run
+    //against the raw arguments, so a square grid sized with a single argument
+    //never matched its own height and cleared itself on every call, including
+    //ones that didn't change the size at all.
+    width = width || 0
+    height = height || width || 0
+
     //Only if anything changed
     if (this.width === width && this.height === height) {
       return
     }
 
     //Set
-    this.width = width || 0
-    this.height = height || width || 0
+    this.width = width
+    this.height = height
 
     //Clear grid
     this.grid.clear()

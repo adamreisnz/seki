@@ -149,9 +149,11 @@ export default class GameScore {
     else if (b > w) {
       return `B+${b - w}`
     }
-    else {
-      return '?'
-    }
+
+    //Equal totals is a draw, which is a result in its own right. NOTE: this
+    //used to report the unknown result instead, which is what a record with no
+    //result at all parses to.
+    return 'D'
   }
 
   /**

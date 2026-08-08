@@ -130,3 +130,32 @@ describe('Problem records', () => {
     expect('solution' in out.tree[1]).toBe(false)
   })
 })
+
+describe('ConvertFromJgf, invalid input', () => {
+
+  it('rejects a record with no tree', () => {
+
+    //NOTE: this used to read the length of undefined and surface as a
+    //TypeError, which tells a caller nothing about what was wrong with it
+    expect(() => new ConvertFromJgf().convert({game: {name: 'A game'}}))
+      .toThrow('no game tree found')
+  })
+
+  it('rejects a record with an empty tree', () => {
+    expect(() => new ConvertFromJgf().convert({tree: []}))
+      .toThrow('no game tree found')
+  })
+
+  it('rejects a tree that is not an array', () => {
+    expect(() => new ConvertFromJgf().convert({tree: {}}))
+      .toThrow('no game tree found')
+  })
+
+  it('still rejects nothing at all', () => {
+    expect(() => new ConvertFromJgf().convert()).toThrow('No JGF data supplied')
+  })
+
+  it('still rejects unparseable JSON', () => {
+    expect(() => new ConvertFromJgf().convert('{')).toThrow('Unable to parse JSON')
+  })
+})

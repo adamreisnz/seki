@@ -29,6 +29,8 @@ export const jgfPaths = [
   'rules.handicap',
   'rules.time',
   'rules.overtime',
+  'rules.numberOfPeriods',
+  'rules.timePerPeriod',
   'board.size',
   'board.width',
   'board.height',

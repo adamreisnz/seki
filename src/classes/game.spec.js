@@ -543,6 +543,23 @@ describe('Game format detection', () => {
     expect(() => Game.detectFormat('hello')).toThrow('Unknown data format')
   })
 
+  it('looks past leading whitespace and a byte order mark', () => {
+
+    //NOTE: this used to read the very first character of the raw string, so a
+    //file starting with a blank line or a BOM, which is most of them, was
+    //rejected as an unknown format
+    expect(Game.detectFormat('\n(;FF[4])')).toBe(kifuFormats.SGF)
+    expect(Game.detectFormat('  \t(;FF[4])')).toBe(kifuFormats.SGF)
+    expect(Game.detectFormat('﻿(;FF[4])')).toBe(kifuFormats.SGF)
+    expect(Game.detectFormat('\n{"tree":[{}]}')).toBe(kifuFormats.JGF)
+    expect(Game.detectFormat('﻿\\HS')).toBe(kifuFormats.GIB)
+  })
+
+  it('loads a record that starts with whitespace', () => {
+    const game = Game.fromData('\n\n(;GM[1]FF[4]SZ[19];B[dd])')
+    expect(game.getRootNode().hasChildren()).toBe(true)
+  })
+
   it('rejects an unsupported output format', () => {
     expect(() => new Game().toData('pdf')).toThrow('Unsupported data format')
   })
@@ -557,6 +574,30 @@ describe('Game reset', () => {
     expect(game.getCurrentMoveNumber()).toBe(0)
     expect(game.getPosition().hasStones()).toBe(false)
     expect(game.getRootNode().hasChildren()).toBe(false)
+  })
+
+  it('keeps the game info, as the name says', () => {
+
+    //NOTE: this used to run init() on its own, which wipes the info along with
+    //the tree, so a reset also threw away the board size, players and rules
+    const game = new Game({board: {size: 9}})
+    game.setGameName('A game')
+    game.setKomi(6.5)
+    game.setPlayer(BLACK, {name: 'Black player', rank: '1d'})
+    playMoves(game, [[2, 2]])
+
+    game.reset()
+
+    expect(game.getGameName()).toBe('A game')
+    expect(game.getKomi()).toBe(6.5)
+    expect(game.getPlayer(BLACK).name).toBe('Black player')
+    expect(game.getBoardSize()).toEqual({width: 9, height: 9})
+  })
+
+  it('resizes the position to the board size it kept', () => {
+    const game = new Game({board: {size: 9}})
+    game.reset()
+    expect(game.getPosition().width).toBe(9)
   })
 })
 
@@ -813,5 +854,331 @@ describe('Default game date', () => {
     const second = new Game().getGameDate()
     expect(first).toBe(second)
     expect(first).toBe(dateString())
+  })
+})
+
+describe('Game loaded from a converter', () => {
+
+  const sgf = '(;GM[1]FF[4]SZ[19];B[dd];W[pp];B[dp])'
+
+  it('points at the root of the tree it was given', () => {
+
+    //NOTE: setRootNode used to swap the tree without moving the current node,
+    //which was left pointing at the empty root the constructor made. The game
+    //then reported no next position at all and refused to navigate anywhere
+    const game = Game.fromSgf(sgf)
+    expect(game.isRootNode(game.getCurrentNode())).toBe(true)
+    expect(game.hasNextPosition()).toBe(true)
+  })
+
+  it('can be navigated straight away', () => {
+    const game = Game.fromSgf(sgf)
+    game.goToLastPosition()
+    expect(game.getCurrentMoveNumber()).toBe(3)
+    expect(game.hasStone(3, 3, BLACK)).toBe(true)
+    expect(game.hasStone(15, 15, WHITE)).toBe(true)
+  })
+
+  it('sizes the position to the board in the record', () => {
+    const game = Game.fromSgf('(;GM[1]FF[4]SZ[9];B[cc])')
+    expect(game.getPosition().width).toBe(9)
+    expect(game.getPosition().height).toBe(9)
+  })
+
+  it('applies the root setup instructions', () => {
+    const game = Game.fromSgf('(;GM[1]FF[4]SZ[19]AB[dd][pp]AW[dp];B[pd])')
+    expect(game.hasStone(3, 3, BLACK)).toBe(true)
+    expect(game.hasStone(15, 15, BLACK)).toBe(true)
+    expect(game.hasStone(3, 15, WHITE)).toBe(true)
+  })
+
+  it('starts with a clean path', () => {
+    const game = Game.fromSgf(sgf)
+    expect(game.getPathObject()).toEqual({moveNo: 0, branches: 0, path: {}})
+  })
+})
+
+describe('Game navigation over an illegal move', () => {
+
+  /**
+   * A record whose second move is played on the point the first one occupies,
+   * which no amount of navigating can make legal
+   */
+  const createBrokenGame = () => {
+    const game = new Game()
+    const root = game.getRootNode()
+    const first = new GameNode({move: {x: 3, y: 3, color: BLACK}})
+    const second = new GameNode({move: {x: 3, y: 3, color: WHITE}})
+    first.appendToParent(root)
+    second.appendToParent(first)
+    game.goToFirstPosition()
+    return game
+  }
+
+  it('refuses to advance onto it', () => {
+    const game = createBrokenGame()
+    game.goToNextPosition()
+    expect(game.goToNextPosition().isValid).toBe(false)
+  })
+
+  it('stays on the node it was on', () => {
+    const game = createBrokenGame()
+    game.goToNextPosition()
+    game.goToNextPosition()
+    expect(game.getCurrentMoveNumber()).toBe(1)
+  })
+
+  it('leaves the position stack matching the node', () => {
+
+    //NOTE: reverting used to go through goToPreviousNode(), which pops a
+    //position. Nothing had been pushed for the node being reverted, so what
+    //came off was the position of the node being returned to, and the first
+    //move vanished from the board while the game still said it was on it
+    const game = createBrokenGame()
+    game.goToNextPosition()
+    const positions = game.positions.length
+
+    game.goToNextPosition()
+
+    expect(game.positions.length).toBe(positions)
+    expect(game.hasStone(3, 3, BLACK)).toBe(true)
+  })
+
+  it('can still be navigated afterwards', () => {
+    const game = createBrokenGame()
+    game.goToNextPosition()
+    game.goToNextPosition()
+    game.goToPreviousPosition()
+    expect(game.getCurrentMoveNumber()).toBe(0)
+    expect(game.getPosition().hasStones()).toBe(false)
+  })
+
+  it('stops there when running to the last position', () => {
+    const game = createBrokenGame()
+    game.goToLastPosition()
+    expect(game.getCurrentMoveNumber()).toBe(1)
+    expect(game.hasStone(3, 3, BLACK)).toBe(true)
+  })
+})
+
+describe('Game.removeNode()', () => {
+
+  it('refuses to remove the root', () => {
+    const game = new Game()
+    expect(() => game.removeNode(game.getRootNode()))
+      .toThrow('Cannot remove root node')
+  })
+
+  it('steps back to the parent when removing the node we are on', () => {
+    const game = playMoves(new Game(), [[3, 3], [15, 15]])
+    game.removeNode(game.getCurrentNode())
+    expect(game.getCurrentMoveNumber()).toBe(1)
+  })
+
+  it('steps back when removing an ancestor of the node we are on', () => {
+
+    //NOTE: this used to only check for the current node itself, so removing
+    //anything above it left the game standing in a subtree that had just been
+    //cut off from the tree, with a move number counted through detached nodes
+    const game = playMoves(new Game(), [[3, 3], [15, 15], [3, 15]])
+    game.goToFirstPosition()
+    game.goToNextPosition()
+    const ancestor = game.getCurrentNode()
+    game.goToLastPosition()
+
+    game.removeNode(ancestor)
+
+    expect(game.isRootNode(game.getCurrentNode())).toBe(true)
+    expect(game.getCurrentMoveNumber()).toBe(0)
+    expect(game.getPosition().hasStones()).toBe(false)
+  })
+
+  it('leaves the current node alone when removing a different branch', () => {
+    const game = new Game()
+    game.playMove(3, 3)
+    game.goToPreviousPosition()
+    game.playMove(15, 15)
+    const variation = game.getCurrentNode()
+    game.goToPreviousPosition()
+    game.goToNextPosition(0)
+    const current = game.getCurrentNode()
+
+    game.removeNode(variation)
+
+    expect(game.isCurrentNode(current)).toBe(true)
+    expect(game.getCurrentMoveNumber()).toBe(1)
+  })
+})
+
+describe('Position change events for setup edits', () => {
+
+  it('reports the position the stone was added to', () => {
+
+    //NOTE: the event used to carry the position captured before the change,
+    //which for a new setup node is not the one left on the stack, so a
+    //listener rendering event.detail.position drew a board without the stone
+    const game = playMoves(new Game(), [[3, 3]])
+    const seen = []
+    game.on('positionChange', event => seen.push(event.detail.position))
+
+    game.addStone(5, 5, WHITE)
+
+    expect(seen).toHaveLength(1)
+    expect(seen[0].stones.has(5, 5)).toBe(true)
+    expect(seen[0]).toBe(game.getPosition())
+  })
+
+  it('reports the position the stone was removed from', () => {
+    const game = playMoves(new Game(), [[3, 3]])
+    const seen = []
+    game.on('positionChange', event => seen.push(event.detail.position))
+
+    game.removeStone(3, 3)
+
+    expect(seen).toHaveLength(1)
+    expect(seen[0].stones.has(3, 3)).toBe(false)
+    expect(seen[0]).toBe(game.getPosition())
+  })
+
+  it('fires when removing a stone the current node set up', () => {
+
+    //NOTE: this branch returned without an event at all, so undoing a setup
+    //stone left it drawn on the board
+    const game = new Game()
+    game.addStone(5, 5, WHITE)
+    const seen = []
+    game.on('positionChange', event => seen.push(event.detail.position))
+
+    game.removeStone(5, 5)
+
+    expect(seen).toHaveLength(1)
+    expect(seen[0].stones.has(5, 5)).toBe(false)
+  })
+})
+
+describe('Game.addMarkup()', () => {
+
+  it('ignores a second add of the same type on the same point', () => {
+
+    //NOTE: the guard used to hand the whole markup object to hasMarkup() where
+    //a type is expected, so it compared a type against an object and the
+    //early return never happened
+    const game = new Game()
+    game.addMarkup(3, 3, {type: 'label', text: 'A'})
+    game.addMarkup(3, 3, {type: 'label', text: 'B'})
+
+    expect(game.getMarkup(3, 3).text).toBe('A')
+    expect(game.getCurrentNode().markup).toEqual([
+      {type: 'label', coords: [{x: 3, y: 3, text: 'A'}]},
+    ])
+  })
+
+  it('still replaces markup of a different type', () => {
+    const game = new Game()
+    game.addMarkup(3, 3, {type: 'circle'})
+    game.addMarkup(3, 3, {type: 'square'})
+    expect(game.getMarkup(3, 3).type).toBe('square')
+  })
+})
+
+describe('Byo-yomi periods in the game info', () => {
+
+  it('comes back out of getInfo', () => {
+
+    //NOTE: setInfo reads these two but getInfo never wrote them, so a record
+    //with byo-yomi periods lost them on every save and reload
+    const game = new Game()
+    game.setNumberOfPeriods(5)
+    game.setTimePerPeriod(30)
+
+    const info = game.getInfo()
+
+    expect(info.rules.numberOfPeriods).toBe(5)
+    expect(info.rules.timePerPeriod).toBe(30)
+  })
+
+  it('survives a round trip through the info', () => {
+    const game = new Game()
+    game.setNumberOfPeriods(3)
+    game.setTimePerPeriod(60)
+
+    const copy = new Game(game.getInfo())
+
+    expect(copy.getNumberOfPeriods()).toBe(3)
+    expect(copy.getTimePerPeriod()).toBe(60)
+    expect(copy.getOvertime()).toBe('3x60 byo-yomi')
+  })
+
+  it('survives a round trip through SGF', () => {
+    const game = new Game()
+    game.setNumberOfPeriods(3)
+    game.setTimePerPeriod(60)
+
+    const copy = Game.fromSgf(game.toSgf())
+
+    expect(copy.getNumberOfPeriods()).toBe(3)
+    expect(copy.getTimePerPeriod()).toBe(60)
+  })
+
+  it('survives a round trip through JGF', () => {
+    const game = new Game()
+    game.setNumberOfPeriods(3)
+    game.setTimePerPeriod(60)
+    game.playMove(3, 3)
+
+    const copy = Game.fromJgf(game.toJgf())
+
+    expect(copy.getNumberOfPeriods()).toBe(3)
+    expect(copy.getTimePerPeriod()).toBe(60)
+  })
+
+  it('stays out of the SGF when there are none', () => {
+    expect(new Game().toSgf()).not.toMatch(/TC\[|TT\[/)
+  })
+})
+
+describe('Marking the path after a pass', () => {
+
+  it('marks the path the same way a played move does', () => {
+
+    //NOTE: playMove marked the path but passMove did not, so passing into a
+    //variation left the path flags describing the branch that was not taken
+    const game = new Game()
+    game.playMove(3, 3)
+    game.goToPreviousPosition()
+    game.passMove()
+
+    const [played, passed] = game.getRootNode().getChildren()
+    expect(passed.isPath).toBe(true)
+    expect(played.isPath).toBe(false)
+  })
+})
+
+describe('Game.resetCurrentPathIndex()', () => {
+
+  it('sends the next step back to the main variation', () => {
+    const game = new Game()
+    game.playMove(3, 3)
+    game.goToPreviousPosition()
+    game.playMove(15, 15)
+    game.goToPreviousPosition()
+
+    expect(game.getCurrentPathIndex()).toBe(1)
+    game.resetCurrentPathIndex()
+    expect(game.getCurrentPathIndex()).toBe(0)
+
+    game.goToNextPosition(game.getCurrentPathIndex())
+    expect(game.hasStone(3, 3, BLACK)).toBe(true)
+  })
+
+  it('leaves the choices that describe where we are in place', () => {
+    const game = new Game()
+    game.playMove(3, 3)
+    game.goToPreviousPosition()
+    game.playMove(15, 15)
+
+    game.resetCurrentPathIndex()
+
+    expect(game.getPathObject().path).toEqual({0: 1})
   })
 })

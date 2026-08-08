@@ -315,3 +315,37 @@ describe('Grid', () => {
     })
   })
 })
+
+describe('Grid.setSize()', () => {
+
+  it('keeps its contents when the size does not change', () => {
+    const grid = new Grid(19, 19)
+    grid.set(3, 3, 'black')
+    grid.setSize(19, 19)
+    expect(grid.get(3, 3)).toBe('black')
+  })
+
+  it('keeps its contents when re-sized with a single argument', () => {
+
+    //NOTE: the guard used to compare the raw arguments against the stored
+    //dimensions, so a square grid sized with one argument never matched its
+    //own height and threw away everything on it on every call
+    const grid = new Grid(19)
+    grid.set(3, 3, 'black')
+    grid.setSize(19)
+    expect(grid.get(3, 3)).toBe('black')
+  })
+
+  it('still clears when the size really changes', () => {
+    const grid = new Grid(19)
+    grid.set(3, 3, 'black')
+    grid.setSize(9)
+    expect(grid.getSize()).toEqual({width: 9, height: 9})
+    expect(grid.isEmpty()).toBe(true)
+  })
+
+  it('squares off a single dimension', () => {
+    expect(new Grid(9).getSize()).toEqual({width: 9, height: 9})
+    expect(new Grid(0, 9).getSize()).toEqual({width: 0, height: 9})
+  })
+})

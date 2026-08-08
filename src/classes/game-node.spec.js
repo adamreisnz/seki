@@ -324,8 +324,19 @@ describe('GameNode', () => {
     it('drops an entry once its last coordinate goes', () => {
       const node = new GameNode()
       node.addMarkup(1, 1, {type: 'circle'})
+      node.addMarkup(2, 2, {type: 'square'})
       node.removeMarkup(1, 1)
-      expect(node.markup).toEqual([])
+      expect(node.markup).toEqual([
+        {type: 'square', coords: [{x: 2, y: 2, text: undefined}]},
+      ])
+    })
+
+    it('stops reporting markup instructions once the last one goes', () => {
+      const node = new GameNode()
+      node.addMarkup(1, 1, {type: 'circle'})
+      node.removeMarkup(1, 1)
+      expect(node.markup).toBeUndefined()
+      expect(node.hasMarkupInstructions()).toBe(false)
     })
 
     it('removes all markup instructions', () => {
@@ -475,5 +486,32 @@ describe('Root node tracking through the tree', () => {
 
     a.appendToParent(root)
     expect(c.getRoot()).toBe(root)
+  })
+})
+
+describe('GameNode setup instructions', () => {
+
+  it('stops reporting setup instructions once the last one goes', () => {
+
+    //NOTE: an empty array still counts as having setup instructions, so
+    //leaving one behind made a node that had all its setup removed go on
+    //claiming it had some
+    const node = new GameNode()
+    node.addSetup(1, 1, {type: 'black'})
+    node.removeSetup(1, 1)
+
+    expect(node.setup).toBeUndefined()
+    expect(node.hasSetupInstructions()).toBe(false)
+    expect(node.hasInstructions()).toBe(false)
+  })
+
+  it('keeps the remaining entries when one of several goes', () => {
+    const node = new GameNode()
+    node.addSetup(1, 1, {type: 'black'})
+    node.addSetup(2, 2, {type: 'white'})
+    node.removeSetup(1, 1)
+
+    expect(node.setup).toEqual([{type: 'white', coords: [{x: 2, y: 2}]}])
+    expect(node.hasSetupInstructions()).toBe(true)
   })
 })

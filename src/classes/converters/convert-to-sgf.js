@@ -419,8 +419,13 @@ export default class ConvertToSgf extends Converter {
     }
     const x = this.encodeCoordinate(obj.x)
     const y = this.encodeCoordinate(obj.y)
+
+    //Label text is written into the value, so it has to be escaped here. It
+    //can't be escaped by the caller, which would mangle the coordinates.
+    //NOTE: without this a label containing a ] closed the property early and
+    //everything after it was lost when the file was read back in.
     if (isLabel && obj.text) {
-      return `${x}${y}:${obj.text}`
+      return `${x}${y}:${this.escapeSgf(String(obj.text))}`
     }
     return `${x}${y}`
   }

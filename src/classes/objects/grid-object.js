@@ -80,6 +80,15 @@ export default class GridObject {
   }
 
   /**
+   * Load the properties needed to draw at the given coordinates
+   *
+   * NOTE: subclasses override this to pull what they need off the theme. The
+   * stub belongs here because erase() below calls it, so without it the base
+   * class had a method that could only ever throw.
+   */
+  loadProperties(/*x, y*/) {} // eslint-disable-line no-empty-function
+
+  /**
    * Draw
    */
   draw(/*context, x, y*/) {} // eslint-disable-line no-empty-function
@@ -115,13 +124,30 @@ export default class GridObject {
   }
 
   /**
+   * Get the canvas translation to draw with
+   *
+   * NOTE: this has to be derived from the grid line width at the current cell
+   * size, which is what the grid layer itself translates by. Asking the theme
+   * for it without a line width evaluated the handler with no cell size, which
+   * happened to fall through to a width of 1 and a translation of half a pixel
+   * whatever the board was actually drawn at. Anything on the grid was then
+   * half a pixel out from the grid on larger boards.
+   */
+  getCanvasTranslate() {
+    const {board, theme} = this
+    const cellSize = board.getCellSize()
+    const lineWidth = theme.get('grid.lineWidth', cellSize)
+    return theme.canvasTranslate(lineWidth)
+  }
+
+  /**
    * Helper to prepare a context for drawing
    */
   prepareContext(context) {
 
     //Get data
-    const {theme, alpha} = this
-    const canvasTranslate = theme.canvasTranslate()
+    const {alpha} = this
+    const canvasTranslate = this.getCanvasTranslate()
 
     //Translate canvas
     context.translate(canvasTranslate, canvasTranslate)
@@ -138,8 +164,8 @@ export default class GridObject {
   restoreContext(context) {
 
     //Get data
-    const {theme, alpha} = this
-    const canvasTranslate = theme.canvasTranslate()
+    const {alpha} = this
+    const canvasTranslate = this.getCanvasTranslate()
 
     //Reset transparency
     if (alpha && alpha < 1) {

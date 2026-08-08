@@ -34,6 +34,13 @@ export default class ConvertFromJgf extends Converter {
       throw new Error(`Invalid JGF data supplied`)
     }
 
+    //A record without a tree has nothing to navigate. NOTE: this used to fall
+    //straight through into reading the length of undefined, which surfaced as
+    //a TypeError rather than as a parsing error the caller can act on.
+    if (!Array.isArray(jgf.tree) || jgf.tree.length === 0) {
+      throw new Error(`Invalid JGF data supplied: no game tree found`)
+    }
+
     //Initialize
     const game = new Game()
     const root = this.parseTree(jgf.tree)
