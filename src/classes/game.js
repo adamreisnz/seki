@@ -2254,9 +2254,12 @@ export default class Game extends Base {
       stoneColors.WHITE :
       stoneColors.BLACK
 
-    //Set turn
-    this.setTurn(turn)
+    //Reset the position stack first, then set the turn on the fresh position.
+    //NOTE: the other way around, initPositionStack throws away the position
+    //that was just given a turn and replaces it with a blank one, so the turn
+    //ends up back at black on a handicap game.
     this.initPositionStack()
+    this.setTurn(turn)
   }
 
   /**
