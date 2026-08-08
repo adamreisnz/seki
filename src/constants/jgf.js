@@ -23,6 +23,8 @@ export const jgfPaths = [
   'event.location',
   'event.round',
   'rules.ruleset',
+  'rules.allowSuicide',
+  'rules.disallowRepeats',
   'rules.komi',
   'rules.handicap',
   'rules.time',

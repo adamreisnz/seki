@@ -4,8 +4,11 @@ import {setupTypes} from './setup.js'
 import {scoreTypes} from './score.js'
 import {gameTypes} from './game.js'
 
-//The a character
+//The a and A characters. SGF coordinates run a-z for 0-25, and continue
+//with A-Z for 26-51 on boards larger than 26.
 export const charCodeA = 97
+export const charCodeAUpper = 65
+export const maxCoordinate = 51
 
 //Info properties map for general game properties
 export const sgfGameInfoMap = {

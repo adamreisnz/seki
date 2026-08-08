@@ -37,14 +37,14 @@ export function index(i) {
   return i
 }
 
-//Lowercase coordinates generator
+//Lowercase coordinates generator (a-z for 0-25, then A-Z for 26-51)
 export function lowercase(i) {
   let ch
   if (i < 26) {
     ch = aCharLc + i
   }
   else {
-    ch = aCharUc + i
+    ch = aCharUc + (i - 26)
   }
   return String.fromCharCode(ch)
 }
