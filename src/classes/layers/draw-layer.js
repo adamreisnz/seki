@@ -53,7 +53,29 @@ export default class DrawLayer extends BoardLayer {
   }
 
   /**
+   * Add a line: record it, then draw it
+   *
+   * Recording is what makes a line survive a redraw. The layer replays this.lines
+   * whenever it redraws, which happens on any resize, so a line that was only
+   * painted onto the canvas is erased the next time the board changes size.
+   */
+  addLine(fromX, fromY, toX, toY, color) {
+
+    //Record first, so a line added before the layer has a context or
+    //dimensions is still there to be painted by the next redraw
+    this.lines.push([fromX, fromY, toX, toY, color])
+
+    //Paint it now if we can
+    if (this.canDraw()) {
+      this.drawLine(fromX, fromY, toX, toY, color)
+    }
+  }
+
+  /**
    * Draw a line to given coordinates
+   *
+   * NOTE: this paints without recording, since draw() calls it for every line
+   * already held. Use addLine() to add a new one.
    */
   drawLine(fromX, fromY, toX, toY, color) {
 

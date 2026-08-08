@@ -753,12 +753,12 @@ export default class Board extends Base {
   }
 
   /**
-   * Draw line directly on board
+   * Draw line on board, keeping it across redraws
    */
   drawLine(fromX, fromY, toX, toY, color) {
     this
       .getLayer(boardLayerTypes.DRAW)
-      .drawLine(fromX, fromY, toX, toY, color)
+      .addLine(fromX, fromY, toX, toY, color)
   }
 
   /**
