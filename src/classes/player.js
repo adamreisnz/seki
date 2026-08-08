@@ -28,6 +28,7 @@ export default class Player extends Base {
   elements = {}
   modeHandlers = {}
   audioElements = {}
+  soundTimeouts = []
   activeMode
 
   //Mouse event helper vars
@@ -608,13 +609,7 @@ export default class Player extends Base {
 
       //Play capture sounds
       if (game.position.hasCaptures()) {
-        const num = Math.min(game.position.getTotalCaptureCount(), 10)
-        for (let i = 0; i < num; i++) {
-          setTimeout(() => {
-            this.stopSound('capture')
-            this.playSound('capture')
-          }, 150 + randomInt(30, 90) * i)
-        }
+        this.playCaptureSounds(game.position.getTotalCaptureCount())
       }
 
       //Process path change
@@ -781,9 +776,28 @@ export default class Player extends Base {
       currentHandler.deactivate()
     }
 
+    //Tear down every mode handler, not just the active one. Handlers are
+    //created up front and can hold timers and listeners of their own,
+    //regardless of whether they were ever activated.
+    for (const mode in this.modeHandlers) {
+      this.modeHandlers[mode].teardown()
+    }
+
     //Remove listeners
     this.teardownDocumentListeners()
     this.teardownElementListeners()
+
+    //Cancel pending sounds and release the audio elements
+    this.clearSoundTimeouts()
+    this.removeAudioElements()
+
+    //Destroy the board, which disconnects its resize observer
+    if (this.board) {
+      this.board.destroy()
+    }
+
+    //Flag as no longer bootstrapped
+    this.isBootstrapped = false
   }
 
   /**
@@ -813,6 +827,10 @@ export default class Player extends Base {
    * Create audio elements
    */
   createAudioElements() {
+
+    //Remove any existing elements first, so re-bootstrapping doesn't leave
+    //orphaned audio elements behind in the container
+    this.removeAudioElements()
 
     //Get audio config
     const sounds = this.getConfig('sounds')
@@ -855,6 +873,43 @@ export default class Player extends Base {
     catch {
       //Fall through
     }
+  }
+
+  /**
+   * Play a staggered run of capture sounds
+   *
+   * The timeouts are tracked so they can be cancelled on teardown, otherwise
+   * they fire against a player that is no longer on the page.
+   */
+  playCaptureSounds(count) {
+    const num = Math.min(count, 10)
+    for (let i = 0; i < num; i++) {
+      const timeout = setTimeout(() => {
+        this.stopSound('capture')
+        this.playSound('capture')
+      }, 150 + randomInt(30, 90) * i)
+      this.soundTimeouts.push(timeout)
+    }
+  }
+
+  /**
+   * Clear any pending sound timeouts
+   */
+  clearSoundTimeouts() {
+    this.soundTimeouts.forEach(timeout => clearTimeout(timeout))
+    this.soundTimeouts = []
+  }
+
+  /**
+   * Remove the audio elements from the container
+   */
+  removeAudioElements() {
+    for (const key in this.audioElements) {
+      const audioElement = this.audioElements[key]
+      audioElement.pause()
+      audioElement.remove()
+    }
+    this.audioElements = {}
   }
 
   /**

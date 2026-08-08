@@ -845,16 +845,50 @@ export default class Board extends Base {
    */
   setupResizeObserver() {
 
+    //Tear down any previous observer, so re-bootstrapping doesn't stack them
+    this.teardownResizeObserver()
+
     //Create throttled resize handler
     const fn = throttle(() => {
       this.recalculateDrawSize()
     }, 100)
 
-    //Create observer
-    const resizeObserver = new ResizeObserver(fn)
+    //Create observer and keep a reference, so it can be disconnected again
+    this.resizeObserver = new ResizeObserver(fn)
 
-    //Observe the document body
-    resizeObserver.observe(document.body)
+    //Observe the container the board sizes itself against. NOTE: this used to
+    //observe the document body, which both missed container only changes (a
+    //sidebar opening, a panel collapsing) and left a library owned observer
+    //attached to a global element for the lifetime of the page.
+    this.resizeObserver.observe(this.elements.container)
+  }
+
+  /**
+   * Tear down the resize observer
+   */
+  teardownResizeObserver() {
+    if (this.resizeObserver) {
+      this.resizeObserver.disconnect()
+      this.resizeObserver = null
+    }
+  }
+
+  /**
+   * Destroy the board, releasing everything it holds on to
+   */
+  destroy() {
+
+    //Debug
+    this.debug('destroying board')
+
+    //Disconnect the observer and clear the layers
+    this.teardownResizeObserver()
+    this.removeAll()
+    this.layers.clear()
+
+    //Drop element references
+    this.elements = {}
+    this.player = null
   }
 
   /**
