@@ -53,6 +53,7 @@
     "test:coverage": "vitest run --coverage",
     "check": "pnpm run lint && pnpm run test",
     "preversion": "pnpm run check",
+    "version": "node scripts/sync-version.js && git add src/constants/app.js",
     "postversion": "git push && git push --tags"
   },
   "devDependencies": {
