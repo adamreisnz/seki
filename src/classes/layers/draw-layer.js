@@ -22,9 +22,14 @@ export default class DrawLayer extends BoardLayer {
 
   /**
    * Set all lines at once
+   *
+   * Copies the given array, because the board passes in the live game
+   * position's lines, which the position keeps mutating. If the layer held
+   * that same array, addLine() would push every drawn line into the game
+   * position as well, which already records it itself.
    */
   setAll(lines) {
-    this.lines = lines
+    this.lines = lines.slice()
     this.redraw()
   }
 

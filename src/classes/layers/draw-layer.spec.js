@@ -103,5 +103,24 @@ describe('DrawLayer', () => {
 
       expect(linesOn(board)).toEqual([])
     })
+
+    it('does not mutate the array a position set its lines from', () => {
+
+      //The board passes the live game position's lines array into setAll.
+      //If the layer keeps that same reference, drawing pushes each line into
+      //the game position too, which already records it itself — so one drawn
+      //stroke would leave two entries in the position.
+      const board = createBoard()
+      const positionLines = [[0, 0, 1, 1, 'blue']]
+
+      board.setAll(boardLayerTypes.DRAW, positionLines)
+      board.drawLine(2, 2, 5, 5, 'orange')
+
+      expect(positionLines).toEqual([[0, 0, 1, 1, 'blue']])
+      expect(linesOn(board)).toEqual([
+        [0, 0, 1, 1, 'blue'],
+        [2, 2, 5, 5, 'orange'],
+      ])
+    })
   })
 })
