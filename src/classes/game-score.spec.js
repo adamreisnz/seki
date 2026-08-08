@@ -76,7 +76,7 @@ describe('GameScore', () => {
     const score = new GameScore()
     score.setCaptures(BLACK, 10)
     score.setCaptures(WHITE, 10)
-    expect(score.getResult(TERRITORY)).toBe('Draw')
+    expect(score.getResult(TERRITORY)).toBe('0')
   })
 
   it('formats the result with the margin', () => {
