@@ -76,29 +76,36 @@ export default class ConvertToJgf extends Converter {
    */
   addNodeToContainer(node, container) {
 
-    //Variations node
-    if (node.hasMultipleChildren()) {
+    //Convert this node and add it to the container. This happens for every
+    //node, including ones that fork, otherwise a forking node's own move,
+    //markup and comments are dropped from the output.
+    container.push(this.parseNode(node))
 
-      //Create variations node and add to container
-      const jgfVariationsNode = {variations: []}
-      container.push(jgfVariationsNode)
+    //Get children
+    const {children} = node
 
-      //Loop child (variation) nodes
-      for (const child of node.children) {
-        this.addNodeToContainer(child, jgfVariationsNode.variations)
-      }
-
-      //Done
+    //Single child, it simply continues the current sequence
+    if (children.length === 1) {
+      this.addNodeToContainer(children[0], container)
       return
     }
 
-    //Convert node and add to container
-    const jgfNode = this.parseNode(node)
-    container.push(jgfNode)
+    //No children, we're at the end of this sequence
+    if (children.length === 0) {
+      return
+    }
 
-    //Process next child
-    if (node.children.length === 1) {
-      this.addNodeToContainer(node.children[0], container)
+    //Multiple children, so a variations node is appended to the sequence.
+    //Each variation is its own container of nodes, per the JGF spec, and not
+    //a bare node, otherwise the result cannot be parsed back in.
+    const jgfVariationsNode = {variations: []}
+    container.push(jgfVariationsNode)
+
+    //Loop child (variation) nodes
+    for (const child of children) {
+      const variation = []
+      jgfVariationsNode.variations.push(variation)
+      this.addNodeToContainer(child, variation)
     }
   }
 
@@ -110,9 +117,14 @@ export default class ConvertToJgf extends Converter {
     //Create JGF node
     const jgfNode = {}
 
-    //Copy over relevant node paths
+    //Copy over relevant node paths. Empty values are skipped so that nodes
+    //don't end up carrying keys with no content, which mirrors what the
+    //reverse converter does when reading them back in.
     for (const path of jgfNodePaths) {
-      set(jgfNode, path, copy(node[path]))
+      const value = get(node, path)
+      if (value !== undefined && value !== null && value !== '') {
+        set(jgfNode, path, copy(value))
+      }
     }
 
     //Move
