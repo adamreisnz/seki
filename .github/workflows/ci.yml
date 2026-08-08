@@ -1,0 +1,76 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+#Cancel an in progress run when new commits are pushed to the same branch
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: Lint and test (node ${{ matrix.node }})
+    runs-on: ubuntu-latest
+
+    strategy:
+      #Run every version even when one fails, so a version specific failure is
+      #distinguishable from a genuine one
+      fail-fast: false
+      matrix:
+        node: [22.x, 24.x]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      #Reads the packageManager field from package.json, so the version stays
+      #pinned in one place
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm run lint
+
+      - name: Test
+        run: pnpm run test
+
+  package:
+    name: Verify the published package
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.x
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      #Specs sit next to the code they cover, so they are one .npmignore entry
+      #away from being published. This fails the build if that ever slips.
+      - name: Check no specs are published
+        run: |
+          npm pack --dry-run --json > /tmp/pack.json
+          if grep -q '\.spec\.js' /tmp/pack.json; then
+            echo "Spec files found in the package:"
+            grep -o '"path": "[^"]*\.spec\.js"' /tmp/pack.json
+            exit 1
+          fi
+          echo "No spec files in the package"
+
+      #The entry point has to actually load, which a broken import in a file
+      #no spec happens to reach would not otherwise catch
+      - name: Check the entry point imports
+        run: node -e "import('./src/index.js').then(m => console.log('Entry point exports', Object.keys(m).length, 'names'))"
