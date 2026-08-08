@@ -492,15 +492,6 @@ export default class GameNode {
   }
 
   /**
-   * Check if given coordinates are from one of the next child move nodes
-   */
-  isMoveVariation(x, y) {
-    const {children} = this
-    return children
-      .some(child => child.hasMove(x, y))
-  }
-
-  /**
    * Get the move child node index for the given coordinates
    */
   getMoveVariationIndex(x, y) {
@@ -848,12 +839,10 @@ export default class GameNode {
     //Remove existing setup on same coords first
     this.removeSetup(x, y)
 
-    //No setup instructions container in this node?
-    if (typeof this.setup === 'undefined') {
-      this.setup = []
-    }
-
-    //Is this a move node?
+    //Is this a move node? Setup instructions can't live on a move node, so
+    //a new child node is created to hold them. This is checked before the
+    //container is initialised, otherwise the move node is left with an empty
+    //setup array and reports that it has setup instructions.
     if (this.isMove()) {
 
       //Create a new node
@@ -865,6 +854,11 @@ export default class GameNode {
 
       //Return the newly created node index
       return i
+    }
+
+    //No setup instructions container in this node?
+    if (typeof this.setup === 'undefined') {
+      this.setup = []
     }
 
     //Find entry for this type

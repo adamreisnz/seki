@@ -1,5 +1,4 @@
 import PlayerModeReplay from './player-mode-replay.js'
-import {randomInt} from '../../helpers/util.js'
 import {playerModes} from '../../constants/player.js'
 
 /**
@@ -69,22 +68,13 @@ export default class PlayerModePlay extends PlayerModeReplay {
   playMove(x, y) {
 
     //Get player
-    const {player, board, game} = this
+    const {player, board} = this
 
-    //Play move
+    //Play move. NOTE: the player takes care of the move and capture sounds,
+    //so this must not play them again or they end up doubled up.
     const outcome = player.playMove(x, y)
     if (outcome.isValid) {
       board.clearHoverLayer()
-      player.playSound('move')
-      if (game.position.hasCaptures()) {
-        const num = Math.min(game.position.getTotalCaptureCount(), 10)
-        for (let i = 0; i < num; i++) {
-          setTimeout(() => {
-            player.stopSound('capture')
-            player.playSound('capture')
-          }, 150 + randomInt(30, 90) * i)
-        }
-      }
     }
   }
 

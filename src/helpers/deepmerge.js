@@ -46,8 +46,19 @@ function clone(value) {
     ? deepmerge(emptyTarget(value), value)
     : value
 }
+
+/**
+ * Arrays are replaced wholesale rather than concatenated.
+ *
+ * NOTE: this deviates from the upstream deepmerge default, which
+ * concatenates. Everything merged in this library is configuration, and for
+ * configuration a concatenating merge means a caller can only ever add to a
+ * default array, never replace or trim one. Passing availableModes: ['replay']
+ * would leave every default mode available, and a custom set of mouse
+ * bindings would be applied on top of the defaults rather than instead of them.
+ */
 function arrayMerge(target, source) {
-  return target.concat(source).map(element => clone(element))
+  return source.map(element => clone(element))
 }
 function propertyIsOnObject(object, property) {
   try {

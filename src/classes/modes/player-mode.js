@@ -27,6 +27,17 @@ export default class PlayerMode extends Base {
   init() {} // eslint-disable-line no-empty-function
 
   /**
+   * Tear down this mode handler
+   *
+   * Called for every handler when the player is torn down, whether or not
+   * the handler was ever activated. Subclasses override this to cancel any
+   * timers they own, and should call the parent method.
+   */
+  teardown() {
+    this.removeEventListeners()
+  }
+
+  /**
    * Game virtual shortcut
    */
   get game() {
@@ -44,7 +55,7 @@ export default class PlayerMode extends Base {
    * Whether this mode is active
    */
   get isActive() {
-    return (this.player.mode === this.mode)
+    return this.player.isModeActive(this.mode)
   }
 
   /**************************************************************************

@@ -244,7 +244,7 @@ export default class BoardLayer {
     const {board, context} = this
 
     //Can only draw when we have dimensions and context
-    if (!context || board.drawWidth === 0 || board.drawheight === 0) {
+    if (!context || board.drawWidth === 0 || board.drawHeight === 0) {
       return false
     }
 

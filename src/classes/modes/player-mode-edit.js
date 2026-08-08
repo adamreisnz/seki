@@ -60,6 +60,34 @@ export default class PlayerModeEdit extends PlayerModeReplay {
   }
 
   /**
+   * Tear down
+   */
+  teardown() {
+    super.teardown()
+    this.flushLineAddBuffer()
+  }
+
+  /**
+   * Flush any buffered free draw lines and clear the buffer timeout
+   */
+  flushLineAddBuffer() {
+
+    //Nothing buffered
+    if (!this.lineAddTimeout) {
+      return
+    }
+
+    //Clear the timeout and emit whatever was buffered, so lines that were
+    //drawn just before teardown aren't silently lost
+    clearTimeout(this.lineAddTimeout)
+    this.lineAddTimeout = null
+    if (this.linesAdded.length > 0) {
+      this.triggerEditEvent('addLines', this.linesAdded)
+      this.linesAdded = []
+    }
+  }
+
+  /**
    * Extend the player with new methods
    */
   extendPlayer() {
@@ -360,9 +388,9 @@ export default class PlayerModeEdit extends PlayerModeReplay {
     }
 
     //Process
-    this.supressEditEvent = true
+    this.suppressEditEvent = true
     this[action](...args)
-    this.supressEditEvent = false
+    this.suppressEditEvent = false
 
     //Free draw event, done, as this is drawn directly onto the board
     if (action === 'addLine' || action === 'addLines') {
@@ -999,7 +1027,7 @@ export default class PlayerModeEdit extends PlayerModeReplay {
    * Trigger edit event
    */
   triggerEditEvent(action, ...args) {
-    if (!this.supressEditEvent) {
+    if (!this.suppressEditEvent) {
       this.player.triggerEvent('edit', {action, args})
     }
   }

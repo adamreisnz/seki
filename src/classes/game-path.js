@@ -30,10 +30,14 @@ export default class GamePath {
   }
 
   /**
-   * Remember path choice at current move number
+   * Remember the path choice made when stepping away from a move number
+   *
+   * NOTE: a choice is stored against the move number it was made *at*, being
+   * the step from that move to the next one. So reaching move number n is
+   * described by the choices at 0 through n - 1.
    */
-  rememberPathChoice(i) {
-    const {moveNo, path} = this
+  rememberPathChoice(moveNo, i) {
+    const {path} = this
     if (i > 0) {
       path[moveNo] = i
       this.branches++
@@ -41,10 +45,10 @@ export default class GamePath {
   }
 
   /**
-   * Forget path choice at current move number
+   * Forget the path choice made at a given move number
    */
-  forgetPathChoice() {
-    const {moveNo, path} = this
+  forgetPathChoice(moveNo) {
+    const {path} = this
     if (path[moveNo] > 0) {
       delete path[moveNo]
       this.branches--
@@ -56,8 +60,8 @@ export default class GamePath {
    */
   advance(i) {
 
-    //Remember path choice
-    this.rememberPathChoice(i)
+    //Remember the choice made at the move we're stepping away from
+    this.rememberPathChoice(this.moveNo, i)
 
     //Increment move no
     this.moveNo++
@@ -74,8 +78,11 @@ export default class GamePath {
       return
     }
 
-    //Forget path choice
-    this.forgetPathChoice()
+    //Forget the choice that got us here, which was made one move back.
+    //NOTE: this used to forget the choice at the current move number, which
+    //is one too high, so stepping back out of a variation left the choice in
+    //place and the path went on describing the variation.
+    this.forgetPathChoice(moveNo - 1)
 
     //Decrement move
     this.moveNo--
@@ -89,10 +96,12 @@ export default class GamePath {
     //Get data
     const {moveNo, path} = this
 
-    //Less than our current move? We need to erase any paths above the move number
+    //Less than our current move? We need to erase any choices from the target
+    //move onwards. The choice stored at the target move number is the step
+    //away from it, which is exactly what jumping back there undoes.
     if (no < moveNo) {
       for (const i in path) {
-        if (i > no) {
+        if (Number(i) >= no) {
           delete path[i]
           this.branches--
         }

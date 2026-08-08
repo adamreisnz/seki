@@ -4,6 +4,8 @@ import {get} from '../../helpers/object.js'
 import {markupTypes} from '../../constants/markup.js'
 import {
   charCodeA,
+  charCodeAUpper,
+  maxCoordinate,
   sgfStoneColors,
   sgfGameInfoMap,
   sgfGameTypes,
@@ -354,7 +356,7 @@ export default class ConvertToSgf extends Converter {
     for (const entry of score) {
       const color = this.convertColor(entry.color)
       const key = `T${color}`
-      const coords = this.extractCoordinates(entry.coordinates)
+      const coords = this.extractCoordinates(entry.coords)
       sgf += this.makeSgfGroup(key, coords)
     }
 
@@ -415,15 +417,35 @@ export default class ConvertToSgf extends Converter {
     if (Array.isArray(obj)) {
       return obj.map(entry => this.extractCoordinates(entry, isLabel))
     }
-    if (obj.x < 0 || obj.y < 0) {
-      throw new Error(`Invalid coordinates: (${obj.x},${obj.y})`)
-    }
-    const x = String.fromCharCode(charCodeA + obj.x)
-    const y = String.fromCharCode(charCodeA + obj.y)
+    const x = this.encodeCoordinate(obj.x)
+    const y = this.encodeCoordinate(obj.y)
     if (isLabel && obj.text) {
       return `${x}${y}:${obj.text}`
     }
     return `${x}${y}`
+  }
+
+  /**
+   * Encode a single coordinate as an SGF coordinate character
+   *
+   * SGF runs a-z for 0-25 and continues with A-Z for 26-51, so anything past
+   * 25 has to switch alphabets rather than carrying on past 'z' into
+   * punctuation.
+   */
+  encodeCoordinate(i) {
+
+    //Validate
+    if (!Number.isInteger(i) || i < 0 || i > maxCoordinate) {
+      throw new Error(`Invalid coordinate: ${i}`)
+    }
+
+    //Lowercase a-z covers 0-25
+    if (i < 26) {
+      return String.fromCharCode(charCodeA + i)
+    }
+
+    //Uppercase A-Z covers 26-51
+    return String.fromCharCode(charCodeAUpper + i - 26)
   }
 
   /**
