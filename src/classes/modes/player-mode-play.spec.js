@@ -76,19 +76,21 @@ describe('Play mode clicks', () => {
 
 describe('Play mode listeners', () => {
 
-  it('listens for everything replay mode does, plus its own', () => {
+  it('listens for what keeps the display fresh, but not navigation', () => {
 
-    //NOTE: this used to list only its own three, which left a game being
-    //played with markers that were rendered once on activation and never
-    //again, and with no keyboard binding doing anything at all
-    const {player, mode} = createPlayer()
-    const replay = player.getModeHandler(playerModes.REPLAY)
+    //NOTE: the display listeners are what keep the last move marker moving
+    //with the game as it is played. The keyboard and wheel listeners are
+    //deliberately absent, as a game being played is not a record to navigate
+    const {mode} = createPlayer()
+    const events = Object.keys(mode.eventListenersMap)
 
-    for (const event of Object.keys(replay.eventListenersMap)) {
-      expect(Object.keys(mode.eventListenersMap)).toContain(event)
+    for (const event of ['pathChange', 'variationChange', 'gameLoad', 'config']) {
+      expect(events).toContain(event)
     }
-    expect(Object.keys(mode.eventListenersMap)).toContain('gridEnter')
-    expect(Object.keys(mode.eventListenersMap)).toContain('gridLeave')
+    expect(events).toContain('gridEnter')
+    expect(events).toContain('gridLeave')
+    expect(events).not.toContain('keydown')
+    expect(events).not.toContain('wheel')
   })
 
   it('renders the markers again after every move', () => {
@@ -111,7 +113,7 @@ describe('Play mode listeners', () => {
     expect(spy).toHaveBeenCalled()
   })
 
-  it('acts on a keyboard binding', () => {
+  it('ignores keyboard bindings, as played games are not navigated', () => {
     const {player} = createPlayer()
     player.setConfig('keyBindings', [
       {key: 'ArrowLeft', action: playerActions.GO_TO_PREV_POSITION},
@@ -130,7 +132,19 @@ describe('Play mode listeners', () => {
       },
     })
 
-    expect(player.game.getCurrentMoveNumber()).toBe(1)
+    expect(player.game.getCurrentMoveNumber()).toBe(2)
+  })
+
+  it('ignores the mouse wheel for the same reason', () => {
+    const {player} = createPlayer()
+    clickAt(player, 3, 3)
+    clickAt(player, 15, 15)
+
+    player.triggerEvent('wheel', {
+      nativeEvent: {deltaY: 1, preventDefault: vi.fn()},
+    })
+
+    expect(player.game.getCurrentMoveNumber()).toBe(2)
   })
 
   it('stops listening when another mode takes over', () => {
