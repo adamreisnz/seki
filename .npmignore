@@ -1,11 +1,11 @@
 .DS_Store
 *.log
+*.spec.js
 node_modules
 dist
 demo
 .vscode
 coverage
-test
 embed
 vitest.config.js
 eslint.config.js

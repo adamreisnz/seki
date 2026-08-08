@@ -1,6 +1,5 @@
 import {describe, it, expect, beforeEach, afterEach, vi} from 'vitest'
-import EventHandler from '../src/classes/event-handler.js'
-import {throttle} from '../src/helpers/util.js'
+import EventHandler from './event-handler.js'
 
 describe('EventHandler', () => {
 
@@ -164,76 +163,5 @@ describe('EventHandler', () => {
       expect(a).not.toHaveBeenCalled()
       expect(b).toHaveBeenCalledTimes(1)
     })
-  })
-})
-
-describe('throttle()', () => {
-
-  beforeEach(() => vi.useFakeTimers())
-  afterEach(() => vi.useRealTimers())
-
-  it('runs the first call immediately', () => {
-    const fn = vi.fn()
-    throttle(fn, 100)('a')
-    expect(fn).toHaveBeenCalledExactlyOnceWith('a')
-  })
-
-  it('collapses calls made during a window into one trailing call', () => {
-    const fn = vi.fn()
-    const throttled = throttle(fn, 100)
-
-    throttled('a')
-    throttled('b')
-    throttled('c')
-    expect(fn).toHaveBeenCalledTimes(1)
-
-    vi.advanceTimersByTime(100)
-    expect(fn).toHaveBeenCalledTimes(2)
-  })
-
-  it('does not drop the final call', () => {
-    const fn = vi.fn()
-    const throttled = throttle(fn, 100)
-
-    throttled('first')
-    throttled('second')
-    throttled('final')
-    vi.advanceTimersByTime(500)
-
-    //The last set of arguments has to win, otherwise a resize settles on a
-    //stale size
-    expect(fn).toHaveBeenLastCalledWith('final')
-  })
-
-  it('stays idle when nothing came in during the window', () => {
-    const fn = vi.fn()
-    throttle(fn, 100)('a')
-    vi.advanceTimersByTime(1000)
-    expect(fn).toHaveBeenCalledTimes(1)
-  })
-
-  it('runs immediately again after an idle window', () => {
-    const fn = vi.fn()
-    const throttled = throttle(fn, 100)
-
-    throttled('a')
-    vi.advanceTimersByTime(200)
-    throttled('b')
-
-    expect(fn).toHaveBeenCalledTimes(2)
-    expect(fn).toHaveBeenLastCalledWith('b')
-  })
-
-  it('keeps separate state per throttled version of the same function', () => {
-    const fn = vi.fn()
-    const a = throttle(fn, 100)
-    const b = throttle(fn, 100)
-
-    a('a')
-    b('b')
-
-    //Sharing state via the function object meant the second wrapper saw the
-    //first one's window and swallowed the call
-    expect(fn).toHaveBeenCalledTimes(2)
   })
 })

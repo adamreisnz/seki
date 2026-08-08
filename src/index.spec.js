@@ -1,5 +1,5 @@
 import {describe, it, expect} from 'vitest'
-import * as seki from '../src/index.js'
+import * as seki from './index.js'
 
 /**
  * Smoke test for the public entry point. This guards against a class being
