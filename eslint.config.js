@@ -8,8 +8,11 @@ export default [
       'node_modules',
       'dist',
       'coverage',
+      '.claude',
       '*.html',
     ],
+  },
+  {
     languageOptions: {
       ecmaVersion: 'latest',
       sourceType: 'module',
