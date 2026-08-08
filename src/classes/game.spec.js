@@ -17,8 +17,6 @@ const playMoves = (game, moves) => {
   return game
 }
 
-const {BLACK, WHITE} = stoneColors
-
 /**
  * Build root -> A(3,3), where A forks into B(15,15) on the main line and
  * C(15,3) as a variation
