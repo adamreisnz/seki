@@ -743,12 +743,37 @@ export default class GameNode {
   }
 
   /**
-   * Mark path along whole nodes tree
+   * Mark the chain of path indices from this node as the current path
+   *
+   * NOTE: the marks of the previous path are cleared first, by following the
+   * marks themselves, so both walks visit a single chain of nodes. This used
+   * to recurse into every node of the tree to switch the flags off, which
+   * made each marking cost the size of the tree rather than the length of
+   * the path.
    */
-  markPath(isPath = true) {
-    const {children, index} = this
-    this.isPath = isPath
-    children.forEach((child, i) => child.markPath(isPath && i === index))
+  markPath() {
+
+    //Clear the marks of the previous path
+    this.clearPathMarks()
+
+    //Mark the chain of path indices
+    let node = this
+    while (node) {
+      node.isPath = true
+      node = node.getPathNode()
+    }
+  }
+
+  /**
+   * Clear the path marks from this node down, following the marks themselves
+   */
+  clearPathMarks() {
+    this.isPath = false
+    for (const child of this.children) {
+      if (child.isPath) {
+        child.clearPathMarks()
+      }
+    }
   }
 
   /**************************************************************************

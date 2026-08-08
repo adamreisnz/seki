@@ -1976,7 +1976,9 @@ export default class Game extends Base {
    */
   goToNextPosition(i) {
     if (this.goToNextNode(i)) {
-      return this.processCurrentNode()
+      const outcome = this.processCurrentNode()
+      this.root.markPath()
+      return outcome
     }
     return new ErrorOutcome(`No next position`)
   }
@@ -1986,6 +1988,7 @@ export default class Game extends Base {
    */
   goToPreviousPosition() {
     if (this.goToPreviousNode()) {
+      this.root.markPath()
       return new ValidOutcome()
     }
     return new ErrorOutcome(`No previous position`)
@@ -2006,6 +2009,7 @@ export default class Game extends Base {
         break
       }
     }
+    this.root.markPath()
   }
 
   /**
@@ -2118,6 +2122,9 @@ export default class Game extends Base {
         break
       }
     }
+
+    //Mark the path once for the whole walk
+    this.root.markPath()
   }
 
   /**
@@ -2133,6 +2140,7 @@ export default class Game extends Base {
         break
       }
     }
+    this.root.markPath()
   }
 
   /**
@@ -2144,6 +2152,7 @@ export default class Game extends Base {
         break
       }
     }
+    this.root.markPath()
   }
 
   /**
@@ -2159,6 +2168,7 @@ export default class Game extends Base {
         break
       }
     }
+    this.root.markPath()
   }
 
   /**
@@ -2170,6 +2180,7 @@ export default class Game extends Base {
         break
       }
     }
+    this.root.markPath()
   }
 
   /**
@@ -2318,9 +2329,10 @@ export default class Game extends Base {
     }
 
     //Retreat path and set pointer to current node
+    //NOTE: marking the path is left to the public navigation operation that
+    //called this, so a walk over many nodes marks once rather than per node
     this.path.retreat()
     this.node = node.getParent()
-    this.root.markPath()
 
     //Remove last position from stack
     this.removeLastPositionFromStack()
@@ -2358,11 +2370,12 @@ export default class Game extends Base {
   processCurrentNode(revertPositionOnFail = true) {
 
     //Get data
-    const {node, root, position} = this
+    const {node, position} = this
 
     //Make this node the path node on its parent
+    //NOTE: marking the path is left to the public navigation operation that
+    //called this, so a walk over many nodes marks once rather than per node
     node.setAsParentPathNode()
-    root.markPath()
 
     //Initialize new position
     const newPosition = position.clone()
@@ -2388,7 +2401,6 @@ export default class Game extends Base {
         if (revertPositionOnFail && node.hasParent()) {
           this.path.retreat()
           this.node = node.getParent()
-          root.markPath()
         }
 
         //Return failure reason

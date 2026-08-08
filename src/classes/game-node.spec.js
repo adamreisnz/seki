@@ -515,3 +515,51 @@ describe('GameNode setup instructions', () => {
     expect(node.hasSetupInstructions()).toBe(true)
   })
 })
+
+describe('GameNode.markPath()', () => {
+
+  /**
+   * A root with a main line of two nodes and a variation next to it
+   */
+  const createTree = () => {
+    const root = new GameNode()
+    const main = new GameNode()
+    const variation = new GameNode()
+    const leaf = new GameNode()
+    main.appendToParent(root)
+    variation.appendToParent(root)
+    leaf.appendToParent(main)
+    return {root, main, variation, leaf}
+  }
+
+  it('marks the chain of path indices', () => {
+    const {root, main, variation, leaf} = createTree()
+    root.markPath()
+
+    expect(root.isPath).toBe(true)
+    expect(main.isPath).toBe(true)
+    expect(leaf.isPath).toBe(true)
+    expect(variation.isPath).toBeFalsy()
+  })
+
+  it('clears the previous chain when the path moves', () => {
+
+    //NOTE: the marking used to visit every node of the tree to switch the
+    //old flags off. It now follows the marks of the previous path instead,
+    //so this pins that the old chain really is cleared all the way down
+    const {root, main, variation, leaf} = createTree()
+    root.markPath()
+    root.setPathIndex(1)
+    root.markPath()
+
+    expect(variation.isPath).toBe(true)
+    expect(main.isPath).toBe(false)
+    expect(leaf.isPath).toBe(false)
+  })
+
+  it('marks a lone root', () => {
+    const root = new GameNode()
+    root.markPath()
+    expect(root.isPath).toBe(true)
+  })
+})
