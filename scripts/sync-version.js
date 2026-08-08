@@ -1,20 +1,20 @@
 //Syncs the appVersion constant with the package.json version. Runs as the
 //`version` lifecycle script, after `pnpm version` bumps package.json but
 //before it creates the release commit, so both files land in the same commit.
-import {readFileSync, writeFileSync} from 'node:fs'
+import {readFileSync} from 'node:fs'
+import {replaceInFile} from 'replace-in-file'
 
 const {version} = JSON.parse(readFileSync('./package.json', 'utf8'))
-const file = './src/constants/app.js'
-const contents = readFileSync(file, 'utf8')
-const updated = contents.replace(
-  /appVersion = '[^']+'/,
-  `appVersion = '${version}'`
-)
+const [result] = await replaceInFile({
+  files: 'src/constants/app.js',
+  from: /appVersion = '[^']+'/,
+  to: `appVersion = '${version}'`,
+  countMatches: true,
+})
 
-if (!updated.includes(`appVersion = '${version}'`)) {
-  console.error(`Could not sync appVersion in ${file}`)
+if (!result?.numMatches) {
+  console.error('Could not sync appVersion in src/constants/app.js')
   process.exit(1)
 }
 
-writeFileSync(file, updated)
-console.log(`Synced appVersion to ${version} in ${file}`)
+console.log(`Synced appVersion to ${version} in ${result.file}`)
