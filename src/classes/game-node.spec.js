@@ -424,3 +424,56 @@ describe('GameNode', () => {
     })
   })
 })
+
+describe('Root node tracking through the tree', () => {
+
+  it('gives every descendant the root of the tree it is attached to', () => {
+    const {root, a, b} = createTree()
+    expect(a.getRoot()).toBe(root)
+    expect(b.getRoot()).toBe(root)
+  })
+
+  it('carries the root down to a grafted subtree', () => {
+    const root = new GameNode()
+    const a = move(0, 0)
+    const b = move(1, 1, WHITE)
+    b.appendToParent(a)
+
+    //a still stands alone, so it is its own root and so is everything below it
+    expect(b.getRoot()).toBe(a)
+
+    a.appendToParent(root)
+    expect(b.getRoot()).toBe(root)
+  })
+
+  it('releases a detached subtree from the old root', () => {
+    const {root, a, b} = createTree()
+    a.detachFromParent()
+
+    expect(a.getRoot()).toBe(a)
+    expect(a.isRoot()).toBe(true)
+    expect(b.getRoot()).toBe(a)
+    expect(b.getRoot()).not.toBe(root)
+  })
+
+  it('re-roots a subtree moved between trees', () => {
+    const {a, b} = createTree()
+    const otherRoot = new GameNode()
+
+    a.appendToParent(otherRoot)
+    expect(a.getRoot()).toBe(otherRoot)
+    expect(b.getRoot()).toBe(otherRoot)
+  })
+
+  it('reaches more than one level down', () => {
+    const root = new GameNode()
+    const a = move(0, 0)
+    const b = move(1, 1, WHITE)
+    const c = move(2, 2)
+    c.appendToParent(b)
+    b.appendToParent(a)
+
+    a.appendToParent(root)
+    expect(c.getRoot()).toBe(root)
+  })
+})

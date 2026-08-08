@@ -57,7 +57,7 @@ export default class CoordinatesLayer extends BoardLayer {
     //Get theme data
     const color = theme.get('coordinates.vertical.color')
     const font = theme.get('coordinates.vertical.font')
-    const size = theme.get('coordinates.vertical.size')
+    const size = (ch, cellSize) => theme.get('coordinates.vertical.size', ch, cellSize)
     const style = theme.get('coordinates.vertical.style')
     const type = theme.get('coordinates.vertical.type')
     const inverse = theme.get('coordinates.vertical.inverse')
@@ -101,7 +101,7 @@ export default class CoordinatesLayer extends BoardLayer {
     //Get theme data
     const color = theme.get('coordinates.horizontal.color')
     const font = theme.get('coordinates.horizontal.font')
-    const size = theme.get('coordinates.horizontal.size')
+    const size = (ch, cellSize) => theme.get('coordinates.horizontal.size', ch, cellSize)
     const style = theme.get('coordinates.horizontal.style')
     const type = theme.get('coordinates.horizontal.type')
     const inverse = theme.get('coordinates.horizontal.inverse')

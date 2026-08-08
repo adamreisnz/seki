@@ -249,7 +249,7 @@ export default class GameNode {
    */
   setParent(parent) {
     this.parent = parent
-    this.root = parent.root
+    this.setRoot(parent.root)
     this.updateVariationRoot()
   }
 
@@ -258,8 +258,21 @@ export default class GameNode {
    */
   removeParent() {
     this.parent = null
-    this.root = this
+    this.setRoot(this)
     this.updateVariationRoot()
+  }
+
+  /**
+   * Set the root node for ourselves and everything below us
+   *
+   * NOTE: this has to reach the whole subtree. Only setting it on the node
+   * being attached or detached leaves its descendants pointing at whichever
+   * tree they used to belong to, so getRoot() and isRoot() give the wrong
+   * answer for every node below the one that moved.
+   */
+  setRoot(root) {
+    this.root = root
+    this.children.forEach(child => child.setRoot(root))
   }
 
   /**

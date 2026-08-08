@@ -114,3 +114,68 @@ describe('Player teardown', () => {
     expect(vi.getTimerCount()).toBe(0)
   })
 })
+
+describe('Player method extension', () => {
+
+  it('dispatches to the active mode that provides the method', () => {
+    const player = new Player()
+    const replay = player.getModeHandler(playerModes.REPLAY)
+
+    player.setMode(playerModes.REPLAY)
+    replay.toggleAutoPlay = vi.fn()
+    player.toggleAutoPlay()
+
+    expect(replay.toggleAutoPlay).toHaveBeenCalled()
+  })
+
+  it('does nothing when no mode providing the method is active', () => {
+    const player = new Player()
+    const replay = player.getModeHandler(playerModes.REPLAY)
+    replay.toggleAutoPlay = vi.fn()
+
+    player.setMode(playerModes.SCORE)
+    player.toggleAutoPlay()
+
+    expect(replay.toggleAutoPlay).not.toHaveBeenCalled()
+  })
+
+  it('lets a second mode provide the same method', () => {
+
+    //NOTE: extend used to bail out on the second registration, leaving the
+    //method bound to whichever mode asked for it first, so calling it while
+    //the other mode was active did nothing
+    const player = new Player()
+    const replay = player.getModeHandler(playerModes.REPLAY)
+    const edit = player.getModeHandler(playerModes.EDIT)
+
+    player.extend('sharedThing', playerModes.REPLAY)
+    player.extend('sharedThing', playerModes.EDIT)
+
+    replay.sharedThing = vi.fn(() => 'from replay')
+    edit.sharedThing = vi.fn(() => 'from edit')
+
+    player.setMode(playerModes.REPLAY)
+    expect(player.sharedThing()).toBe('from replay')
+
+    player.setMode(playerModes.EDIT)
+    expect(player.sharedThing()).toBe('from edit')
+  })
+
+  it('passes arguments and returns the result through', () => {
+    const player = new Player()
+    const edit = player.getModeHandler(playerModes.EDIT)
+
+    player.setMode(playerModes.EDIT)
+    edit.getEditTool = vi.fn(() => 'tool')
+
+    expect(player.getEditTool()).toBe('tool')
+  })
+
+  it('refuses to shadow a method the player already has', () => {
+    const player = new Player()
+    const original = player.playMove
+
+    player.extend('playMove', playerModes.EDIT)
+    expect(player.playMove).toBe(original)
+  })
+})

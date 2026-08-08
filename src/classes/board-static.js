@@ -22,11 +22,13 @@ export default class BoardStatic extends Board {
     boardLayerTypes.MARKUP,
   ]
 
-  /**
-   * Single layer ops not possible for static board
-   */
-  eraseLayer() {} // eslint-disable-line no-empty-function
-  redrawLayer() {} // eslint-disable-line no-empty-function
+  //NOTE: eraseLayer and redrawLayer used to be stubbed out here, on the basis
+  //that single layer operations were not possible for a static board. That was
+  //true of the shared context idea below, which was abandoned, and each layer
+  //has had its own context ever since. Stubbing them meant the shadow layer
+  //was never cleared when the position was replaced, since StonesLayer#setAll
+  //erases it through eraseLayer, and the grid was never redrawn underneath
+  //new markup.
 
   /**
    * Setup elements

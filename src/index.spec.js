@@ -1,5 +1,6 @@
 import {describe, it, expect} from 'vitest'
 import * as seki from './index.js'
+import pkg from '../package.json' with {type: 'json'}
 
 /**
  * Smoke test for the public entry point. This guards against a class being
@@ -53,5 +54,29 @@ describe('public API', () => {
     expect(seki.playerModes).toBeTypeOf('object')
     expect(seki.markupTypes).toBeTypeOf('object')
     expect(seki.appVersion).toBeTypeOf('string')
+  })
+})
+
+describe('package manifest', () => {
+
+  it('points its entry point at the barrel file', () => {
+    expect(pkg.main).toBe('src/index.js')
+    expect(pkg.exports['.']).toBe('./src/index.js')
+  })
+
+  it('still allows deep imports through the exports map', () => {
+
+    //Consumers can reach individual classes directly, so adding an exports
+    //map must not close that off
+    expect(pkg.exports['./src/*']).toBe('./src/*')
+  })
+
+  it('exposes package.json, which tooling asks for', () => {
+    expect(pkg.exports['./package.json']).toBe('./package.json')
+  })
+
+  it('publishes src while excluding the specs that now live in it', () => {
+    expect(pkg.files).toContain('src')
+    expect(pkg.files).toContain('!src/**/*.spec.js')
   })
 })

@@ -275,19 +275,43 @@ describe('Grid', () => {
         .toThrow('Trying to compare grids of a different size')
     })
 
-    //NOTE: a value changing in place, e.g. a stone changing colour on the
-    //same coordinate, is not reported as a change. Grid#compare is currently
-    //unused inside the library, so this documents the limitation rather than
-    //asserting it is right.
-    it('does not currently notice a value changing in place', () => {
+    it('reports a value changing in place as a removal and an addition', () => {
       const a = createGrid()
       const b = createGrid()
       a.set(1, 1, 'black')
       b.set(1, 1, 'white')
 
       const changes = a.compare(b)
-      expect(changes.add).toEqual([])
-      expect(changes.remove).toEqual([])
+      expect(changes.remove).toEqual([{x: 1, y: 1, value: 'black'}])
+      expect(changes.add).toEqual([{x: 1, y: 1, value: 'white'}])
+    })
+
+    it('reports an unchanged entry alongside a changed one only once', () => {
+      const a = createGrid()
+      const b = createGrid()
+      a.set(1, 1, 'black')
+      a.set(2, 2, 'white')
+      b.set(1, 1, 'white')
+      b.set(2, 2, 'white')
+
+      const changes = a.compare(b)
+      expect(changes.remove).toEqual([{x: 1, y: 1, value: 'black'}])
+      expect(changes.add).toEqual([{x: 1, y: 1, value: 'white'}])
+    })
+
+    it('combines additions, removals and changes', () => {
+      const a = createGrid()
+      const b = createGrid()
+      a.set(0, 0, 'black')   //changed
+      a.set(1, 1, 'black')   //removed
+      b.set(0, 0, 'white')
+      b.set(2, 2, 'white')   //added
+
+      const changes = a.compare(b)
+      expect(changes.remove).toHaveLength(2)
+      expect(changes.add).toHaveLength(2)
+      expect(changes.add).toContainEqual({x: 2, y: 2, value: 'white'})
+      expect(changes.remove).toContainEqual({x: 1, y: 1, value: 'black'})
     })
   })
 })

@@ -13,13 +13,43 @@ export function merge(...args) {
 }
 
 /**
- * Copy a given value
+ * Deep copy a given value
+ *
+ * Primitives and functions come back as they went in, plain objects and arrays
+ * are copied all the way down, and dates and regexes are rebuilt.
+ *
+ * NOTE: this used to be a JSON round trip, which silently dropped anything
+ * JSON has no representation for. Theme config is full of handler functions,
+ * so getConfigCopy() on a theme came back stripped of every one of them and
+ * unusable. Undefined values and dates went the same way.
  */
 export function copy(value) {
-  if (value !== null && typeof value === 'object') {
-    return JSON.parse(JSON.stringify(value))
+
+  //Primitives and functions are handed back as they are. A function is copied
+  //by reference on purpose: theme handlers are behaviour, not data.
+  if (value === null || typeof value !== 'object') {
+    return value
   }
-  return value
+
+  //Dates and regexes are rebuilt rather than shared
+  if (value instanceof Date) {
+    return new Date(value.getTime())
+  }
+  if (value instanceof RegExp) {
+    return new RegExp(value.source, value.flags)
+  }
+
+  //Arrays
+  if (Array.isArray(value)) {
+    return value.map(entry => copy(entry))
+  }
+
+  //Plain objects, own enumerable properties only
+  const result = {}
+  for (const key of Object.keys(value)) {
+    result[key] = copy(value[key])
+  }
+  return result
 }
 
 /**

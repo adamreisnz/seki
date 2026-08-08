@@ -24,7 +24,21 @@ export default class PlayerModeScore extends PlayerMode {
     //Create bound event listeners
     this.createBoundListeners({
       click: 'onClick',
+      pathChange: 'onPathChange',
     })
+  }
+
+  /**
+   * Path change event
+   *
+   * The score state is built from the position, so navigating to a different
+   * one invalidates it. Without this, dead stone marks made on one position
+   * carry over onto another, and the score is calculated from stones that
+   * are no longer where the state thinks they are.
+   */
+  onPathChange() {
+    this.scoreState = new GameScoreState(this.game)
+    this.clearScore()
   }
 
   /**

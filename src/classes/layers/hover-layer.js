@@ -53,10 +53,15 @@ export default class HoverLayer extends BoardLayer {
       throw new Error(`Invalid hover object`)
     }
 
-    //Check if we need to remove something from layers underneath
+    //Check if we need to remove something from layers underneath. Only the
+    //first object displaced on a given cell is remembered, otherwise hovering
+    //over the same cell repeatedly queues the same object for restoration
+    //several times over.
     if (board.has(type, x, y)) {
       const value = board.get(type, x, y)
-      restore.add({x, y, type, value})
+      if (!this.hasRestoration(x, y, type)) {
+        restore.add({x, y, type, value})
+      }
       board.remove(type, x, y)
     }
 
@@ -88,6 +93,18 @@ export default class HoverLayer extends BoardLayer {
         restore.delete(entry)
       }
     }
+  }
+
+  /**
+   * Check if we already have something queued for restoration on a cell
+   */
+  hasRestoration(x, y, type) {
+    for (const entry of this.restore) {
+      if (entry.x === x && entry.y === y && entry.type === type) {
+        return true
+      }
+    }
+    return false
   }
 
   /**
