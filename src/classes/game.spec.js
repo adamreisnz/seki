@@ -1,6 +1,6 @@
 import {describe, it, expect} from 'vitest'
-import Game from '../src/classes/game.js'
-import {stoneColors} from '../src/constants/stone.js'
+import Game from './game.js'
+import {stoneColors} from '../constants/stone.js'
 
 const {BLACK, WHITE} = stoneColors
 
