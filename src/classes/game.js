@@ -2114,7 +2114,6 @@ export default class Game extends Base {
         break
       }
     }
-
   }
 
   /**
