@@ -15,8 +15,19 @@ export default class PlayerModePlay extends PlayerModeReplay {
   init() {
 
     //Create bound event listeners
+    //NOTE: this mode is replay mode with a board you can play on, so it needs
+    //the replay listeners as well as its own, the same way edit mode spells
+    //them out. Listing only its own three meant markers were rendered once on
+    //activation and never again, so the last move marker stayed wherever it
+    //was when the mode was entered, and no keyboard binding did anything.
     this.createBoundListeners({
+      keydown: 'onKeyDown',
       click: 'onClick',
+      wheel: 'onMouseWheel',
+      config: 'onConfigChange',
+      pathChange: 'onPathChange',
+      variationChange: 'onVariationChange',
+      gameLoad: 'onGameLoad',
       gridEnter: 'onGridEnter',
       gridLeave: 'onGridLeave',
     })

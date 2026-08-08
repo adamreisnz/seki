@@ -151,11 +151,14 @@ describe('Default player config', () => {
     expect(defaultPlayerConfig.initialMode).toBe('replay')
   })
 
-  it('binds keys as a list of bindings with actions', () => {
-    for (const binding of defaultPlayerConfig.keyBindings) {
-      expect(binding.key).toBeTypeOf('string')
-      expect(binding.action).toBeTypeOf('string')
-    }
+  it('binds no keys of its own, leaving that to the consumer', () => {
+    expect(defaultPlayerConfig.keyBindings).toEqual([])
+  })
+
+  it('binds the mouse wheel to stepping through the game', () => {
+    const actions = defaultPlayerConfig.mouseBindings.map(b => b.action)
+    expect(actions).toContain('goToNextPosition')
+    expect(actions).toContain('goToPrevPosition')
   })
 
   it('exposes the theme separately from the player config', () => {
