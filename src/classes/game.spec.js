@@ -1279,7 +1279,7 @@ describe('Game.goToMoveNumber()', () => {
   })
 })
 
-describe('Path marks after navigation', () => {
+describe('The path reported after navigation', () => {
 
   const sgf = '(;GM[1]FF[4]SZ[19];B[dd];W[pp];B[dp])'
 

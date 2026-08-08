@@ -223,9 +223,8 @@ describe('GameNode', () => {
       expect(root.getPathNodes()).toEqual([root, a, b])
     })
 
-    it('marks the selected path through the tree', () => {
-      const {root, a, b, c} = createTree()
-      root.markPath()
+    it('reports the selected path through the tree', () => {
+      const {a, b, c} = createTree()
       expect(a.isPath).toBe(true)
       expect(b.isPath).toBe(true)
       expect(c.isPath).toBe(false)
@@ -516,7 +515,7 @@ describe('GameNode setup instructions', () => {
   })
 })
 
-describe('GameNode.markPath()', () => {
+describe('GameNode.isPath', () => {
 
   /**
    * A root with a main line of two nodes and a variation next to it
@@ -532,34 +531,29 @@ describe('GameNode.markPath()', () => {
     return {root, main, variation, leaf}
   }
 
-  it('marks the chain of path indices', () => {
+  it('is true along the chain of path indices', () => {
+
+    //NOTE: this is computed from the path indices when read, rather than
+    //maintained as a flag by every navigation operation, so there is no
+    //marking step for anything to forget
     const {root, main, variation, leaf} = createTree()
-    root.markPath()
 
     expect(root.isPath).toBe(true)
     expect(main.isPath).toBe(true)
     expect(leaf.isPath).toBe(true)
-    expect(variation.isPath).toBeFalsy()
+    expect(variation.isPath).toBe(false)
   })
 
-  it('clears the previous chain when the path moves', () => {
-
-    //NOTE: the marking used to visit every node of the tree to switch the
-    //old flags off. It now follows the marks of the previous path instead,
-    //so this pins that the old chain really is cleared all the way down
+  it('follows a path index change as it is made', () => {
     const {root, main, variation, leaf} = createTree()
-    root.markPath()
     root.setPathIndex(1)
-    root.markPath()
 
     expect(variation.isPath).toBe(true)
     expect(main.isPath).toBe(false)
     expect(leaf.isPath).toBe(false)
   })
 
-  it('marks a lone root', () => {
-    const root = new GameNode()
-    root.markPath()
-    expect(root.isPath).toBe(true)
+  it('is true on a lone root', () => {
+    expect(new GameNode().isPath).toBe(true)
   })
 })

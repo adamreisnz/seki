@@ -1278,7 +1278,6 @@ export default class Game extends Base {
    */
   setCurrentPathIndex(i) {
     this.node.setPathIndex(i)
-    this.root.markPath()
   }
 
   /**
@@ -1295,7 +1294,6 @@ export default class Game extends Base {
 
     //Reset
     this.node.setPathIndex(0)
-    this.root.markPath()
     this.path.forgetPathChoice(moveNo)
   }
 
@@ -1881,7 +1879,6 @@ export default class Game extends Base {
     //Advance path to the added node index
     this.node = node
     this.path.advance(i)
-    this.root.markPath()
 
     //Valid move
     this.addPositionToStack(newPosition)
@@ -1916,7 +1913,6 @@ export default class Game extends Base {
     //Advance path to the added node index
     this.node = node
     this.path.advance(i)
-    this.root.markPath()
 
     //Add new position to stack
     this.addPositionToStack(newPosition)
@@ -1976,9 +1972,7 @@ export default class Game extends Base {
    */
   goToNextPosition(i) {
     if (this.goToNextNode(i)) {
-      const outcome = this.processCurrentNode()
-      this.root.markPath()
-      return outcome
+      return this.processCurrentNode()
     }
     return new ErrorOutcome(`No next position`)
   }
@@ -1988,7 +1982,6 @@ export default class Game extends Base {
    */
   goToPreviousPosition() {
     if (this.goToPreviousNode()) {
-      this.root.markPath()
       return new ValidOutcome()
     }
     return new ErrorOutcome(`No previous position`)
@@ -2009,7 +2002,6 @@ export default class Game extends Base {
         break
       }
     }
-    this.root.markPath()
   }
 
   /**
@@ -2123,8 +2115,6 @@ export default class Game extends Base {
       }
     }
 
-    //Mark the path once for the whole walk
-    this.root.markPath()
   }
 
   /**
@@ -2140,7 +2130,6 @@ export default class Game extends Base {
         break
       }
     }
-    this.root.markPath()
   }
 
   /**
@@ -2152,7 +2141,6 @@ export default class Game extends Base {
         break
       }
     }
-    this.root.markPath()
   }
 
   /**
@@ -2168,7 +2156,6 @@ export default class Game extends Base {
         break
       }
     }
-    this.root.markPath()
   }
 
   /**
@@ -2180,7 +2167,6 @@ export default class Game extends Base {
         break
       }
     }
-    this.root.markPath()
   }
 
   /**
@@ -2329,8 +2315,6 @@ export default class Game extends Base {
     }
 
     //Retreat path and set pointer to current node
-    //NOTE: marking the path is left to the public navigation operation that
-    //called this, so a walk over many nodes marks once rather than per node
     this.path.retreat()
     this.node = node.getParent()
 
@@ -2347,7 +2331,6 @@ export default class Game extends Base {
     //Reset path and point to root
     this.path.reset()
     this.node = this.root
-    this.root.markPath()
 
     //Determine initial turn based on handicap
     //Can be overwritten by game record instructions
@@ -2373,8 +2356,6 @@ export default class Game extends Base {
     const {node, position} = this
 
     //Make this node the path node on its parent
-    //NOTE: marking the path is left to the public navigation operation that
-    //called this, so a walk over many nodes marks once rather than per node
     node.setAsParentPathNode()
 
     //Initialize new position

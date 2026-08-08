@@ -17,7 +17,6 @@ export default class GameNode {
 
   //The selected path index (for navigating variations)
   index = 0
-  isPath = false
 
   /**
    * Constructor
@@ -743,37 +742,20 @@ export default class GameNode {
   }
 
   /**
-   * Mark the chain of path indices from this node as the current path
+   * Check if this node is on the current path
    *
-   * NOTE: the marks of the previous path are cleared first, by following the
-   * marks themselves, so both walks visit a single chain of nodes. This used
-   * to recurse into every node of the tree to switch the flags off, which
-   * made each marking cost the size of the tree rather than the length of
-   * the path.
+   * NOTE: this is computed from the path indices of the ancestors rather than
+   * maintained as a flag, so there is nothing to mark and nothing to go
+   * stale. This used to be a flag that every navigation operation had to
+   * remember to refresh with a walk over the whole tree, and tree edits that
+   * skipped the refresh left it describing a path that no longer existed.
    */
-  markPath() {
-
-    //Clear the marks of the previous path
-    this.clearPathMarks()
-
-    //Mark the chain of path indices
-    let node = this
-    while (node) {
-      node.isPath = true
-      node = node.getPathNode()
+  get isPath() {
+    const {parent} = this
+    if (!parent) {
+      return true
     }
-  }
-
-  /**
-   * Clear the path marks from this node down, following the marks themselves
-   */
-  clearPathMarks() {
-    this.isPath = false
-    for (const child of this.children) {
-      if (child.isPath) {
-        child.clearPathMarks()
-      }
-    }
+    return parent.getPathNode() === this && parent.isPath
   }
 
   /**************************************************************************
