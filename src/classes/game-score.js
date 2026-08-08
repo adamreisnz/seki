@@ -152,8 +152,9 @@ export default class GameScore {
 
     //Equal totals is a draw, which is a result in its own right. NOTE: this
     //used to report the unknown result instead, which is what a record with no
-    //result at all parses to.
-    return 'D'
+    //result at all parses to. Spelled the way the SGF spec spells a drawn RE
+    //value, so the result can go into a record as it is.
+    return 'Draw'
   }
 
   /**

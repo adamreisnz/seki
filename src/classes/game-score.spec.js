@@ -72,11 +72,11 @@ describe('GameScore', () => {
     expect(score.getWinningColor(TERRITORY)).toBeUndefined()
   })
 
-  it('reports a tie as a draw', () => {
+  it('reports a tie as a draw, spelled the way SGF spells it', () => {
     const score = new GameScore()
     score.setCaptures(BLACK, 10)
     score.setCaptures(WHITE, 10)
-    expect(score.getResult(TERRITORY)).toBe('D')
+    expect(score.getResult(TERRITORY)).toBe('Draw')
   })
 
   it('formats the result with the margin', () => {

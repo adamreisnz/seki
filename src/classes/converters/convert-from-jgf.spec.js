@@ -158,4 +158,12 @@ describe('ConvertFromJgf, invalid input', () => {
   it('still rejects unparseable JSON', () => {
     expect(() => new ConvertFromJgf().convert('{')).toThrow('Unable to parse JSON')
   })
+
+  it('parses a string starting with a byte order mark', () => {
+
+    //NOTE: JSON.parse accepts leading whitespace but not a BOM, so this
+    //failed even though format detection had just looked past it
+    const game = new ConvertFromJgf().convert('﻿{"tree":[{"root":true},{"move":{"B":"dd"}}]}')
+    expect(game.getRootNode().hasChildren()).toBe(true)
+  })
 })

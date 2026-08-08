@@ -1204,6 +1204,9 @@ export default class Game extends Base {
    * them alone pointed the game at a node that is no longer part of it. That
    * made a freshly converted game report no next position at all, and left the
    * position stack sized for the previous board.
+   *
+   * Rewinding reads the board size and handicap off the game info, so set the
+   * info before the root node, the way the converters do.
    */
   setRootNode(root) {
     this.root = root
@@ -2038,12 +2041,10 @@ export default class Game extends Base {
    */
   goToMoveNumber(number) {
 
-    //Already here
-    if (this.getCurrentMoveNumber() === number) {
-      return
-    }
-
-    //Get path to the named node
+    //Resolve the path and navigate. NOTE: matching move numbers is not proof
+    //of already being there, as a setup node sitting after move n carries move
+    //number n as well, while the node to be on is the move itself. goToPath()
+    //recognises an unchanged path, so it is the no-op check.
     const path = this.getPathToMoveNumber(number)
     this.goToPath(path)
   }

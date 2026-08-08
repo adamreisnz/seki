@@ -560,6 +560,15 @@ describe('Game format detection', () => {
     expect(game.getRootNode().hasChildren()).toBe(true)
   })
 
+  it('loads a JGF record that starts with a byte order mark', () => {
+
+    //NOTE: detection looked past the BOM but the raw string then went to
+    //JSON.parse, which accepts leading whitespace but not a BOM, so the
+    //record was recognised and still failed to load
+    const game = Game.fromData('﻿{"tree":[{"root":true},{"move":{"B":"dd"}}]}')
+    expect(game.getRootNode().hasChildren()).toBe(true)
+  })
+
   it('rejects an unsupported output format', () => {
     expect(() => new Game().toData('pdf')).toThrow('Unsupported data format')
   })
@@ -1249,5 +1258,23 @@ describe('Game.goToMoveNumber()', () => {
     const node = game.getCurrentNode()
     game.goToMoveNumber(2)
     expect(game.getCurrentNode()).toBe(node)
+  })
+
+  it('returns to the move node from a setup node past it', () => {
+
+    //NOTE: a setup node after move n carries move number n as well, and the
+    //no-op check used to compare move numbers, so asking for move n while
+    //standing on the setup node went nowhere and disagreed with
+    //findNodeForMoveNumber
+    const game = createGameWithSetupNode()
+    game.goToMoveNumber(2)
+    game.goToNextPosition()
+    expect(game.getCurrentNode().move).toBeUndefined()
+    expect(game.getCurrentMoveNumber()).toBe(2)
+
+    game.goToMoveNumber(2)
+
+    expect(game.getCurrentNode()).toBe(game.findNodeForMoveNumber(2))
+    expect(game.getCurrentNode().move).toEqual({color: WHITE, x: 15, y: 15})
   })
 })

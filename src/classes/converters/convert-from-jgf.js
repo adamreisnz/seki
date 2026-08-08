@@ -19,10 +19,13 @@ export default class ConvertFromJgf extends Converter {
       throw new Error(`No JGF data supplied`)
     }
 
-    //Parse JSON
+    //Parse JSON. NOTE: the string is trimmed first because JSON.parse accepts
+    //leading whitespace but not a byte order mark, which trim() does strip.
+    //Format detection already looks past both, so without this a JGF file
+    //starting with a BOM was recognised and then failed to parse anyway.
     if (typeof jgf === 'string') {
       try {
-        jgf = JSON.parse(jgf)
+        jgf = JSON.parse(jgf.trim())
       }
       catch (error) {
         throw new Error(`Unable to parse JSON: ${error.message}`, {cause: error})
