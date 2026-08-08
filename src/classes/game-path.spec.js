@@ -1,5 +1,5 @@
 import {describe, it, expect} from 'vitest'
-import GamePath from '../src/classes/game-path.js'
+import GamePath from './game-path.js'
 
 describe('GamePath', () => {
 

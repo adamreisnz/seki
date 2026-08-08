@@ -8,13 +8,16 @@ export default defineConfig({
     //the point where they need a document.
     environment: 'node',
 
-    //Specs live outside of src so they don't end up in the published package
-    include: ['test/**/*.spec.js'],
+    //Specs sit next to the file they cover, so src/classes/grid.js is
+    //accompanied by src/classes/grid.spec.js. They are kept out of the
+    //published package via .npmignore.
+    include: ['src/**/*.spec.js'],
 
     //Coverage
     coverage: {
       provider: 'v8',
       include: ['src/**/*.js'],
+      exclude: ['src/**/*.spec.js'],
       reporter: ['text', 'html'],
     },
   },

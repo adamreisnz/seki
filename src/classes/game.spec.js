@@ -1,9 +1,9 @@
 import {describe, it, expect} from 'vitest'
-import Game from '../src/classes/game.js'
-import GameNode from '../src/classes/game-node.js'
-import {stoneColors} from '../src/constants/stone.js'
-import {setupTypes} from '../src/constants/setup.js'
-import {kifuFormats} from '../src/constants/app.js'
+import Game from './game.js'
+import GameNode from './game-node.js'
+import {stoneColors} from '../constants/stone.js'
+import {setupTypes} from '../constants/setup.js'
+import {kifuFormats} from '../constants/app.js'
 
 const {BLACK, WHITE} = stoneColors
 
@@ -551,5 +551,105 @@ describe('Game reset', () => {
     expect(game.getCurrentMoveNumber()).toBe(0)
     expect(game.getPosition().hasStones()).toBe(false)
     expect(game.getRootNode().hasChildren()).toBe(false)
+  })
+})
+
+describe('Game.isMoveVariation()', () => {
+
+  it('reports coordinates that a child move node plays on', () => {
+    const game = new Game()
+    game.playMove(3, 3)
+    game.goToPreviousPosition()
+    expect(game.isMoveVariation(3, 3)).toBe(true)
+    expect(game.isMoveVariation(4, 4)).toBe(false)
+  })
+})
+
+describe('Game event location', () => {
+
+  it('keeps a plain location that contains no URL', () => {
+    const game = new Game()
+    game.setEventLocation('Amsterdam')
+    expect(game.getEventLocation()).toBe('Amsterdam')
+  })
+
+  it('still splits a location that carries a URL', () => {
+    const game = new Game()
+    game.setEventLocation('Amsterdam at https://example.com')
+    expect(game.getEventLocation()).toBe('https://example.com')
+  })
+})
+
+describe('Game overtime', () => {
+
+  it('does not throw on a null value', () => {
+    const game = new Game()
+    expect(() => game.setOvertime(null)).not.toThrow()
+    expect(game.getOvertime()).toBeFalsy()
+  })
+
+  it('still parses periods out of a byo-yomi string', () => {
+    const game = new Game()
+    game.setOvertime('5x30 byo-yomi')
+    expect(game.getNumberOfPeriods()).toBe(5)
+    expect(game.getTimePerPeriod()).toBe(30)
+  })
+})
+
+describe('Setup instructions on a move node', () => {
+
+  it('does not leave an empty setup array behind on the move node', () => {
+    const game = new Game()
+    game.playMove(3, 3)
+    const moveNode = game.getCurrentNode()
+    game.addStone(5, 5, stoneColors.WHITE)
+    expect(moveNode.hasSetupInstructions()).toBe(false)
+    expect(moveNode.setup).toBeUndefined()
+  })
+
+  it('puts the setup on a newly created child node', () => {
+    const game = new Game()
+    game.playMove(3, 3)
+    const moveNode = game.getCurrentNode()
+    game.addStone(5, 5, stoneColors.WHITE)
+    expect(game.getCurrentNode()).not.toBe(moveNode)
+    expect(game.getCurrentNode().hasSetupInstructions()).toBe(true)
+    expect(game.hasStone(5, 5, stoneColors.WHITE)).toBe(true)
+  })
+})
+
+describe('Game.hasStone()', () => {
+
+  it('matches a stone of the given color', () => {
+    const game = new Game()
+    game.playMove(3, 3)
+    expect(game.hasStone(3, 3)).toBe(true)
+    expect(game.hasStone(3, 3, stoneColors.BLACK)).toBe(true)
+    expect(game.hasStone(3, 3, stoneColors.WHITE)).toBe(false)
+  })
+
+  it('is false on an empty intersection', () => {
+    const game = new Game()
+    expect(game.hasStone(3, 3)).toBe(false)
+    expect(game.hasStone(3, 3, stoneColors.BLACK)).toBe(false)
+  })
+
+  it('lets addStone bail out when the stone is already there', () => {
+    const game = new Game()
+    game.addStone(5, 5, stoneColors.WHITE)
+    const node = game.getCurrentNode()
+    game.addStone(5, 5, stoneColors.WHITE)
+    expect(game.getCurrentNode()).toBe(node)
+  })
+})
+
+describe('Game.hasMarkup()', () => {
+
+  it('matches markup of the given type', () => {
+    const game = new Game()
+    game.addMarkup(3, 3, {type: 'circle'})
+    expect(game.hasMarkup(3, 3)).toBe(true)
+    expect(game.hasMarkup(3, 3, 'circle')).toBe(true)
+    expect(game.hasMarkup(3, 3, 'square')).toBe(false)
   })
 })

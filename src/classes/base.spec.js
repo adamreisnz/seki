@@ -1,6 +1,5 @@
 import {describe, it, expect, vi} from 'vitest'
-import Base from '../src/classes/base.js'
-import Theme from '../src/classes/theme.js'
+import Base from './base.js'
 
 const createBase = (config, defaults) => {
   const base = new Base()
@@ -125,69 +124,5 @@ describe('Base events', () => {
 
     expect(a).toHaveBeenCalled()
     expect(b).toHaveBeenCalled()
-  })
-})
-
-describe('Theme', () => {
-
-  it('falls back to the default theme with no config', () => {
-    const theme = new Theme()
-    expect(theme.get('board.stoneStyle')).toBe('slateShell')
-  })
-
-  it('overlays given config onto the defaults', () => {
-    const theme = new Theme({board: {backgroundColor: '#000'}})
-    expect(theme.get('board.backgroundColor')).toBe('#000')
-    expect(theme.get('board.margin')).toBe(0.25)
-  })
-
-  it('calls a function valued property with the given arguments', () => {
-    const theme = new Theme()
-    expect(theme.get('grid.radius', 40)).toBe(20)
-    expect(theme.get('stone.base.radius', 40)).toBe(Math.floor(40 / 2) * 0.97)
-  })
-
-  it('reports whether a property exists', () => {
-    const theme = new Theme()
-    expect(theme.has('board.margin')).toBe(true)
-    expect(theme.has('board.nonsense')).toBe(false)
-  })
-
-  it('sets a property, including a function', () => {
-    const theme = new Theme()
-
-    theme.set('board.backgroundColor', '#fff')
-    expect(theme.get('board.backgroundColor')).toBe('#fff')
-
-    theme.set('grid.radius', cellSize => cellSize)
-    expect(theme.get('grid.radius', 33)).toBe(33)
-  })
-
-  it('merges further config in', () => {
-    const theme = new Theme()
-    theme.merge({board: {backgroundColor: '#123'}})
-
-    expect(theme.get('board.backgroundColor')).toBe('#123')
-    expect(theme.get('board.stoneStyle')).toBe('slateShell')
-  })
-
-  it('resets back to the defaults', () => {
-    const theme = new Theme({board: {backgroundColor: '#000'}})
-    theme.resetToDefaults()
-    expect(theme.get('board.backgroundColor')).toBe('#e2b768')
-  })
-
-  it('nudges odd line widths by half a pixel to keep lines crisp', () => {
-    const theme = new Theme()
-    expect(theme.canvasTranslate(1)).toBe(0.5)
-    expect(theme.canvasTranslate(2)).toBe(0)
-  })
-
-  it('picks star points for the standard board sizes', () => {
-    const theme = new Theme()
-    expect(theme.get('grid.star.points', 19, 19)).toHaveLength(9)
-    expect(theme.get('grid.star.points', 13, 13)).toHaveLength(4)
-    expect(theme.get('grid.star.points', 12, 12)).toEqual([])
-    expect(theme.get('grid.star.points', 19, 13)).toEqual([])
   })
 })

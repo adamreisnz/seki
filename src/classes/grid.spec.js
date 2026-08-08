@@ -1,5 +1,5 @@
 import {describe, it, expect} from 'vitest'
-import Grid from '../src/classes/grid.js'
+import Grid from './grid.js'
 
 const createGrid = (width = 9, height = 9) => new Grid(width, height)
 

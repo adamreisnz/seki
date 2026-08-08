@@ -1,7 +1,7 @@
 import {describe, it, expect} from 'vitest'
-import GameNode from '../src/classes/game-node.js'
-import {stoneColors} from '../src/constants/stone.js'
-import {setupTypes} from '../src/constants/setup.js'
+import GameNode from './game-node.js'
+import {stoneColors} from '../constants/stone.js'
+import {setupTypes} from '../constants/setup.js'
 
 const {BLACK, WHITE} = stoneColors
 

@@ -1,8 +1,8 @@
 import {describe, it, expect, vi} from 'vitest'
-import Board from '../src/classes/board.js'
-import Game from '../src/classes/game.js'
-import {boardLayerTypes} from '../src/constants/board.js'
-import {stoneColors} from '../src/constants/stone.js'
+import Board from './board.js'
+import Game from './game.js'
+import {boardLayerTypes} from '../constants/board.js'
+import {stoneColors} from '../constants/stone.js'
 
 /**
  * A board with a known draw size, so the geometry is deterministic. Nothing
