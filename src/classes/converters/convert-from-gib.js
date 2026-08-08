@@ -5,13 +5,19 @@ import {stoneColors} from '../../constants/stone.js'
 
 /**
  * Regular expressions
+ *
+ * NOTE: only the ones that are stepped through repeatedly carry the global
+ * flag. A global regex keeps its lastIndex between calls, so a global regex
+ * used for a single exec picks up where the previous file left off and finds
+ * nothing on the second one. The two below are always run until they return
+ * null, which resets them, and convert() resets them up front regardless.
  */
 const regexMove = /STO\s0\s([0-9]+)\s(1|2)\s([0-9]+)\s([0-9]+)/gi
 const regexPlayer = /GAME(BLACK|WHITE)NAME=([A-Za-z0-9]+)\s\(([0-9]+D|K)\)/gi
-const regexKomi = /GAMEGONGJE=([0-9]+)/gi
-const regexDate = /GAMEDATE=([0-9]+)-\s?([0-9]+)-\s?([0-9]+)/g
-const regexResultMargin = /GAMERESULT=(white|black)\s([0-9]+\.?[0-9]?)/gi
-const regexResultOther = /GAMERESULT=(white|black)\s[a-z\s]+(resignation|time)/gi
+const regexKomi = /GAMEGONGJE=([0-9]+)/i
+const regexDate = /GAMEDATE=([0-9]+)-\s?([0-9]+)-\s?([0-9]+)/
+const regexResultMargin = /GAMERESULT=(white|black)\s([0-9]+\.?[0-9]?)/i
+const regexResultOther = /GAMERESULT=(white|black)\s[a-z\s]+(resignation|time)/i
 
 /**
  * Parse GIB data into a seki game object
@@ -33,6 +39,11 @@ export default class ConvertFromGib extends Converter {
 
     //Initialize
     const game = new Game()
+
+    //Reset the global regexes, so a previously converted file can't leave
+    //them pointing part way into the string
+    regexMove.lastIndex = 0
+    regexPlayer.lastIndex = 0
 
     //Find data
     this.findPlayerInformation(gib, game)
@@ -150,8 +161,15 @@ export default class ConvertFromGib extends Converter {
    * Date parser function
    */
   parseDate(game, match) {
-    const date = `${match[1]}-${match[2]}-${match[3]}`
-    game.setDate(date)
+    //GIB writes the month and day unpadded, and sometimes with a leading
+    //space, so they have to be padded back out. Game#setGameDate only accepts
+    //two digit month and day parts, and would otherwise keep the year alone.
+    const year = match[1]
+    const month = String(match[2]).padStart(2, '0')
+    const day = String(match[3]).padStart(2, '0')
+
+    //Set on game
+    game.setGameDate(`${year}-${month}-${day}`)
   }
 
   /**
