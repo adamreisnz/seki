@@ -36,6 +36,7 @@ const regexNode = new RegExp(
 const regexValues = new RegExp(valuePattern, 'g')
 const regexProperty = /[A-Z]+/
 const regexMove = /(;|\])[B|W]\[/i
+const regexCutOff = /^\d+$/
 const regexBlackPlayer = /PB|BT|BR|BL|OB/i
 const regexWhitePlayer = /PW|WT|WR|WL|OW/i
 
@@ -465,10 +466,27 @@ export default class ConvertFromSgf extends Converter {
 
   /**
    * Cut off parser
+   *
+   * NOTE: XL/XR/XT/XB are private properties, so the same keys are in use by
+   * other applications for entirely unrelated data. BadukPop writes its
+   * territory estimate to XT as a long list of signed decimals, which parsed
+   * leniently gave a cut off of -1, growing the board by a row and shifting
+   * every coordinate with it. Only a plain non negative whole number of lines
+   * is a cut off; anything else belongs to whoever else claimed the key.
    */
   parseCutOff(info, node, key, values) {
+
+    //Not a cut off value, leave it alone
     const side = key.charAt(1)
-    const cutOff = values[0]
+    const cutOff = values[0].trim()
+    if (!regexCutOff.test(cutOff)) {
+      if (this.verbose) {
+        console.warn(`Ignoring ${key} property, which is not a cut off value:`, values[0])
+      }
+      return
+    }
+
+    //Store against the relevant side
     switch (side) {
       case 'L':
         set(info, 'board.cutOffLeft', cutOff)
