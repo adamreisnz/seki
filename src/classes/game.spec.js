@@ -472,6 +472,28 @@ describe('Game info', () => {
       .toEqual({width: 19, height: 13})
   })
 
+  it('clamps a negative cut off to zero', () => {
+    //A negative cut off grows the grid past the board it was cut from
+    const game = new Game({board: {size: 19, cutOffTop: -1}})
+    expect(game.getBoardCutOff().cutOffTop).toBe(0)
+  })
+
+  it('takes a cut off on each side', () => {
+    const game = new Game({board: {
+      size: 19,
+      cutOffLeft: 1,
+      cutOffRight: 2,
+      cutOffTop: 3,
+      cutOffBottom: 4,
+    }})
+    expect(game.getBoardCutOff()).toEqual({
+      cutOffLeft: 1,
+      cutOffRight: 2,
+      cutOffTop: 3,
+      cutOffBottom: 4,
+    })
+  })
+
   it('trims a game date down to a date', () => {
     const game = new Game()
     game.setGameDate('2024-03-09 and later')
