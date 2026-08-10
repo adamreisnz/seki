@@ -95,6 +95,43 @@ describe('ConvertFromSgf, coordinates', () => {
   })
 })
 
+describe('ConvertFromSgf, cut off', () => {
+
+  it('parses a cut off on each side', () => {
+    const game = parse('(;FF[4]SZ[19]XL[1]XR[2]XT[3]XB[4])')
+    expect(game.getBoardCutOff()).toEqual({
+      cutOffLeft: 1,
+      cutOffRight: 2,
+      cutOffTop: 3,
+      cutOffBottom: 4,
+    })
+  })
+
+  it('ignores a BadukPop territory estimate written to XT', () => {
+    //XT is a private property and BadukPop uses it for its territory
+    //estimate, one signed decimal per intersection. Parsed as a cut off this
+    //came out as -1, which grew a 19x19 board to 19x20
+    const game = parse('(;FF[4]SZ[19]AP[BadukPop]XT[-1,-0.99,1,0.71,-1])')
+    expect(game.getBoardSize()).toEqual({width: 19, height: 19})
+    expect(game.getBoardCutOff().cutOffTop).toBe(0)
+  })
+
+  it('ignores a negative cut off', () => {
+    const game = parse('(;FF[4]SZ[19]XT[-1])')
+    expect(game.getBoardCutOff().cutOffTop).toBe(0)
+  })
+
+  it('ignores a non numeric cut off', () => {
+    const game = parse('(;FF[4]SZ[19]XL[none])')
+    expect(game.getBoardCutOff().cutOffLeft).toBe(0)
+  })
+
+  it('ignores a fractional cut off', () => {
+    const game = parse('(;FF[4]SZ[19]XB[1.5])')
+    expect(game.getBoardCutOff().cutOffBottom).toBe(0)
+  })
+})
+
 describe('ConvertFromSgf, escaping', () => {
 
   it('unescapes a closing bracket', () => {

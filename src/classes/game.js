@@ -698,14 +698,20 @@ export default class Game extends Base {
    * Set the board cut off
    */
   setBoardCutOff(left = 0, right = 0, top = 0, bottom = 0) {
-    left = parseInt(left)
-    right = parseInt(right)
-    top = parseInt(top)
-    bottom = parseInt(bottom)
-    this.boardCutOffLeft = isNaN(left) ? 0 : left
-    this.boardCutOffRight = isNaN(right) ? 0 : right
-    this.boardCutOffTop = isNaN(top) ? 0 : top
-    this.boardCutOffBottom = isNaN(bottom) ? 0 : bottom
+
+    //A cut off hides lines, so it can never be negative. A negative value
+    //grows the grid past the board it was cut from and shifts every
+    //coordinate along with it, so treat it as no cut off at all.
+    const toCutOff = value => {
+      const cutOff = parseInt(value)
+      return (isNaN(cutOff) || cutOff < 0) ? 0 : cutOff
+    }
+
+    //Set on game
+    this.boardCutOffLeft = toCutOff(left)
+    this.boardCutOffRight = toCutOff(right)
+    this.boardCutOffTop = toCutOff(top)
+    this.boardCutOffBottom = toCutOff(bottom)
     this.triggerEvent('info', {
       boardCutOffLeft: this.boardCutOffLeft,
       boardCutOffRight: this.boardCutOffRight,
