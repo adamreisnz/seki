@@ -113,26 +113,53 @@ describe('MarkupCandidate colour gradient', () => {
     expect(hueOf(markup.color)).toBe(205)
   })
 
-  it('runs green through to gold as the loss grows', () => {
+  it('runs green through to gold across the range an engine proposes in', () => {
+
+    //NOTE: candidates are all moves the engine itself put forward, so they
+    //cluster in the first few percent. The scale keeps its resolution there
+    //rather than spending it on the far worse moves further down.
     expect(hueFor(0)).toBe(125)
     expect(hueFor(0.1)).toBe(48)
     expect(hueFor(0.02)).toBeLessThan(hueFor(0.005))
     expect(hueFor(0.05)).toBeLessThan(hueFor(0.02))
   })
 
-  it('never reaches orange or red', () => {
+  it('carries on through orange and red into purple for a far worse move', () => {
 
-    //NOTE: every candidate is a move the engine itself put forward, so none of
-    //them should be coloured as a mistake to be warned away from. Orange and
-    //red live below a hue of about 45.
-    const losses = [0, 0.01, 0.05, 0.1, 0.4, 1]
-    for (const loss of losses) {
-      expect(hueFor(loss)).toBeGreaterThanOrEqual(48)
-    }
+    //The far end grades a move somebody actually played, which can give up any
+    //amount, rather than anything an engine would suggest
+    expect(hueFor(0.25)).toBe(28) //orange
+    expect(hueFor(0.5)).toBe(2) //red
+    expect(hueFor(1)).toBe(290) //purple
   })
 
-  it('holds the gold once the loss is past a blunder', () => {
-    expect(hueFor(0.4)).toBe(hueFor(0.1))
+  it('passes through magenta on its way from red to purple', () => {
+
+    //Hue is a wheel, so this is the leg that has to come out the far side of
+    //zero rather than doubling back through the greens
+    expect(hueFor(0.75)).toBeGreaterThan(300)
+    expect(hueFor(0.75)).toBeLessThan(360)
+  })
+
+  it('holds at purple once a move has given up everything', () => {
+    expect(hueFor(2)).toBe(hueFor(1))
+    expect(hueFor(80)).toBe(hueFor(1))
+  })
+
+  it('never doubles back on itself', () => {
+
+    //Walking the scale should never revisit a colour it has already been, or
+    //two very different moves read the same
+    const seen = []
+    for (let loss = 0; loss <= 1; loss += 0.01) {
+      seen.push(hueFor(loss))
+    }
+
+    //Unwrap the wheel, so the walk is one continuous descent
+    const unwrapped = seen.map(hue => (hue > 180 ? hue - 360 : hue))
+    for (let i = 1; i < unwrapped.length; i++) {
+      expect(unwrapped[i]).toBeLessThanOrEqual(unwrapped[i - 1])
+    }
   })
 
   it('fills itself with a lighter version of its ring, in the same hue', () => {

@@ -156,36 +156,56 @@ export const defaultStarPoints = {
   ],
 }
 
-//Hue, saturation and lightness for an analysis candidate marker, worked out
-//from how much win rate the candidate gives up against the best one.
+//Colour stops for the analysis gradient, keyed on how much win rate a move
+//gives up against the best one available.
 //
-//The best candidate is blue and is the only blue marker on the board. The rest
-//run green through to gold, capped at the win rate loss that counts as a
-//blunder. Nothing goes orange or red: every one of these is a move the engine
-//itself put forward, so none of them is a mistake to be warned away from, and
-//colouring them as one says something the analysis does not.
+//The scale keeps its resolution where the moves an engine puts forward
+//actually sit, being the first few percent, and only then carries on through
+//orange and red into purple. That far end is not for candidates, which are all
+//moves the engine itself proposed and so cluster in the green: it is for
+//grading a move somebody actually played, which can give up any amount.
+//
+//The lightness climbs from green to gold, as a gold at a green's lightness
+//reads as muddy brown rather than as a colour on the same scale. Hues run down
+//through zero into negative numbers, which is how a red carries on into a
+//magenta and then a purple rather than doubling back through the whole wheel.
+const candidateStops = [
+  {loss: 0, hsl: [125, 55, 33]}, //green
+  {loss: 0.1, hsl: [48, 85, 42]}, //gold
+  {loss: 0.25, hsl: [28, 85, 45]}, //orange
+  {loss: 0.5, hsl: [2, 75, 45]}, //red
+  {loss: 1, hsl: [-70, 50, 42]}, //purple
+]
+
+//Hue, saturation and lightness for an analysis marker
 const candidateHsl = (winrateLoss, isBest) => {
 
-  //The best candidate is the blue spot
+  //The best move is the blue spot, and the only blue marker there is
   if (isBest) {
     return [205, 72, 42]
   }
 
-  //Green to gold. The lightness climbs with the hue, as a gold at a green's
-  //lightness reads as a muddy brown rather than as a colour on the same scale.
-  const share = Math.min(1, Math.max(0, (winrateLoss || 0) / 0.1))
-  return [
-    125 - (share * 77),
-    55 + (share * 30),
-    33 + (share * 9),
-  ]
+  //Find the stop the loss falls short of. Anything at or beyond the last one
+  //has given up everything there was to give up, and holds at purple.
+  const loss = Math.min(1, Math.max(0, winrateLoss || 0))
+  const next = candidateStops.findIndex(stop => loss <= stop.loss)
+  if (next <= 0) {
+    return candidateStops[0].hsl
+  }
+
+  //Interpolate between that stop and the one before it
+  const from = candidateStops[next - 1]
+  const to = candidateStops[next]
+  const share = (loss - from.loss) / (to.loss - from.loss)
+  return from.hsl.map((value, i) => value + ((to.hsl[i] - value) * share))
 }
 
 //Build a colour from the above, optionally lightened and made translucent for
 //the marker's fill
 const candidateColor = (winrateLoss, isBest, lighten = 0, alpha = 1) => {
   const [h, s, l] = candidateHsl(winrateLoss, isBest)
-  return `hsla(${Math.round(h)},${Math.round(s)}%,${Math.round(l + lighten)}%,${alpha})`
+  const hue = ((Math.round(h) % 360) + 360) % 360
+  return `hsla(${hue},${Math.round(s)}%,${Math.round(l + lighten)}%,${alpha})`
 }
 
 //Default theme
@@ -456,11 +476,11 @@ export const defaultTheme = {
 
     //Analysis candidate markers
     //
-    //NOTE: the fill, the ring colour and the stroke weight are all worked out
-    //from the win rate the candidate gives up against the best one, which is
-    //what makes the gradient a theme concern rather than drawing code. The
-    //blue marker is simply the candidate that gives up nothing, not a marker
-    //of a different kind.
+    //NOTE: the fill and the ring colour are both worked out from the win rate
+    //the candidate gives up against the best one, which is what makes the
+    //gradient a theme concern rather than drawing code. The blue marker is
+    //simply the candidate that gives up nothing, not a marker of a different
+    //kind.
     candidate: {
       scale: 0.92,
 
