@@ -487,17 +487,22 @@ export const defaultTheme = {
       },
       textColor: 'rgba(0,0,0,0.8)',
 
-      //Ring, and the lighter translucent fill underneath it
+      //Ring, and the lighter fill underneath it. The ring is half transparent,
+      //so it settles towards what it sits on rather than outlining the marker
+      //against the board.
       color(cellSize, stoneColor, winrateLoss, isBest) {
-        return candidateColor(winrateLoss, isBest)
+        return candidateColor(winrateLoss, isBest, 0, 0.5)
       },
       fillColor(cellSize, stoneColor, winrateLoss, isBest) {
         return candidateColor(winrateLoss, isBest, 26, 0.75)
       },
-      lineWidth(cellSize, stoneColor, winrateLoss) {
-        const base = Math.max(1, Math.floor(cellSize / 16))
-        const weight = Math.max(0.5, 1.5 - ((winrateLoss || 0) * 10))
-        return Math.max(1, Math.round(base * weight))
+
+      //NOTE: one weight for every marker. This used to thin out as the
+      //candidate gave up more, which read as the markers being drawn at
+      //different sizes rather than as a scale, and the colour already says
+      //everything the weight was saying.
+      lineWidth(cellSize/*, stoneColor, winrateLoss, isBest*/) {
+        return Math.max(1, Math.round(cellSize / 20))
       },
     },
 

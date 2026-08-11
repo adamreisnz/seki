@@ -135,23 +135,43 @@ describe('MarkupCandidate colour gradient', () => {
     expect(hueFor(0.4)).toBe(hueFor(0.1))
   })
 
-  it('fills itself with a lighter, translucent version of its ring', () => {
+  it('fills itself with a lighter version of its ring, in the same hue', () => {
     const markup = createCandidate(createBoard(), {index: 1, winrate: 0.02})
     markup.loadProperties(3, 3)
 
     expect(hueOf(markup.fillColor)).toBe(hueOf(markup.color))
     expect(markup.fillColor).toContain(',0.75)')
-    expect(markup.color).toContain(',1)')
   })
 
-  it('draws a heavier ring the closer to best a candidate is', () => {
+  it('keeps the ring half transparent, so it settles towards the board', () => {
+    const markup = createCandidate(createBoard(), {index: 1, winrate: 0.02})
+    markup.loadProperties(3, 3)
+
+    expect(markup.color).toContain(',0.5)')
+  })
+
+  it('rings every candidate at the same weight', () => {
+
+    //NOTE: the weight used to thin out as the candidate gave up more, which
+    //read as the markers being drawn at different sizes rather than as a
+    //scale. The colour already carries everything the weight was saying.
+    const widths = [0, 0.005, 0.02, 0.05, 0.3].map(winrate => {
+      const markup = createCandidate(createBoard(), {index: 1, winrate})
+      markup.loadProperties(3, 3)
+      return markup.lineWidth
+    })
+
+    expect(new Set(widths).size).toBe(1)
+  })
+
+  it('rings the best candidate no differently from the rest', () => {
     const best = createCandidate(createBoard(), {index: 0, winrate: 0})
-    const worst = createCandidate(createBoard(), {index: 4, winrate: 0.3})
+    const other = createCandidate(createBoard(), {index: 4, winrate: 0.3})
 
     best.loadProperties(3, 3)
-    worst.loadProperties(3, 3)
+    other.loadProperties(3, 3)
 
-    expect(best.lineWidth).toBeGreaterThan(worst.lineWidth)
+    expect(best.lineWidth).toBe(other.lineWidth)
   })
 })
 
