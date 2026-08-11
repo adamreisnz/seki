@@ -56,6 +56,7 @@ export default class Board extends Base {
     boardLayerTypes.SHADOW,
     boardLayerTypes.STONES,
     boardLayerTypes.SCORE,
+    boardLayerTypes.ANALYSIS,
     boardLayerTypes.MARKUP,
     boardLayerTypes.DRAW,
     boardLayerTypes.HOVER,

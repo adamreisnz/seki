@@ -97,6 +97,12 @@ export const defaultPlayerConfig = {
   rememberVariationPaths: true,
   allowPlayerConfig: true,
 
+  //AI analysis overlay. The ownership heat map is an addition to the candidate
+  //markers rather than a display of its own, so it needs both flags: wanting
+  //the markers without the heat map is the common case.
+  showAnalysis: false,
+  showAnalysisOwnership: false,
+
   //Sounds
   playSounds: true,
   soundVolume: 0.5,
@@ -149,6 +155,19 @@ export const defaultStarPoints = {
     {x: 2, y: 2},
   ],
 }
+
+//Colour bands for analysis candidate markers, keyed off how much win rate a
+//candidate gives up against the best one. The thresholds are the move quality
+//thresholds, so that a marker on the board and the verdict written next to it
+//are saying the same thing. The first band is the engine's own choice.
+const candidateColors = [
+  {loss: 0.005, color: '38,136,228'}, //excellent
+  {loss: 0.01, color: '15,137,74'}, //great
+  {loss: 0.02, color: '106,168,79'}, //good
+  {loss: 0.05, color: '214,158,25'}, //inaccuracy
+  {loss: 0.1, color: '226,113,29'}, //mistake
+  {loss: Infinity, color: '237,9,15'}, //blunder
+]
 
 //Default theme
 export const defaultTheme = {
@@ -416,6 +435,35 @@ export const defaultTheme = {
       },
     },
 
+    //Analysis candidate markers
+    //
+    //NOTE: colour and stroke weight are both worked out from the win rate the
+    //candidate gives up against the best one, which is what makes the gradient
+    //a theme concern rather than drawing code. The blue marker is simply the
+    //candidate that gives up nothing, not a marker of a different kind.
+    candidate: {
+      scale: 0.9,
+      text(i) {
+        // return '' //No text
+        // return String.fromCharCode(65 + i) //Letters
+        return i + 1 //The engine's ranking
+      },
+      fontSize(cellSize) {
+        return Math.floor(cellSize * 0.5)
+      },
+      color(cellSize, stoneColor, winrateLoss, isBest) {
+        const opacity = isBest ? 1 : 0.8
+        const {color} = candidateColors
+          .find(band => (winrateLoss || 0) < band.loss)
+        return `rgba(${color},${opacity})`
+      },
+      lineWidth(cellSize, stoneColor, winrateLoss) {
+        const base = Math.max(1, Math.floor(cellSize / 16))
+        const weight = Math.max(0.5, 1.5 - ((winrateLoss || 0) * 10))
+        return Math.max(1, Math.round(base * weight))
+      },
+    },
+
     //Last move marker
     lastMove: {
       type: markupTypes.CIRCLE,
@@ -445,6 +493,32 @@ export const defaultTheme = {
         text: null,
         color: 'rgba(237,9,15,1)',
         scale: 0.3,
+      },
+    },
+  },
+
+  //AI analysis
+  analysis: {
+
+    //Ownership heat map
+    ownership: {
+
+      //Points held less firmly than this are too contested to be worth
+      //shading, and shading them all makes the board unreadable
+      threshold: 0.15,
+
+      //Colour of whoever holds the point
+      color(cellSize, stoneColor) {
+        return (stoneColor === stoneColors.BLACK) ? '#000' : '#fff'
+      },
+
+      //Both the size of the square and how solid it is track how firmly the
+      //point is held, on a scale of 0 to 1
+      scale(cellSize, stoneColor, strength) {
+        return 0.2 + (strength * 0.4)
+      },
+      alpha(cellSize, stoneColor, strength) {
+        return Math.min(0.6, strength * 0.6)
       },
     },
   },

@@ -35,6 +35,7 @@ export default class PlayerModeReplay extends PlayerMode {
       config: 'onConfigChange',
       pathChange: 'onPathChange',
       variationChange: 'onVariationChange',
+      analysisChange: 'onAnalysisChange',
       gameLoad: 'onGameLoad',
     })
   }
@@ -171,6 +172,8 @@ export default class PlayerModeReplay extends PlayerMode {
       'showLastMoveNumber',
       'showVariationMoveNumbers',
       'rememberVariationPaths',
+      'showAnalysis',
+      'showAnalysisOwnership',
     ]
 
     //Clear keys
@@ -230,6 +233,13 @@ export default class PlayerModeReplay extends PlayerMode {
    * On variation change
    */
   onVariationChange() {
+    this.renderMarkers()
+  }
+
+  /**
+   * On analysis change
+   */
+  onAnalysisChange() {
     this.renderMarkers()
   }
 
@@ -363,6 +373,7 @@ export default class PlayerModeReplay extends PlayerMode {
     const showAllMoveNumbers = player.getConfig('showAllMoveNumbers')
     const showLastMoveNumber = player.getConfig('showLastMoveNumber')
     const showVariationMoveNumbers = player.getConfig('showVariationMoveNumbers')
+    const showAnalysis = player.getConfig('showAnalysis')
 
     //Clear hover layer
     board.clearHoverLayer()
@@ -406,6 +417,93 @@ export default class PlayerModeReplay extends PlayerMode {
     else if (showLastMove) {
       this.addLastMoveMarker(node)
     }
+
+    //Show the AI analysis overlay. This goes on last, because it is only ever
+    //on the board because it was asked for, so it should win where it lands on
+    //the same point as a marker we generated ourselves. Markup the record
+    //itself carries is still left alone, as it is everywhere else.
+    if (showAnalysis) {
+      this.addAnalysisMarkers(node)
+      this.renderAnalysisOwnership(node)
+    }
+  }
+
+  /**
+   * Add analysis candidate markers
+   *
+   * NOTE: the candidates belong to the position at this node, so they are the
+   * suggestions for the move to play from here. The node's own loss and
+   * quality describe the move that reached it, which is a different turn's
+   * analysis and has no place on the board.
+   */
+  addAnalysisMarkers(node) {
+
+    //Get data
+    const {board, markers} = this
+    const candidates = node.analysis?.candidates
+
+    //Nothing to show
+    if (!candidates || candidates.length === 0) {
+      return
+    }
+
+    //A single candidate needs no ranking next to it
+    const showText = (candidates.length > 1)
+
+    //Loop candidates
+    candidates.forEach((candidate, i) => {
+
+      //Get data
+      const {x, y, loss} = candidate
+
+      //A pass has no home on the board
+      if (typeof x !== 'number' || typeof y !== 'number') {
+        return
+      }
+
+      //Not on top of stones
+      if (board.has(boardLayerTypes.STONES, x, y)) {
+        return
+      }
+
+      //Already has markup on this coordinate, preserve it
+      if (node.hasMarkup(x, y)) {
+        return
+      }
+
+      //Construct data for factory
+      const index = i
+      const isBest = (i === 0)
+      const data = {index, loss, isBest, showText}
+
+      //Add to markers
+      markers.push({x, y})
+
+      //Add to board
+      board
+        .add(boardLayerTypes.MARKUP, x, y, MarkupFactory
+          .create(markupTypes.CANDIDATE, board, data))
+    })
+  }
+
+  /**
+   * Render the ownership heat map for a node
+   */
+  renderAnalysisOwnership(node) {
+
+    //Get data
+    const {player, board} = this
+    const showOwnership = player.getConfig('showAnalysisOwnership')
+    const ownership = node.analysis?.ownership
+
+    //Not showing it, or nothing to show. The layer is cleared along with the
+    //markers, so there is nothing to take off the board here.
+    if (!showOwnership || !ownership) {
+      return
+    }
+
+    //Hand it to the analysis layer
+    board.setAll(boardLayerTypes.ANALYSIS, ownership)
   }
 
   /**
@@ -597,5 +695,9 @@ export default class PlayerModeReplay extends PlayerMode {
 
     //Reset markers array
     this.markers = []
+
+    //Take the analysis overlay down with them, as it describes the position
+    //we are leaving just as much as the markers do
+    board.removeAll(boardLayerTypes.ANALYSIS)
   }
 }
