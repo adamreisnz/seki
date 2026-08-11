@@ -11,23 +11,38 @@ export default class PlayerModePlay extends PlayerModeReplay {
 
   /**
    * Initialise
+   *
+   * NOTE: deliberately does not extend the player the way replay mode does,
+   * as auto play has no place in a game being played.
    */
   init() {
+    this.createBoundListeners(this.getEventListeners())
+  }
 
-    //Create bound event listeners
-    //NOTE: this mode needs the replay listeners that keep the board display
-    //fresh, so that the last move marker follows the game as it is played.
-    //It deliberately leaves out the keyboard and mouse wheel listeners, as a
-    //game being played is not a record to navigate back and forth through.
-    this.createBoundListeners({
-      click: 'onClick',
-      config: 'onConfigChange',
-      pathChange: 'onPathChange',
-      variationChange: 'onVariationChange',
-      gameLoad: 'onGameLoad',
+  /**
+   * Get the event listeners this mode needs
+   *
+   * This mode needs the replay listeners that keep the board display fresh, so
+   * that the last move marker follows the game as it is played. They are taken
+   * from the parent rather than restated, so that a listener added there is
+   * picked up here too.
+   */
+  getEventListeners() {
+
+    //Get the replay listeners
+    const listeners = super.getEventListeners()
+
+    //A game being played is not a record to navigate back and forth through,
+    //so the keyboard and mouse wheel listeners are deliberately left out
+    delete listeners.keydown
+    delete listeners.wheel
+
+    //Add our own
+    return {
+      ...listeners,
       gridEnter: 'onGridEnter',
       gridLeave: 'onGridLeave',
-    })
+    }
   }
 
   /**************************************************************************

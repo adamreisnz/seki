@@ -19,6 +19,7 @@ export const markupTypes = {
   //Special
   SELECT: 'select',
   VARIATION: 'variation',
+  CANDIDATE: 'candidate',
   LAST_MOVE: 'lastMove',
   MOVE_NUMBER: 'moveNumber',
 }

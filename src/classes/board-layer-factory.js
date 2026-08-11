@@ -4,6 +4,7 @@ import CoordinatesLayer from './layers/coordinates-layer.js'
 import ShadowLayer from './layers/shadow-layer.js'
 import StonesLayer from './layers/stones-layer.js'
 import ScoreLayer from './layers/score-layer.js'
+import AnalysisLayer from './layers/analysis-layer.js'
 import MarkupLayer from './layers/markup-layer.js'
 import DrawLayer from './layers/draw-layer.js'
 import HoverLayer from './layers/hover-layer.js'
@@ -31,6 +32,8 @@ export default class BoardLayerFactory {
         return StonesLayer
       case boardLayerTypes.SCORE:
         return ScoreLayer
+      case boardLayerTypes.ANALYSIS:
+        return AnalysisLayer
       case boardLayerTypes.MARKUP:
         return MarkupLayer
       case boardLayerTypes.DRAW:

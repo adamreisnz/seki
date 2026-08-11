@@ -97,6 +97,12 @@ export const defaultPlayerConfig = {
   rememberVariationPaths: true,
   allowPlayerConfig: true,
 
+  //AI analysis overlay. The ownership heat map is an addition to the candidate
+  //markers rather than a display of its own, so it needs both flags: wanting
+  //the markers without the heat map is the common case.
+  showAnalysis: false,
+  showAnalysisOwnership: false,
+
   //Sounds
   playSounds: true,
   soundVolume: 0.5,
@@ -148,6 +154,58 @@ export const defaultStarPoints = {
   5: [
     {x: 2, y: 2},
   ],
+}
+
+//Colour stops for the analysis gradient, keyed on how much win rate a move
+//gives up against the best one available.
+//
+//The scale keeps its resolution where the moves an engine puts forward
+//actually sit, being the first few percent, and only then carries on through
+//orange and red into purple. That far end is not for candidates, which are all
+//moves the engine itself proposed and so cluster in the green: it is for
+//grading a move somebody actually played, which can give up any amount.
+//
+//The lightness climbs from green to gold, as a gold at a green's lightness
+//reads as muddy brown rather than as a colour on the same scale. Hues run down
+//through zero into negative numbers, which is how a red carries on into a
+//magenta and then a purple rather than doubling back through the whole wheel.
+const candidateStops = [
+  {loss: 0, hsl: [125, 55, 33]}, //green
+  {loss: 0.1, hsl: [48, 85, 42]}, //gold
+  {loss: 0.25, hsl: [28, 85, 45]}, //orange
+  {loss: 0.5, hsl: [2, 75, 45]}, //red
+  {loss: 1, hsl: [-70, 50, 42]}, //purple
+]
+
+//Hue, saturation and lightness for an analysis marker
+const candidateHsl = (winrateLoss, isBest) => {
+
+  //The best move is the blue spot, and the only blue marker there is
+  if (isBest) {
+    return [205, 72, 42]
+  }
+
+  //Find the stop the loss falls short of. Anything at or beyond the last one
+  //has given up everything there was to give up, and holds at purple.
+  const loss = Math.min(1, Math.max(0, winrateLoss || 0))
+  const next = candidateStops.findIndex(stop => loss <= stop.loss)
+  if (next <= 0) {
+    return candidateStops[0].hsl
+  }
+
+  //Interpolate between that stop and the one before it
+  const from = candidateStops[next - 1]
+  const to = candidateStops[next]
+  const share = (loss - from.loss) / (to.loss - from.loss)
+  return from.hsl.map((value, i) => value + ((to.hsl[i] - value) * share))
+}
+
+//Build a colour from the above, optionally lightened and made translucent for
+//the marker's fill
+const candidateColor = (winrateLoss, isBest, lighten = 0, alpha = 1) => {
+  const [h, s, l] = candidateHsl(winrateLoss, isBest)
+  const hue = ((Math.round(h) % 360) + 360) % 360
+  return `hsla(${hue},${Math.round(s)}%,${Math.round(l + lighten)}%,${alpha})`
 }
 
 //Default theme
@@ -416,6 +474,58 @@ export const defaultTheme = {
       },
     },
 
+    //Analysis candidate markers
+    //
+    //NOTE: the fill and the ring colour are both worked out from the win rate
+    //the candidate gives up against the best one, which is what makes the
+    //gradient a theme concern rather than drawing code. The blue marker is
+    //simply the candidate that gives up nothing, not a marker of a different
+    //kind.
+    candidate: {
+      scale: 0.92,
+
+      //The number inside the marker is the points given up against the best
+      //candidate, the way the analysis apps show it. Win rate drives the
+      //colour, because it already carries the weight of the game's phase,
+      //while points are what a player can actually read off the board.
+      text(scoreLoss/*, cellSize, index, winrateLoss*/) {
+        const points = Math.round((scoreLoss || 0) * 10) / 10
+        if (points === 0) {
+          return '0.0'
+        }
+        return `${points > 0 ? '-' : '+'}${Math.abs(points).toFixed(1)}`
+      },
+      fontSize(text, cellSize) {
+        const len = String(text).length
+        if (len <= 3) {
+          return Math.round(cellSize * 0.44)
+        }
+        else if (len === 4) {
+          return Math.round(cellSize * 0.38)
+        }
+        return Math.round(cellSize * 0.3)
+      },
+      textColor: 'rgba(0,0,0,0.8)',
+
+      //Ring, and the lighter fill underneath it. The ring is half transparent,
+      //so it settles towards what it sits on rather than outlining the marker
+      //against the board.
+      color(cellSize, stoneColor, winrateLoss, isBest) {
+        return candidateColor(winrateLoss, isBest, 0, 0.5)
+      },
+      fillColor(cellSize, stoneColor, winrateLoss, isBest) {
+        return candidateColor(winrateLoss, isBest, 26, 0.75)
+      },
+
+      //NOTE: one weight for every marker. This used to thin out as the
+      //candidate gave up more, which read as the markers being drawn at
+      //different sizes rather than as a scale, and the colour already says
+      //everything the weight was saying.
+      lineWidth(cellSize/*, stoneColor, winrateLoss, isBest*/) {
+        return Math.max(1, Math.round(cellSize / 20))
+      },
+    },
+
     //Last move marker
     lastMove: {
       type: markupTypes.CIRCLE,
@@ -445,6 +555,32 @@ export const defaultTheme = {
         text: null,
         color: 'rgba(237,9,15,1)',
         scale: 0.3,
+      },
+    },
+  },
+
+  //AI analysis
+  analysis: {
+
+    //Ownership heat map
+    ownership: {
+
+      //Points held less firmly than this are too contested to be worth
+      //shading, and shading them all makes the board unreadable
+      threshold: 0.15,
+
+      //Colour of whoever holds the point
+      color(cellSize, stoneColor) {
+        return (stoneColor === stoneColors.BLACK) ? '#000' : '#fff'
+      },
+
+      //Both the size of the square and how solid it is track how firmly the
+      //point is held, on a scale of 0 to 1
+      scale(cellSize, stoneColor, strength) {
+        return 0.2 + (strength * 0.4)
+      },
+      alpha(cellSize, stoneColor, strength) {
+        return Math.min(0.6, strength * 0.6)
       },
     },
   },

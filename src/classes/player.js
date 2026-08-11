@@ -712,6 +712,55 @@ export default class Player extends Base {
   }
 
   /*****************************************************************************
+   * Analysis handling
+   ***/
+
+  /**
+   * Set AI analysis data on the game's main line
+   *
+   * The given array is indexed by move number, so entry 0 belongs to the root
+   * node, being the position before any move was made, entry 1 to the node
+   * after the first move, and so on. Nodes the array doesn't reach are left
+   * without analysis.
+   *
+   * Each entry describes the position at its node, apart from its loss and
+   * quality, which describe the move that reached it. Variations are not
+   * covered, as the array can only address the main line.
+   */
+  setAnalysis(moves) {
+
+    //Get data
+    const {game} = this
+
+    //Walk the main line
+    let node = game.getRootNode()
+    let i = 0
+
+    //Assign each entry to the node at that move number
+    while (node) {
+      const analysis = moves ? moves[i] : null
+      if (analysis) {
+        node.analysis = analysis
+      }
+      else {
+        delete node.analysis
+      }
+      node = node.getChild(0)
+      i++
+    }
+
+    //Trigger event, so the active mode can render it
+    this.triggerEvent('analysisChange', {hasAnalysis: Boolean(moves)})
+  }
+
+  /**
+   * Clear any AI analysis data from the game
+   */
+  clearAnalysis() {
+    this.setAnalysis(null)
+  }
+
+  /*****************************************************************************
    * Board handling
    ***/
 

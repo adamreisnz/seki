@@ -28,15 +28,27 @@ export default class PlayerModeReplay extends PlayerMode {
     this.extendPlayer()
 
     //Create bound event listeners
-    this.createBoundListeners({
+    this.createBoundListeners(this.getEventListeners())
+  }
+
+  /**
+   * Get the event listeners this mode needs
+   *
+   * NOTE: exposed as a method so that the modes extending this one can compose
+   * their own map from it. They used to restate the whole map, which meant a
+   * listener added here reached none of them, silently.
+   */
+  getEventListeners() {
+    return {
       keydown: 'onKeyDown',
       click: 'onClick',
       wheel: 'onMouseWheel',
       config: 'onConfigChange',
       pathChange: 'onPathChange',
       variationChange: 'onVariationChange',
+      analysisChange: 'onAnalysisChange',
       gameLoad: 'onGameLoad',
-    })
+    }
   }
 
   /**
@@ -171,6 +183,8 @@ export default class PlayerModeReplay extends PlayerMode {
       'showLastMoveNumber',
       'showVariationMoveNumbers',
       'rememberVariationPaths',
+      'showAnalysis',
+      'showAnalysisOwnership',
     ]
 
     //Clear keys
@@ -230,6 +244,13 @@ export default class PlayerModeReplay extends PlayerMode {
    * On variation change
    */
   onVariationChange() {
+    this.renderMarkers()
+  }
+
+  /**
+   * On analysis change
+   */
+  onAnalysisChange() {
     this.renderMarkers()
   }
 
@@ -363,6 +384,7 @@ export default class PlayerModeReplay extends PlayerMode {
     const showAllMoveNumbers = player.getConfig('showAllMoveNumbers')
     const showLastMoveNumber = player.getConfig('showLastMoveNumber')
     const showVariationMoveNumbers = player.getConfig('showVariationMoveNumbers')
+    const showAnalysis = player.getConfig('showAnalysis')
 
     //Clear hover layer
     board.clearHoverLayer()
@@ -406,6 +428,92 @@ export default class PlayerModeReplay extends PlayerMode {
     else if (showLastMove) {
       this.addLastMoveMarker(node)
     }
+
+    //Show the AI analysis overlay. This goes on last, because it is only ever
+    //on the board because it was asked for, so it should win where it lands on
+    //the same point as a marker we generated ourselves. Markup the record
+    //itself carries is still left alone, as it is everywhere else.
+    if (showAnalysis) {
+      this.addAnalysisMarkers(node)
+      this.renderAnalysisOwnership(node)
+    }
+  }
+
+  /**
+   * Add analysis candidate markers
+   *
+   * NOTE: the candidates belong to the position at this node, so they are the
+   * suggestions for the move to play from here. The node's own loss and
+   * quality describe the move that reached it, which is a different turn's
+   * analysis and has no place on the board.
+   */
+  addAnalysisMarkers(node) {
+
+    //Get data
+    const {board, markers} = this
+    const candidates = node.analysis?.candidates
+
+    //Nothing to show
+    if (!candidates || candidates.length === 0) {
+      return
+    }
+
+    //Each marker says what its move gives up, which is worth reading even
+    //when there is only one of them. A theme that would rather have bare
+    //markers returns an empty string from the text handler.
+    const showText = true
+
+    //Loop candidates
+    candidates.forEach((candidate, i) => {
+
+      //Get data
+      const {x, y, loss} = candidate
+
+      //A pass has no home on the board
+      if (typeof x !== 'number' || typeof y !== 'number') {
+        return
+      }
+
+      //Not on top of stones
+      if (board.has(boardLayerTypes.STONES, x, y)) {
+        return
+      }
+
+      //Already has markup on this coordinate, preserve it
+      if (node.hasMarkup(x, y)) {
+        return
+      }
+
+      //Construct data for factory
+      const index = i
+      const isBest = (i === 0)
+      const data = {index, loss, isBest, showText}
+
+      //Add to board, recording what we put there
+      const markup = MarkupFactory.create(markupTypes.CANDIDATE, board, data)
+      markers.push({x, y, markup})
+      board.add(boardLayerTypes.MARKUP, x, y, markup)
+    })
+  }
+
+  /**
+   * Render the ownership heat map for a node
+   */
+  renderAnalysisOwnership(node) {
+
+    //Get data
+    const {player, board} = this
+    const showOwnership = player.getConfig('showAnalysisOwnership')
+    const ownership = node.analysis?.ownership
+
+    //Not showing it, or nothing to show. The layer is cleared along with the
+    //markers, so there is nothing to take off the board here.
+    if (!showOwnership || !ownership) {
+      return
+    }
+
+    //Hand it to the analysis layer
+    board.setAll(boardLayerTypes.ANALYSIS, ownership)
   }
 
   /**
@@ -439,13 +547,10 @@ export default class PlayerModeReplay extends PlayerMode {
       const isSelected = node.isSelectedPath(variation)
       const data = {index, displayColor, showText, isSelected}
 
-      //Add to markers
-      markers.push({x, y})
-
-      //Add to board
-      board
-        .add(boardLayerTypes.MARKUP, x, y, MarkupFactory
-          .create(markupTypes.VARIATION, board, data))
+      //Add to board, recording what we put there
+      const markup = MarkupFactory.create(markupTypes.VARIATION, board, data)
+      markers.push({x, y, markup})
+      board.add(boardLayerTypes.MARKUP, x, y, markup)
     })
   }
 
@@ -481,13 +586,10 @@ export default class PlayerModeReplay extends PlayerMode {
       return
     }
 
-    //Store
-    markers.push({x, y})
-
-    //Add to board
-    board
-      .add(boardLayerTypes.MARKUP, x, y, MarkupFactory
-        .create(markupTypes.LAST_MOVE, board))
+    //Add to board, recording what we put there
+    const markup = MarkupFactory.create(markupTypes.LAST_MOVE, board)
+    markers.push({x, y, markup})
+    board.add(boardLayerTypes.MARKUP, x, y, markup)
   }
 
   /**
@@ -511,13 +613,10 @@ export default class PlayerModeReplay extends PlayerMode {
         return
       }
 
-      //Store
-      markers.push({x, y})
-
-      //Add to board
-      board
-        .add(boardLayerTypes.MARKUP, x, y, MarkupFactory
-          .create(markupTypes.MOVE_NUMBER, board, {number}))
+      //Add to board, recording what we put there
+      const markup = MarkupFactory.create(markupTypes.MOVE_NUMBER, board, {number})
+      markers.push({x, y, markup})
+      board.add(boardLayerTypes.MARKUP, x, y, markup)
     })
   }
 
@@ -542,13 +641,10 @@ export default class PlayerModeReplay extends PlayerMode {
         return
       }
 
-      //Store
-      markers.push({x, y})
-
-      //Add to board
-      board
-        .add(boardLayerTypes.MARKUP, x, y, MarkupFactory
-          .create(markupTypes.MOVE_NUMBER, board, {number}))
+      //Add to board, recording what we put there
+      const markup = MarkupFactory.create(markupTypes.MOVE_NUMBER, board, {number})
+      markers.push({x, y, markup})
+      board.add(boardLayerTypes.MARKUP, x, y, markup)
     })
   }
 
@@ -572,13 +668,10 @@ export default class PlayerModeReplay extends PlayerMode {
       return
     }
 
-    //Store
-    markers.push({x, y})
-
-    //Add to board
-    board
-      .add(boardLayerTypes.MARKUP, x, y, MarkupFactory
-        .create(markupTypes.MOVE_NUMBER, board, {number}))
+    //Add to board, recording what we put there
+    const markup = MarkupFactory.create(markupTypes.MOVE_NUMBER, board, {number})
+    markers.push({x, y, markup})
+    board.add(boardLayerTypes.MARKUP, x, y, markup)
   }
 
   /**
@@ -592,10 +685,26 @@ export default class PlayerModeReplay extends PlayerMode {
       return
     }
 
-    //Remove markers
-    markers.forEach(({x, y}) => board.removeMarkup(x, y))
+    //Remove the markers, but only where what is on the board is still the one
+    //we put there.
+    //
+    //NOTE: this used to remove by coordinate alone, which took the record's
+    //own markup off the board with it. Moving to a node that carries markup on
+    //a point we had marked has the position sync draw that markup before we
+    //get here, so removing the coordinate erased it until the next full
+    //redraw. Candidate markers cover far more points than the last move and
+    //variation markers do, which turns a rare collision into a routine one.
+    markers.forEach(({x, y, markup}) => {
+      if (board.get(boardLayerTypes.MARKUP, x, y) === markup) {
+        board.removeMarkup(x, y)
+      }
+    })
 
     //Reset markers array
     this.markers = []
+
+    //Take the analysis overlay down with them, as it describes the position
+    //we are leaving just as much as the markers do
+    board.removeAll(boardLayerTypes.ANALYSIS)
   }
 }

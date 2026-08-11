@@ -8,6 +8,7 @@ import MarkupHappy from './objects/markup-happy.js'
 import MarkupSad from './objects/markup-sad.js'
 import MarkupSelect from './objects/markup-select.js'
 import MarkupVariation from './objects/markup-variation.js'
+import MarkupCandidate from './objects/markup-candidate.js'
 import MarkupLastMove from './objects/markup-last-move.js'
 import MarkupMoveNumber from './objects/markup-move-number.js'
 import {markupTypes} from '../constants/markup.js'
@@ -46,6 +47,8 @@ export default class MarkupFactory {
         return MarkupSelect
       case markupTypes.VARIATION:
         return MarkupVariation
+      case markupTypes.CANDIDATE:
+        return MarkupCandidate
       case markupTypes.LAST_MOVE:
         return MarkupLastMove
       case markupTypes.MOVE_NUMBER:

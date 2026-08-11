@@ -220,3 +220,90 @@ describe('loading a handicap game', () => {
     expect(game.getTurn()).toBe('black')
   })
 })
+
+describe('setting analysis on a game', () => {
+
+  //Two moves, with a variation hanging off the first one
+  const sgf = '(;GM[1]FF[4]SZ[19];B[dd](;W[pp];B[qf])(;W[cq]))'
+
+  const moves = [
+    {winrate: 0.5, visits: 500},
+    {winrate: 0.48, visits: 500, loss: {winrate: 0.02, score: 1.4}},
+    {winrate: 0.52, visits: 500, loss: {winrate: 0, score: 0}},
+    {winrate: 0.51, visits: 500, loss: {winrate: 0.01, score: 0.4}},
+  ]
+
+  const mainLine = game => {
+    const nodes = []
+    let node = game.getRootNode()
+    while (node) {
+      nodes.push(node)
+      node = node.getChild(0)
+    }
+    return nodes
+  }
+
+  let player
+
+  beforeEach(() => {
+    player = new Player()
+    player.loadData(sgf)
+  })
+
+  it('gives the first entry to the root node', () => {
+
+    //NOTE: the array is indexed by move number, and the root node is the
+    //position before any move was made, so it takes entry 0. Handing it the
+    //first move's analysis instead puts the whole game one node out of step.
+    player.setAnalysis(moves)
+    expect(player.game.getRootNode().analysis).toBe(moves[0])
+  })
+
+  it('walks the main line in order', () => {
+    player.setAnalysis(moves)
+    expect(mainLine(player.game).map(node => node.analysis)).toEqual(moves)
+  })
+
+  it('leaves the variations without any', () => {
+    player.setAnalysis(moves)
+
+    const [, first] = mainLine(player.game)
+    expect(first.getChild(1).analysis).toBeUndefined()
+  })
+
+  it('leaves nodes the array does not reach alone', () => {
+    player.setAnalysis(moves.slice(0, 2))
+
+    const [, , second] = mainLine(player.game)
+    expect(second.analysis).toBeUndefined()
+  })
+
+  it('takes it all off again', () => {
+    player.setAnalysis(moves)
+    player.clearAnalysis()
+
+    expect(mainLine(player.game).every(node => !('analysis' in node))).toBe(true)
+  })
+
+  it('keeps it out of the saved record', () => {
+
+    //NOTE: an unknown key on a node has no SGF property to be written to, so
+    //it must not become one. The game tree is fingerprinted with toSgf() for
+    //multiplayer sync, which a stray property would break as well.
+    const before = player.game.toSgf()
+    player.setAnalysis(moves)
+
+    expect(player.game.toSgf()).toBe(before)
+  })
+
+  it('announces the change, so the board can be redrawn', () => {
+    const listener = vi.fn()
+    player.on('analysisChange', listener)
+
+    player.setAnalysis(moves)
+    expect(listener).toHaveBeenCalledTimes(1)
+
+    player.clearAnalysis()
+    expect(listener).toHaveBeenCalledTimes(2)
+  })
+})
