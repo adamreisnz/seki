@@ -28,7 +28,18 @@ export default class PlayerModeReplay extends PlayerMode {
     this.extendPlayer()
 
     //Create bound event listeners
-    this.createBoundListeners({
+    this.createBoundListeners(this.getEventListeners())
+  }
+
+  /**
+   * Get the event listeners this mode needs
+   *
+   * NOTE: exposed as a method so that the modes extending this one can compose
+   * their own map from it. They used to restate the whole map, which meant a
+   * listener added here reached none of them, silently.
+   */
+  getEventListeners() {
+    return {
       keydown: 'onKeyDown',
       click: 'onClick',
       wheel: 'onMouseWheel',
@@ -37,7 +48,7 @@ export default class PlayerModeReplay extends PlayerMode {
       variationChange: 'onVariationChange',
       analysisChange: 'onAnalysisChange',
       gameLoad: 'onGameLoad',
-    })
+    }
   }
 
   /**
@@ -447,8 +458,10 @@ export default class PlayerModeReplay extends PlayerMode {
       return
     }
 
-    //A single candidate needs no ranking next to it
-    const showText = (candidates.length > 1)
+    //Each marker says what its move gives up, which is worth reading even
+    //when there is only one of them. A theme that would rather have bare
+    //markers returns an empty string from the text handler.
+    const showText = true
 
     //Loop candidates
     candidates.forEach((candidate, i) => {
@@ -476,13 +489,10 @@ export default class PlayerModeReplay extends PlayerMode {
       const isBest = (i === 0)
       const data = {index, loss, isBest, showText}
 
-      //Add to markers
-      markers.push({x, y})
-
-      //Add to board
-      board
-        .add(boardLayerTypes.MARKUP, x, y, MarkupFactory
-          .create(markupTypes.CANDIDATE, board, data))
+      //Add to board, recording what we put there
+      const markup = MarkupFactory.create(markupTypes.CANDIDATE, board, data)
+      markers.push({x, y, markup})
+      board.add(boardLayerTypes.MARKUP, x, y, markup)
     })
   }
 
@@ -537,13 +547,10 @@ export default class PlayerModeReplay extends PlayerMode {
       const isSelected = node.isSelectedPath(variation)
       const data = {index, displayColor, showText, isSelected}
 
-      //Add to markers
-      markers.push({x, y})
-
-      //Add to board
-      board
-        .add(boardLayerTypes.MARKUP, x, y, MarkupFactory
-          .create(markupTypes.VARIATION, board, data))
+      //Add to board, recording what we put there
+      const markup = MarkupFactory.create(markupTypes.VARIATION, board, data)
+      markers.push({x, y, markup})
+      board.add(boardLayerTypes.MARKUP, x, y, markup)
     })
   }
 
@@ -579,13 +586,10 @@ export default class PlayerModeReplay extends PlayerMode {
       return
     }
 
-    //Store
-    markers.push({x, y})
-
-    //Add to board
-    board
-      .add(boardLayerTypes.MARKUP, x, y, MarkupFactory
-        .create(markupTypes.LAST_MOVE, board))
+    //Add to board, recording what we put there
+    const markup = MarkupFactory.create(markupTypes.LAST_MOVE, board)
+    markers.push({x, y, markup})
+    board.add(boardLayerTypes.MARKUP, x, y, markup)
   }
 
   /**
@@ -609,13 +613,10 @@ export default class PlayerModeReplay extends PlayerMode {
         return
       }
 
-      //Store
-      markers.push({x, y})
-
-      //Add to board
-      board
-        .add(boardLayerTypes.MARKUP, x, y, MarkupFactory
-          .create(markupTypes.MOVE_NUMBER, board, {number}))
+      //Add to board, recording what we put there
+      const markup = MarkupFactory.create(markupTypes.MOVE_NUMBER, board, {number})
+      markers.push({x, y, markup})
+      board.add(boardLayerTypes.MARKUP, x, y, markup)
     })
   }
 
@@ -640,13 +641,10 @@ export default class PlayerModeReplay extends PlayerMode {
         return
       }
 
-      //Store
-      markers.push({x, y})
-
-      //Add to board
-      board
-        .add(boardLayerTypes.MARKUP, x, y, MarkupFactory
-          .create(markupTypes.MOVE_NUMBER, board, {number}))
+      //Add to board, recording what we put there
+      const markup = MarkupFactory.create(markupTypes.MOVE_NUMBER, board, {number})
+      markers.push({x, y, markup})
+      board.add(boardLayerTypes.MARKUP, x, y, markup)
     })
   }
 
@@ -670,13 +668,10 @@ export default class PlayerModeReplay extends PlayerMode {
       return
     }
 
-    //Store
-    markers.push({x, y})
-
-    //Add to board
-    board
-      .add(boardLayerTypes.MARKUP, x, y, MarkupFactory
-        .create(markupTypes.MOVE_NUMBER, board, {number}))
+    //Add to board, recording what we put there
+    const markup = MarkupFactory.create(markupTypes.MOVE_NUMBER, board, {number})
+    markers.push({x, y, markup})
+    board.add(boardLayerTypes.MARKUP, x, y, markup)
   }
 
   /**
@@ -690,8 +685,20 @@ export default class PlayerModeReplay extends PlayerMode {
       return
     }
 
-    //Remove markers
-    markers.forEach(({x, y}) => board.removeMarkup(x, y))
+    //Remove the markers, but only where what is on the board is still the one
+    //we put there.
+    //
+    //NOTE: this used to remove by coordinate alone, which took the record's
+    //own markup off the board with it. Moving to a node that carries markup on
+    //a point we had marked has the position sync draw that markup before we
+    //get here, so removing the coordinate erased it until the next full
+    //redraw. Candidate markers cover far more points than the last move and
+    //variation markers do, which turns a rare collision into a routine one.
+    markers.forEach(({x, y, markup}) => {
+      if (board.get(boardLayerTypes.MARKUP, x, y) === markup) {
+        board.removeMarkup(x, y)
+      }
+    })
 
     //Reset markers array
     this.markers = []

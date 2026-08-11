@@ -156,18 +156,37 @@ export const defaultStarPoints = {
   ],
 }
 
-//Colour bands for analysis candidate markers, keyed off how much win rate a
-//candidate gives up against the best one. The thresholds are the move quality
-//thresholds, so that a marker on the board and the verdict written next to it
-//are saying the same thing. The first band is the engine's own choice.
-const candidateColors = [
-  {loss: 0.005, color: '38,136,228'}, //excellent
-  {loss: 0.01, color: '15,137,74'}, //great
-  {loss: 0.02, color: '106,168,79'}, //good
-  {loss: 0.05, color: '214,158,25'}, //inaccuracy
-  {loss: 0.1, color: '226,113,29'}, //mistake
-  {loss: Infinity, color: '237,9,15'}, //blunder
-]
+//Hue, saturation and lightness for an analysis candidate marker, worked out
+//from how much win rate the candidate gives up against the best one.
+//
+//The best candidate is blue and is the only blue marker on the board. The rest
+//run green through to gold, capped at the win rate loss that counts as a
+//blunder. Nothing goes orange or red: every one of these is a move the engine
+//itself put forward, so none of them is a mistake to be warned away from, and
+//colouring them as one says something the analysis does not.
+const candidateHsl = (winrateLoss, isBest) => {
+
+  //The best candidate is the blue spot
+  if (isBest) {
+    return [205, 72, 42]
+  }
+
+  //Green to gold. The lightness climbs with the hue, as a gold at a green's
+  //lightness reads as a muddy brown rather than as a colour on the same scale.
+  const share = Math.min(1, Math.max(0, (winrateLoss || 0) / 0.1))
+  return [
+    125 - (share * 77),
+    55 + (share * 30),
+    33 + (share * 9),
+  ]
+}
+
+//Build a colour from the above, optionally lightened and made translucent for
+//the marker's fill
+const candidateColor = (winrateLoss, isBest, lighten = 0, alpha = 1) => {
+  const [h, s, l] = candidateHsl(winrateLoss, isBest)
+  return `hsla(${Math.round(h)},${Math.round(s)}%,${Math.round(l + lighten)}%,${alpha})`
+}
 
 //Default theme
 export const defaultTheme = {
@@ -437,25 +456,43 @@ export const defaultTheme = {
 
     //Analysis candidate markers
     //
-    //NOTE: colour and stroke weight are both worked out from the win rate the
-    //candidate gives up against the best one, which is what makes the gradient
-    //a theme concern rather than drawing code. The blue marker is simply the
-    //candidate that gives up nothing, not a marker of a different kind.
+    //NOTE: the fill, the ring colour and the stroke weight are all worked out
+    //from the win rate the candidate gives up against the best one, which is
+    //what makes the gradient a theme concern rather than drawing code. The
+    //blue marker is simply the candidate that gives up nothing, not a marker
+    //of a different kind.
     candidate: {
-      scale: 0.9,
-      text(i) {
-        // return '' //No text
-        // return String.fromCharCode(65 + i) //Letters
-        return i + 1 //The engine's ranking
+      scale: 0.92,
+
+      //The number inside the marker is the points given up against the best
+      //candidate, the way the analysis apps show it. Win rate drives the
+      //colour, because it already carries the weight of the game's phase,
+      //while points are what a player can actually read off the board.
+      text(scoreLoss/*, cellSize, index, winrateLoss*/) {
+        const points = Math.round((scoreLoss || 0) * 10) / 10
+        if (points === 0) {
+          return '0.0'
+        }
+        return `${points > 0 ? '-' : '+'}${Math.abs(points).toFixed(1)}`
       },
-      fontSize(cellSize) {
-        return Math.floor(cellSize * 0.5)
+      fontSize(text, cellSize) {
+        const len = String(text).length
+        if (len <= 3) {
+          return Math.round(cellSize * 0.44)
+        }
+        else if (len === 4) {
+          return Math.round(cellSize * 0.38)
+        }
+        return Math.round(cellSize * 0.3)
       },
+      textColor: 'rgba(0,0,0,0.8)',
+
+      //Ring, and the lighter translucent fill underneath it
       color(cellSize, stoneColor, winrateLoss, isBest) {
-        const opacity = isBest ? 1 : 0.8
-        const {color} = candidateColors
-          .find(band => (winrateLoss || 0) < band.loss)
-        return `rgba(${color},${opacity})`
+        return candidateColor(winrateLoss, isBest)
+      },
+      fillColor(cellSize, stoneColor, winrateLoss, isBest) {
+        return candidateColor(winrateLoss, isBest, 26, 0.75)
       },
       lineWidth(cellSize, stoneColor, winrateLoss) {
         const base = Math.max(1, Math.floor(cellSize / 16))

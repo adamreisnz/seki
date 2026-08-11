@@ -165,12 +165,22 @@ describe('Replay mode analysis overlay', () => {
     expect(markupAt(2, 2).winrateLoss).toBe(0.03)
   })
 
-  it('leaves a single candidate unnumbered', () => {
+  it('hands each marker the points its move gives up, to label itself with', () => {
+    player.setConfig('showAnalysis', true)
+    player.setAnalysis(moves)
+
+    //The fixture puts the score loss at twenty times the win rate loss.
+    //Turning it into a label is the theme's job, and is covered there.
+    expect(markupAt(4, 4).scoreLoss).toBe(0)
+    expect(markupAt(2, 2).scoreLoss).toBeCloseTo(0.6)
+  })
+
+  it('labels a lone candidate too, as what it gives up is still worth saying', () => {
     player.setConfig('showAnalysis', true)
     player.setAnalysis(moves)
     player.goToLastPosition()
 
-    expect(markupAt(7, 7).showText).toBe(false)
+    expect(markupAt(7, 7).showText).toBe(true)
   })
 
   it('takes the markers off again when the overlay is turned off', () => {
@@ -210,6 +220,92 @@ describe('Replay mode analysis overlay', () => {
 
     expect(markupAt(4, 4).type).toBe(markupTypes.TRIANGLE)
     expect(markupAt(2, 2).type).toBe(markupTypes.CANDIDATE)
+  })
+
+  it('leaves the record markup standing on a point it marked one move ago', () => {
+
+    //NOTE: clearing the markers used to remove them by coordinate alone. The
+    //position sync draws the new node's own markup before the markers are
+    //cleared, so a record that marks a point we had a candidate on had that
+    //markup wiped off the board until the next full redraw. Candidates cover
+    //enough points per node to make that routine rather than rare.
+    load('(;GM[1]FF[4]SZ[9];B[cc];W[gg]TR[gg][cg];B[cg])')
+    player.setConfig('showAnalysis', true)
+    player.setAnalysis(moves)
+
+    //The engine suggests (6, 6) at the first move, and the record both plays
+    //and marks that point at the second, which is the collision in practice
+    player.goToNextPosition()
+    expect(markupAt(6, 6).type).toBe(markupTypes.CANDIDATE)
+
+    player.goToNextPosition()
+    expect(markupAt(6, 6).type).toBe(markupTypes.TRIANGLE)
+    expect(markupAt(2, 6).type).toBe(markupTypes.TRIANGLE)
+  })
+})
+
+describe('Analysis overlay across the modes that inherit it', () => {
+
+  const sgf = '(;GM[1]FF[4]SZ[9];B[cc];W[gg])'
+  const moves = [
+    {winrate: 0.5, candidates: [{x: 4, y: 4, loss: {winrate: 0, score: 0}}]},
+    {winrate: 0.5, candidates: [{x: 6, y: 2, loss: {winrate: 0, score: 0}}]},
+    {winrate: 0.5, candidates: [{x: 2, y: 6, loss: {winrate: 0, score: 0}}]},
+  ]
+
+  const load = mode => {
+    const player = new Player({initialMode: mode})
+    player.board.createLayers()
+    player.loadData(sgf)
+    return player
+  }
+
+  //NOTE: edit and play both used to restate the replay listener map rather
+  //than compose it, so neither of them ever heard about an analysis change.
+  //Setting the analysis drew nothing, and clearing it left the markers up.
+  for (const mode of [playerModes.REPLAY, playerModes.EDIT, playerModes.PLAY]) {
+
+    it(`renders the overlay in ${mode} mode`, () => {
+      const player = load(mode)
+      player.setConfig('showAnalysis', true)
+      player.setAnalysis(moves)
+
+      expect(player.board.get(boardLayerTypes.MARKUP, 4, 4).type)
+        .toBe(markupTypes.CANDIDATE)
+    })
+
+    it(`takes the overlay down again in ${mode} mode`, () => {
+      const player = load(mode)
+      player.setConfig('showAnalysis', true)
+      player.setAnalysis(moves)
+      player.clearAnalysis()
+
+      expect(player.board.get(boardLayerTypes.MARKUP, 4, 4)).toBeUndefined()
+    })
+  }
+
+  it('keeps play mode off the navigation listeners', () => {
+
+    //Composing the map must not quietly hand play mode the keyboard and mouse
+    //wheel, which it leaves out on purpose
+    const listeners = load(playerModes.PLAY)
+      .getModeHandler(playerModes.PLAY)
+      .getEventListeners()
+
+    expect(listeners.keydown).toBeUndefined()
+    expect(listeners.wheel).toBeUndefined()
+    expect(listeners.analysisChange).toBe('onAnalysisChange')
+    expect(listeners.gridEnter).toBe('onGridEnter')
+  })
+
+  it('keeps edit mode on its own listeners as well as the inherited ones', () => {
+    const listeners = load(playerModes.EDIT)
+      .getModeHandler(playerModes.EDIT)
+      .getEventListeners()
+
+    expect(listeners.analysisChange).toBe('onAnalysisChange')
+    expect(listeners.mousemove).toBe('onMouseMove')
+    expect(listeners.keydown).toBe('onKeyDown')
   })
 })
 

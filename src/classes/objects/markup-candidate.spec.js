@@ -38,14 +38,21 @@ const createBoard = ({stones = {}, cellSize = 40} = {}) => {
 /**
  * A context that records what it was told to draw with
  */
-const createContext = () => ({
-  translate: vi.fn(),
-  setLineDash: vi.fn(),
-  beginPath: vi.fn(),
-  arc: vi.fn(),
-  stroke: vi.fn(),
-  fillText: vi.fn(),
-})
+const createContext = () => {
+  const context = {
+    translate: vi.fn(),
+    setLineDash: vi.fn(),
+    beginPath: vi.fn(),
+    arc: vi.fn(),
+    stroke: vi.fn(),
+    fillText: vi.fn(),
+    fills: [],
+    strokes: [],
+  }
+  context.fill = vi.fn(() => context.fills.push(context.fillStyle))
+  context.stroke = vi.fn(() => context.strokes.push(context.strokeStyle))
+  return context
+}
 
 /**
  * A candidate as it arrives from the API, being one entry of node.analysis
@@ -53,14 +60,20 @@ const createContext = () => ({
 const createCandidate = (board, {
   index = 0,
   winrate = 0,
+  score = winrate * 20,
   isBest = index === 0,
   showText = true,
 } = {}) => new MarkupCandidate(board, {
   index,
   isBest,
   showText,
-  loss: {winrate, score: winrate * 20},
+  loss: {winrate, score},
 })
+
+/**
+ * Pull the hue out of an hsla() string
+ */
+const hueOf = color => Number(color.match(/^hsla\((-?[\d.]+),/)[1])
 
 describe('MarkupCandidate construction', () => {
 
@@ -68,10 +81,13 @@ describe('MarkupCandidate construction', () => {
     expect(createCandidate(createBoard()).type).toBe(markupTypes.CANDIDATE)
   })
 
-  it('keeps the loss it was given, so it can colour itself', () => {
-    const markup = createCandidate(createBoard(), {index: 2, winrate: 0.031})
+  it('keeps both halves of the loss it was given', () => {
+    const markup = createCandidate(createBoard(), {
+      index: 2, winrate: 0.031, score: 1.4,
+    })
     expect(markup.index).toBe(2)
     expect(markup.winrateLoss).toBe(0.031)
+    expect(markup.scoreLoss).toBe(1.4)
     expect(markup.isBest).toBe(false)
   })
 
@@ -79,81 +95,135 @@ describe('MarkupCandidate construction', () => {
     const markup = new MarkupCandidate(createBoard())
     expect(markup.index).toBe(0)
     expect(markup.winrateLoss).toBe(0)
+    expect(markup.scoreLoss).toBe(0)
   })
 })
 
 describe('MarkupCandidate colour gradient', () => {
 
-  const colorFor = winrate => {
+  const hueFor = winrate => {
     const markup = createCandidate(createBoard(), {index: 1, winrate})
     markup.loadProperties(3, 3)
-    return markup.color
+    return hueOf(markup.color)
   }
 
   it('paints the best candidate blue', () => {
     const markup = createCandidate(createBoard(), {index: 0, winrate: 0})
     markup.loadProperties(3, 3)
-    expect(markup.color).toBe('rgba(38,136,228,1)')
+    expect(hueOf(markup.color)).toBe(205)
   })
 
-  it('runs from blue through to red as the loss grows', () => {
-    expect(colorFor(0)).toContain('38,136,228') //excellent
-    expect(colorFor(0.007)).toContain('15,137,74') //great
-    expect(colorFor(0.015)).toContain('106,168,79') //good
-    expect(colorFor(0.03)).toContain('214,158,25') //inaccuracy
-    expect(colorFor(0.07)).toContain('226,113,29') //mistake
-    expect(colorFor(0.4)).toContain('237,9,15') //blunder
+  it('runs green through to gold as the loss grows', () => {
+    expect(hueFor(0)).toBe(125)
+    expect(hueFor(0.1)).toBe(48)
+    expect(hueFor(0.02)).toBeLessThan(hueFor(0.005))
+    expect(hueFor(0.05)).toBeLessThan(hueFor(0.02))
   })
 
-  it('treats a candidate that gives up nothing as the blue spot, wherever it sits', () => {
+  it('never reaches orange or red', () => {
 
-    //NOTE: the gradient is a function of the loss alone, so a candidate the
-    //engine rates as good as its own first choice reads the same as that
-    //choice does, rather than being coloured by its place in the list
-    expect(colorFor(0)).toContain('38,136,228')
+    //NOTE: every candidate is a move the engine itself put forward, so none of
+    //them should be coloured as a mistake to be warned away from. Orange and
+    //red live below a hue of about 45.
+    const losses = [0, 0.01, 0.05, 0.1, 0.4, 1]
+    for (const loss of losses) {
+      expect(hueFor(loss)).toBeGreaterThanOrEqual(48)
+    }
   })
 
-  it('holds back the ones that are not the best', () => {
-    const best = createCandidate(createBoard(), {index: 0, winrate: 0})
-    const other = createCandidate(createBoard(), {index: 1, winrate: 0})
+  it('holds the gold once the loss is past a blunder', () => {
+    expect(hueFor(0.4)).toBe(hueFor(0.1))
+  })
 
-    best.loadProperties(3, 3)
-    other.loadProperties(3, 3)
+  it('fills itself with a lighter, translucent version of its ring', () => {
+    const markup = createCandidate(createBoard(), {index: 1, winrate: 0.02})
+    markup.loadProperties(3, 3)
 
-    expect(best.color).toContain(',1)')
-    expect(other.color).toContain(',0.8)')
+    expect(hueOf(markup.fillColor)).toBe(hueOf(markup.color))
+    expect(markup.fillColor).toContain(',0.75)')
+    expect(markup.color).toContain(',1)')
   })
 
   it('draws a heavier ring the closer to best a candidate is', () => {
     const best = createCandidate(createBoard(), {index: 0, winrate: 0})
-    const blunder = createCandidate(createBoard(), {index: 4, winrate: 0.3})
+    const worst = createCandidate(createBoard(), {index: 4, winrate: 0.3})
 
     best.loadProperties(3, 3)
-    blunder.loadProperties(3, 3)
+    worst.loadProperties(3, 3)
 
-    expect(best.lineWidth).toBeGreaterThan(blunder.lineWidth)
+    expect(best.lineWidth).toBeGreaterThan(worst.lineWidth)
+  })
+})
+
+describe('MarkupCandidate point loss', () => {
+
+  const textFor = score => {
+    const markup = createCandidate(createBoard(), {index: 1, score})
+    markup.loadProperties(3, 3)
+    return markup.text
+  }
+
+  it('says what the move gives up, to a tenth of a point', () => {
+    expect(textFor(0.42)).toBe('-0.4')
+    expect(textFor(1.84)).toBe('-1.8')
+    expect(textFor(12)).toBe('-12.0')
+  })
+
+  it('says nothing was given up when nothing was', () => {
+    expect(textFor(0)).toBe('0.0')
+    expect(textFor(0.02)).toBe('0.0')
+  })
+
+  it('marks a candidate that gains as a gain', () => {
+
+    //The contract has candidate losses at zero or above, but a negative one
+    //is a move that came out better than the best, not a bigger loss
+    expect(textFor(-0.14)).toBe('+0.1')
+  })
+
+  it('shrinks the font to fit a longer number', () => {
+    const short = createCandidate(createBoard(), {score: 0.4})
+    const long = createCandidate(createBoard(), {score: 12.4})
+
+    short.loadProperties(3, 3)
+    long.loadProperties(3, 3)
+
+    expect(long.text.length).toBeGreaterThan(short.text.length)
+    expect(long.fontSize).toBeLessThan(short.fontSize)
   })
 })
 
 describe('MarkupCandidate drawing', () => {
 
-  it('writes the engine ranking in the circle', () => {
+  it('fills, rings and labels itself', () => {
     const context = createContext()
-    const markup = createCandidate(createBoard(), {index: 2, winrate: 0.03})
+    const markup = createCandidate(createBoard(), {index: 2, winrate: 0.03, score: 1.4})
 
     markup.draw(context, 3, 3)
 
-    expect(context.arc).toHaveBeenCalled()
-    expect(context.fillText).toHaveBeenCalledWith('3', 120, expect.any(Number), expect.any(Number))
+    expect(context.fills).toEqual([markup.fillColor])
+    expect(context.strokes).toEqual([markup.color])
+    expect(context.fillText)
+      .toHaveBeenCalledWith('-1.4', 120, expect.any(Number), expect.any(Number))
   })
 
-  it('draws the circle alone when there is no text to show', () => {
+  it('lays the fill down before the ring, so the ring stays crisp', () => {
+    const context = createContext()
+    const markup = createCandidate(createBoard(), {index: 1, winrate: 0.02})
+
+    markup.draw(context, 3, 3)
+
+    expect(context.fill.mock.invocationCallOrder[0])
+      .toBeLessThan(context.stroke.mock.invocationCallOrder[0])
+  })
+
+  it('draws the marker alone when there is no text to show', () => {
     const context = createContext()
     const markup = createCandidate(createBoard(), {showText: false})
 
     markup.draw(context, 3, 3)
 
-    expect(context.arc).toHaveBeenCalled()
+    expect(context.fills).toHaveLength(1)
     expect(context.fillText).not.toHaveBeenCalled()
   })
 

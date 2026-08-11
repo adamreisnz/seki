@@ -37,26 +37,19 @@ export default class PlayerModeEdit extends PlayerModeReplay {
   lineAddTimeout = null
 
   /**
-   * Initialise
+   * Get the event listeners this mode needs
+   *
+   * NOTE: composed from the replay ones rather than restated, so that a
+   * listener added there is picked up here too. Restating the map meant this
+   * mode quietly went without any listener added to its parent.
    */
-  init() {
-
-    //Extend player
-    this.extendPlayer()
-
-    //Create bound event listeners
-    this.createBoundListeners({
-      keydown: 'onKeyDown',
-      click: 'onClick',
-      wheel: 'onMouseWheel',
-      config: 'onConfigChange',
-      pathChange: 'onPathChange',
-      variationChange: 'onVariationChange',
-      gameLoad: 'onGameLoad',
+  getEventListeners() {
+    return {
+      ...super.getEventListeners(),
       mousemove: 'onMouseMove',
       gridEnter: 'onGridEnter',
       gridLeave: 'onGridLeave',
-    })
+    }
   }
 
   /**
