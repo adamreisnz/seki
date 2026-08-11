@@ -299,6 +299,51 @@ describe('Game tree navigation', () => {
     game.goToNextComment()
     expect(game.getCurrentMoveNumber()).toBe(2)
   })
+
+  it('lists the commented nodes in the order they read', () => {
+    const game = createLinearGame()
+    game.goToMoveNumber(3)
+    game.setComments('Last')
+    game.goToMoveNumber(1)
+    game.setComments('First')
+
+    expect(game.getCommentedNodes().map(node => node.getComments().join()))
+      .toEqual(['First', 'Last'])
+  })
+
+  it('lists nothing for a game without commentary', () => {
+    expect(createLinearGame().getCommentedNodes()).toEqual([])
+  })
+
+  it('lists commentary on the root along with the moves', () => {
+    const game = createLinearGame()
+    game.goToMoveNumber(2)
+    game.setComments('On a move')
+    game.goToFirstPosition()
+    game.setComments('On the game')
+
+    const nodes = game.getCommentedNodes()
+    expect(nodes).toHaveLength(2)
+    expect(nodes[0]).toBe(game.root)
+  })
+
+  it('lists where the current path leads, not the whole tree', () => {
+    const {game, fork, variation} = createForkedGame()
+
+    //A note on each of the two lines out of the fork
+    game.goToNode(variation)
+    game.setComments('On the variation')
+    game.goToNode(fork)
+    game.goToNextPosition()
+    game.setComments('On the main line')
+
+    expect(game.getCommentedNodes().map(node => node.getComments().join()))
+      .toEqual(['On the main line'])
+
+    game.goToNode(variation)
+    expect(game.getCommentedNodes().map(node => node.getComments().join()))
+      .toEqual(['On the variation'])
+  })
 })
 
 describe('Game variations', () => {

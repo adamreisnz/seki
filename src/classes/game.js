@@ -2175,6 +2175,24 @@ export default class Game extends Base {
   }
 
   /**
+   * Get the nodes carrying commentary on the current path
+   *
+   * The commentary of the line currently displayed, root to end, in the order
+   * it reads. This is the list form of what goToNextComment() steps through,
+   * for showing a game's commentary as a whole rather than one note at a time.
+   *
+   * Notes on other variations are deliberately absent: they belong to a line
+   * that isn't being shown, and mixing them in loses the move order that makes
+   * the rest of the list meaningful. Navigate onto a variation and its notes
+   * are part of the list in their turn.
+   */
+  getCommentedNodes() {
+    return this.root
+      .getPathNodes()
+      .filter(node => node.hasComments())
+  }
+
+  /**
    * Go forward a number of positions
    */
   goForwardNumPositions(num) {
