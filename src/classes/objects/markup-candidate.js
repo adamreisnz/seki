@@ -5,16 +5,16 @@ import {markupTypes} from '../../constants/markup.js'
  * Analysis candidate markup
  *
  * One of these is drawn per candidate move an engine suggested for the current
- * position. Each candidate carries its own point loss against the best one,
- * which is what the theme colours the marker by, so a marker never has to look
- * at its siblings to know how to draw itself.
+ * position. Each candidate carries its own point loss against the best one and
+ * whether it is that best one, which is what the theme colours the marker by,
+ * so a marker never has to look at its siblings to know how to draw itself.
  *
  * Candidates draw as solid discs. The move that was actually played from this
  * position draws as a rounded square instead, so shape says "you played here"
  * while the colour keeps saying how good it was, and the two signals never
  * compete. The best move needs no decoration of its own: it is the only
- * candidate that gives up nothing, so it is the only marker in the colour the
- * scale starts at.
+ * candidate flagged as best, so it is the only marker in the teal the rest of
+ * the scale never reaches, however little those behind it gave up.
  */
 export default class MarkupCandidate extends Markup {
 

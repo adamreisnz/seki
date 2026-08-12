@@ -130,8 +130,7 @@ describe('MarkupCandidate colour scale', () => {
 
     //The anchors sit at the point losses where each quality begins, so a
     //marker's colour agrees with how the same move would be graded
-    expect(colorFor(0)).toBe('#0e7f8c') //excellent, the blue spot
-    expect(colorFor(0.3)).toBe('#3ba03c') //great
+    expect(colorFor(0)).toBe('#3ba03c') //great
     expect(colorFor(0.6)).toBe('#8fbe1a') //good
     expect(colorFor(1.2)).toBe('#dd8420') //inaccuracy
     expect(colorFor(3)).toBe('#c8402c') //mistake
@@ -141,8 +140,8 @@ describe('MarkupCandidate colour scale', () => {
   it('slides between anchors rather than stepping', () => {
 
     //A loss between two anchors gets its own colour, not the nearer anchor's
-    const between = colorFor(0.45)
-    expect(between).not.toBe(colorFor(0.3))
+    const between = colorFor(0.3)
+    expect(between).not.toBe(colorFor(0))
     expect(between).not.toBe(colorFor(0.6))
   })
 
@@ -151,11 +150,27 @@ describe('MarkupCandidate colour scale', () => {
     expect(colorFor(80)).toBe(colorFor(9))
   })
 
-  it('paints the best candidate the colour of giving up nothing', () => {
+  it('paints the best candidate the blue spot', () => {
 
-    //The best move needs no colour of its own: it gives up nothing, so it is
-    //the only marker at the start of the scale
-    expect(colorFor(0, {index: 0})).toBe(colorFor(0, {index: 3}))
+    //The engine names one best move, and the teal is that rank rather than a
+    //quality, so it is the only marker wearing it
+    expect(colorFor(0, {index: 0, isBest: true})).toBe('#0e7f8c')
+  })
+
+  it('keeps the blue spot off the moves the best one beat', () => {
+
+    //A field of candidates can all round to giving up nothing while still
+    //sitting behind the best move: they are great moves, not the best one,
+    //so the scale below the blue spot starts at green
+    expect(colorFor(0, {index: 3})).toBe('#3ba03c')
+    expect(colorFor(0.04, {index: 1})).not.toBe('#0e7f8c')
+  })
+
+  it('still slides the near misses apart from each other', () => {
+
+    //Collapsing the excellent band into the best move does not flatten what
+    //is behind it: a runner-up that gave up a touch more still reads darker
+    expect(colorFor(0.2, {index: 1})).not.toBe(colorFor(0, {index: 2}))
   })
 
   it('colours a gain the same as giving up nothing', () => {
