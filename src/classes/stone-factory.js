@@ -1,6 +1,7 @@
 import Stone from './objects/stone.js'
 import StoneSlateShell from './objects/stone-slate-shell.js'
 import StoneGlass from './objects/stone-glass.js'
+import StoneGradient from './objects/stone-gradient.js'
 import StoneMono from './objects/stone-mono.js'
 import StoneShadow from './objects/stone-shadow.js'
 import {stoneStyles} from '../constants/stone.js'
@@ -17,6 +18,8 @@ export default class StoneFactory {
     switch (style) {
       case stoneStyles.GLASS:
         return StoneGlass
+      case stoneStyles.GRADIENT:
+        return StoneGradient
       case stoneStyles.MONO:
         return StoneMono
       case stoneStyles.SLATE_SHELL:

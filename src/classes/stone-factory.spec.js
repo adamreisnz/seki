@@ -2,6 +2,7 @@ import {describe, it, expect} from 'vitest'
 import Board from './board.js'
 import StoneFactory from './stone-factory.js'
 import Stone from './objects/stone.js'
+import StoneGradient from './objects/stone-gradient.js'
 import StoneShadow from './objects/stone-shadow.js'
 import {stoneColors, stoneStyles, stoneModifierStyles} from '../constants/stone.js'
 
@@ -15,6 +16,11 @@ describe('StoneFactory', () => {
       expect(stone).toBeInstanceOf(Stone)
       expect(stone.stoneColor).toBe(stoneColors.BLACK)
     }
+  })
+
+  it('maps the gradient style onto the gradient stone', () => {
+    const stone = StoneFactory.create(stoneStyles.GRADIENT, stoneColors.BLACK, board)
+    expect(stone).toBeInstanceOf(StoneGradient)
   })
 
   it('falls back to slate and shell for an unknown style', () => {

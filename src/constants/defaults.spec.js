@@ -107,6 +107,13 @@ describe('Default theme stone handlers', () => {
     expect(theme().get('stone.shadow.blur', 28)).toBe(2)
     expect(theme().get('stone.shadow.offsetX', 36)).toBe(2)
   })
+
+  it('gives gradient stones stops for each colour', () => {
+    const stops = stoneColor => theme().get('stone.gradient.stops', 40, stoneColor)
+    expect(stops('black')).toHaveLength(3)
+    expect(stops('white')).toHaveLength(3)
+    expect(stops('black')[0][1]).not.toBe(stops('white')[0][1])
+  })
 })
 
 describe('Theme overrides', () => {
@@ -164,5 +171,9 @@ describe('Default player config', () => {
   it('exposes the theme separately from the player config', () => {
     expect(defaultPlayerConfig.theme).toBeUndefined()
     expect(defaultTheme.board).toBeDefined()
+  })
+
+  it('draws no board background gradient by default', () => {
+    expect(defaultTheme.board.backgroundGradient).toBeNull()
   })
 })

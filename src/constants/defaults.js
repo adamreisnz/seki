@@ -204,6 +204,12 @@ export const defaultTheme = {
     backgroundColor: '#e2b768',
     backgroundImage: '',
     backgroundImageScale: 1,
+
+    //Optional linear gradient over the background colour, following CSS
+    //linear-gradient semantics: an angle in degrees (0 points up, running
+    //clockwise) and colour stops as [offset, color] pairs.
+    //e.g. {angle: 150, stops: [[0, '#e9bd7c'], [1, '#d4a058']]}
+    backgroundGradient: null,
     stoneStyle: stoneStyles.SLATE_SHELL,
   },
 
@@ -295,6 +301,21 @@ export const defaultTheme = {
     //Glass stones
     glass: {
       shadow: true,
+    },
+
+    //Gradient stones, drawn as a single radial gradient with colour stops
+    //from the theme. The focus point is where the highlight sits, as a
+    //fraction of the stone's bounding box, and the gradient runs from there
+    //to the farthest corner of that box, like a CSS radial-gradient.
+    gradient: {
+      shadow: true,
+      focus: {x: 0.34, y: 0.28},
+      stops(cellSize, stoneColor) {
+        if (stoneColor === stoneColors.BLACK) {
+          return [[0, '#5c554d'], [0.6, '#201a14'], [1, '#0d0a07']]
+        }
+        return [[0, '#ffffff'], [0.55, '#efe7d8'], [1, '#cdc0a8']]
+      },
     },
 
     //Mono stones

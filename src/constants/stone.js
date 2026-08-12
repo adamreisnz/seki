@@ -9,6 +9,7 @@ export const stoneColors = {
 export const stoneStyles = {
   SLATE_SHELL: 'slateShell',
   GLASS: 'glass',
+  GRADIENT: 'gradient',
   MONO: 'mono',
   SHADOW: 'shadow',
 }
