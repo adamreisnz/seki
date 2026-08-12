@@ -20,6 +20,7 @@ const createBoard = ({stones = {}, cellSize = 40} = {}) => {
 
   return {
     gridLayer,
+    stones,
     theme: new Theme(),
     getCellSize: () => cellSize,
     getDisplayColor: color => color,
@@ -128,15 +129,56 @@ describe('Markup and the grid underneath it', () => {
     const board = createBoard()
     const markup = createMarkup(markupTypes.CIRCLE, board)
 
+    markup.draw({}, 3, 3)
     markup.erase({clearRect: vi.fn(), translate: vi.fn()}, 3, 3)
 
     expect(board.gridLayer.redrawCell).toHaveBeenCalledWith(3, 3)
   })
 
-  it('leaves the grid alone when a stone covers it', () => {
+  it('leaves the grid alone when a stone covered it all along', () => {
     const board = createBoard({stones: {'3,3': {stoneColor: BLACK}}})
     const markup = createMarkup(markupTypes.CIRCLE, board)
 
+    markup.draw({}, 3, 3)
+    markup.erase({clearRect: vi.fn(), translate: vi.fn()}, 3, 3)
+
+    expect(board.gridLayer.redrawCell).not.toHaveBeenCalled()
+  })
+
+  it('leaves the grid alone when it never drew', () => {
+    const board = createBoard()
+    const markup = createMarkup(markupTypes.CIRCLE, board)
+
+    markup.erase({clearRect: vi.fn(), translate: vi.fn()}, 3, 3)
+
+    expect(board.gridLayer.redrawCell).not.toHaveBeenCalled()
+  })
+
+  it('puts the grid back under a stone that arrived after it drew', () => {
+
+    //NOTE: this used to ask whether there is a stone here now, which says
+    //nothing about whether there was one when the markup drew. A point marked
+    //while empty and played on since kept the hole in the grid underneath that
+    //stone, and it showed the moment the stone was captured
+    const board = createBoard()
+    const markup = createMarkup(markupTypes.CIRCLE, board)
+
+    markup.draw({}, 3, 3)
+    board.stones['3,3'] = {stoneColor: BLACK}
+    markup.erase({clearRect: vi.fn(), translate: vi.fn()}, 3, 3)
+
+    expect(board.gridLayer.redrawCell).toHaveBeenCalledWith(3, 3)
+  })
+
+  it('does not draw the grid line on top of itself', () => {
+
+    //NOTE: the grid line is not fully opaque, so stroking it again where it
+    //was never erased darkens it
+    const board = createBoard({stones: {'3,3': {stoneColor: BLACK}}})
+    const markup = createMarkup(markupTypes.CIRCLE, board)
+
+    markup.draw({}, 3, 3)
+    markup.erase({clearRect: vi.fn(), translate: vi.fn()}, 3, 3)
     markup.erase({clearRect: vi.fn(), translate: vi.fn()}, 3, 3)
 
     expect(board.gridLayer.redrawCell).not.toHaveBeenCalled()

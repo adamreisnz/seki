@@ -9,6 +9,9 @@ export default class Markup extends GridObject {
   //Type
   type = null
 
+  //Whether we erased the grid line underneath us when we last drew
+  hasErasedGrid = false
+
   //Theme prop default values
   color
   scale = 1
@@ -97,12 +100,14 @@ export default class Markup extends GridObject {
     //Load properties
     this.loadProperties(x, y)
 
-    //Check if we clear the grid below us
+    //Check if we clear the grid below us. A stone already hides the grid line,
+    //so there is nothing to clear there.
     const {board} = this
     const radius = this.getGridEraseRadius()
 
-    //No stone, no need
-    if (!board.has(boardLayerTypes.STONES, x, y)) {
+    //Remember what we did, so that erasing can undo exactly that
+    this.hasErasedGrid = !board.has(boardLayerTypes.STONES, x, y)
+    if (this.hasErasedGrid) {
       board
         .getLayer(boardLayerTypes.GRID)
         .eraseCell(x, y, radius)
@@ -119,12 +124,22 @@ export default class Markup extends GridObject {
     //Erase the markup
     super.erase(context, x, y)
 
-    //Redraw grid cell
-    const {board} = this
-    if (!board.has(boardLayerTypes.STONES, x, y)) {
-      board
-        .getLayer(boardLayerTypes.GRID)
-        .redrawCell(x, y)
+    //Put back the grid line, but only if we were the one who took it out.
+    //
+    //NOTE: this used to ask whether there is a stone here now, which says
+    //nothing about whether there was one when we drew. A point marked while it
+    //was empty and played on since still had our hole in the grid underneath
+    //that stone, and it showed the moment the stone was captured. Asking
+    //instead means the line is also never drawn on top of itself, which would
+    //darken it, as it is not fully opaque.
+    if (!this.hasErasedGrid) {
+      return
     }
+
+    //Restore it
+    this.hasErasedGrid = false
+    this.board
+      .getLayer(boardLayerTypes.GRID)
+      .redrawCell(x, y)
   }
 }

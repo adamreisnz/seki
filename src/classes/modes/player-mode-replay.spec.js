@@ -119,19 +119,22 @@ describe('Replay mode analysis overlay', () => {
 
   beforeEach(() => load(sgf))
 
+  //Candidate markers live on the AI layer, apart from the markup layer that
+  //carries the record's own markup and the markers the mode generates
+  const candidateAt = (x, y) => board.get(boardLayerTypes.AI, x, y)
   const markupAt = (x, y) => board.get(boardLayerTypes.MARKUP, x, y)
 
   it('shows nothing until it is asked to', () => {
     player.setAnalysis(moves)
-    expect(markupAt(4, 4)).toBeUndefined()
+    expect(candidateAt(4, 4)).toBeUndefined()
   })
 
   it('marks up each candidate for the position it is at', () => {
     player.setConfig('showAnalysis', true)
     player.setAnalysis(moves)
 
-    expect(markupAt(4, 4).type).toBe(markupTypes.CANDIDATE)
-    expect(markupAt(2, 2).type).toBe(markupTypes.CANDIDATE)
+    expect(candidateAt(4, 4).type).toBe(markupTypes.CANDIDATE)
+    expect(candidateAt(2, 2).type).toBe(markupTypes.CANDIDATE)
   })
 
   it('shows the candidates for this position, not for the move that reached it', () => {
@@ -142,27 +145,27 @@ describe('Replay mode analysis overlay', () => {
     player.setAnalysis(moves)
     player.goToNextPosition()
 
-    expect(markupAt(6, 6).type).toBe(markupTypes.CANDIDATE)
-    expect(markupAt(6, 2).type).toBe(markupTypes.CANDIDATE)
-    expect(markupAt(4, 4)).toBeUndefined()
-    expect(markupAt(2, 6)).toBeUndefined()
+    expect(candidateAt(6, 6).type).toBe(markupTypes.CANDIDATE)
+    expect(candidateAt(6, 2).type).toBe(markupTypes.CANDIDATE)
+    expect(candidateAt(4, 4)).toBeUndefined()
+    expect(candidateAt(2, 6)).toBeUndefined()
   })
 
   it('ranks the candidates by the order the engine gave them', () => {
     player.setConfig('showAnalysis', true)
     player.setAnalysis(moves)
 
-    expect(markupAt(4, 4).isBest).toBe(true)
-    expect(markupAt(2, 2).isBest).toBe(false)
-    expect(markupAt(2, 2).index).toBe(1)
+    expect(candidateAt(4, 4).isBest).toBe(true)
+    expect(candidateAt(2, 2).isBest).toBe(false)
+    expect(candidateAt(2, 2).index).toBe(1)
   })
 
   it('hands each marker its own loss to colour itself by', () => {
     player.setConfig('showAnalysis', true)
     player.setAnalysis(moves)
 
-    expect(markupAt(4, 4).winrateLoss).toBe(0)
-    expect(markupAt(2, 2).winrateLoss).toBe(0.03)
+    expect(candidateAt(4, 4).winrateLoss).toBe(0)
+    expect(candidateAt(2, 2).winrateLoss).toBe(0.03)
   })
 
   it('hands each marker the points its move gives up, to label itself with', () => {
@@ -171,8 +174,8 @@ describe('Replay mode analysis overlay', () => {
 
     //The fixture puts the score loss at twenty times the win rate loss.
     //Turning it into a label is the theme's job, and is covered there.
-    expect(markupAt(4, 4).scoreLoss).toBe(0)
-    expect(markupAt(2, 2).scoreLoss).toBeCloseTo(0.6)
+    expect(candidateAt(4, 4).scoreLoss).toBe(0)
+    expect(candidateAt(2, 2).scoreLoss).toBeCloseTo(0.6)
   })
 
   it('marks the candidate that was actually played as played', () => {
@@ -183,8 +186,8 @@ describe('Replay mode analysis overlay', () => {
     player.setConfig('showAnalysis', true)
     player.setAnalysis(moves)
 
-    expect(markupAt(2, 2).isPlayed).toBe(true)
-    expect(markupAt(4, 4).isPlayed).toBe(false)
+    expect(candidateAt(2, 2).isPlayed).toBe(true)
+    expect(candidateAt(4, 4).isPlayed).toBe(false)
   })
 
   it('marks nothing as played at the end of the game', () => {
@@ -194,7 +197,7 @@ describe('Replay mode analysis overlay', () => {
     player.setAnalysis(moves)
     player.goToLastPosition()
 
-    expect(markupAt(7, 7).isPlayed).toBe(false)
+    expect(candidateAt(7, 7).isPlayed).toBe(false)
   })
 
   it('labels a lone candidate too, as what it gives up is still worth saying', () => {
@@ -202,7 +205,7 @@ describe('Replay mode analysis overlay', () => {
     player.setAnalysis(moves)
     player.goToLastPosition()
 
-    expect(markupAt(7, 7).showText).toBe(true)
+    expect(candidateAt(7, 7).showText).toBe(true)
   })
 
   it('takes the markers off again when the overlay is turned off', () => {
@@ -210,7 +213,7 @@ describe('Replay mode analysis overlay', () => {
     player.setAnalysis(moves)
     player.setConfig('showAnalysis', false)
 
-    expect(markupAt(4, 4)).toBeUndefined()
+    expect(candidateAt(4, 4)).toBeUndefined()
   })
 
   it('takes them off again when the analysis is cleared', () => {
@@ -218,7 +221,7 @@ describe('Replay mode analysis overlay', () => {
     player.setAnalysis(moves)
     player.clearAnalysis()
 
-    expect(markupAt(4, 4)).toBeUndefined()
+    expect(candidateAt(4, 4)).toBeUndefined()
   })
 
   it('leaves the game record alone', () => {
@@ -241,7 +244,8 @@ describe('Replay mode analysis overlay', () => {
     player.setAnalysis(moves)
 
     expect(markupAt(4, 4).type).toBe(markupTypes.TRIANGLE)
-    expect(markupAt(2, 2).type).toBe(markupTypes.CANDIDATE)
+    expect(candidateAt(4, 4)).toBeUndefined()
+    expect(candidateAt(2, 2).type).toBe(markupTypes.CANDIDATE)
   })
 
   it('leaves the record markup standing on a point it marked one move ago', () => {
@@ -258,11 +262,12 @@ describe('Replay mode analysis overlay', () => {
     //The engine suggests (6, 6) at the first move, and the record both plays
     //and marks that point at the second, which is the collision in practice
     player.goToNextPosition()
-    expect(markupAt(6, 6).type).toBe(markupTypes.CANDIDATE)
+    expect(candidateAt(6, 6).type).toBe(markupTypes.CANDIDATE)
 
     player.goToNextPosition()
     expect(markupAt(6, 6).type).toBe(markupTypes.TRIANGLE)
     expect(markupAt(2, 6).type).toBe(markupTypes.TRIANGLE)
+    expect(candidateAt(6, 6)).toBeUndefined()
   })
 })
 
@@ -292,7 +297,7 @@ describe('Analysis overlay across the modes that inherit it', () => {
       player.setConfig('showAnalysis', true)
       player.setAnalysis(moves)
 
-      expect(player.board.get(boardLayerTypes.MARKUP, 4, 4).type)
+      expect(player.board.get(boardLayerTypes.AI, 4, 4).type)
         .toBe(markupTypes.CANDIDATE)
     })
 
@@ -302,7 +307,7 @@ describe('Analysis overlay across the modes that inherit it', () => {
       player.setAnalysis(moves)
       player.clearAnalysis()
 
-      expect(player.board.get(boardLayerTypes.MARKUP, 4, 4)).toBeUndefined()
+      expect(player.board.get(boardLayerTypes.AI, 4, 4)).toBeUndefined()
     })
   }
 
