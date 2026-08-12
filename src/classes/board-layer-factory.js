@@ -6,6 +6,7 @@ import StonesLayer from './layers/stones-layer.js'
 import ScoreLayer from './layers/score-layer.js'
 import AnalysisLayer from './layers/analysis-layer.js'
 import MarkupLayer from './layers/markup-layer.js'
+import AiLayer from './layers/ai-layer.js'
 import DrawLayer from './layers/draw-layer.js'
 import HoverLayer from './layers/hover-layer.js'
 import {boardLayerTypes} from '../constants/board.js'
@@ -36,6 +37,8 @@ export default class BoardLayerFactory {
         return AnalysisLayer
       case boardLayerTypes.MARKUP:
         return MarkupLayer
+      case boardLayerTypes.AI:
+        return AiLayer
       case boardLayerTypes.DRAW:
         return DrawLayer
       case boardLayerTypes.HOVER:

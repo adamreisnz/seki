@@ -1,4 +1,5 @@
 import PlayerMode from './player-mode.js'
+import Grid from '../grid.js'
 import MarkupFactory from '../markup-factory.js'
 import {boardLayerTypes} from '../../constants/board.js'
 import {markupTypes} from '../../constants/markup.js'
@@ -18,6 +19,10 @@ export default class PlayerModeReplay extends PlayerMode {
 
   //Track last move and variation markers we've put on the board
   markers = []
+
+  //The points the AI overlay has a marker on, which the markers above leave
+  //to it rather than drawing over
+  aiPoints = new Set()
 
   /**
    * Initialise
@@ -392,6 +397,17 @@ export default class PlayerModeReplay extends PlayerMode {
     //Clear exsting markers
     this.clearMarkers()
 
+    //The AI overlay goes on first, because it is only ever on the board
+    //because it was asked for, so it should win where it lands on the same
+    //point as a marker we generate ourselves. It lives on a layer of its own,
+    //so winning means the markers below stand aside rather than being drawn
+    //over, which is what aiPoints below is for. Markup the record itself
+    //carries is still left alone, as it is everywhere else.
+    if (showAnalysis) {
+      this.addAnalysisMarkers(node)
+      this.renderAnalysisOwnership(node)
+    }
+
     //Show sibling variations
     if (showVariations && showSiblingVariations) {
       if (node.parent && node.parent.hasMultipleMoveVariations()) {
@@ -428,15 +444,6 @@ export default class PlayerModeReplay extends PlayerMode {
     else if (showLastMove) {
       this.addLastMoveMarker(node)
     }
-
-    //Show the AI analysis overlay. This goes on last, because it is only ever
-    //on the board because it was asked for, so it should win where it lands on
-    //the same point as a marker we generated ourselves. Markup the record
-    //itself carries is still left alone, as it is everywhere else.
-    if (showAnalysis) {
-      this.addAnalysisMarkers(node)
-      this.renderAnalysisOwnership(node)
-    }
   }
 
   /**
@@ -450,7 +457,7 @@ export default class PlayerModeReplay extends PlayerMode {
   addAnalysisMarkers(node) {
 
     //Get data
-    const {board, markers} = this
+    const {board} = this
     const candidates = node.analysis?.candidates
 
     //Nothing to show
@@ -468,6 +475,10 @@ export default class PlayerModeReplay extends PlayerMode {
     //data, so every stored analysis gets the distinction for free.
     const child = node.getChild(0)
     const played = (child && child.isPlayMove()) ? child.move : null
+
+    //Collect the markers on a grid of their own, as the whole set is handed to
+    //the layer at once
+    const grid = new Grid(board.width, board.height)
 
     //Loop candidates
     candidates.forEach((candidate, i) => {
@@ -496,11 +507,21 @@ export default class PlayerModeReplay extends PlayerMode {
       const isPlayed = Boolean(played && played.x === x && played.y === y)
       const data = {index, loss, isBest, isPlayed, showText}
 
-      //Add to board, recording what we put there
-      const markup = MarkupFactory.create(markupTypes.CANDIDATE, board, data)
-      markers.push({x, y, markup})
-      board.add(boardLayerTypes.MARKUP, x, y, markup)
+      //Add to the grid, remembering the point so that the markers we generate
+      //ourselves know to leave it to us
+      grid.set(x, y, MarkupFactory.create(markupTypes.CANDIDATE, board, data))
+      this.aiPoints.add(`${x},${y}`)
     })
+
+    //Hand the lot to the layer
+    board.setAll(boardLayerTypes.AI, grid)
+  }
+
+  /**
+   * Check if the AI overlay has a marker on a coordinate
+   */
+  hasAiMarker(x, y) {
+    return this.aiPoints.has(`${x},${y}`)
   }
 
   /**
@@ -549,6 +570,11 @@ export default class PlayerModeReplay extends PlayerMode {
         return
       }
 
+      //The AI overlay has this point, leave it to it
+      if (this.hasAiMarker(x, y)) {
+        return
+      }
+
       //Construct data for factory
       const index = i
       const isSelected = node.isSelectedPath(variation)
@@ -593,6 +619,11 @@ export default class PlayerModeReplay extends PlayerMode {
       return
     }
 
+    //The AI overlay has this point, leave it to it
+    if (this.hasAiMarker(x, y)) {
+      return
+    }
+
     //Add to board, recording what we put there
     const markup = MarkupFactory.create(markupTypes.LAST_MOVE, board)
     markers.push({x, y, markup})
@@ -617,6 +648,11 @@ export default class PlayerModeReplay extends PlayerMode {
 
       //Already has markup on this coordinate, preserve it
       if (node.hasMarkup(x, y)) {
+        return
+      }
+
+      //The AI overlay has this point, leave it to it
+      if (this.hasAiMarker(x, y)) {
         return
       }
 
@@ -648,6 +684,11 @@ export default class PlayerModeReplay extends PlayerMode {
         return
       }
 
+      //The AI overlay has this point, leave it to it
+      if (this.hasAiMarker(x, y)) {
+        return
+      }
+
       //Add to board, recording what we put there
       const markup = MarkupFactory.create(markupTypes.MOVE_NUMBER, board, {number})
       markers.push({x, y, markup})
@@ -675,6 +716,11 @@ export default class PlayerModeReplay extends PlayerMode {
       return
     }
 
+    //The AI overlay has this point, leave it to it
+    if (this.hasAiMarker(x, y)) {
+      return
+    }
+
     //Add to board, recording what we put there
     const markup = MarkupFactory.create(markupTypes.MOVE_NUMBER, board, {number})
     markers.push({x, y, markup})
@@ -699,8 +745,7 @@ export default class PlayerModeReplay extends PlayerMode {
     //own markup off the board with it. Moving to a node that carries markup on
     //a point we had marked has the position sync draw that markup before we
     //get here, so removing the coordinate erased it until the next full
-    //redraw. Candidate markers cover far more points than the last move and
-    //variation markers do, which turns a rare collision into a routine one.
+    //redraw.
     markers.forEach(({x, y, markup}) => {
       if (board.get(boardLayerTypes.MARKUP, x, y) === markup) {
         board.removeMarkup(x, y)
@@ -710,8 +755,11 @@ export default class PlayerModeReplay extends PlayerMode {
     //Reset markers array
     this.markers = []
 
-    //Take the analysis overlay down with them, as it describes the position
-    //we are leaving just as much as the markers do
+    //Take the AI overlay down with them, as it describes the position we are
+    //leaving just as much as the markers do. Both of its layers are cleared
+    //as a whole, so there is nothing to match up cell by cell here.
+    this.aiPoints.clear()
+    board.removeAll(boardLayerTypes.AI)
     board.removeAll(boardLayerTypes.ANALYSIS)
   }
 }
