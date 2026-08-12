@@ -157,25 +157,29 @@ export const defaultStarPoints = {
   ],
 }
 
-//Colour anchors for the analysis gradient, keyed on the points a move gives
-//up against the best one available.
+//The teal is the "blue spot" analysis tools mark the best move with. It is
+//rank, not quality: the engine picks one best move, and only that candidate
+//wears it. Point loss cannot stand in for this, as a field of moves can all
+//round to giving up nothing while still sitting behind the best one, and
+//painting all of them teal would say the engine had no preference.
+const bestCandidateColor = '#0e7f8c' //excellent, the blue spot
+
+//Colour anchors for the analysis gradient every other candidate is drawn
+//from, keyed on the points a move gives up against the best one available.
 //
-//The six colours are the move quality scale — excellent through blunder — and
-//each anchor sits at the point loss where that quality begins, so a marker's
-//colour agrees with how the same move would be graded in a review. The values
-//are the quality thresholds (severity, being win rate loss on a 0–1 scale)
-//spelt in points at 60 points to the game, the same conversion the grading
-//uses. Between anchors the colour interpolates rather than stepping, so a
-//1.1 point move visibly sits between a 0.7 and a 1.5 point one; past the last
-//anchor everything holds at plum, as by then it is all the same disaster.
-//
-//The teal is the "blue spot" analysis tools mark the best move with. The best
-//candidate gives up nothing by definition, so it lands on the teal anchor by
-//itself and is the only teal marker on the board: colour alone carries rank,
-//and no extra decoration is needed.
+//The five colours are the move quality scale below the best move — great
+//through blunder — and each anchor sits at the point loss where that quality
+//begins, so a marker's colour agrees with how the same move would be graded
+//in a review. The values are the quality thresholds (severity, being win rate
+//loss on a 0–1 scale) spelt in points at 60 points to the game, the same
+//conversion the grading uses. The scale starts at green rather than at the
+//great threshold, because the whole excellent band belongs to the best move:
+//a runner-up giving up nothing is a great move, not the best one. Between
+//anchors the colour interpolates rather than stepping, so a 1.1 point move
+//visibly sits between a 0.7 and a 1.5 point one; past the last anchor
+//everything holds at plum, as by then it is all the same disaster.
 const candidateAnchors = [
-  {value: 0, color: '#0e7f8c'}, //excellent, the blue spot
-  {value: 0.3, color: '#3ba03c'}, //great
+  {value: 0, color: '#3ba03c'}, //great
   {value: 0.6, color: '#8fbe1a'}, //good
   {value: 1.2, color: '#dd8420'}, //inaccuracy
   {value: 3, color: '#c8402c'}, //mistake
@@ -183,15 +187,18 @@ const candidateAnchors = [
 ]
 
 //The solid colour for an analysis marker
-const candidateColor = scoreLoss => {
+const candidateColor = (scoreLoss, isBest) => {
+  if (isBest) {
+    return bestCandidateColor
+  }
   return interpolateColorScale(candidateAnchors, Math.max(0, scoreLoss || 0))
 }
 
 //Whether text sits light or dark on a candidate colour. The threshold is
 //shared with the review panel, so a marker and the panel entry for the same
 //move flip their text together.
-const candidateTextColor = scoreLoss => {
-  const luminance = colorLuminance(candidateColor(scoreLoss))
+const candidateTextColor = (scoreLoss, isBest) => {
+  const luminance = colorLuminance(candidateColor(scoreLoss, isBest))
   return (luminance >= 168) ? '#221c15' : '#fffaf0'
 }
 
@@ -485,10 +492,11 @@ export const defaultTheme = {
     //Analysis candidate markers
     //
     //NOTE: the fill and the text colour are both worked out from the points
-    //the candidate gives up against the best one, which is what makes the
-    //gradient a theme concern rather than drawing code. The move actually
-    //played draws as a rounded square instead of a circle, so shape says "you
-    //played here" while colour keeps saying how good it was.
+    //the candidate gives up against the best one, and from whether it is the
+    //best one, which is what makes the gradient a theme concern rather than
+    //drawing code. The move actually played draws as a rounded square instead
+    //of a circle, so shape says "you played here" while colour keeps saying
+    //how good it was.
     candidate: {
 
       //The mock draws a 34px marker at 44px spacing
@@ -512,15 +520,15 @@ export const defaultTheme = {
         return Math.round(cellSize * 0.27)
       },
       fontWeight: 500,
-      textColor(cellSize, stoneColor, scoreLoss/*, isBest*/) {
-        return candidateTextColor(scoreLoss)
+      textColor(cellSize, stoneColor, scoreLoss, isBest) {
+        return candidateTextColor(scoreLoss, isBest)
       },
 
       //Solid quality colour under a cream ring. The ring is what separates
       //the marker from the wood and from stones, so it stays opaque.
       color: '#fff9ed',
-      fillColor(cellSize, stoneColor, scoreLoss/*, isBest*/) {
-        return candidateColor(scoreLoss)
+      fillColor(cellSize, stoneColor, scoreLoss, isBest) {
+        return candidateColor(scoreLoss, isBest)
       },
       lineWidth(cellSize) {
         return Math.max(1, cellSize * 0.034)
