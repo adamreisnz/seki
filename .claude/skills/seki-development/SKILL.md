@@ -49,11 +49,11 @@ theirs.
   error saying no pull request was found just means the branch has no PR yet,
   which is fine; carry on.
 - **Creating a worktree by hand**, when the harness hasn't given you one or
-  the one you have is spent. From inside an existing worktree the new one is a
-  sibling; from the main checkout it goes under `.claude/worktrees/`:
+  the one you have is spent. The path is `.claude/worktrees/<name>` from the
+  main checkout, which is `../<name>` when you are already inside a worktree:
 
   ```bash
-  rtk git fetch origin && rtk git worktree add ../<name> -b claude/<name> origin/main
+  rtk git fetch origin && rtk git worktree add .claude/worktrees/<name> -b claude/<name> origin/main
   ```
 
   Name it for the work at hand — a fresh name, not the spent one. Branch off
