@@ -29,6 +29,7 @@ export default class BackgroundLayer extends BoardLayer {
     //Get data
     const {theme, context} = this
     const backgroundColor = theme.get('board.backgroundColor')
+    const backgroundGradient = theme.get('board.backgroundGradient')
     const backgroundImage = theme.get('board.backgroundImage')
     const backgroundImageScale = theme.get('board.backgroundImageScale')
     const {width, height} = context.canvas
@@ -36,6 +37,28 @@ export default class BackgroundLayer extends BoardLayer {
     //Background color
     if (backgroundColor) {
       context.fillStyle = backgroundColor
+      context.fillRect(0, 0, width, height)
+    }
+
+    //Background gradient, following CSS linear-gradient semantics: the angle
+    //is in degrees with 0 pointing up and running clockwise, and the gradient
+    //line is sized so that the first and last stops touch the corners
+    if (backgroundGradient) {
+      const {angle = 0, stops = []} = backgroundGradient
+      const radians = angle * Math.PI / 180
+      const dirX = Math.sin(radians)
+      const dirY = -Math.cos(radians)
+      const length = Math.abs(width * dirX) + Math.abs(height * dirY)
+      const gradient = context.createLinearGradient(
+        (width / 2) - (dirX * length / 2),
+        (height / 2) - (dirY * length / 2),
+        (width / 2) + (dirX * length / 2),
+        (height / 2) + (dirY * length / 2)
+      )
+      for (const [offset, color] of stops) {
+        gradient.addColorStop(offset, color)
+      }
+      context.fillStyle = gradient
       context.fillRect(0, 0, width, height)
     }
 
