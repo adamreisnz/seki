@@ -463,6 +463,12 @@ export default class PlayerModeReplay extends PlayerMode {
     //markers returns an empty string from the text handler.
     const showText = true
 
+    //The move that was actually played from this position is the node's main
+    //line child. Derived from the tree rather than flagged in the analysis
+    //data, so every stored analysis gets the distinction for free.
+    const child = node.getChild(0)
+    const played = (child && child.isPlayMove()) ? child.move : null
+
     //Loop candidates
     candidates.forEach((candidate, i) => {
 
@@ -487,7 +493,8 @@ export default class PlayerModeReplay extends PlayerMode {
       //Construct data for factory
       const index = i
       const isBest = (i === 0)
-      const data = {index, loss, isBest, showText}
+      const isPlayed = Boolean(played && played.x === x && played.y === y)
+      const data = {index, loss, isBest, isPlayed, showText}
 
       //Add to board, recording what we put there
       const markup = MarkupFactory.create(markupTypes.CANDIDATE, board, data)

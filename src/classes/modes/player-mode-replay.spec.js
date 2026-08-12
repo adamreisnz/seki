@@ -175,6 +175,28 @@ describe('Replay mode analysis overlay', () => {
     expect(markupAt(2, 2).scoreLoss).toBeCloseTo(0.6)
   })
 
+  it('marks the candidate that was actually played as played', () => {
+
+    //The played move is the node's main line child, derived from the tree
+    //rather than flagged in the analysis data, so every stored analysis gets
+    //the distinction for free. The root's first move is B[cc], at (2, 2).
+    player.setConfig('showAnalysis', true)
+    player.setAnalysis(moves)
+
+    expect(markupAt(2, 2).isPlayed).toBe(true)
+    expect(markupAt(4, 4).isPlayed).toBe(false)
+  })
+
+  it('marks nothing as played at the end of the game', () => {
+
+    //The last position has no child, so nothing was played from it
+    player.setConfig('showAnalysis', true)
+    player.setAnalysis(moves)
+    player.goToLastPosition()
+
+    expect(markupAt(7, 7).isPlayed).toBe(false)
+  })
+
   it('labels a lone candidate too, as what it gives up is still worth saying', () => {
     player.setConfig('showAnalysis', true)
     player.setAnalysis(moves)

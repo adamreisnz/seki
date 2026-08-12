@@ -8,7 +8,7 @@ import {markupTypes} from '../../constants/markup.js'
  * A board stand-in with a grid layer that records what it was asked to erase,
  * the same one the markup spec uses
  */
-const createBoard = ({stones = {}, cellSize = 40} = {}) => {
+const createBoard = ({stones = {}, cellSize = 44} = {}) => {
 
   const gridLayer = {
     eraseCell: vi.fn(),
@@ -36,21 +36,26 @@ const createBoard = ({stones = {}, cellSize = 40} = {}) => {
 }
 
 /**
- * A context that records what it was told to draw with
+ * A context that records what it was told to draw with. Fills note the shadow
+ * they were drawn under, as the shadow belongs to one shape and not the other.
  */
 const createContext = () => {
   const context = {
     translate: vi.fn(),
     setLineDash: vi.fn(),
     beginPath: vi.fn(),
+    moveTo: vi.fn(),
     arc: vi.fn(),
+    arcTo: vi.fn(),
+    closePath: vi.fn(),
     stroke: vi.fn(),
     fillText: vi.fn(),
     fills: [],
-    strokes: [],
   }
-  context.fill = vi.fn(() => context.fills.push(context.fillStyle))
-  context.stroke = vi.fn(() => context.strokes.push(context.strokeStyle))
+  context.fill = vi.fn(() => context.fills.push({
+    fillStyle: context.fillStyle,
+    shadowColor: context.shadowColor,
+  }))
   return context
 }
 
@@ -59,21 +64,27 @@ const createContext = () => {
  */
 const createCandidate = (board, {
   index = 0,
-  winrate = 0,
-  score = winrate * 20,
+  score = 0,
+  winrate = score / 20,
   isBest = index === 0,
+  isPlayed = false,
   showText = true,
 } = {}) => new MarkupCandidate(board, {
   index,
   isBest,
+  isPlayed,
   showText,
   loss: {winrate, score},
 })
 
 /**
- * Pull the hue out of an hsla() string
+ * The fill colour a given point loss comes out as
  */
-const hueOf = color => Number(color.match(/^hsla\((-?[\d.]+),/)[1])
+const colorFor = (score, rest = {}) => {
+  const markup = createCandidate(createBoard(), {index: 1, score, ...rest})
+  markup.loadProperties(3, 3)
+  return markup.fillColor
+}
 
 describe('MarkupCandidate construction', () => {
 
@@ -89,6 +100,7 @@ describe('MarkupCandidate construction', () => {
     expect(markup.winrateLoss).toBe(0.031)
     expect(markup.scoreLoss).toBe(1.4)
     expect(markup.isBest).toBe(false)
+    expect(markup.isPlayed).toBe(false)
   })
 
   it('survives being handed no loss at all', () => {
@@ -97,108 +109,84 @@ describe('MarkupCandidate construction', () => {
     expect(markup.winrateLoss).toBe(0)
     expect(markup.scoreLoss).toBe(0)
   })
+
+  it('survives a loss that only knows its points', () => {
+
+    //A played move the engine never searched carries a loss without a win
+    //rate, as there was no search to read one off
+    const markup = new MarkupCandidate(createBoard(), {
+      loss: {score: 3.2},
+      isPlayed: true,
+    })
+    expect(markup.scoreLoss).toBe(3.2)
+    expect(markup.winrateLoss).toBe(0)
+    expect(markup.isPlayed).toBe(true)
+  })
 })
 
-describe('MarkupCandidate colour gradient', () => {
+describe('MarkupCandidate colour scale', () => {
 
-  const hueFor = winrate => {
-    const markup = createCandidate(createBoard(), {index: 1, winrate})
+  it('lands each quality anchor on its own colour', () => {
+
+    //The anchors sit at the point losses where each quality begins, so a
+    //marker's colour agrees with how the same move would be graded
+    expect(colorFor(0)).toBe('#0e7f8c') //excellent, the blue spot
+    expect(colorFor(0.3)).toBe('#3ba03c') //great
+    expect(colorFor(0.6)).toBe('#8fbe1a') //good
+    expect(colorFor(1.2)).toBe('#dd8420') //inaccuracy
+    expect(colorFor(3)).toBe('#c8402c') //mistake
+    expect(colorFor(9)).toBe('#8c2f6b') //blunder
+  })
+
+  it('slides between anchors rather than stepping', () => {
+
+    //A loss between two anchors gets its own colour, not the nearer anchor's
+    const between = colorFor(0.45)
+    expect(between).not.toBe(colorFor(0.3))
+    expect(between).not.toBe(colorFor(0.6))
+  })
+
+  it('holds at plum once a move has given up everything', () => {
+    expect(colorFor(14)).toBe(colorFor(9))
+    expect(colorFor(80)).toBe(colorFor(9))
+  })
+
+  it('paints the best candidate the colour of giving up nothing', () => {
+
+    //The best move needs no colour of its own: it gives up nothing, so it is
+    //the only marker at the start of the scale
+    expect(colorFor(0, {index: 0})).toBe(colorFor(0, {index: 3}))
+  })
+
+  it('colours a gain the same as giving up nothing', () => {
+
+    //The contract has candidate losses at zero or above, but a negative one
+    //is a move that came out better than the best, not off the scale
+    expect(colorFor(-0.4)).toBe(colorFor(0))
+  })
+
+  it('flips its text between light and dark with the colour under it', () => {
+
+    //Every anchor colour is deep enough to want light text; the flip is
+    //driven by the luminance of the interpolated colour, so a theme that
+    //lightens the scale gets dark text without further work
+    const markup = createCandidate(createBoard(), {index: 1, score: 0.6})
     markup.loadProperties(3, 3)
-    return hueOf(markup.color)
-  }
-
-  it('paints the best candidate blue', () => {
-    const markup = createCandidate(createBoard(), {index: 0, winrate: 0})
-    markup.loadProperties(3, 3)
-    expect(hueOf(markup.color)).toBe(205)
+    expect(markup.textColor).toBe('#fffaf0')
   })
 
-  it('runs green through to gold across the range an engine proposes in', () => {
+  it('rings every candidate in the same cream, at the same weight', () => {
 
-    //NOTE: candidates are all moves the engine itself put forward, so they
-    //cluster in the first few percent. The scale keeps its resolution there
-    //rather than spending it on the far worse moves further down.
-    expect(hueFor(0)).toBe(125)
-    expect(hueFor(0.1)).toBe(48)
-    expect(hueFor(0.02)).toBeLessThan(hueFor(0.005))
-    expect(hueFor(0.05)).toBeLessThan(hueFor(0.02))
-  })
-
-  it('carries on through orange and red into purple for a far worse move', () => {
-
-    //The far end grades a move somebody actually played, which can give up any
-    //amount, rather than anything an engine would suggest
-    expect(hueFor(0.25)).toBe(28) //orange
-    expect(hueFor(0.5)).toBe(2) //red
-    expect(hueFor(1)).toBe(290) //purple
-  })
-
-  it('passes through magenta on its way from red to purple', () => {
-
-    //Hue is a wheel, so this is the leg that has to come out the far side of
-    //zero rather than doubling back through the greens
-    expect(hueFor(0.75)).toBeGreaterThan(300)
-    expect(hueFor(0.75)).toBeLessThan(360)
-  })
-
-  it('holds at purple once a move has given up everything', () => {
-    expect(hueFor(2)).toBe(hueFor(1))
-    expect(hueFor(80)).toBe(hueFor(1))
-  })
-
-  it('never doubles back on itself', () => {
-
-    //Walking the scale should never revisit a colour it has already been, or
-    //two very different moves read the same
-    const seen = []
-    for (let loss = 0; loss <= 1; loss += 0.01) {
-      seen.push(hueFor(loss))
-    }
-
-    //Unwrap the wheel, so the walk is one continuous descent
-    const unwrapped = seen.map(hue => (hue > 180 ? hue - 360 : hue))
-    for (let i = 1; i < unwrapped.length; i++) {
-      expect(unwrapped[i]).toBeLessThanOrEqual(unwrapped[i - 1])
-    }
-  })
-
-  it('fills itself with a lighter version of its ring, in the same hue', () => {
-    const markup = createCandidate(createBoard(), {index: 1, winrate: 0.02})
-    markup.loadProperties(3, 3)
-
-    expect(hueOf(markup.fillColor)).toBe(hueOf(markup.color))
-    expect(markup.fillColor).toContain(',0.75)')
-  })
-
-  it('keeps the ring half transparent, so it settles towards the board', () => {
-    const markup = createCandidate(createBoard(), {index: 1, winrate: 0.02})
-    markup.loadProperties(3, 3)
-
-    expect(markup.color).toContain(',0.5)')
-  })
-
-  it('rings every candidate at the same weight', () => {
-
-    //NOTE: the weight used to thin out as the candidate gave up more, which
-    //read as the markers being drawn at different sizes rather than as a
-    //scale. The colour already carries everything the weight was saying.
-    const widths = [0, 0.005, 0.02, 0.05, 0.3].map(winrate => {
-      const markup = createCandidate(createBoard(), {index: 1, winrate})
+    //The ring is what separates a marker from the wood and from stones, so
+    //it does not carry rank and does not vary
+    const markers = [0, 0.3, 3, 12].map(score => {
+      const markup = createCandidate(createBoard(), {index: 1, score})
       markup.loadProperties(3, 3)
-      return markup.lineWidth
+      return markup
     })
 
-    expect(new Set(widths).size).toBe(1)
-  })
-
-  it('rings the best candidate no differently from the rest', () => {
-    const best = createCandidate(createBoard(), {index: 0, winrate: 0})
-    const other = createCandidate(createBoard(), {index: 4, winrate: 0.3})
-
-    best.loadProperties(3, 3)
-    other.loadProperties(3, 3)
-
-    expect(best.lineWidth).toBe(other.lineWidth)
+    expect(new Set(markers.map(m => m.color)).size).toBe(1)
+    expect(new Set(markers.map(m => m.lineWidth)).size).toBe(1)
   })
 })
 
@@ -228,40 +216,70 @@ describe('MarkupCandidate point loss', () => {
     expect(textFor(-0.14)).toBe('+0.1')
   })
 
-  it('shrinks the font to fit a longer number', () => {
+  it('keeps one font size whatever the label says', () => {
+
+    //The label is drawn with a maximum width instead, which condenses the
+    //rare long number rather than shrinking every marker's text
     const short = createCandidate(createBoard(), {score: 0.4})
     const long = createCandidate(createBoard(), {score: 12.4})
 
     short.loadProperties(3, 3)
     long.loadProperties(3, 3)
 
-    expect(long.text.length).toBeGreaterThan(short.text.length)
-    expect(long.fontSize).toBeLessThan(short.fontSize)
+    expect(long.fontSize).toBe(short.fontSize)
   })
 })
 
 describe('MarkupCandidate drawing', () => {
 
-  it('fills, rings and labels itself', () => {
+  it('lays a cream ring under a solid fill, and labels itself', () => {
     const context = createContext()
-    const markup = createCandidate(createBoard(), {index: 2, winrate: 0.03, score: 1.4})
+    const markup = createCandidate(createBoard(), {index: 2, score: 1.4})
 
     markup.draw(context, 3, 3)
 
-    expect(context.fills).toEqual([markup.fillColor])
-    expect(context.strokes).toEqual([markup.color])
+    expect(context.fills.map(f => f.fillStyle))
+      .toEqual([markup.color, markup.fillColor])
     expect(context.fillText)
-      .toHaveBeenCalledWith('-1.4', 120, expect.any(Number), expect.any(Number))
+      .toHaveBeenCalledWith('-1.4', 132, expect.any(Number), expect.any(Number))
   })
 
-  it('lays the fill down before the ring, so the ring stays crisp', () => {
+  it('drops its shadow from the ring, not the fill on top of it', () => {
+
+    //The ring shape is the whole marker's silhouette, so the shadow falls
+    //from marker and ring together, the way it would from one solid object
     const context = createContext()
-    const markup = createCandidate(createBoard(), {index: 1, winrate: 0.02})
+    const markup = createCandidate(createBoard(), {index: 1, score: 0.5})
 
     markup.draw(context, 3, 3)
 
-    expect(context.fill.mock.invocationCallOrder[0])
-      .toBeLessThan(context.stroke.mock.invocationCallOrder[0])
+    expect(context.fills[0].shadowColor).toBe(markup.shadowColor)
+    expect(context.fills[1].shadowColor).toBe('transparent')
+  })
+
+  it('draws a candidate as a circle', () => {
+    const context = createContext()
+    const markup = createCandidate(createBoard(), {index: 1, score: 0.5})
+
+    markup.draw(context, 3, 3)
+
+    expect(context.arc).toHaveBeenCalled()
+    expect(context.arcTo).not.toHaveBeenCalled()
+  })
+
+  it('draws the move actually played as a rounded square', () => {
+
+    //Shape says "you played here", so it never collides with what the colour
+    //is saying and never reads as a stone
+    const context = createContext()
+    const markup = createCandidate(createBoard(), {
+      index: 3, score: 2.1, isPlayed: true,
+    })
+
+    markup.draw(context, 3, 3)
+
+    expect(context.arcTo).toHaveBeenCalled()
+    expect(context.arc).not.toHaveBeenCalled()
   })
 
   it('draws the marker alone when there is no text to show', () => {
@@ -270,7 +288,7 @@ describe('MarkupCandidate drawing', () => {
 
     markup.draw(context, 3, 3)
 
-    expect(context.fills).toHaveLength(1)
+    expect(context.fills).toHaveLength(2)
     expect(context.fillText).not.toHaveBeenCalled()
   })
 

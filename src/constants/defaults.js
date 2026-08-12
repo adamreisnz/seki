@@ -5,6 +5,7 @@ import {playerModes, playerActions} from './player.js'
 import {markupTypes} from './markup.js'
 import {stoneColors, stoneStyles} from './stone.js'
 import {dateString} from '../helpers/util.js'
+import {interpolateColorScale, colorLuminance} from '../helpers/color.js'
 
 //Default game info
 export const defaultGameInfo = {
@@ -156,56 +157,42 @@ export const defaultStarPoints = {
   ],
 }
 
-//Colour stops for the analysis gradient, keyed on how much win rate a move
-//gives up against the best one available.
+//Colour anchors for the analysis gradient, keyed on the points a move gives
+//up against the best one available.
 //
-//The scale keeps its resolution where the moves an engine puts forward
-//actually sit, being the first few percent, and only then carries on through
-//orange and red into purple. That far end is not for candidates, which are all
-//moves the engine itself proposed and so cluster in the green: it is for
-//grading a move somebody actually played, which can give up any amount.
+//The six colours are the move quality scale — excellent through blunder — and
+//each anchor sits at the point loss where that quality begins, so a marker's
+//colour agrees with how the same move would be graded in a review. The values
+//are the quality thresholds (severity, being win rate loss on a 0–1 scale)
+//spelt in points at 60 points to the game, the same conversion the grading
+//uses. Between anchors the colour interpolates rather than stepping, so a
+//1.1 point move visibly sits between a 0.7 and a 1.5 point one; past the last
+//anchor everything holds at plum, as by then it is all the same disaster.
 //
-//The lightness climbs from green to gold, as a gold at a green's lightness
-//reads as muddy brown rather than as a colour on the same scale. Hues run down
-//through zero into negative numbers, which is how a red carries on into a
-//magenta and then a purple rather than doubling back through the whole wheel.
-const candidateStops = [
-  {loss: 0, hsl: [125, 55, 33]}, //green
-  {loss: 0.1, hsl: [48, 85, 42]}, //gold
-  {loss: 0.25, hsl: [28, 85, 45]}, //orange
-  {loss: 0.5, hsl: [2, 75, 45]}, //red
-  {loss: 1, hsl: [-70, 50, 42]}, //purple
+//The teal is the "blue spot" analysis tools mark the best move with. The best
+//candidate gives up nothing by definition, so it lands on the teal anchor by
+//itself and is the only teal marker on the board: colour alone carries rank,
+//and no extra decoration is needed.
+const candidateAnchors = [
+  {value: 0, color: '#0e7f8c'}, //excellent, the blue spot
+  {value: 0.3, color: '#3ba03c'}, //great
+  {value: 0.6, color: '#8fbe1a'}, //good
+  {value: 1.2, color: '#dd8420'}, //inaccuracy
+  {value: 3, color: '#c8402c'}, //mistake
+  {value: 9, color: '#8c2f6b'}, //blunder
 ]
 
-//Hue, saturation and lightness for an analysis marker
-const candidateHsl = (winrateLoss, isBest) => {
-
-  //The best move is the blue spot, and the only blue marker there is
-  if (isBest) {
-    return [205, 72, 42]
-  }
-
-  //Find the stop the loss falls short of. Anything at or beyond the last one
-  //has given up everything there was to give up, and holds at purple.
-  const loss = Math.min(1, Math.max(0, winrateLoss || 0))
-  const next = candidateStops.findIndex(stop => loss <= stop.loss)
-  if (next <= 0) {
-    return candidateStops[0].hsl
-  }
-
-  //Interpolate between that stop and the one before it
-  const from = candidateStops[next - 1]
-  const to = candidateStops[next]
-  const share = (loss - from.loss) / (to.loss - from.loss)
-  return from.hsl.map((value, i) => value + ((to.hsl[i] - value) * share))
+//The solid colour for an analysis marker
+const candidateColor = scoreLoss => {
+  return interpolateColorScale(candidateAnchors, Math.max(0, scoreLoss || 0))
 }
 
-//Build a colour from the above, optionally lightened and made translucent for
-//the marker's fill
-const candidateColor = (winrateLoss, isBest, lighten = 0, alpha = 1) => {
-  const [h, s, l] = candidateHsl(winrateLoss, isBest)
-  const hue = ((Math.round(h) % 360) + 360) % 360
-  return `hsla(${hue},${Math.round(s)}%,${Math.round(l + lighten)}%,${alpha})`
+//Whether text sits light or dark on a candidate colour. The threshold is
+//shared with the review panel, so a marker and the panel entry for the same
+//move flip their text together.
+const candidateTextColor = scoreLoss => {
+  const luminance = colorLuminance(candidateColor(scoreLoss))
+  return (luminance >= 168) ? '#221c15' : '#fffaf0'
 }
 
 //Default theme
@@ -476,18 +463,19 @@ export const defaultTheme = {
 
     //Analysis candidate markers
     //
-    //NOTE: the fill and the ring colour are both worked out from the win rate
+    //NOTE: the fill and the text colour are both worked out from the points
     //the candidate gives up against the best one, which is what makes the
-    //gradient a theme concern rather than drawing code. The blue marker is
-    //simply the candidate that gives up nothing, not a marker of a different
-    //kind.
+    //gradient a theme concern rather than drawing code. The move actually
+    //played draws as a rounded square instead of a circle, so shape says "you
+    //played here" while colour keeps saying how good it was.
     candidate: {
-      scale: 0.92,
+
+      //The mock draws a 34px marker at 44px spacing
+      scale: 0.77,
 
       //The number inside the marker is the points given up against the best
-      //candidate, the way the analysis apps show it. Win rate drives the
-      //colour, because it already carries the weight of the game's phase,
-      //while points are what a player can actually read off the board.
+      //candidate, the way the analysis apps show it, and the same measure the
+      //colour is drawn from.
       text(scoreLoss/*, cellSize, index, winrateLoss*/) {
         const points = Math.round((scoreLoss || 0) * 10) / 10
         if (points === 0) {
@@ -495,34 +483,35 @@ export const defaultTheme = {
         }
         return `${points > 0 ? '-' : '+'}${Math.abs(points).toFixed(1)}`
       },
+
+      //One size whatever the label says; the marker clamps a label that would
+      //still overflow. A heavier weight than the default, which only lands on
+      //fonts that carry a medium face and falls back to regular elsewhere.
       fontSize(text, cellSize) {
-        const len = String(text).length
-        if (len <= 3) {
-          return Math.round(cellSize * 0.44)
-        }
-        else if (len === 4) {
-          return Math.round(cellSize * 0.38)
-        }
-        return Math.round(cellSize * 0.3)
+        return Math.round(cellSize * 0.27)
       },
-      textColor: 'rgba(0,0,0,0.8)',
-
-      //Ring, and the lighter fill underneath it. The ring is half transparent,
-      //so it settles towards what it sits on rather than outlining the marker
-      //against the board.
-      color(cellSize, stoneColor, winrateLoss, isBest) {
-        return candidateColor(winrateLoss, isBest, 0, 0.5)
-      },
-      fillColor(cellSize, stoneColor, winrateLoss, isBest) {
-        return candidateColor(winrateLoss, isBest, 26, 0.75)
+      fontWeight: 500,
+      textColor(cellSize, stoneColor, scoreLoss/*, isBest*/) {
+        return candidateTextColor(scoreLoss)
       },
 
-      //NOTE: one weight for every marker. This used to thin out as the
-      //candidate gave up more, which read as the markers being drawn at
-      //different sizes rather than as a scale, and the colour already says
-      //everything the weight was saying.
-      lineWidth(cellSize/*, stoneColor, winrateLoss, isBest*/) {
-        return Math.max(1, Math.round(cellSize / 20))
+      //Solid quality colour under a cream ring. The ring is what separates
+      //the marker from the wood and from stones, so it stays opaque.
+      color: '#fff9ed',
+      fillColor(cellSize, stoneColor, scoreLoss/*, isBest*/) {
+        return candidateColor(scoreLoss)
+      },
+      lineWidth(cellSize) {
+        return Math.max(1, cellSize * 0.034)
+      },
+
+      //Soft shadow that lifts the marker off the board
+      shadowColor: 'rgba(60,35,10,0.35)',
+      shadowBlur(cellSize) {
+        return cellSize * 0.11
+      },
+      shadowOffsetY(cellSize) {
+        return cellSize * 0.045
       },
     },
 
