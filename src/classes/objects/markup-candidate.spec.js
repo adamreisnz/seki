@@ -176,8 +176,19 @@ describe('MarkupCandidate colour scale', () => {
   it('colours a gain the same as giving up nothing', () => {
 
     //The contract has candidate losses at zero or above, but a negative one
-    //is a move that came out better than the best, not off the scale
+    //is a move that came out better than the best, not off the scale. It is
+    //still a move the engine ranked behind the best one, so it is green: a
+    //gain does not buy a runner-up the blue spot the way a bare zero did.
+    expect(colorFor(-0.4)).toBe('#3ba03c')
+    expect(colorFor(-4)).toBe('#3ba03c')
     expect(colorFor(-0.4)).toBe(colorFor(0))
+  })
+
+  it('leaves the best move teal even if it reads as a gain', () => {
+
+    //Rank is what the teal says, so the best candidate keeps it whichever
+    //side of zero its own loss lands on
+    expect(colorFor(-0.4, {index: 0, isBest: true})).toBe('#0e7f8c')
   })
 
   it('flips its text between light and dark with the colour under it', () => {
