@@ -112,6 +112,13 @@ A version bump here is not local bookkeeping, it is a publish. Cutting a
 release is the user's decision on their timing, from an up-to-date `main`;
 the README documents how they do it.
 
+The one exception is the user asking for a release in so many words, in that
+moment — typically by invoking the [seki-update](../seki-update/SKILL.md)
+skill, which cuts the release and pulls it through to Let's Play Go. That ask
+covers that release and nothing else: finishing a ticket, merging a PR, or
+having been asked to release once before are none of them a reason to run it
+again.
+
 ### Let's Play Go — the sister app
 
 Seki is consumed by [Let's Play Go](https://github.com/adamreisnz/lets-play-go)
@@ -127,7 +134,10 @@ from the current directory. Two things follow:
   there, spawn a task chip for it (`spawn_task`, with `cwd` set to that
   checkout) and carry on with the part that belongs here. Write the chip
   prompt so it stands on its own — what to change, where, and why — because
-  the session that picks it up has none of this conversation.
+  the session that picks it up has none of this conversation. The single
+  exception is the [seki-update](../seki-update/SKILL.md) skill, which the
+  user invokes to move that checkout's Seki pin after a release, and which
+  touches nothing else there.
 - **A change to the public API is a change to a real consumer.** Renaming or
   removing an export, or changing what a class returns, reaches that app the
   next time the user updates its pin. Keep the old shape working where you
