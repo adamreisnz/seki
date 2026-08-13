@@ -67,15 +67,18 @@ describe('Replay mode analysis overlay', () => {
 
   /**
    * Build a candidate as the API stores it, being a point with what it gives
-   * up in win rate against the best one
+   * up in win rate against the best one, and where the analysis put it on the
+   * quality scale. An analysis stored before that scale existed has no grade,
+   * which is what leaving it off says.
    */
-  const candidate = (x, y, winrate) => ({
+  const candidate = (x, y, winrate, qualityScale) => ({
     x, y,
     winrate: 0.5 - winrate,
     scoreLead: -winrate * 20,
     visits: 100,
     prior: 0.1,
     loss: {winrate, score: winrate * 20},
+    qualityScale,
     pv: [{x, y}],
   })
 
@@ -98,7 +101,7 @@ describe('Replay mode analysis overlay', () => {
   //One entry per node on the main line, root included, so the array is one
   //longer than the game has moves
   const moves = [
-    analysis([candidate(4, 4, 0), candidate(2, 2, 0.03)]),
+    analysis([candidate(4, 4, 0, 0), candidate(2, 2, 0.03, 0.35)]),
     analysis([candidate(6, 6, 0), candidate(6, 2, 0.06)]),
     analysis([candidate(2, 6, 0), candidate(4, 2, 0.01)]),
     analysis([candidate(7, 7, 0)]),
@@ -166,6 +169,30 @@ describe('Replay mode analysis overlay', () => {
 
     expect(candidateAt(4, 4).winrateLoss).toBe(0)
     expect(candidateAt(2, 2).winrateLoss).toBe(0.03)
+  })
+
+  it('hands each marker the grade the analysis gave its move', () => {
+
+    //The grade is what the marker colours itself by, so a move graded worse
+    //than its point loss suggests reads as the grade. Nothing here decides
+    //what it means; it is passed straight through to the theme.
+    player.setConfig('showAnalysis', true)
+    player.setAnalysis(moves)
+
+    expect(candidateAt(4, 4).qualityScale).toBe(0)
+    expect(candidateAt(2, 2).qualityScale).toBe(0.35)
+  })
+
+  it('leaves the grade off an analysis that carries none', () => {
+
+    //Analyses stored before the quality scale existed have no grade on their
+    //candidates, and those markers fall back to colouring by point loss
+    player.setConfig('showAnalysis', true)
+    player.setAnalysis(moves)
+    player.goToNextPosition()
+
+    expect(candidateAt(6, 6).qualityScale).toBeUndefined()
+    expect(candidateAt(6, 6).scoreLoss).toBe(0)
   })
 
   it('hands each marker the points its move gives up, to label itself with', () => {

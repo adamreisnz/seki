@@ -3,6 +3,7 @@ import MarkupCandidate from './markup-candidate.js'
 import Theme from '../theme.js'
 import {boardLayerTypes} from '../../constants/board.js'
 import {markupTypes} from '../../constants/markup.js'
+import {hexToRgb, colorLuminance} from '../../helpers/color.js'
 
 /**
  * A board stand-in with a grid layer that records what it was asked to erase,
@@ -66,11 +67,13 @@ const createCandidate = (board, {
   index = 0,
   score = 0,
   winrate = score / 20,
+  qualityScale,
   isBest = index === 0,
   isPlayed = false,
   showText = true,
 } = {}) => new MarkupCandidate(board, {
   index,
+  qualityScale,
   isBest,
   isPlayed,
   showText,
@@ -103,11 +106,27 @@ describe('MarkupCandidate construction', () => {
     expect(markup.isPlayed).toBe(false)
   })
 
+  it('keeps the grade the analysis gave the move', () => {
+    const markup = createCandidate(createBoard(), {
+      index: 2, score: 1.4, qualityScale: 0.7,
+    })
+    expect(markup.qualityScale).toBe(0.7)
+  })
+
   it('survives being handed no loss at all', () => {
     const markup = new MarkupCandidate(createBoard())
     expect(markup.index).toBe(0)
     expect(markup.winrateLoss).toBe(0)
     expect(markup.scoreLoss).toBe(0)
+  })
+
+  it('leaves the grade off a move nothing graded', () => {
+
+    //An engine that only reports losses grades nothing, and neither did the
+    //analyses stored before the scale existed. Undefined rather than zero,
+    //which would read as the best move there is.
+    const markup = new MarkupCandidate(createBoard(), {loss: {score: 3.2}})
+    expect(markup.qualityScale).toBeUndefined()
   })
 
   it('survives a loss that only knows its points', () => {
@@ -124,7 +143,104 @@ describe('MarkupCandidate construction', () => {
   })
 })
 
-describe('MarkupCandidate colour scale', () => {
+describe('MarkupCandidate colour scale from the quality scale', () => {
+
+  it('lands each quality band on its own colour', () => {
+
+    //The quality scale is the analysis' own grade for the move, 0 for the
+    //best there is and 1 for a blunder, and the anchors sit at the band
+    //boundaries, so a marker's colour cannot disagree with the verdict the
+    //same move was given
+    expect(colorFor(0, {qualityScale: 0.2})).toBe('#3ba03c') //great
+    expect(colorFor(0, {qualityScale: 0.4})).toBe('#8fbe1a') //good
+    expect(colorFor(0, {qualityScale: 0.6})).toBe('#dd8420') //inaccuracy
+    expect(colorFor(0, {qualityScale: 0.8})).toBe('#c8402c') //mistake
+    expect(colorFor(0, {qualityScale: 1})).toBe('#8c2f6b') //blunder
+  })
+
+  it('colours by the grade rather than by the points', () => {
+
+    //This is the whole point of the change: a move can give up next to
+    //nothing on the board and still be graded a blunder on win rate, and the
+    //marker now says what the review says
+    expect(colorFor(1.2, {qualityScale: 1})).toBe('#8c2f6b')
+    expect(colorFor(1.2, {qualityScale: 1})).not.toBe(colorFor(1.2))
+    expect(colorFor(12, {qualityScale: 0.3}))
+      .toBe(colorFor(0, {qualityScale: 0.3}))
+  })
+
+  it('gives the whole excellent band to the best move', () => {
+
+    //A runner-up graded anywhere in the excellent band is a great move, not
+    //the best one, so it reads as the pure green the scale starts at
+    expect(colorFor(0, {qualityScale: 0.05})).toBe('#3ba03c')
+    expect(colorFor(0, {qualityScale: 0})).toBe('#3ba03c')
+    expect(colorFor(0, {qualityScale: 0.2})).toBe('#3ba03c')
+  })
+
+  it('slides between anchors rather than stepping', () => {
+
+    //Halfway through a band is halfway between two colours, which is what
+    //the even spacing of the quality scale buys
+    const between = colorFor(0, {qualityScale: 0.7})
+    expect(between).not.toBe(colorFor(0, {qualityScale: 0.6}))
+    expect(between).not.toBe(colorFor(0, {qualityScale: 0.8}))
+
+    //And it reads as between them rather than off on its own: darker than
+    //the amber it is leaving and lighter than the red it is heading for,
+    //having given up some of both the amber's red and its green
+    const [r, g] = hexToRgb(between)
+    const [rFrom, gFrom] = hexToRgb('#dd8420')
+    const [rTo, gTo] = hexToRgb('#c8402c')
+    expect(r).toBeGreaterThan(rTo)
+    expect(r).toBeLessThan(rFrom)
+    expect(g).toBeGreaterThan(gTo)
+    expect(g).toBeLessThan(gFrom)
+    expect(colorLuminance(between))
+      .toBeGreaterThan(colorLuminance('#c8402c'))
+    expect(colorLuminance(between))
+      .toBeLessThan(colorLuminance('#dd8420'))
+  })
+
+  it('holds at the ends of the scale', () => {
+
+    //Nothing is graded outside 0 to 1, but a scale that runs off its ends
+    //quietly is one less thing for a caller to get wrong
+    expect(colorFor(0, {qualityScale: 1.4})).toBe('#8c2f6b')
+    expect(colorFor(0, {qualityScale: -0.5})).toBe('#3ba03c')
+  })
+
+  it('leaves the blue spot to the best move', () => {
+
+    //Rank is what the teal says and the quality scale is quality, so a
+    //candidate graded as well as the best one still is not it
+    expect(colorFor(0, {index: 1, qualityScale: 0})).toBe('#3ba03c')
+    expect(colorFor(9, {index: 0, isBest: true, qualityScale: 1}))
+      .toBe('#0e7f8c')
+  })
+
+  it('keeps saying what the move gave up in points', () => {
+
+    //Colour is quality and text is points: two different axes, and only the
+    //colour moved onto the grade
+    const markup = createCandidate(createBoard(), {
+      index: 1, score: 1.4, qualityScale: 1,
+    })
+    markup.loadProperties(3, 3)
+    expect(markup.text).toBe('-1.4')
+  })
+})
+
+describe('MarkupCandidate colour scale from point loss', () => {
+
+  it('falls back to the points when nothing graded the move', () => {
+
+    //An engine feeding raw losses with no grading behind it, and analyses
+    //stored before a quality scale was served, both still get a gradient
+    expect(colorFor(1.2, {qualityScale: undefined})).toBe('#dd8420')
+    expect(colorFor(1.2, {qualityScale: null})).toBe('#dd8420')
+    expect(colorFor(3)).toBe('#c8402c')
+  })
 
   it('lands each quality anchor on its own colour', () => {
 

@@ -483,8 +483,10 @@ export default class PlayerModeReplay extends PlayerMode {
     //Loop candidates
     candidates.forEach((candidate, i) => {
 
-      //Get data
-      const {x, y, loss} = candidate
+      //Get data. The quality scale is the analysis' own grade for the move,
+      //and is passed straight on: what it means is decided where it is worked
+      //out, not here and not in the theme that colours by it.
+      const {x, y, loss, qualityScale} = candidate
 
       //A pass has no home on the board
       if (typeof x !== 'number' || typeof y !== 'number') {
@@ -505,7 +507,7 @@ export default class PlayerModeReplay extends PlayerMode {
       const index = i
       const isBest = (i === 0)
       const isPlayed = Boolean(played && played.x === x && played.y === y)
-      const data = {index, loss, isBest, isPlayed, showText}
+      const data = {index, loss, qualityScale, isBest, isPlayed, showText}
 
       //Add to the grid, remembering the point so that the markers we generate
       //ourselves know to leave it to us

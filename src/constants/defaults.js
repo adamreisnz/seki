@@ -165,19 +165,35 @@ export const defaultStarPoints = {
 const bestCandidateColor = '#0e7f8c' //excellent, the blue spot
 
 //Colour anchors for the analysis gradient every other candidate is drawn
-//from, keyed on the points a move gives up against the best one available.
+//from, keyed on the quality scale the analysis put the move on: 0 for the
+//best move there is, 1 for a blunder.
 //
-//The five colours are the move quality scale below the best move — great
-//through blunder — and each anchor sits at the point loss where that quality
-//begins, so a marker's colour agrees with how the same move would be graded
-//in a review. The values are the quality thresholds (severity, being win rate
-//loss on a 0–1 scale) spelt in points at 60 points to the game, the same
-//conversion the grading uses. The scale starts at green rather than at the
-//great threshold, because the whole excellent band belongs to the best move:
-//a runner-up giving up nothing is a great move, not the best one. Between
-//anchors the colour interpolates rather than stepping, so a 1.1 point move
-//visibly sits between a 0.7 and a 1.5 point one; past the last anchor
-//everything holds at plum, as by then it is all the same disaster.
+//The five colours are the move qualities below the best move — great through
+//blunder — and each anchor sits where that quality begins on the scale, so a
+//marker's colour agrees with how the same move was graded in the review. The
+//grading is what puts a move on the scale, so the two can no longer disagree:
+//the bands are exact fifths of it, which also spaces the anchors evenly and
+//gives every quality the same visual width. The scale starts at green rather
+//than at the excellent band, because that whole band belongs to the best
+//move: a runner-up giving up nothing is a great move, not the best one, and
+//anything at or below the first anchor reads as that pure green. Between
+//anchors the colour interpolates rather than stepping, so a move halfway
+//through a band lands halfway between two colours.
+const candidateQualityAnchors = [
+  {value: 0.2, color: '#3ba03c'}, //great
+  {value: 0.4, color: '#8fbe1a'}, //good
+  {value: 0.6, color: '#dd8420'}, //inaccuracy
+  {value: 0.8, color: '#c8402c'}, //mistake
+  {value: 1.0, color: '#8c2f6b'}, //blunder
+]
+
+//The same five colours keyed on the points a move gives up against the best
+//one available, for an engine that feeds raw losses with no grading behind
+//them, and for analyses stored before a quality scale was served. The values
+//are the quality thresholds spelt in points at 60 points to the game, the
+//same conversion the grading uses; being losses rather than a normalised
+//scale they crowd at the good end and crawl at the bad one, which is exactly
+//why the quality scale is preferred when there is one.
 const candidateAnchors = [
   {value: 0, color: '#3ba03c'}, //great
   {value: 0.6, color: '#8fbe1a'}, //good
@@ -187,9 +203,12 @@ const candidateAnchors = [
 ]
 
 //The solid colour for an analysis marker
-const candidateColor = (scoreLoss, isBest) => {
+const candidateColor = (scoreLoss, isBest, qualityScale) => {
   if (isBest) {
     return bestCandidateColor
+  }
+  if (Number.isFinite(qualityScale)) {
+    return interpolateColorScale(candidateQualityAnchors, qualityScale)
   }
   return interpolateColorScale(candidateAnchors, Math.max(0, scoreLoss || 0))
 }
@@ -197,8 +216,9 @@ const candidateColor = (scoreLoss, isBest) => {
 //Whether text sits light or dark on a candidate colour. The threshold is
 //shared with the review panel, so a marker and the panel entry for the same
 //move flip their text together.
-const candidateTextColor = (scoreLoss, isBest) => {
-  const luminance = colorLuminance(candidateColor(scoreLoss, isBest))
+const candidateTextColor = (scoreLoss, isBest, qualityScale) => {
+  const color = candidateColor(scoreLoss, isBest, qualityScale)
+  const luminance = colorLuminance(color)
   return (luminance >= 168) ? '#221c15' : '#fffaf0'
 }
 
@@ -491,20 +511,24 @@ export const defaultTheme = {
 
     //Analysis candidate markers
     //
-    //NOTE: the fill and the text colour are both worked out from the points
-    //the candidate gives up against the best one, and from whether it is the
-    //best one, which is what makes the gradient a theme concern rather than
-    //drawing code. The move actually played draws as a rounded square instead
-    //of a circle, so shape says "you played here" while colour keeps saying
-    //how good it was.
+    //NOTE: the fill and the text colour are both worked out from where the
+    //analysis put the candidate on the quality scale — falling back to the
+    //points it gives up against the best one when it was put nowhere — and
+    //from whether it is the best one, which is what makes the gradient a theme
+    //concern rather than drawing code. The quality scale comes last in the
+    //handler signatures so that a theme written against the earlier arguments
+    //keeps working untouched. The move actually played draws as a rounded
+    //square instead of a circle, so shape says "you played here" while colour
+    //keeps saying how good it was.
     candidate: {
 
       //The mock draws a 34px marker at 44px spacing
       scale: 0.77,
 
       //The number inside the marker is the points given up against the best
-      //candidate, the way the analysis apps show it, and the same measure the
-      //colour is drawn from.
+      //candidate, the way the analysis apps show it. Colour is quality and
+      //text is points: different axes, the same way marker position is engine
+      //preference and colour is quality.
       text(scoreLoss/*, cellSize, index, winrateLoss*/) {
         const points = Math.round((scoreLoss || 0) * 10) / 10
         if (points === 0) {
@@ -520,15 +544,15 @@ export const defaultTheme = {
         return Math.round(cellSize * 0.27)
       },
       fontWeight: 500,
-      textColor(cellSize, stoneColor, scoreLoss, isBest) {
-        return candidateTextColor(scoreLoss, isBest)
+      textColor(cellSize, stoneColor, scoreLoss, isBest, qualityScale) {
+        return candidateTextColor(scoreLoss, isBest, qualityScale)
       },
 
       //Solid quality colour under a cream ring. The ring is what separates
       //the marker from the wood and from stones, so it stays opaque.
       color: '#fff9ed',
-      fillColor(cellSize, stoneColor, scoreLoss, isBest) {
-        return candidateColor(scoreLoss, isBest)
+      fillColor(cellSize, stoneColor, scoreLoss, isBest, qualityScale) {
+        return candidateColor(scoreLoss, isBest, qualityScale)
       },
       lineWidth(cellSize) {
         return Math.max(1, cellSize * 0.034)
