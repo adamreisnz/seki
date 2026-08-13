@@ -169,14 +169,14 @@ const bestCandidateColor = '#0e7f8c' //excellent, the blue spot
 //best move there is, 1 for a blunder.
 //
 //The five colours are the move qualities below the best move — great through
-//blunder — and each anchor sits where that quality ends on the scale, so a
+//blunder — and each anchor sits where that quality begins on the scale, so a
 //marker's colour agrees with how the same move was graded in the review. The
 //grading is what puts a move on the scale, so the two can no longer disagree:
 //the bands are exact fifths of it, which also spaces the anchors evenly and
 //gives every quality the same visual width. The scale starts at green rather
-//than at the excellent stop, because the whole excellent band belongs to the
-//best move: a runner-up giving up nothing is a great move, not the best one,
-//and anything at or below the first anchor reads as that pure green. Between
+//than at the excellent band, because that whole band belongs to the best
+//move: a runner-up giving up nothing is a great move, not the best one, and
+//anything at or below the first anchor reads as that pure green. Between
 //anchors the colour interpolates rather than stepping, so a move halfway
 //through a band lands halfway between two colours.
 const candidateQualityAnchors = [
