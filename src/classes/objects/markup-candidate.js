@@ -5,9 +5,13 @@ import {markupTypes} from '../../constants/markup.js'
  * Analysis candidate markup
  *
  * One of these is drawn per candidate move an engine suggested for the current
- * position. Each candidate carries its own point loss against the best one and
- * whether it is that best one, which is what the theme colours the marker by,
- * so a marker never has to look at its siblings to know how to draw itself.
+ * position. Each candidate carries its place on the quality scale — the
+ * analysis' own verdict on the move, 0 for the best there is and 1 for a
+ * blunder — its point loss against the best one, and whether it is that best
+ * one, which is what the theme colours the marker by, so a marker never has to
+ * look at its siblings to know how to draw itself. Grading the move is the
+ * analysis' business and colouring it is the theme's: an engine that grades
+ * nothing still gets a gradient off the losses.
  *
  * Candidates draw as solid discs. The move that was actually played from this
  * position draws as a rounded square instead, so shape says "you played here"
@@ -36,6 +40,7 @@ export default class MarkupCandidate extends Markup {
   index = 0
   winrateLoss = 0
   scoreLoss = 0
+  qualityScale
   isBest = false
   isPlayed = false
   showText
@@ -47,10 +52,13 @@ export default class MarkupCandidate extends Markup {
     super(board)
 
     //Set data attributes. A candidate the engine never searched carries only
-    //its point loss, so each half of the loss stands on its own.
+    //its point loss, so each half of the loss stands on its own. The quality
+    //scale is left undefined when nothing graded the move, which is what
+    //sends the theme back to colouring by point loss.
     this.index = data.index || 0
     this.winrateLoss = data.loss?.winrate ?? 0
     this.scoreLoss = data.loss?.score ?? 0
+    this.qualityScale = data.qualityScale
     this.isBest = Boolean(data.isBest)
     this.isPlayed = Boolean(data.isPlayed)
     this.showText = data.showText
@@ -64,18 +72,21 @@ export default class MarkupCandidate extends Markup {
     //Load parent properties
     const args = super.loadProperties(x, y)
     const [cellSize] = args
-    const {index, winrateLoss, scoreLoss, isBest} = this
+    const {index, winrateLoss, scoreLoss, qualityScale, isBest} = this
 
     //Load additional properties
     this.loadThemeProp('font', ...args)
     this.loadThemeProp('fontWeight', ...args)
 
-    //The colours are worked out from the points the candidate gives up, which
-    //is what makes the gradient a theme concern rather than drawing code
-    this.loadThemeProp('color', ...args, scoreLoss, isBest)
-    this.loadThemeProp('fillColor', ...args, scoreLoss, isBest)
-    this.loadThemeProp('textColor', ...args, scoreLoss, isBest)
-    this.loadThemeProp('lineWidth', ...args, scoreLoss, isBest)
+    //The colours are worked out from how good the candidate is, which is what
+    //makes the gradient a theme concern rather than drawing code. The quality
+    //scale is appended after the arguments the handlers already took, so a
+    //theme written against those keeps colouring by point loss as it always
+    //did.
+    this.loadThemeProp('color', ...args, scoreLoss, isBest, qualityScale)
+    this.loadThemeProp('fillColor', ...args, scoreLoss, isBest, qualityScale)
+    this.loadThemeProp('textColor', ...args, scoreLoss, isBest, qualityScale)
+    this.loadThemeProp('lineWidth', ...args, scoreLoss, isBest, qualityScale)
 
     //Shadow that lifts the marker off the board
     this.loadThemeProp('shadowColor', ...args)
