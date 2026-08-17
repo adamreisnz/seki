@@ -208,6 +208,215 @@ describe('Board layers', () => {
   })
 })
 
+describe('Board layer order', () => {
+
+  //A board that only needs to replay a game record, as a consumer embedding
+  //one in a 3D rendering context would ask for, where every layer is a
+  //separately composited and separately projected canvas
+  const replayLayers = [
+    boardLayerTypes.BACKGROUND,
+    boardLayerTypes.GRID,
+    boardLayerTypes.SHADOW,
+    boardLayerTypes.STONES,
+  ]
+
+  it('has the full set of layers by default', () => {
+    expect(new Board().layerOrder).toEqual([
+      boardLayerTypes.BACKGROUND,
+      boardLayerTypes.GRID,
+      boardLayerTypes.COORDINATES,
+      boardLayerTypes.SHADOW,
+      boardLayerTypes.STONES,
+      boardLayerTypes.SCORE,
+      boardLayerTypes.ANALYSIS,
+      boardLayerTypes.MARKUP,
+      boardLayerTypes.AI,
+      boardLayerTypes.DRAW,
+      boardLayerTypes.HOVER,
+    ])
+  })
+
+  it('creates only the layers it was given', () => {
+    const board = createBoard()
+    board.setLayerOrder(replayLayers)
+    board.createLayers()
+
+    for (const type of replayLayers) {
+      expect(board.hasLayer(type)).toBe(true)
+    }
+    expect(board.hasLayer(boardLayerTypes.COORDINATES)).toBe(false)
+    expect(board.hasLayer(boardLayerTypes.MARKUP)).toBe(false)
+    expect(board.hasLayer(boardLayerTypes.HOVER)).toBe(false)
+    expect(board.layers.size).toBe(replayLayers.length)
+  })
+
+  it('keeps the layers in the order it was given', () => {
+
+    //The order is the stacking order, as the canvases are created by walking
+    //the layers in insertion order
+    const board = createBoard()
+    board.setLayerOrder(replayLayers)
+    board.createLayers()
+
+    expect(Array.from(board.layers.keys())).toEqual(replayLayers)
+  })
+
+  it('shrugs off operations on a layer it was told to leave out', () => {
+    const board = createBoard()
+    board.setLayerOrder(replayLayers)
+    board.createLayers()
+
+    expect(() => board.add(boardLayerTypes.HOVER, 3, 3, {})).not.toThrow()
+    expect(() => board.remove(boardLayerTypes.HOVER, 3, 3)).not.toThrow()
+    expect(() => board.setAll(boardLayerTypes.HOVER, null)).not.toThrow()
+    expect(() => board.removeAll(boardLayerTypes.HOVER)).not.toThrow()
+    expect(() => board.eraseLayer(boardLayerTypes.HOVER)).not.toThrow()
+    expect(() => board.redrawLayer(boardLayerTypes.HOVER)).not.toThrow()
+    expect(board.getLayer(boardLayerTypes.HOVER)).toBe(undefined)
+    expect(board.get(boardLayerTypes.HOVER, 3, 3)).toBe(null)
+    expect(board.has(boardLayerTypes.HOVER, 3, 3)).toBe(false)
+  })
+
+  it('copies the array it was given', () => {
+    const board = createBoard()
+    const layers = [...replayLayers]
+    board.setLayerOrder(layers)
+
+    layers.push(boardLayerTypes.HOVER)
+    board.createLayers()
+
+    expect(board.hasLayer(boardLayerTypes.HOVER)).toBe(false)
+  })
+
+  it('rejects unknown layer types', () => {
+    const board = createBoard()
+    expect(() => board.setLayerOrder([boardLayerTypes.GRID, 'nope']))
+      .toThrow(/unknown board layer type/i)
+  })
+
+  it('rejects duplicate layer types', () => {
+    const board = createBoard()
+    expect(() => board.setLayerOrder([
+      boardLayerTypes.GRID,
+      boardLayerTypes.STONES,
+      boardLayerTypes.GRID,
+    ])).toThrow(/duplicate/i)
+  })
+
+  it('rejects an empty or missing list', () => {
+    const board = createBoard()
+    expect(() => board.setLayerOrder([])).toThrow(/non empty array/i)
+    expect(() => board.setLayerOrder()).toThrow(/non empty array/i)
+    expect(() => board.setLayerOrder(boardLayerTypes.GRID))
+      .toThrow(/non empty array/i)
+  })
+
+  it('leaves the order alone when it was rejected', () => {
+    const board = createBoard()
+    const {layerOrder} = board
+
+    expect(() => board.setLayerOrder(['nope'])).toThrow()
+    expect(board.layerOrder).toEqual(layerOrder)
+  })
+
+  it('refuses to change the order once bootstrapped', () => {
+
+    //The canvases are created during bootstrap, so a later call could only
+    //take effect by tearing them back down
+    const board = createBoard()
+    board.elements.container = createContainer()
+
+    expect(() => board.setLayerOrder(replayLayers))
+      .toThrow(/before the board is bootstrapped/i)
+    expect(board.layerOrder).toContain(boardLayerTypes.HOVER)
+  })
+
+  it('creates the current layers when the layers are created again', () => {
+
+    //Otherwise a second createLayers would leave the board holding the union
+    //of the old order and the new one
+    const board = createBoard()
+    board.createLayers()
+    board.setLayerOrder(replayLayers)
+    board.createLayers()
+
+    expect(Array.from(board.layers.keys())).toEqual(replayLayers)
+  })
+})
+
+describe('Board layer order — layers leaning on each other', () => {
+
+  const {BLACK, WHITE} = stoneColors
+
+  //Drawing reads the device pixel ratio off the window, which isn't there
+  //outside a browser
+  beforeEach(() => {
+    vi.stubGlobal('window', {devicePixelRatio: 1})
+  })
+
+  afterEach(() => {
+    vi.unstubAllGlobals()
+  })
+
+  const createBoardWithLayers = layerOrder => {
+    const board = createBoard()
+    board.setLayerOrder(layerOrder)
+    board.createLayers()
+    return board
+  }
+
+  const createPosition = (stones = []) => {
+    const position = new GamePosition(19, 19)
+    stones.forEach(([x, y, color]) => position.stones.set(x, y, color))
+    return position
+  }
+
+  it('updates the position without a shadow layer', () => {
+
+    //NOTE: cell by cell updates keep the shadow layer's grid in step, which a
+    //board told to leave that layer out simply hasn't got
+    const board = createBoardWithLayers([
+      boardLayerTypes.BACKGROUND,
+      boardLayerTypes.GRID,
+      boardLayerTypes.STONES,
+    ])
+
+    board.updatePosition(createPosition([[3, 3, BLACK]]))
+    expect(() => board
+      .updatePosition(createPosition([[3, 3, BLACK], [15, 15, WHITE]])))
+      .not.toThrow()
+
+    expect(board.has(boardLayerTypes.STONES, 15, 15)).toBe(true)
+  })
+
+  it('clears markup without a grid layer', () => {
+
+    //NOTE: markup erases the grid line underneath itself and puts it back
+    //again afterwards, which is a no-op with no grid to erase
+    const board = createBoardWithLayers([
+      boardLayerTypes.BACKGROUND,
+      boardLayerTypes.STONES,
+      boardLayerTypes.MARKUP,
+    ])
+
+    const object = {draw: vi.fn(), erase: vi.fn()}
+    board.add(boardLayerTypes.MARKUP, 3, 3, object)
+
+    expect(() => board.removeAll()).not.toThrow()
+    expect(board.has(boardLayerTypes.MARKUP, 3, 3)).toBe(false)
+  })
+
+  it('shrugs off drawing a line without a draw layer', () => {
+    const board = createBoardWithLayers([
+      boardLayerTypes.BACKGROUND,
+      boardLayerTypes.GRID,
+    ])
+
+    expect(() => board.drawLine(0, 0, 3, 3, 'red')).not.toThrow()
+    expect(() => board.removeAllLines()).not.toThrow()
+  })
+})
+
 describe('Board colors', () => {
 
   it('leaves colors alone by default', () => {

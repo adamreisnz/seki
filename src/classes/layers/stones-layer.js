@@ -68,24 +68,25 @@ export default class StonesLayer extends BoardLayer {
    */
   applyChanges(changes, createStone) {
 
-    //Get shadow layer and its grid
+    //Get shadow layer and its grid. A board can be given a layer order
+    //without a shadow layer, in which case there is nothing to keep in sync
     const shadowLayer = this.board.getLayer(boardLayerTypes.SHADOW)
-    const shadows = shadowLayer.getAll()
+    const shadows = shadowLayer?.getAll()
 
     //Remove stones
     for (const {x, y} of changes.remove) {
       super.remove(x, y)
-      shadows.delete(x, y)
+      shadows?.delete(x, y)
     }
 
     //Add stones
     for (const {x, y, value} of changes.add) {
       const stone = createStone(value)
       super.add(x, y, stone)
-      shadows.set(x, y, StoneFactory.createShadow(stone))
+      shadows?.set(x, y, StoneFactory.createShadow(stone))
     }
 
     //Redraw the shadow layer once
-    shadowLayer.redraw()
+    shadowLayer?.redraw()
   }
 }

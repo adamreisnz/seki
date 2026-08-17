@@ -214,9 +214,74 @@ export default class Board extends Base {
    ***/
 
   /**
+   * Set which layers the board has, and the order they stack in
+   *
+   * Each layer is its own canvas, and each canvas is composited separately by
+   * the browser. A board embedded in a CSS 3D rendering context therefore pays
+   * for every layer it has, whether or not anything is ever drawn on it, so a
+   * consumer that only needs a subset can say so here. Note that omitting a
+   * layer is safe: every accessor (add, remove, get, has, setAll, removeAll,
+   * getLayer, eraseLayer, redrawLayer) already shrugs off a layer the board
+   * doesn't have.
+   *
+   * NOTE: this has to be called before bootstrapping. The layers and their
+   * canvases are created during bootstrap, so a later call could only take
+   * effect by tearing those canvases and their contexts back down and
+   * recomputing the position onto new ones. Rather than do that halfway, or
+   * accept the call and silently do nothing, a late call throws.
+   */
+  setLayerOrder(layerOrder) {
+
+    //Too late once the board has been bootstrapped onto a container
+    if (this.isBootstrapped) {
+      throw new Error(
+        `Board layer order must be set before the board is bootstrapped`
+      )
+    }
+
+    //Must be a non empty array. A board with no layers at all draws nothing,
+    //which is never what a caller means, and is more likely a filter or a
+    //config lookup that came back empty
+    if (!Array.isArray(layerOrder) || layerOrder.length === 0) {
+      throw new Error(
+        `Board layer order must be a non empty array of board layer types`
+      )
+    }
+
+    //Must be layer types we know. BoardLayerFactory would throw on these
+    //anyway once the layers are created, so this only brings the same error
+    //forward to where the mistake actually is
+    const knownTypes = Object.values(boardLayerTypes)
+    for (const type of layerOrder) {
+      if (!knownTypes.includes(type)) {
+        throw new Error(`Unknown board layer type: ${type}`)
+      }
+    }
+
+    //Must not repeat itself. A repeated type would just overwrite its own
+    //entry in the layers map, so it is harmless, but it means the list isn't
+    //what the caller thinks it is, and quietly deduping it would hide that
+    if (new Set(layerOrder).size !== layerOrder.length) {
+      throw new Error(
+        `Board layer order must not contain duplicate board layer types`
+      )
+    }
+
+    //Store a copy, so the caller's array can't change out from under us
+    this.layerOrder = [...layerOrder]
+    this.debug('layer order set to', this.layerOrder)
+  }
+
+  /**
    * Create layers
    */
   createLayers() {
+
+    //Start from nothing, so that creating them a second time yields the
+    //current layer order rather than the union of it and the last one
+    this.layers.clear()
+
+    //Create each layer in order, as that is the order they stack in
     for (const type of this.layerOrder) {
       this.createLayer(type)
     }
@@ -760,7 +825,7 @@ export default class Board extends Base {
   drawLine(fromX, fromY, toX, toY, color) {
     this
       .getLayer(boardLayerTypes.DRAW)
-      .addLine(fromX, fromY, toX, toY, color)
+      ?.addLine(fromX, fromY, toX, toY, color)
   }
 
   /**

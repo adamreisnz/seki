@@ -17,9 +17,9 @@ export default class MarkupLayer extends BoardLayer {
     //Parent method
     super.removeAll()
 
-    //Redraw grid layer to fill in erased gaps
+    //Redraw grid layer to fill in erased gaps, if the board has one
     this.board
       .getLayer(boardLayerTypes.GRID)
-      .redraw()
+      ?.redraw()
   }
 }
