@@ -3,7 +3,7 @@
 
 //App details
 export const appIdentifier = '@reis/seki' //pkg.name
-export const appVersion = '4.2.0' //pkg.version
+export const appVersion = '4.3.0' //pkg.version
 export const appName = 'Seki'
 
 //Supported kifu formats
