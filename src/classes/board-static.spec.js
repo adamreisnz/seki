@@ -19,6 +19,18 @@ describe('BoardStatic', () => {
     expect(board.hasLayer(boardLayerTypes.SCORE)).toBe(false)
   })
 
+  it('never gets the AI or analysis layers', () => {
+
+    //A static board only renders a single given position, so it has nothing
+    //to show an engine's moves or an analysis on, and each layer it doesn't
+    //need is one less separately composited canvas
+    const board = createBoard()
+    expect(board.hasLayer(boardLayerTypes.AI)).toBe(false)
+    expect(board.hasLayer(boardLayerTypes.ANALYSIS)).toBe(false)
+    expect(board.layerOrder).not.toContain(boardLayerTypes.AI)
+    expect(board.layerOrder).not.toContain(boardLayerTypes.ANALYSIS)
+  })
+
   it('erases a single layer', () => {
 
     //NOTE: eraseLayer and redrawLayer used to be stubbed out, which meant the

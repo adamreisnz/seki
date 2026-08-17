@@ -110,7 +110,7 @@ export default class Markup extends GridObject {
     if (this.hasErasedGrid) {
       board
         .getLayer(boardLayerTypes.GRID)
-        .eraseCell(x, y, radius)
+        ?.eraseCell(x, y, radius)
     }
 
     //Actual drawing is left as an excercise for the child class
@@ -140,6 +140,6 @@ export default class Markup extends GridObject {
     this.hasErasedGrid = false
     this.board
       .getLayer(boardLayerTypes.GRID)
-      .redrawCell(x, y)
+      ?.redrawCell(x, y)
   }
 }
