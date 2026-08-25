@@ -997,6 +997,44 @@ export default class Game extends Base {
     return captures
   }
 
+  /**************************************************************************
+   * Ko point
+   ***/
+
+  /**
+   * Get the ko point for the current position, if any
+   *
+   * Returns the coordinates of the point a stone was just taken off in a
+   * simple ko, along with the color that may not play there, or null when the
+   * current position has no ko in it.
+   *
+   * NOTE: this is information about the position, not the authority on what is
+   * legal in it. That remains the repeat scan in isRepeatingPosition(), which
+   * catches the same recapture and, with disallowRepeats set, a good deal more
+   * besides. What this adds is the one thing the scan cannot say: where.
+   */
+  getKoPoint() {
+    const {position} = this
+    return position ? position.getKoPoint() : null
+  }
+
+  /**
+   * Check if the current position has a ko point
+   */
+  hasKoPoint() {
+    const {position} = this
+    return position ? position.hasKoPoint() : false
+  }
+
+  /**
+   * Check if the given coordinates are the ko point of the current position,
+   * optionally for a specific color
+   */
+  isKoPoint(x, y, color) {
+    const {position} = this
+    return position ? position.isKoPoint(x, y, color) : false
+  }
+
   /**
    * Get time left
    */
@@ -1486,6 +1524,70 @@ export default class Game extends Base {
   }
 
   /**
+   * Describe what a move would do, without playing it
+   *
+   * Answers the questions a hover hint wants answered about a point: whether
+   * the move is a pass, whether it lands on a stone, whether it takes stones
+   * off, whether it is suicide, and whether it is the ko point. The facts are
+   * carried in the outcome's payload, and the outcome itself says whether the
+   * move would be allowed, so a caller that only wants a yes or no can read
+   * isValid and ignore the rest.
+   *
+   * NOTE: the verdict is validateMove()'s, deliberately, rather than worked
+   * out from the facts below. The rules include the repeat scan, which no
+   * amount of looking at a single move can reproduce, and a check that
+   * disagreed with the one the game actually enforces would be worse than no
+   * check at all. The facts and the verdict are therefore gathered separately,
+   * each from the code that owns it.
+   */
+  analyzeMove(x, y, color) {
+
+    //Get data
+    const {position} = this
+
+    //No point on the board to play on describes a pass, which is always valid
+    if (!this.isValidCoordinate(x, y)) {
+      return new ValidOutcome({
+        pass: true,
+        overwrite: false,
+        capturing: false,
+        suicide: false,
+        ko: false,
+      })
+    }
+
+    //Set color of move to make
+    if (typeof color === 'undefined') {
+      color = position.getTurn()
+    }
+
+    //These two can be read straight off the position as it stands
+    const overwrite = position.stones.has(x, y)
+    const ko = position.isKoPoint(x, y, color)
+
+    //The rest needs the move played out, which happens on a copy so that the
+    //position the game is on is left exactly as it was
+    let capturing = false
+    let suicide = false
+    if (!overwrite) {
+      const testPosition = position.clone()
+      testPosition.stones.set(x, y, color)
+      capturing = testPosition.captureAdjacent(x, y)
+      suicide = !capturing && !testPosition.hasLiberties(x, y)
+    }
+
+    //Ask the rules themselves whether this is allowed
+    const payload = {pass: false, overwrite, capturing, suicide, ko}
+    const outcome = this.validateMove(position.clone(), x, y, color)
+
+    //Hand back the facts either way
+    if (outcome.isValid) {
+      return new ValidOutcome(payload)
+    }
+    return new ErrorOutcome(outcome.reason, payload)
+  }
+
+  /**
    * Check if a move is valid against a given position
    */
   validateMove(position, x, y, color) {
@@ -1564,6 +1666,11 @@ export default class Game extends Base {
         newPosition.captureGroup(x, y)
       }
     }
+
+    //A setup stone is not a move, so it cannot create a ko no matter what
+    //shape it leaves behind. The capture above goes through the same code a
+    //move does, which will have worked one out, so take it back off again.
+    newPosition.clearKoPoint()
 
     //Return position
     return [newPosition]

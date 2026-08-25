@@ -38,6 +38,18 @@ const createForkedGame = () => {
   return {game, fork, variation}
 }
 
+/**
+ * Set up a ko: white's stone at (4,3) is surrounded by black on three sides,
+ * black's capturing stone at (3,3) will be surrounded by white on three sides,
+ * so either side can take the other but not twice running.
+ */
+const createKo = () => playMoves(new Game(), [
+  [5, 3], [4, 3],
+  [4, 2], [2, 3],
+  [4, 4], [3, 2],
+  [10, 10], [3, 4],
+])
+
 describe('Game rules', () => {
 
   describe('playing moves', () => {
@@ -140,18 +152,6 @@ describe('Game rules', () => {
 
   describe('ko', () => {
 
-    /**
-     * Set up a ko: white's stone at (4,3) is surrounded by black on three
-     * sides, black's capturing stone at (3,3) will be surrounded by white on
-     * three sides, so either side can take the other but not twice running.
-     */
-    const createKo = () => playMoves(new Game(), [
-      [5, 3], [4, 3],
-      [4, 2], [2, 3],
-      [4, 4], [3, 2],
-      [10, 10], [3, 4],
-    ])
-
     it('rejects an immediate recapture', () => {
       const game = createKo()
 
@@ -172,6 +172,176 @@ describe('Game rules', () => {
       //White plays elsewhere, black answers, then white takes the ko back
       playMoves(game, [[11, 11], [12, 12]])
       expect(game.playMove(4, 3).isValid).toBe(true)
+    })
+
+    it('points at the vertex, and at who may not play it', () => {
+      const game = createKo()
+      game.playMove(3, 3)
+
+      expect(game.hasKoPoint()).toBe(true)
+      expect(game.getKoPoint()).toEqual({x: 4, y: 3, color: WHITE})
+      expect(game.isKoPoint(4, 3, WHITE)).toBe(true)
+      expect(game.isKoPoint(4, 3, BLACK)).toBe(false)
+    })
+
+    it('agrees with the rules about the recapture', () => {
+      const game = createKo()
+      game.playMove(3, 3)
+
+      //What the marker says and what the position stack allows are worked out
+      //separately, and must not part company
+      const outcome = game.analyzeMove(4, 3)
+      expect(outcome.payload.ko).toBe(true)
+      expect(outcome.isValid).toBe(false)
+      expect(game.isValidMove(4, 3, WHITE)).toBe(false)
+    })
+
+    it('has no ko point before the ko is taken', () => {
+      expect(createKo().hasKoPoint()).toBe(false)
+    })
+
+    it('has no ko point after a capture of more than one stone', () => {
+
+      //White's two stones on (4,3) and (5,3) come off together
+      const game = playMoves(new Game(), [
+        [4, 2], [4, 3],
+        [5, 2], [5, 3],
+        [4, 4], [10, 10],
+        [5, 4], [11, 11],
+        [6, 3], [12, 12],
+      ])
+
+      expect(game.playMove(3, 3).isValid).toBe(true)
+      expect(game.hasStone(4, 3)).toBe(false)
+      expect(game.hasStone(5, 3)).toBe(false)
+      expect(game.hasKoPoint()).toBe(false)
+    })
+
+    it('has no ko point when the capturing stone has a friend beside it', () => {
+
+      //The same shape as the ko, but with black rather than white on (3,2), so
+      //that black's stone on (3,3) joins a group instead of standing alone
+      const game = playMoves(new Game(), [
+        [5, 3], [4, 3],
+        [4, 2], [2, 3],
+        [4, 4], [3, 4],
+        [3, 2], [10, 10],
+      ])
+
+      expect(game.playMove(3, 3).isValid).toBe(true)
+      expect(game.hasStone(4, 3)).toBe(false)
+      expect(game.hasKoPoint()).toBe(false)
+    })
+
+    it('clears the ko point on the next move', () => {
+      const game = createKo()
+      game.playMove(3, 3)
+
+      game.playMove(11, 11)
+      expect(game.hasKoPoint()).toBe(false)
+    })
+
+    it('clears the ko point on a pass', () => {
+      const game = createKo()
+      game.playMove(3, 3)
+
+      game.passMove()
+      expect(game.hasKoPoint()).toBe(false)
+    })
+
+    it('follows the ko point back and forward through the game', () => {
+      const game = createKo()
+      game.playMove(3, 3)
+      game.playMove(11, 11)
+
+      //Back onto the ko capture, and back again to before it
+      game.goToPreviousPosition()
+      expect(game.getKoPoint()).toEqual({x: 4, y: 3, color: WHITE})
+      game.goToPreviousPosition()
+      expect(game.hasKoPoint()).toBe(false)
+
+      //And forward over it again
+      game.goToNextPosition()
+      expect(game.getKoPoint()).toEqual({x: 4, y: 3, color: WHITE})
+      game.goToNextPosition()
+      expect(game.hasKoPoint()).toBe(false)
+    })
+
+    it('has no ko point at the last position of a replayed game', () => {
+      const game = createKo()
+      game.playMove(3, 3)
+      game.playMove(11, 11)
+
+      game.goToFirstPosition()
+      expect(game.hasKoPoint()).toBe(false)
+
+      game.goToLastPosition()
+      expect(game.hasKoPoint()).toBe(false)
+    })
+  })
+
+  describe('analyzing a move', () => {
+
+    it('describes a plain move on an empty point', () => {
+      const outcome = new Game().analyzeMove(3, 3)
+
+      expect(outcome.isValid).toBe(true)
+      expect(outcome.payload).toEqual({
+        pass: false,
+        overwrite: false,
+        capturing: false,
+        suicide: false,
+        ko: false,
+      })
+    })
+
+    it('describes a move without coordinates as a pass', () => {
+      const outcome = new Game().analyzeMove()
+
+      expect(outcome.isValid).toBe(true)
+      expect(outcome.payload.pass).toBe(true)
+    })
+
+    it('sees a point that already has a stone on it', () => {
+      const game = new Game()
+      game.playMove(3, 3)
+
+      const outcome = game.analyzeMove(3, 3)
+      expect(outcome.isValid).toBe(false)
+      expect(outcome.payload.overwrite).toBe(true)
+    })
+
+    it('sees a move that takes stones off', () => {
+      const outcome = createKo().analyzeMove(3, 3)
+
+      expect(outcome.isValid).toBe(true)
+      expect(outcome.payload.capturing).toBe(true)
+    })
+
+    it('sees a move that is suicide', () => {
+      const game = playMoves(new Game(), [
+        [10, 10], [0, 1],
+        [12, 12], [1, 0],
+      ])
+
+      const outcome = game.analyzeMove(0, 0)
+      expect(outcome.isValid).toBe(false)
+      expect(outcome.payload.suicide).toBe(true)
+      expect(outcome.reason).toMatch(/suicide/)
+    })
+
+    it('leaves the game exactly as it found it', () => {
+      const game = createKo()
+      game.playMove(3, 3)
+
+      const before = game.getCurrentMoveNumber()
+      game.analyzeMove(4, 3)
+      game.analyzeMove(11, 11)
+
+      expect(game.getCurrentMoveNumber()).toBe(before)
+      expect(game.hasStone(11, 11)).toBe(false)
+      expect(game.hasStone(4, 3)).toBe(false)
+      expect(game.getKoPoint()).toEqual({x: 4, y: 3, color: WHITE})
     })
   })
 

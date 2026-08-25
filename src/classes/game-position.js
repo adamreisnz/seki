@@ -22,6 +22,7 @@ export default class GamePosition {
     this.markup = new Grid()
     this.lines = []
     this.turn = stoneColors.BLACK
+    this.koPoint = null
 
     //Initialize captures
     this.captures = {
@@ -147,6 +148,18 @@ export default class GamePosition {
    ***/
 
   /**
+   * Get the coordinates adjacent to the given ones which are on the board
+   */
+  getNeighbours(x, y) {
+    return [
+      {x, y: y - 1},
+      {x, y: y + 1},
+      {x: x - 1, y},
+      {x: x + 1, y},
+    ].filter(({x, y}) => this.stones.isOnGrid(x, y))
+  }
+
+  /**
    * Check if a group of given color has liberties, starting at the given coordinates
    */
   hasLiberties(x, y, groupColor, tested) {
@@ -222,6 +235,10 @@ export default class GamePosition {
     //Get enemy color
     const enemyColor = swapColor(friendlyColor)
 
+    //Remember how many enemy stones are already off the board, so that we can
+    //tell afterwards which of them this stone took
+    const numCaptured = this.captures[enemyColor].length
+
     //Flag to see if we captured stuff
     let captured = false
 
@@ -238,6 +255,11 @@ export default class GamePosition {
     if (this.canCapture(x + 1, y, enemyColor, true)) {
       captured = true
     }
+
+    //Work out whether what just happened was a ko
+    this.determineKoPoint(
+      x, y, friendlyColor, this.captures[enemyColor].slice(numCaptured)
+    )
 
     //Return
     return captured
@@ -394,6 +416,115 @@ export default class GamePosition {
   }
 
   /*****************************************************************************
+   * Ko point
+   ***/
+
+  /**
+   * Determine the ko point after a stone of the given color was played on the
+   * given coordinates, having taken the given stones off the board
+   *
+   * A simple ko is the one shape where a single stone can be taken straight
+   * back, recreating the position that was just left behind. It is recognised
+   * here the way Sabaki's go-board does it, from the move that just happened
+   * rather than by searching the position stack: exactly one stone came off,
+   * no neighbour of the played stone is friendly, and the only liberty the
+   * played stone has left is the point that stone came off.
+   *
+   * Those last two conditions are what rule out every other shape. Taking a
+   * stone off the end of a chain leaves a chain behind rather than a lone
+   * stone, and a snapback leaves the capturing stone with somewhere else to
+   * breathe. With no friendly neighbour the played stone is a group of one,
+   * so its liberties are simply its empty neighbours and no walk of the group
+   * is needed to count them.
+   */
+  determineKoPoint(x, y, color, captures) {
+
+    //Whatever ko was here belongs to the position this one was cloned from
+    this.koPoint = null
+
+    //A ko takes exactly one stone
+    if (captures.length !== 1) {
+      return
+    }
+
+    //Get the neighbouring points that are on the board
+    const neighbours = this.getNeighbours(x, y)
+
+    //A friendly neighbour means the played stone is part of a bigger group,
+    //which no single move can take back
+    if (neighbours.some(({x, y}) => this.stones.get(x, y) === color)) {
+      return
+    }
+
+    //The played stone must have exactly one liberty left
+    const liberties = neighbours.filter(({x, y}) => !this.stones.has(x, y))
+    if (liberties.length !== 1) {
+      return
+    }
+
+    //And it must be the point the captured stone came off
+    const [capture] = captures
+    const [liberty] = liberties
+    if (liberty.x !== capture.x || liberty.y !== capture.y) {
+      return
+    }
+
+    //Genuine simple ko. The color recorded is the one that may not play there,
+    //being the player who just lost the stone. It is kept alongside the point
+    //rather than read off the turn, because a record is free to set the turn
+    //to whatever it likes after a move.
+    this.koPoint = {
+      x: capture.x,
+      y: capture.y,
+      color: swapColor(color),
+    }
+  }
+
+  /**
+   * Get the ko point for this position, if any
+   */
+  getKoPoint() {
+    return this.koPoint
+  }
+
+  /**
+   * Check if this position has a ko point
+   */
+  hasKoPoint() {
+    return (this.koPoint !== null)
+  }
+
+  /**
+   * Check if the given coordinates are the ko point of this position,
+   * optionally for a specific color
+   */
+  isKoPoint(x, y, color) {
+
+    //Get data
+    const {koPoint} = this
+
+    //No ko point, or not this point
+    if (!koPoint || koPoint.x !== x || koPoint.y !== y) {
+      return false
+    }
+
+    //Asked about a specific color? Only the one that lost the stone is barred
+    if (typeof color !== 'undefined' && koPoint.color !== color) {
+      return false
+    }
+
+    //It's the ko point
+    return true
+  }
+
+  /**
+   * Clear the ko point
+   */
+  clearKoPoint() {
+    this.koPoint = null
+  }
+
+  /*****************************************************************************
    * Turn control
    ***/
 
@@ -426,7 +557,14 @@ export default class GamePosition {
    ***/
 
   /**
-   * Clones the whole position except turn and captures
+   * Clones the whole position except the captures and the ko point
+   *
+   * NOTE: the ko point is deliberately left behind. It describes what the move
+   * that produced this position did, not what the next move may do, so a clone
+   * starts without one and only gets one again if the move played onto it
+   * creates a ko of its own. That is what expires a ko after a move elsewhere,
+   * a pass, or a setup instruction, without any of them having to remember to
+   * clear it.
    */
   clone(withMarkup = false) {
 
@@ -454,6 +592,14 @@ export default class GamePosition {
 
   /**
    * Checks if a given position is the same as the current position
+   *
+   * NOTE: only the size and the stones are compared, deliberately. This is
+   * what the repeat scan asks to decide whether a move is legal, and a repeat
+   * is a repeat of the stones on the board. Comparing the ko point as well
+   * would break the very thing it describes: a candidate position that takes
+   * a ko back carries a ko point of its own while the position it repeats
+   * carries none, so the two would never match and the recapture the scan
+   * exists to reject would be let through.
    */
   isSameAs(newPosition) {
 

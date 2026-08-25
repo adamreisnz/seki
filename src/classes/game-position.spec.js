@@ -164,6 +164,90 @@ describe('GamePosition', () => {
     })
   })
 
+  describe('ko point', () => {
+
+    /**
+     * Lay out a simple ko, with a white stone on (4,3) hemmed in by black and
+     * (3,3) left open for black to take it, ringed by white so that the stone
+     * black plays there stands alone with a single liberty
+     */
+    const createKoShape = () => {
+      const position = createPosition()
+      place(position, WHITE, [[4, 3], [3, 2], [3, 4], [2, 3]])
+      place(position, BLACK, [[4, 2], [4, 4], [5, 3]])
+      return position
+    }
+
+    it('records the point and the color barred from it on a ko capture', () => {
+      const position = createKoShape()
+
+      position.setStone(3, 3, BLACK)
+      position.captureAdjacent(3, 3)
+
+      expect(position.hasKoPoint()).toBe(true)
+      expect(position.getKoPoint()).toEqual({x: 4, y: 3, color: WHITE})
+    })
+
+    it('answers for the point and color it was asked about', () => {
+      const position = createKoShape()
+      position.setStone(3, 3, BLACK)
+      position.captureAdjacent(3, 3)
+
+      expect(position.isKoPoint(4, 3)).toBe(true)
+      expect(position.isKoPoint(4, 3, WHITE)).toBe(true)
+
+      //Black is the one who took the stone, so black may play there
+      expect(position.isKoPoint(4, 3, BLACK)).toBe(false)
+      expect(position.isKoPoint(3, 3)).toBe(false)
+    })
+
+    it('records nothing when more than one stone comes off', () => {
+      const position = createPosition()
+      place(position, WHITE, [[4, 3], [5, 3]])
+      place(position, BLACK, [[4, 2], [5, 2], [4, 4], [5, 4], [6, 3]])
+
+      position.setStone(3, 3, BLACK)
+      position.captureAdjacent(3, 3)
+
+      expect(position.stones.has(4, 3)).toBe(false)
+      expect(position.stones.has(5, 3)).toBe(false)
+      expect(position.hasKoPoint()).toBe(false)
+    })
+
+    it('records nothing when the played stone has a friend beside it', () => {
+      const position = createKoShape()
+
+      //A black stone on (3,2) instead of the white one, so that the stone
+      //black plays joins it rather than standing alone. Only one white stone
+      //still comes off, and (4,3) is still the only liberty left.
+      position.setStone(3, 2, BLACK)
+
+      position.setStone(3, 3, BLACK)
+      position.captureAdjacent(3, 3)
+
+      expect(position.stones.has(4, 3)).toBe(false)
+      expect(position.hasKoPoint()).toBe(false)
+    })
+
+    it('records nothing when nothing was captured', () => {
+      const position = createPosition()
+      position.setStone(4, 4, BLACK)
+      position.captureAdjacent(4, 4)
+
+      expect(position.hasKoPoint()).toBe(false)
+    })
+
+    it('takes the ko point back off when asked', () => {
+      const position = createKoShape()
+      position.setStone(3, 3, BLACK)
+      position.captureAdjacent(3, 3)
+
+      position.clearKoPoint()
+      expect(position.hasKoPoint()).toBe(false)
+      expect(position.getKoPoint()).toBe(null)
+    })
+  })
+
   describe('cloning', () => {
 
     it('carries the stones and turn across', () => {
@@ -195,6 +279,18 @@ describe('GamePosition', () => {
       expect(position.clone().hasCaptures()).toBe(false)
     })
 
+    it('leaves the ko point behind', () => {
+      const position = createPosition()
+      place(position, WHITE, [[4, 3], [3, 2], [3, 4], [2, 3]])
+      place(position, BLACK, [[4, 2], [4, 4], [5, 3]])
+      position.setStone(3, 3, BLACK)
+      position.captureAdjacent(3, 3)
+
+      //The ko belongs to the move that made it, not to whatever comes next
+      expect(position.hasKoPoint()).toBe(true)
+      expect(position.clone().hasKoPoint()).toBe(false)
+    })
+
     it('drops markup by default and keeps it on request', () => {
       const position = createPosition()
       position.setMarkup(1, 1, {type: 'circle'})
@@ -219,6 +315,21 @@ describe('GamePosition', () => {
       const b = createPosition()
       b.switchTurn()
       expect(a.isSameAs(b)).toBe(true)
+    })
+
+    it('ignores the ko point', () => {
+
+      //The repeat scan compares a candidate that took a ko back, which has a
+      //ko point of its own, against the position it repeats, which has none.
+      //Comparing the two would stop it ever finding a repeat.
+      const a = createPosition()
+      const b = createPosition()
+      a.setStone(1, 1, BLACK)
+      b.setStone(1, 1, BLACK)
+      a.koPoint = {x: 4, y: 3, color: WHITE}
+
+      expect(a.isSameAs(b)).toBe(true)
+      expect(b.isSameAs(a)).toBe(true)
     })
 
     it('does not match different stones', () => {
