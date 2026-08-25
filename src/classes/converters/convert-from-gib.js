@@ -1,6 +1,7 @@
 import Converter from './converter.js'
 import Game from '../game.js'
 import GameNode from '../game-node.js'
+import {koreanHandicapPlacements} from '../../constants/game.js'
 import {stoneColors} from '../../constants/stone.js'
 
 /**
@@ -9,11 +10,27 @@ import {stoneColors} from '../../constants/stone.js'
  * NOTE: only the ones that are stepped through repeatedly carry the global
  * flag. A global regex keeps its lastIndex between calls, so a global regex
  * used for a single exec picks up where the previous file left off and finds
- * nothing on the second one. The two below are always run until they return
- * null, which resets them, and convert() resets them up front regardless.
+ * nothing on the second one. The two that carry it are always run until they
+ * return null, which resets them, and convert() resets them up front anyway.
  */
 const regexMove = /STO\s0\s([0-9]+)\s(1|2)\s([0-9]+)\s([0-9]+)/gi
-const regexPlayer = /GAME(BLACK|WHITE)NAME=([A-Za-z0-9]+)\s\(([0-9]+D|K)\)/gi
+
+//Player properties read GAMEBLACKNAME=<name> (<rank>), and the space before
+//the bracket is not always written. The whole value is taken first and the
+//name and rank read out of it separately, so that a rank written in Korean or
+//Chinese costs only the rank rather than the name along with it. The value
+//runs up to the escaped closing bracket the property is wrapped in, so the
+//escape itself ends it, or a player with no rank would keep the backslash.
+const regexPlayer = /GAME(BLACK|WHITE)NAME=([^\\\]\r\n]*)/gi
+const regexPlayerName = /^([^(]+)/
+const regexPlayerRank = /\(\s*([0-9]+)\s*([DKP])\s*\)/i
+
+//The move section opens with an INI line whose third field is the handicap,
+//e.g. "INI 0 1 5 &4". Nothing else in the record states it in a form that can
+//be read: GAMEDUM is the komi the winner was given, and GAMECONDITION spells
+//the handicap out in words, in whatever language the client was running in.
+const regexHandicap = /\bINI\s+[0-9]+\s+[0-9]+\s+([0-9]+)/i
+
 const regexKomi = /GAMEGONGJE=([0-9]+)/i
 const regexDate = /GAMEDATE=([0-9]+)-\s?([0-9]+)-\s?([0-9]+)/
 const regexResultMargin = /GAMERESULT=(white|black)\s([0-9]+\.?[0-9]?)/i
@@ -45,11 +62,20 @@ export default class ConvertFromGib extends Converter {
     regexMove.lastIndex = 0
     regexPlayer.lastIndex = 0
 
-    //Find data
+    //Find data. The handicap is read first, as its stones have to be on the
+    //board before the record's own moves are played onto it.
+    const handicap = this.findHandicap(gib, game)
+
+    //Find remaining header data
     this.findPlayerInformation(gib, game)
     this.findKomi(gib, game)
     this.findDate(gib, game)
     this.findGameResult(gib, game)
+
+    //Place the handicap stones and find the moves. GIB carries no board size
+    //of its own, so this is whatever size a new game is born with.
+    const {width} = game.getBoardSize()
+    this.placeHandicapStones(game, handicap, width, koreanHandicapPlacements)
     this.findMoves(gib, game, game.root)
 
     //Set event location
@@ -70,6 +96,29 @@ export default class ConvertFromGib extends Converter {
       this.parsePlayer(game, match)
       this.findPlayerInformation(gib, game)
     }
+  }
+
+  /**
+   * Find the handicap
+   */
+  findHandicap(gib, game) {
+
+    //Find match
+    const match = regexHandicap.exec(gib)
+    if (!match) {
+      return 0
+    }
+
+    //Parse. Anything outside of the range the format can express is taken to
+    //mean the line wasn't a handicap at all.
+    const handicap = parseInt(match[1], 10)
+    if (isNaN(handicap) || handicap < 0 || handicap > 9) {
+      return 0
+    }
+
+    //Set on game
+    game.setHandicap(handicap)
+    return handicap
   }
 
   /**
@@ -143,10 +192,25 @@ export default class ConvertFromGib extends Converter {
    * Player parser function
    */
   parsePlayer(game, match) {
+
+    //Determine player color and read the name, which is everything the value
+    //carries ahead of the bracketed rank
     const color = this.determinePlayerColor(match[1])
-    const name = match[2]
-    const rank = match[3]
-    game.setPlayer(color, {name, rank})
+    const nameMatch = regexPlayerName.exec(match[2])
+    if (!color || !nameMatch) {
+      return
+    }
+
+    //No name to speak of
+    const name = nameMatch[1].trim()
+    if (!name) {
+      return
+    }
+
+    //Read the rank, which is left unset when it isn't written in a notation
+    //we know, as a rank in Korean or Chinese is
+    const rank = this.parseRank(match[2])
+    game.setPlayer(color, rank ? {name, rank} : {name})
   }
 
   /**
@@ -230,6 +294,17 @@ export default class ConvertFromGib extends Converter {
   /*****************************************************************************
    * Parsing helpers
    ***/
+
+  /**
+   * Read a bracketed rank, e.g. (10K), returning nothing when it is written
+   * in a script we can't read
+   */
+  parseRank(value) {
+    const match = regexPlayerRank.exec(value)
+    if (match) {
+      return `${match[1]}${match[2].toUpperCase()}`
+    }
+  }
 
   /**
    * Determine player color

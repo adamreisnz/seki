@@ -32,6 +32,47 @@ describe('ConvertFromGib', () => {
     expect(game.getPlayer(WHITE)).toMatchObject({name: 'Alice', rank: '1D'})
   })
 
+  it('keeps the name when the rank is written in a script it cannot read', () => {
+
+    //A rank in Korean or Chinese costs the rank alone, the name being ASCII
+    //either way. The Chinese record also writes no space before the bracket.
+    const game = parse(`[GAMEWHITENAME=Alice (1급)] [GAMEBLACKNAME=Bob(3段)] ${moves}`)
+    expect(game.getPlayer(BLACK)).toEqual({name: 'Bob'})
+    expect(game.getPlayer(WHITE)).toEqual({name: 'Alice'})
+  })
+
+  it('reads a player written without a rank at all', () => {
+
+    //Properties are wrapped in escaped brackets, and the escape has to end
+    //the value, or a player with no rank keeps the backslash in their name
+    const game = parse(String.raw`\[GAMEBLACKNAME=Bob\] ${moves}`)
+    expect(game.getPlayer(BLACK)).toEqual({name: 'Bob'})
+  })
+
+  it('reads a kyu and a pro rank as readily as a dan one', () => {
+    const game = parse(`[GAMEWHITENAME=Alice (10K)] [GAMEBLACKNAME=Bob (9p)] ${moves}`)
+    expect(game.getPlayer(BLACK).rank).toBe('9P')
+    expect(game.getPlayer(WHITE).rank).toBe('10K')
+  })
+
+  it('reads the handicap off the INI line, and places its stones', () => {
+
+    //The INI line opens the move section, and states the handicap in its
+    //third field
+    const game = parse(`${header} INI 0 1 4 &4`)
+    expect(game.getHandicap()).toBe(4)
+    expect(game.getRootNode().setup).toEqual([{
+      type: setupTypes.BLACK,
+      coords: handicapPlacements[19][4],
+    }])
+  })
+
+  it('places no stones for an even game', () => {
+    const game = parse(`${header} INI 0 1 0 &4 ${moves}`)
+    expect(game.getHandicap()).toBe(0)
+    expect(game.getRootNode().setup).toBeUndefined()
+  })
+
   it('reads komi, which is stored ten times over', () => {
     expect(parse(`${header} ${moves}`).getKomi()).toBe(6.5)
   })
@@ -137,14 +178,20 @@ describe('ConvertFromGib, real Tygem records', () => {
         .toMatchObject({x: 16, y: 2, color: BLACK})
     })
 
-    it('reads neither player, because both ranks are written in Korean', () => {
+    it('reads both players, and neither rank, both being written in Korean', () => {
 
-      //NOTE: the file says GAMEBLACKNAME=dustkd1015 (1급) and
-      //GAMEWHITENAME=dongjik (1급), so both names are plainly there. The
-      //rank pattern only accepts a bare "2D" or "K", so the whole match
-      //fails and the name goes with it. See KNOWN_ISSUES.md.
-      expect(game().getPlayer(BLACK).name).toBe('')
-      expect(game().getPlayer(WHITE).name).toBe('')
+      //The file says GAMEBLACKNAME=dustkd1015 (1급) and
+      //GAMEWHITENAME=dongjik (1급). The rank is unreadable until charset
+      //detection lands, which costs the rank and nothing else.
+      expect(game().getPlayer(BLACK)).toEqual({name: 'dustkd1015'})
+      expect(game().getPlayer(WHITE)).toEqual({name: 'dongjik'})
+    })
+
+    it('reads no handicap, the record being an even game', () => {
+
+      //The file's INI line reads "INI 0 1 0 &4"
+      expect(game().getHandicap()).toBe(0)
+      expect(game().getRootNode().setup).toBeUndefined()
     })
 
     it('reads no result, because it is written in Korean', () => {
@@ -177,23 +224,34 @@ describe('ConvertFromGib, real Tygem records', () => {
         .toMatchObject({x: 15, y: 15, color: WHITE})
     })
 
-    it('reads no handicap, though the record carries one', () => {
+    it('reads the three stone handicap off the INI line', () => {
 
-      //NOTE: the file's INI line reads "INI 0 1 3 &4", and GAMECONDITION
-      //spells it out as "3 Handicap". The reader never looks at either, so
-      //the three stones are missing from the board. See KNOWN_ISSUES.md.
-      expect(game().getHandicap()).toBe(0)
-      expect(game().getRootNode().setup).toBeUndefined()
+      //The file's INI line reads "INI 0 1 3 &4", and GAMECONDITION spells
+      //the same number out as "3 Handicap"
+      expect(game().getHandicap()).toBe(3)
     })
 
-    it('reads neither player, because both ranks are kyu', () => {
+    it('places its three stones the way the Korean servers do', () => {
 
-      //NOTE: the file says GAMEWHITENAME=leejw977 (10K) and
-      //GAMEBLACKNAME=jy512 (15K). The rank pattern reads "([0-9]+D|K)",
-      //which accepts "10D" or a bare "K" but not "10K", so the match fails
-      //and takes the name with it. See KNOWN_ISSUES.md.
-      expect(game().getPlayer(BLACK).name).toBe('')
-      expect(game().getPlayer(WHITE).name).toBe('')
+      //The standard three stone placement puts a stone on the bottom right
+      //star point, being (15,15), which is where this record plays its very
+      //first move. Tygem uses the top left instead, as WBaduk does.
+      expect(game().getRootNode().setup).toEqual([{
+        type: setupTypes.BLACK,
+        coords: [
+          {x: 3, y: 3},
+          {x: 3, y: 15},
+          {x: 15, y: 3},
+        ],
+      }])
+    })
+
+    it('reads both players, ranks included, both being kyu', () => {
+
+      //The file says GAMEBLACKNAME=jy512 (15K) and
+      //GAMEWHITENAME=leejw977 (10K)
+      expect(game().getPlayer(BLACK)).toEqual({name: 'jy512', rank: '15K'})
+      expect(game().getPlayer(WHITE)).toEqual({name: 'leejw977', rank: '10K'})
     })
   })
 
@@ -212,29 +270,40 @@ describe('ConvertFromGib, real Tygem records', () => {
       expect(game().getTotalNumberOfMoves()).toBe(268)
     })
 
-    it('stops replaying at move 214, for want of the handicap stones', () => {
+    it('reads the five stone handicap off the INI line', () => {
 
-      //NOTE: the file's INI line reads "INI 0 1 5 &4", being a five stone
-      //handicap, which the reader does not read. Without those stones a
-      //capture that the real game made never happens, and the move played
-      //onto that point 214 moves in lands on an occupied intersection.
-      //Placing the standard five stones first makes the whole record replay,
-      //which is what the next test shows. See KNOWN_ISSUES.md.
-      expect(replayMainLine(game())).toEqual({
-        played: 213,
-        failure: 'Position (2,3) already has a stone',
-      })
+      //The file's INI line reads "INI 0 1 5 &4", with the handicap followed
+      //by a run of Chinese text this reader has no use for
+      expect(game().getHandicap()).toBe(5)
     })
 
-    it('replays in full once the five handicap stones are placed', () => {
+    it('places its five stones on the standard points', () => {
 
-      //This is the evidence that the handicap is the whole of the problem,
-      //and that Tygem uses the standard placement for five stones
-      const g = game()
-      for (const {x, y} of handicapPlacements[19][5]) {
-        g.getRootNode().addSetup(x, y, {type: setupTypes.BLACK})
-      }
-      expect(replayMainLine(g)).toEqual({played: 268, failure: null})
+      //Unlike three stones, five are placed the way everybody else places
+      //them, which is what makes the record replay to its end
+      expect(game().getRootNode().setup).toEqual([{
+        type: setupTypes.BLACK,
+        coords: handicapPlacements[19][5],
+      }])
+    })
+
+    it('replays all 268 moves, the handicap stones being on the board', () => {
+
+      //NOTE: without the handicap this stopped 214 moves in, on "Position
+      //(2,3) already has a stone". A capture the real game made never
+      //happened, and the move played onto that point landed on a stone.
+      expect(replayMainLine(game())).toEqual({played: 268, failure: null})
+    })
+
+    it('reads the white player, and neither name written in Chinese', () => {
+
+      //NOTE: the file says GAMEWHITENAME=harpmaster(3段), with no space
+      //before the bracket, and GAMEBLACKNAME=石佛之心(2段). Both ranks are
+      //in Chinese, and so is the black player's name, which comes back as
+      //replacement characters until charset detection lands.
+      expect(game().getPlayer(WHITE)).toEqual({name: 'harpmaster'})
+      expect(game().getPlayer(BLACK).name).toContain('\uFFFD')
+      expect(game().getPlayer(BLACK).rank).toBeUndefined()
     })
 
     it('dates the record today, because the date is written in Chinese', () => {

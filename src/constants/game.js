@@ -200,3 +200,37 @@ export const handicapPlacements = {
     ],
   },
 }
+
+//Handicap placements as used by the Korean servers, for the counts where they
+//differ from the standard placement above
+//
+//NOTE: both Tygem and WBaduk put their third handicap stone in the top left
+//corner, where the standard placement puts it in the bottom right. This was
+//verified twice over against real records: a WBaduk three stone game whose
+//261st move is played on the bottom right star point, and a Tygem three stone
+//game that plays there on its very first move. Both would be illegal under
+//the standard placement. Every other handicap count places the same stones as
+//everyone else, so only this one is listed.
+export const koreanHandicapPlacements = {
+  9: {
+    3: [
+      {x: 2, y: 2},
+      {x: 2, y: 6},
+      {x: 6, y: 2},
+    ],
+  },
+  13: {
+    3: [
+      {x: 3, y: 3},
+      {x: 3, y: 9},
+      {x: 9, y: 3},
+    ],
+  },
+  19: {
+    3: [
+      {x: 3, y: 3},
+      {x: 3, y: 15},
+      {x: 15, y: 3},
+    ],
+  },
+}
