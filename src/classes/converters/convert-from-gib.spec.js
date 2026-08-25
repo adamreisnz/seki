@@ -4,7 +4,6 @@ import ConvertFromGib from './convert-from-gib.js'
 import {handicapPlacements} from '../../constants/game.js'
 import {setupTypes} from '../../constants/setup.js'
 import {stoneColors} from '../../constants/stone.js'
-import {dateString} from '../../helpers/util.js'
 import {loadFixture, replayMainLine} from '../../../test/fixtures.js'
 
 const {BLACK, WHITE} = stoneColors
@@ -111,7 +110,7 @@ describe('ConvertFromGib', () => {
 
   it('handles a record with no date at all', () => {
     const game = parse(`${header} ${moves}`)
-    expect(() => game.getGameDate()).not.toThrow()
+    expect(game.getGameDate()).toBe('')
   })
 
   it('parses a second record without state carried over from the first', () => {
@@ -306,14 +305,13 @@ describe('ConvertFromGib, real Tygem records', () => {
       expect(game().getPlayer(BLACK).rank).toBeUndefined()
     })
 
-    it('dates the record today, because the date is written in Chinese', () => {
+    it('leaves the date empty, because it is written in Chinese', () => {
 
       //NOTE: the file says GAMEDATE=2012年11月22日 下午 6:3. The date pattern
-      //wants YYYY-M-D, so nothing matches, setGameDate is never called, and
-      //the game keeps the default date a new Game is born with, being today.
-      //An unreadable date therefore reads as a confident wrong one rather
-      //than as a missing one. See KNOWN_ISSUES.md.
-      expect(game().getGameDate()).toBe(dateString())
+      //wants YYYY-M-D, so nothing matches and no date is set. This used to
+      //read as today, a game having been born dated, which made an unreadable
+      //date a confident wrong answer rather than a missing one.
+      expect(game().getGameDate()).toBe('')
     })
   })
 })

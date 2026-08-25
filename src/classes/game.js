@@ -11,6 +11,7 @@ import ConvertToJgf from './converters/convert-to-jgf.js'
 import ConvertToSgf from './converters/convert-to-sgf.js'
 import {copy, get, set, merge, isObject} from '../helpers/object.js'
 import {parseTime, parseKomi, parseHandicap, parseEvent, parseResult} from '../helpers/parsing.js'
+import {dateString} from '../helpers/util.js'
 import {isValidColor, colorToNumeric} from '../helpers/color.js'
 import {stoneColors} from '../constants/stone.js'
 import {handicapPlacements} from '../constants/game.js'
@@ -636,6 +637,18 @@ export default class Game extends Base {
   }
   getGameDate() {
     return this.gameDate
+  }
+
+  /**
+   * Date the game today
+   *
+   * NOTE: a game starts undated, because the only thing that knows a record's
+   * date is the record. Anything starting a game here and now says so itself,
+   * with this. It is worked out when called rather than up front, so a page
+   * left open across midnight doesn't go on stamping yesterday.
+   */
+  setCurrentDate() {
+    this.setGameDate(dateString())
   }
 
   /**

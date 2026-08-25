@@ -131,6 +131,17 @@ describe('Problem records', () => {
   })
 })
 
+describe('ConvertFromJgf, game information', () => {
+
+  it('reads a record with no date as having no date', () => {
+
+    //NOTE: this used to read as today, a game having been born dated. A
+    //record that doesn't carry a date now reads as not carrying one.
+    const jgf = {tree: [{root: true}, {move: {B: 'dd'}}]}
+    expect(new ConvertFromJgf().convert(jgf).getGameDate()).toBe('')
+  })
+})
+
 describe('ConvertFromJgf, invalid input', () => {
 
   it('rejects a record with no tree', () => {
