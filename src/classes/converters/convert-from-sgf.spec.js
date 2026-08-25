@@ -723,18 +723,28 @@ describe('ConvertFromSgf, the FF[4] specification examples', () => {
       expect(white.coords).toContainEqual({x: 15, y: 16})
     })
 
-    it('stops reading a property list at a line break', () => {
+    it('reads a property list wrapped over several lines', () => {
 
-      //NOTE: the markup variation's node opens with an AB list of 35 points
-      //split over three lines, followed by an AW list of another 37. Only
-      //the 17 points on the AB list's first line survive, and the AW list
-      //is dropped whole, because the node pattern joins values with no
-      //whitespace allowed between them. See KNOWN_ISSUES.md.
+      //The markup variation's node opens with an AB list of 35 points split
+      //over two lines, followed by an AW list of another 37 split over three,
+      //the line break being whitespace the specification allows between
+      //values. The N and C properties that close the node come after all of
+      //it, so they only arrive if the lists are read to the end.
       const g = game()
       const markup = g.getRootNode().getChild(2)
-      expect(markup.setup).toHaveLength(1)
-      expect(markup.setup[0].type).toBe(stoneColors.BLACK)
-      expect(markup.setup[0].coords).toHaveLength(17)
+      const [black, white] = markup.setup
+
+      expect(black.type).toBe(stoneColors.BLACK)
+      expect(black.coords).toHaveLength(35)
+      expect(black.coords[0]).toEqual({x: 3, y: 3})
+      expect(black.coords[34]).toEqual({x: 12, y: 17})
+
+      expect(white.type).toBe(stoneColors.WHITE)
+      expect(white.coords).toHaveLength(37)
+      expect(white.coords[0]).toEqual({x: 15, y: 3})
+      expect(white.coords[36]).toEqual({x: 4, y: 17})
+
+      expect(markup.name).toBe('Markup')
     })
   })
 })

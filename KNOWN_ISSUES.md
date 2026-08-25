@@ -142,42 +142,6 @@ three:
 
 ---
 
-## An SGF property value list is truncated at a line break
-
-**Where:** `src/classes/converters/convert-from-sgf.js` (`regexSequence`,
-`regexNode`)
-
-Both patterns join a property's values with `(?:${valuePattern})+`, which
-allows nothing at all between one `]` and the next `[`. The SGF specification
-allows whitespace there, and writers use it to wrap long lists:
-
-```
-AB[dd][de][df][dg][dh][di][dj][nj][ni][nh][nf][ne][nd][ij][ii][ih][hq]
-[gq][fq][eq][dr][ds][dq][dp][cp][bp][ap][iq][ir][is][bo][bn][an][ms][mr]
-AW[pd][pe][pf][pg][ph][pi][pj][fd][fe][ff][fh][fi][fj][kh][ki][kj][os][or]
-```
-
-The match ends at the first line break, so only the seventeen points on the
-first line are read. Worse, the node match ends there too, so every property
-after the break is dropped along with them:
-
-```js
-parse('(;FF[4]SZ[19]AB[aa]\n[bb]KM[7.5])').getKomi()  // 0, not 7.5
-```
-
-**Effect:** a record that wraps a long `AB`, `AW`, `TB`, `TW` or `LB` list, as
-`test/fixtures/sgf/ff4_ex.sgf` does, loads with part of that list missing and
-with every later property of the same node missing too. Nothing is warned
-about, so the record looks like it read cleanly. A record that keeps each
-node on one line, which is most of them, is unaffected.
-
-**What a fix involves:** allowing whitespace between values in the two
-patterns, being `(?:\s*${valuePattern})+`. `ff4_ex.sgf` then reads all 35
-points of the `AB` list and the 37 of the `AW` list that follows it, so the
-spec that currently pins the truncated behaviour is the test for the fix.
-
----
-
 ## The NGF reader does not recognise the GI header dialect
 
 **Where:** `src/classes/converters/convert-from-ngf.js`
