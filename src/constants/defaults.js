@@ -393,6 +393,20 @@ export const defaultTheme = {
       },
     },
 
+    //Expected sequence stones (modifier style)
+    //
+    //NOTE: a move an engine expects but nobody has played. It is drawn as the
+    //stone it would be, in the board's own stone style, and only its alpha
+    //says it is not there yet. Black needs to fade further than white to read
+    //as a ghost, as a dark stone stays dark against the wood long after a
+    //pale one has gone to nothing.
+    sequence: {
+      shadow: false,
+      alpha(cellSize, stoneColor) {
+        return (stoneColor === stoneColors.BLACK) ? 0.4 : 0.5
+      },
+    },
+
     //Hover stones (modifier style)
     hover: {
       shadow: true,
@@ -571,44 +585,13 @@ export const defaultTheme = {
     //Expected sequence markers
     //
     //NOTE: these are the follow-up moves of an engine's expected line, drawn
-    //as numbered ghost stones in the colour of the player expected to play
-    //each of them. A ghost stone is deliberately not a stone: smaller,
-    //translucent and outlined, so the expectation never reads as a position.
-    //The stone color the handlers receive is the move's own colour, fixed by
-    //the markup rather than read from the board.
-    sequence: {
-
-      //Slightly smaller than a stone, and see-through as a whole: the alpha
-      //covers disc, outline and number together
-      scale: 0.85,
-      alpha: 0.75,
-
-      //The disc is the move's own colour; the outline is what keeps a white
-      //ghost visible on the pale board, with a matching edge on the black one
-      fillColor(cellSize, stoneColor) {
-        return (stoneColor === stoneColors.BLACK) ? '#181818' : '#f4efe4'
-      },
-      color(cellSize, stoneColor) {
-        return (stoneColor === stoneColors.BLACK) ?
-          'rgba(0,0,0,0.9)' : 'rgba(70,50,25,0.9)'
-      },
-      lineWidth(cellSize) {
-        return Math.max(1, Math.round(cellSize * 0.03))
-      },
-
-      //The number continues the numbering of the variation moves already on
-      //the board, so it can grow past a single digit
-      text(number) {
-        return number
-      },
-      fontSize(text, cellSize) {
-        return Math.round(cellSize * 0.4)
-      },
-      fontWeight: 500,
-      textColor(cellSize, stoneColor) {
-        return (stoneColor === stoneColors.BLACK) ? '#f4efe4' : '#181818'
-      },
-    },
+    //as the stone that would be played there, ghosted, with the move's number
+    //on top. The stone itself is styled under stone.sequence below, as it is
+    //a real stone of whatever style the board uses; what is left here is the
+    //number, and by default nothing at all, as the paths this type checks
+    //fall through to the move number's own theme. The number is deliberately
+    //not faded with the stone under it: it is there to be read.
+    sequence: {},
 
     //Last move marker
     lastMove: {

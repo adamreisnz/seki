@@ -19,4 +19,5 @@ export const stoneModifierStyles = {
   CAPTURES: 'captures',
   POINTS: 'points',
   HOVER: 'hover',
+  SEQUENCE: 'sequence',
 }
