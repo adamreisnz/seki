@@ -3,7 +3,7 @@ import ConvertFromSgf from './convert-from-sgf.js'
 import {stoneColors} from '../../constants/stone.js'
 import {markupTypes} from '../../constants/markup.js'
 import {
-  loadFixture, replayMainLine, countNodes, countForks
+  loadFixture, loadFixtureBytes, replayMainLine, countNodes, countForks
 } from '../../../test/fixtures.js'
 
 const parse = sgf => new ConvertFromSgf().convert(sgf)
@@ -736,5 +736,74 @@ describe('ConvertFromSgf, the FF[4] specification examples', () => {
       expect(markup.setup[0].type).toBe(stoneColors.BLACK)
       expect(markup.setup[0].coords).toHaveLength(17)
     })
+  })
+})
+
+describe('ConvertFromSgf, a record that is not UTF-8', () => {
+
+  //See test/fixtures/README.md for where this record came from, and
+  //src/helpers/encoding.js for how its encoding is worked out
+
+  it('reads a Shift_JIS record handed over as bytes', () => {
+
+    const game = parse(loadFixtureBytes('sgf/shift-jis.sgf'))
+
+    //The record declares no CA, so the encoding is recovered by scoring
+    expect(game.getPlayer(stoneColors.BLACK).name).toBe('高尾紳路')
+    expect(game.getPlayer(stoneColors.BLACK).rank).toBe('九段')
+    expect(game.getPlayer(stoneColors.WHITE).name).toBe('山下敬吾')
+    expect(game.getPlayer(stoneColors.WHITE).rank).toBe('九段')
+    expect(game.getGameName()).toBe('テスト対局')
+    expect(game.getEventName()).toBe('第三十期棋聖戦')
+    expect(game.getEventLocation()).toBe('東京')
+  })
+
+  it('reads the Japanese comments in it too', () => {
+
+    //Comments are where a record's Japanese really lives, and where losing
+    //it to a UTF-8 decode is least likely to be noticed
+    const game = parse(loadFixtureBytes('sgf/shift-jis.sgf'))
+    const comments = []
+    for (let node = game.getRootNode(); node; node = node.getChild(0)) {
+      if (node.comments) {
+        comments.push(...node.comments)
+      }
+    }
+    expect(comments).toEqual([
+      '黒番、両小目の布石。',
+      '白の中押し負けとなりました。',
+    ])
+  })
+
+  it('replays the same seven moves either way round', () => {
+
+    //The moves are ASCII in any encoding, so the bytes and a UTF-8 decode of
+    //them have to agree about the game itself
+    const fromBytes = parse(loadFixtureBytes('sgf/shift-jis.sgf'))
+    const fromString = parse(loadFixture('sgf/shift-jis.sgf'))
+    expect(fromBytes.getTotalNumberOfMoves()).toBe(7)
+    expect(replayMainLine(fromBytes)).toEqual({played: 7, failure: null})
+    expect(replayMainLine(fromString)).toEqual({played: 7, failure: null})
+  })
+
+  it('loses the Japanese when the caller decodes it as UTF-8 first', () => {
+
+    //What the reader did with this record before, and still does for a
+    //caller that hands it a string rather than the bytes
+    const game = parse(loadFixture('sgf/shift-jis.sgf'))
+    expect(game.getPlayer(stoneColors.BLACK).name).not.toBe('高尾紳路')
+    expect(game.getGameName()).not.toBe('テスト対局')
+  })
+
+  it('honours a declared charset over what it would otherwise guess', () => {
+
+    //Latin-1 bytes for "(;FF[4]CA[EUC-KR]PB[이세돌])"
+    const declared = Uint8Array.from(
+      '(;FF[4]CA[EUC-KR]PB[\xc0\xcc\xbc\xbc\xb5\xb9])',
+      char => char.charCodeAt(0)
+    )
+    const game = parse(declared)
+    expect(game.getPlayer(stoneColors.BLACK).name).toBe('이세돌')
+    expect(game.getInfo().record.charset).toBe('EUC-KR')
   })
 })

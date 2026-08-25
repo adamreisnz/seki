@@ -13,6 +13,7 @@ import {copy, get, set, merge, isObject} from '../helpers/object.js'
 import {parseTime, parseKomi, parseHandicap, parseEvent, parseResult} from '../helpers/parsing.js'
 import {dateString} from '../helpers/util.js'
 import {isValidColor, colorToNumeric} from '../helpers/color.js'
+import {decodeData} from '../helpers/encoding.js'
 import {stoneColors} from '../constants/stone.js'
 import {handicapPlacements} from '../constants/game.js'
 import {kifuFormats} from '../constants/app.js'
@@ -2690,6 +2691,11 @@ export default class Game extends Base {
    */
   static detectFormat(data) {
 
+    //Decode binary data first. The bytes of a record are an object as far as
+    //typeof is concerned, so this has to happen before anything is read into
+    //the checks below. A string passes through untouched.
+    data = decodeData(data)
+
     //No data, can't do much
     if (!data) {
       throw new Error(`No data`)
@@ -2731,6 +2737,10 @@ export default class Game extends Base {
    * This will try to auto detect the data format
    */
   static fromData(data) {
+
+    //Decode binary data once, rather than leaving both the format detection
+    //and the converter to do it
+    data = decodeData(data)
 
     //Detect format
     const format = this.detectFormat(data)

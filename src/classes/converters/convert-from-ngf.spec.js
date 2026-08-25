@@ -1,7 +1,9 @@
 import {describe, it, expect} from 'vitest'
 import ConvertFromNgf from './convert-from-ngf.js'
 import {stoneColors} from '../../constants/stone.js'
-import {loadFixture, replayMainLine} from '../../../test/fixtures.js'
+import {
+  loadFixture, loadFixtureBytes, replayMainLine
+} from '../../../test/fixtures.js'
 
 const {BLACK, WHITE} = stoneColors
 
@@ -317,5 +319,44 @@ describe('ConvertFromNgf, real WBaduk records', () => {
       expect(game().getPlayer(BLACK).name).toBe('GI')
       expect(game().getPlayer(BLACK).rank).toBeUndefined()
     })
+  })
+})
+
+describe('ConvertFromNgf, a record that is not UTF-8', () => {
+
+  //WBaduk wrote GB2312 and the record does not say so, so the encoding is
+  //recovered by scoring. See src/helpers/encoding.js.
+
+  it('brings back the Chinese player name, given the bytes', () => {
+
+    //Line 2 is "GI李载雄 五段". The GI prefix is the reader's own problem
+    //and is a known issue of its own, but the name behind it now arrives
+    //intact rather than as replacement characters.
+    const game = parse(loadFixtureBytes('ngf/gb2312.ngf'))
+    expect(game.getPlayer(WHITE).name).toBe('GI李载雄')
+  })
+
+  it('loses that name when the caller decodes it as UTF-8 first', () => {
+
+    //What the reader did with this record before, and still does for a
+    //caller that hands it a string rather than the bytes
+    const game = parse(loadFixture('ngf/gb2312.ngf'))
+    expect(game.getPlayer(WHITE).name).toBe('GI\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd')
+  })
+
+  it('replays the same 211 moves either way round', () => {
+    const fromBytes = parse(loadFixtureBytes('ngf/gb2312.ngf'))
+    expect(fromBytes.getTotalNumberOfMoves()).toBe(211)
+    expect(replayMainLine(fromBytes)).toEqual({played: 211, failure: null})
+  })
+
+  it('reads an ASCII record from bytes exactly as it does from a string', () => {
+    const fromBytes = parse(loadFixtureBytes('ngf/even.ngf'))
+    const fromString = parse(loadFixture('ngf/even.ngf'))
+    expect(fromBytes.getPlayer(WHITE).name)
+      .toBe(fromString.getPlayer(WHITE).name)
+    expect(fromBytes.getGameResult()).toBe(fromString.getGameResult())
+    expect(fromBytes.getTotalNumberOfMoves())
+      .toBe(fromString.getTotalNumberOfMoves())
   })
 })

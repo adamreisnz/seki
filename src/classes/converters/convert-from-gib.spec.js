@@ -4,7 +4,9 @@ import ConvertFromGib from './convert-from-gib.js'
 import {handicapPlacements} from '../../constants/game.js'
 import {setupTypes} from '../../constants/setup.js'
 import {stoneColors} from '../../constants/stone.js'
-import {loadFixture, replayMainLine} from '../../../test/fixtures.js'
+import {
+  loadFixture, loadFixtureBytes, replayMainLine
+} from '../../../test/fixtures.js'
 
 const {BLACK, WHITE} = stoneColors
 
@@ -313,5 +315,83 @@ describe('ConvertFromGib, real Tygem records', () => {
       //date a confident wrong answer rather than a missing one.
       expect(game().getGameDate()).toBe('')
     })
+  })
+})
+
+describe('ConvertFromGib, a record that is not UTF-8', () => {
+
+  //Tygem wrote EUC-KR and GB2312 for years and neither record says so, so
+  //the encoding is recovered by scoring. See src/helpers/encoding.js.
+
+  it('reads every record handed over as bytes', () => {
+    for (const name of ['euc-kr.gib', 'gb2312.gib', 'utf8.gib']) {
+      expect(() => parse(loadFixtureBytes(`gib/${name}`))).not.toThrow()
+    }
+  })
+
+  it('replays the EUC-KR record the same either way round', () => {
+
+    //The moves are ASCII in any encoding, so the bytes and a UTF-8 decode of
+    //them have to agree about the game itself
+    const fromBytes = parse(loadFixtureBytes('gib/euc-kr.gib'))
+    expect(fromBytes.getTotalNumberOfMoves()).toBe(49)
+    expect(replayMainLine(fromBytes)).toEqual({played: 49, failure: null})
+    expect(fromBytes.getKomi()).toBe(6.5)
+    expect(fromBytes.getGameDate()).toBe('2015-08-29')
+  })
+
+  it('replays the GB2312 record the same either way round', () => {
+    const fromBytes = parse(loadFixtureBytes('gib/gb2312.gib'))
+    expect(fromBytes.getTotalNumberOfMoves()).toBe(268)
+    expect(fromBytes.getHandicap()).toBe(5)
+    expect(replayMainLine(fromBytes)).toEqual({played: 268, failure: null})
+  })
+
+  it('brings back the Chinese player name, given the bytes', () => {
+
+    //gb2312.gib says GAMEBLACKNAME=石下之臣(2段). The name pattern takes
+    //everything ahead of the bracket, so once the bytes are decoded the
+    //name arrives whole.
+    const game = parse(loadFixtureBytes('gib/gb2312.gib'))
+    expect(game.getPlayer(BLACK).name).toBe('石下之臣')
+    expect(game.getPlayer(WHITE).name).toBe('harpmaster')
+  })
+
+  it('loses that name when the caller decodes it as UTF-8 first', () => {
+
+    //What the reader does for a caller that hands it a string rather than
+    //the bytes, the ASCII name beside it being unaffected either way
+    const game = parse(loadFixture('gib/gb2312.gib'))
+    expect(game.getPlayer(BLACK).name).not.toBe('石下之臣')
+    expect(game.getPlayer(WHITE).name).toBe('harpmaster')
+  })
+
+  it('leaves a rank written in Korean or Chinese unset, name intact', () => {
+
+    //euc-kr.gib says GAMEBLACKNAME=dustkd1015 (1급) and gb2312.gib says
+    //GAMEBLACKNAME=石下之臣(2段). Both ranks decode now, and neither is
+    //written in a notation the rank pattern reads, so only the rank is lost.
+    const korean = parse(loadFixtureBytes('gib/euc-kr.gib'))
+    const chinese = parse(loadFixtureBytes('gib/gb2312.gib'))
+    expect(korean.getPlayer(BLACK)).toMatchObject({name: 'dustkd1015'})
+    expect(korean.getPlayer(BLACK).rank).toBeUndefined()
+    expect(chinese.getPlayer(BLACK).rank).toBeUndefined()
+  })
+
+  it('still reads no result, the decoding not being what was in the way', () => {
+
+    //euc-kr.gib says GAMERESULT=흑 시간승 and gb2312.gib says
+    //GAMERESULT=白11目胜. Both decode now, and neither is the English the
+    //result patterns look for, so the result stays empty rather than wrong.
+    expect(parse(loadFixtureBytes('gib/euc-kr.gib')).getGameResult()).toBe('')
+    expect(parse(loadFixtureBytes('gib/gb2312.gib')).getGameResult()).toBe('')
+  })
+
+  it('reads a UTF-8 record from bytes exactly as it does from a string', () => {
+    const fromBytes = parse(loadFixtureBytes('gib/utf8.gib'))
+    const fromString = parse(loadFixture('gib/utf8.gib'))
+    expect(fromBytes.getTotalNumberOfMoves())
+      .toBe(fromString.getTotalNumberOfMoves())
+    expect(fromBytes.getGameDate()).toBe(fromString.getGameDate())
   })
 })

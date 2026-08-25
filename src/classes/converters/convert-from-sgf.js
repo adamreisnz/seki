@@ -2,6 +2,7 @@ import Converter from './converter.js'
 import Game from '../game.js'
 import GameNode from '../game-node.js'
 import {set, get} from '../../helpers/object.js'
+import {decodeData} from '../../helpers/encoding.js'
 import {gameTypes} from '../../constants/game.js'
 import {stoneColors} from '../../constants/stone.js'
 import {markupTypes} from '../../constants/markup.js'
@@ -147,6 +148,11 @@ export default class ConvertFromSgf extends Converter {
    * tree in the collection
    */
   convertAll(sgf, verbose = false) {
+
+    //Decode binary data, detecting the encoding from the bytes themselves.
+    //A string is handed straight back, so a caller that has already decoded
+    //is unaffected.
+    sgf = decodeData(sgf)
 
     //No data
     if (!sgf) {

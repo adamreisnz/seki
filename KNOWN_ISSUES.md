@@ -215,24 +215,34 @@ of this reader is.
 
 ---
 
-## Legacy encodings are read as UTF-8
+## A short legacy record can still be decoded as the wrong language
 
-**Where:** every converter, and whatever hands them a string
+**Where:** `src/helpers/encoding.js` (`recoveryCandidates`, `scoreDecoding`)
 
-Records are handed to the converters as strings, decoded as UTF-8 by the
-caller. Tygem and WBaduk both wrote EUC-KR and GB2312 for years, and SGF
-carries its encoding in `CA`, none of which is consulted. Non-ASCII text in
-such a record arrives as replacement characters.
+Every reader now takes bytes and works out the encoding for itself, so a
+record that declares a charset in `CA`, or that carries a byte order mark, or
+that is valid UTF-8, is read correctly. What is left is the guess made for a
+record that does none of those, which is scored the way Sabaki scores it: by
+decoding the record's own text under each candidate and counting what script
+the code points land in.
 
-**Effect:** player names, results, dates and comments in a legacy encoded
-record are unreadable, though the moves, which are ASCII, are unaffected.
-`test/fixtures/gib/euc-kr.gib`, `test/fixtures/gib/gb2312.gib` and
-`test/fixtures/ngf/gb2312.ngf` are the examples.
+Two cases score wrongly:
 
-**What a fix involves:** detecting the encoding, from `CA` for SGF and from
-the bytes themselves for GIB and NGF, and decoding accordingly. That means
-the converters have to be handed bytes rather than a string, which is a change
-to how they are called.
+- A few Chinese characters on their own decode as clean hangul under EUC-KR,
+  and the hangul language marker then rewards that over the correct GB18030
+  reading. It takes a line or two of text before the right answer wins.
+- Cyrillic written in windows-1251 forms valid GBK pairs, which score exactly
+  as well as the real thing. GB18030 is tried first, so a Russian record is
+  only read right if it says `CA[windows-1251]`.
+
+**Effect:** the player names and comments of a very short undeclared Chinese
+record, or of any undeclared Russian one, come out as the wrong language
+rather than as replacement characters. Every record in
+`test/fixtures/` is read correctly.
+
+**What a fix involves:** a character frequency model, which is what jschardet
+is and what Sabaki uses ahead of this scorer. Seki has no runtime dependencies
+and is not taking one for this, so a fix means porting or writing one.
 
 ---
 

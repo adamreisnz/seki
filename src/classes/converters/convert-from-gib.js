@@ -1,6 +1,7 @@
 import Converter from './converter.js'
 import Game from '../game.js'
 import GameNode from '../game-node.js'
+import {decodeData} from '../../helpers/encoding.js'
 import {koreanHandicapPlacements} from '../../constants/game.js'
 import {stoneColors} from '../../constants/stone.js'
 
@@ -48,6 +49,11 @@ export default class ConvertFromGib extends Converter {
    * Convert GIB data into a game object
    */
   convert(gib) {
+
+    //Decode binary data, detecting the encoding from the bytes themselves.
+    //A string is handed straight back, so a caller that has already decoded
+    //is unaffected.
+    gib = decodeData(gib)
 
     //No data
     if (!gib) {

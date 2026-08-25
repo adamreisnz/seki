@@ -49,6 +49,7 @@ import {default as SekiConvertToSgf} from './classes/converters/convert-to-sgf.j
 //Helpers
 import * as color from './helpers/color.js'
 import * as coordinates from './helpers/coordinates.js'
+import * as encoding from './helpers/encoding.js'
 import * as grid from './helpers/grid.js'
 import * as object from './helpers/object.js'
 import * as parsing from './helpers/parsing.js'
@@ -58,6 +59,7 @@ import * as util from './helpers/util.js'
 const helpers = {
   color,
   coordinates,
+  encoding,
   grid,
   object,
   parsing,

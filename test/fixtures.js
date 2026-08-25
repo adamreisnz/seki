@@ -7,15 +7,26 @@ import {fileURLToPath} from 'node:url'
 const fixturesPath = resolve(dirname(fileURLToPath(import.meta.url)), 'fixtures')
 
 /**
- * Read a fixture record, e.g. loadFixture('gib/utf8.gib')
+ * Read a fixture record as a UTF-8 string, e.g. loadFixture('gib/utf8.gib')
  *
- * NOTE: read as UTF-8, which is what every converter is handed today. Several
- * records in the corpus are EUC-KR or GB2312, and their non ASCII text comes
- * back as replacement characters. That is the reader's current behaviour
- * rather than an accident of the helper, and the specs assert it as such.
+ * NOTE: several records in the corpus are EUC-KR, GB2312 or Shift_JIS, and
+ * forcing them through a UTF-8 decode brings their non ASCII text back as
+ * replacement characters. That is what a caller who decodes the file itself
+ * hands the readers, and the specs pin it as such. Use loadFixtureBytes to
+ * let the reader work the encoding out for itself.
  */
 export function loadFixture(name) {
   return readFileSync(resolve(fixturesPath, name), 'utf8')
+}
+
+/**
+ * Read a fixture record as raw bytes, e.g. loadFixtureBytes('gib/euc-kr.gib')
+ *
+ * This is what reading a file off disk or off the network actually gives you,
+ * and what the encoding detection in src/helpers/encoding.js is there for.
+ */
+export function loadFixtureBytes(name) {
+  return readFileSync(resolve(fixturesPath, name))
 }
 
 /**
