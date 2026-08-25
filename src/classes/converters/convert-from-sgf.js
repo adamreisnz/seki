@@ -163,7 +163,7 @@ export default class ConvertFromSgf extends Converter {
     return trees.map(({root, info}) => {
 
       //Set game info and root node, in that order
-      const game = Game.forRecord()
+      const game = new Game()
       game.setInfo(info)
       game.setRootNode(root)
 

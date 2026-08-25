@@ -78,7 +78,7 @@ export default class ConvertFromNgf extends Converter {
 
     //Initialize. NGF files are written with CRLF line endings, and the
     //trailing carriage returns would otherwise end up inside every value.
-    const game = Game.forRecord()
+    const game = new Game()
     const lines = String(ngf)
       .split(/\r?\n/)
       .map(line => line.trim())

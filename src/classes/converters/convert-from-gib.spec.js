@@ -309,9 +309,8 @@ describe('ConvertFromGib, real Tygem records', () => {
 
       //NOTE: the file says GAMEDATE=2012年11月22日 下午 6:3. The date pattern
       //wants YYYY-M-D, so nothing matches and no date is set. This used to
-      //read as today, because the game kept the date a new Game is stamped
-      //with, which made an unreadable date a confident wrong answer rather
-      //than a missing one.
+      //read as today, a game having been born dated, which made an unreadable
+      //date a confident wrong answer rather than a missing one.
       expect(game().getGameDate()).toBe('')
     })
   })

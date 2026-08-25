@@ -305,8 +305,8 @@ describe('ConvertFromNgf, real WBaduk records', () => {
     it('leaves the date empty, having found no date to read', () => {
 
       //NOTE: as with gb2312.gib, the record now reads as having no date at
-      //all. It used to read as played today, being the date a new Game is
-      //stamped with and which nothing here overwrote.
+      //all. It used to read as played today, that being the date a game was
+      //born with and which nothing here overwrote.
       expect(game().getGameDate()).toBe('')
     })
 

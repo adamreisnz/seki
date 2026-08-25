@@ -11,6 +11,7 @@ import ConvertToJgf from './converters/convert-to-jgf.js'
 import ConvertToSgf from './converters/convert-to-sgf.js'
 import {copy, get, set, merge, isObject} from '../helpers/object.js'
 import {parseTime, parseKomi, parseHandicap, parseEvent, parseResult} from '../helpers/parsing.js'
+import {dateString} from '../helpers/util.js'
 import {isValidColor, colorToNumeric} from '../helpers/color.js'
 import {stoneColors} from '../constants/stone.js'
 import {handicapPlacements} from '../constants/game.js'
@@ -636,6 +637,18 @@ export default class Game extends Base {
   }
   getGameDate() {
     return this.gameDate
+  }
+
+  /**
+   * Date the game today
+   *
+   * NOTE: a game starts undated, because the only thing that knows a record's
+   * date is the record. Anything starting a game here and now says so itself,
+   * with this. It is worked out when called rather than up front, so a page
+   * left open across midnight doesn't go on stamping yesterday.
+   */
+  setCurrentDate() {
+    this.setGameDate(dateString())
   }
 
   /**
@@ -2605,24 +2618,8 @@ export default class Game extends Base {
   }
 
   /**************************************************************************
-   * Static helpers to create game instances
+   * Static helpers to create game instances from different formats
    ***/
-
-  /**
-   * Create an empty game for a record to be read into
-   *
-   * NOTE: a new Game is stamped with today's date, which is what an editor
-   * wants when someone starts a game, and the wrong answer for a record read
-   * from a file. There, a date the reader can't find or can't parse would
-   * keep that stamp and the record would read as having been played today,
-   * which is a confident wrong answer where every other unread field degrades
-   * to an empty one. A record's date comes from the record or not at all.
-   */
-  static forRecord() {
-    const game = new Game()
-    game.setGameDate('')
-    return game
-  }
 
   /**
    * Load from JGF data

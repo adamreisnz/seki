@@ -445,10 +445,9 @@ describe('ConvertFromSgf, game information', () => {
 
   it('reads a record with no DT as having no date', () => {
 
-    //NOTE: a new Game is stamped with today's date, for the sake of one being
-    //started in an editor. A record read from a file has no business keeping
-    //that: one which doesn't say when it was played reads as not saying, the
-    //same as every other field it leaves out.
+    //NOTE: a record that doesn't say when it was played reads as not saying,
+    //the same as every other field it leaves out. This used to read as today,
+    //which was also at odds with DT[] below reading as no date at all.
     expect(parse('(;FF[4]SZ[19];B[dd])').getGameDate()).toBe('')
   })
 })

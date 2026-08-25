@@ -4,7 +4,6 @@ import {gameTypes} from './game.js'
 import {playerModes, playerActions} from './player.js'
 import {markupTypes} from './markup.js'
 import {stoneColors, stoneStyles} from './stone.js'
-import {dateString} from '../helpers/util.js'
 import {interpolateColorScale, colorLuminance} from '../helpers/color.js'
 
 //Default game info
@@ -13,16 +12,14 @@ export const defaultGameInfo = {
     generator: `${appName} v${appVersion}`,
     charset: 'UTF-8',
   },
+
+  //NOTE: no date. A game is dated by whoever knows what its date is: a record
+  //by the record it was read from, and a game being started by the caller
+  //starting it, with Game#setCurrentDate. Defaulting it to today made a
+  //record whose date could not be read load as played today, which is a
+  //confident wrong answer where every other unknown field is simply empty.
   game: {
     type: gameTypes.GO,
-
-    //NOTE: a getter, so that the date is worked out when a game is created
-    //rather than when this module is first imported. As a plain value it was
-    //fixed for the lifetime of the page, so a long running one went on
-    //stamping yesterday's date after midnight.
-    get date() {
-      return dateString()
-    },
   },
   board: {
     size: 19,

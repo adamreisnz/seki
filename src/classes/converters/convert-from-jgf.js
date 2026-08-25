@@ -45,7 +45,7 @@ export default class ConvertFromJgf extends Converter {
     }
 
     //Initialize
-    const game = Game.forRecord()
+    const game = new Game()
     const root = this.parseTree(jgf.tree)
 
     //Extract game info and set root node

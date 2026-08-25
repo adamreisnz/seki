@@ -1110,37 +1110,25 @@ describe('Default handicap stone placement', () => {
   })
 })
 
-describe('Default game date', () => {
+describe('Game date', () => {
 
-  it('is today, not the day the module was first imported', () => {
+  it('is empty on a new game, rather than today', () => {
 
-    //NOTE: this used to be a plain value computed at import time, so a page
-    //left open across midnight went on stamping the previous day's date
-    const descriptor = Object.getOwnPropertyDescriptor(
-      defaultGameInfo.game, 'date'
-    )
-    expect(descriptor.get).toBeTypeOf('function')
-    expect(new Game().getGameDate()).toBe(dateString())
+    //NOTE: the default used to be today, which meant a record whose date a
+    //reader could not parse loaded as having been played today. A game is
+    //dated by whoever knows its date, and a bare new Game has nobody who does.
+    expect(new Game().getGameDate()).toBe('')
+    expect(defaultGameInfo.game.date).toBeUndefined()
   })
 
-  it('is still overridden by a date given in the info', () => {
+  it('is taken from a date given in the info', () => {
     expect(new Game({game: {date: '2020-01-02'}}).getGameDate()).toBe('2020-01-02')
   })
 
-  it('re-evaluates for each game created', () => {
-    const first = new Game().getGameDate()
-    const second = new Game().getGameDate()
-    expect(first).toBe(second)
-    expect(first).toBe(dateString())
-  })
-
-  it('is left off a game made to read a record into', () => {
-
-    //NOTE: today's date is what someone starting a game in an editor means.
-    //A record read from a file means whatever the record says, so a reader
-    //that finds no date it can parse leaves the field empty rather than
-    //handing back a confident today. See Game.forRecord.
-    expect(Game.forRecord().getGameDate()).toBe('')
+  it('is set to today on request', () => {
+    const game = new Game()
+    game.setCurrentDate()
+    expect(game.getGameDate()).toBe(dateString())
   })
 })
 
