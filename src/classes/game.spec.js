@@ -6,6 +6,7 @@ import {setupTypes} from '../constants/setup.js'
 import {kifuFormats} from '../constants/app.js'
 import {defaultGameInfo} from '../constants/defaults.js'
 import {dateString} from '../helpers/util.js'
+import {loadFixtureBytes} from '../../test/fixtures.js'
 
 const {BLACK, WHITE} = stoneColors
 
@@ -1600,5 +1601,58 @@ describe('The path reported after navigation', () => {
 
     const nodes = copy.getRootNode().getPathNodes()
     expect(nodes.every(node => node.isPath)).toBe(true)
+  })
+})
+
+describe('Game loaded from bytes rather than a string', () => {
+
+  //Every reader decodes its own input, so everything above them takes bytes
+  //too. See src/helpers/encoding.js.
+
+  it('detects the format of a record that is not UTF-8', () => {
+
+    //The format markers are ASCII, but they can only be seen once the bytes
+    //have been decoded, and a typed array is an object to typeof
+    expect(Game.detectFormat(loadFixtureBytes('sgf/shift-jis.sgf')))
+      .toBe(kifuFormats.SGF)
+    expect(Game.detectFormat(loadFixtureBytes('gib/euc-kr.gib')))
+      .toBe(kifuFormats.GIB)
+    expect(Game.detectFormat(loadFixtureBytes('ngf/gb2312.ngf')))
+      .toBe(kifuFormats.NGF)
+  })
+
+  it('still detects a JGF object rather than reading it as bytes', () => {
+    expect(Game.detectFormat({record: {format: 'JGF'}})).toBe(kifuFormats.JGF)
+  })
+
+  it('loads a Shift_JIS record through fromData', () => {
+    const game = Game.fromData(loadFixtureBytes('sgf/shift-jis.sgf'))
+    expect(game.getPlayer(BLACK).name).toBe('高尾紳路')
+    expect(game.getPlayer(WHITE).name).toBe('山下敬吾')
+  })
+
+  it('loads the same record through fromSgf', () => {
+    const game = Game.fromSgf(loadFixtureBytes('sgf/shift-jis.sgf'))
+    expect(game.getPlayer(BLACK).name).toBe('高尾紳路')
+  })
+
+  it('loads a GB2312 record through fromNgf', () => {
+    const game = Game.fromNgf(loadFixtureBytes('ngf/gb2312.ngf'))
+    expect(game.getPlayer(WHITE).name).toBe('GI李载雄')
+  })
+
+  it('loads a EUC-KR record through fromGib', () => {
+    const game = Game.fromGib(loadFixtureBytes('gib/euc-kr.gib'))
+    expect(game.getTotalNumberOfMoves()).toBe(49)
+  })
+
+  it('loads JGF from bytes, JSON being UTF-8 by definition', () => {
+    const jgf = new Game().toJgf()
+    const game = Game.fromJgf(new TextEncoder().encode(jgf))
+    expect(game).toBeInstanceOf(Game)
+  })
+
+  it('rejects an empty buffer the way it rejects an empty string', () => {
+    expect(() => Game.fromData(new Uint8Array(0))).toThrow('No data')
   })
 })

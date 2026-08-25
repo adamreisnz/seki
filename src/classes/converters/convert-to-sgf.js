@@ -58,7 +58,9 @@ export default class ConvertToSgf extends Converter {
       includeZeroValues,
     } = Object.assign({}, defaultOptions, options || {})
 
-    //Get game info and initialize sgf root properties object
+    //Get game info and initialize sgf root properties object. What comes
+    //out of here is a JavaScript string, so the charset it declares is UTF-8
+    //whatever the record was read from.
     const info = game.getInfo()
     const root = {
       FF: 4,
@@ -88,6 +90,13 @@ export default class ConvertToSgf extends Converter {
 
       //Ignore variation settings?
       if (!includeVariationSettings && key === 'ST') {
+        continue
+      }
+
+      //Never let the source charset overwrite the one set above. A record
+      //read as EUC-KR carries that in record.charset, and copying it over
+      //would have this UTF-8 output declare itself as EUC-KR.
+      if (key === 'CA') {
         continue
       }
 

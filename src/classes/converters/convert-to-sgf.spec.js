@@ -132,3 +132,32 @@ describe('ConvertToSgf, label text', () => {
     expect(writeLabel('A1')).toContain('LB[dd:A1]')
   })
 })
+
+describe('ConvertToSgf, the charset it declares', () => {
+
+  it('declares UTF-8, which is what a JavaScript string is', () => {
+    expect(write(new Game())).toContain('CA[UTF-8]')
+  })
+
+  it('declares UTF-8 for a record that was read as something else', () => {
+
+    //A record read as EUC-KR carries that in record.charset, and copying it
+    //over would have this UTF-8 output declare itself as EUC-KR. Anything
+    //reading the result back would then decode it twice.
+    const game = parse('(;FF[4]CA[EUC-KR]SZ[19]PB[이세돌])')
+    expect(game.getInfo().record.charset).toBe('EUC-KR')
+
+    const sgf = write(game)
+    expect(sgf).toContain('CA[UTF-8]')
+    expect(sgf).not.toContain('CA[EUC-KR]')
+    expect(sgf).toContain('PB[이세돌]')
+  })
+
+  it('survives a round trip through its own output', () => {
+    const sgf = write(parse('(;FF[4]CA[EUC-KR]SZ[19]PB[이세돌]PW[柯洁])'))
+    const game = parse(sgf)
+    expect(game.getInfo().record.charset).toBe('UTF-8')
+    expect(game.getPlayer(stoneColors.BLACK).name).toBe('이세돌')
+    expect(game.getPlayer(stoneColors.WHITE).name).toBe('柯洁')
+  })
+})

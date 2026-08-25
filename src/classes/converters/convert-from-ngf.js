@@ -1,6 +1,7 @@
 import Converter from './converter.js'
 import Game from '../game.js'
 import GameNode from '../game-node.js'
+import {decodeData} from '../../helpers/encoding.js'
 import {koreanHandicapPlacements} from '../../constants/game.js'
 import {charCodeAUpper, sgfStoneColors} from '../../constants/sgf.js'
 import {stoneColors} from '../../constants/stone.js'
@@ -70,6 +71,11 @@ export default class ConvertFromNgf extends Converter {
    * Convert NGF data into a game object
    */
   convert(ngf) {
+
+    //Decode binary data, detecting the encoding from the bytes themselves.
+    //A string is handed straight back, so a caller that has already decoded
+    //is unaffected.
+    ngf = decodeData(ngf)
 
     //No data
     if (!ngf) {

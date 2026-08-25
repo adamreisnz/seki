@@ -41,6 +41,12 @@ where they live under `test/gib/`, `test/ngf/` and `test/sgf/`.
 | `sgf/pro_game.sgf` | 1976 title game, 235 moves, no `SZ` property at all. |
 | `sgf/shodan_game.sgf` | Even game, 83 moves, resignation result. |
 
+The encodings above are not declared anywhere in the records themselves, and
+are worked out from the bytes by `src/helpers/encoding.js`. Read these files
+through `loadFixtureBytes()` rather than `loadFixture()` to exercise that; the
+latter forces a UTF-8 decode, which is what a caller who decodes the file
+itself hands the readers.
+
 ## `sgf/ff4_ex.sgf`, `sgf/print1.sgf`, `sgf/print2.sgf`
 
 The SGF FF[4] specification's own example files, from
@@ -53,21 +59,37 @@ The SGF FF[4] specification's own example files, from
 | `print1.sgf` | A multi-date `DT[1996-10-18,19]`, in the shorthand form where the second date carries only its day. Heavily branched, 142 nodes over 6 forks. |
 | `print2.sgf` | A month-only `DT[1996-08]`, and the deepest tree in the corpus at 314 nodes. |
 
-## `sgf/large-board.sgf`
+## `sgf/large-board.sgf` and `sgf/shift-jis.sgf`
 
-**Hand written for this corpus**, and the only file here that is not a real
-record. Nothing in either source above uses a board past 19 lines, and a
-record that does is needed to exercise the uppercase half of the coordinate
-alphabet on a game that actually replays rather than on a single move.
+**Hand written for this corpus**, and the only files here that are not real
+records.
+
+### `sgf/large-board.sgf`
+
+Nothing in either source above uses a board past 19 lines, and a record that
+does is needed to exercise the uppercase half of the coordinate alphabet on a
+game that actually replays rather than on a single move.
 
 It is a 29×29 board with twenty moves, deliberately placed far enough apart
 that no capture is possible, so the record stays legal without being a real
 game. Coordinates `A`, `B` and `C` stand for 26, 27 and 28. Should a genuine
 large board record turn up, replace this file with it.
 
+### `sgf/shift-jis.sgf`
+
+Nothing in either source above is Japanese, and Shift_JIS is the encoding a
+legacy Japanese record is written in. Seven moves with Japanese player names,
+ranks, event, place and comments, written out with `iconv -t SHIFT-JIS`.
+
+It deliberately carries no `CA` property, so the encoding has to be recovered
+by scoring rather than read off a declaration. Should a genuine Japanese
+record turn up, replace this file with it.
+
 ## Adding to this directory
 
 Drop the file under `test/fixtures/<format>/`, add a row above saying where it
 came from and what it is for, and reference it from a spec through
-`test/fixtures.js`. Records in legacy encodings are especially welcome, since
-the readers currently assume UTF-8 throughout.
+`test/fixtures.js`. Records in legacy encodings are especially welcome, and
+belong in a spec that reads them with `loadFixtureBytes()`, since a record
+whose encoding is only ever guessed at in a unit test is worth less than one
+a reader is made to cope with.

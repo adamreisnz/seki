@@ -2,6 +2,7 @@ import Converter from './converter.js'
 import Game from '../game.js'
 import GameNode from '../game-node.js'
 import {copy, get, set} from '../../helpers/object.js'
+import {decodeData} from '../../helpers/encoding.js'
 import {jgfNodePaths} from '../../constants/jgf.js'
 
 /**
@@ -13,6 +14,10 @@ export default class ConvertFromJgf extends Converter {
    * Convert JGF object into a Seki consumable format
    */
   convert(jgf) {
+
+    //Decode binary data. JSON is UTF-8 by definition, which the detection
+    //recognises for itself, and an object is handed straight back.
+    jgf = decodeData(jgf)
 
     //No data
     if (!jgf) {

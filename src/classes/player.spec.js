@@ -4,6 +4,7 @@ import GameNode from './game-node.js'
 import {defaultPlayerConfig} from '../constants/defaults.js'
 import {playerModes} from '../constants/player.js'
 import {stoneColors} from '../constants/stone.js'
+import {loadFixtureBytes} from '../../test/fixtures.js'
 
 describe('player config', () => {
 
@@ -823,5 +824,20 @@ describe('deriving analysis for explored variations', () => {
     //The variation itself belongs in the record; the analysis does not
     expect(player.game.toSgf()).not.toContain('undefined')
     expect(player.game.toSgf()).not.toContain('derived')
+  })
+})
+
+describe('Player#loadData() with a record that is not UTF-8', () => {
+
+  it('takes the raw bytes of a file, as read off disk or the wire', () => {
+
+    //Nothing here decodes anything itself, it all comes from Game.fromData.
+    //This is the check that the bytes survive the whole way down.
+    const player = new Player()
+    player.loadData(loadFixtureBytes('sgf/shift-jis.sgf'))
+
+    const {game} = player
+    expect(game.getPlayer(stoneColors.BLACK).name).toBe('高尾紳路')
+    expect(game.getPlayer(stoneColors.WHITE).name).toBe('山下敬吾')
   })
 })

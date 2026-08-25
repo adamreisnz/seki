@@ -45,7 +45,7 @@ describe('public API', () => {
 
   it('exports the helper namespaces', () => {
     expect(Object.keys(seki.helpers).sort()).toEqual([
-      'color', 'coordinates', 'grid', 'object', 'parsing', 'util',
+      'color', 'coordinates', 'encoding', 'grid', 'object', 'parsing', 'util',
     ])
   })
 
