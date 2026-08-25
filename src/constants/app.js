@@ -11,4 +11,5 @@ export const kifuFormats = {
   JGF: 'jgf',
   SGF: 'sgf',
   GIB: 'gib',
+  NGF: 'ngf',
 }

@@ -31,6 +31,7 @@ describe('public API', () => {
     expect(seki.SekiConvertFromJgf).toBeTypeOf('function')
     expect(seki.SekiConvertFromSgf).toBeTypeOf('function')
     expect(seki.SekiConvertFromGib).toBeTypeOf('function')
+    expect(seki.SekiConvertFromNgf).toBeTypeOf('function')
     expect(seki.SekiConvertToJgf).toBeTypeOf('function')
     expect(seki.SekiConvertToSgf).toBeTypeOf('function')
   })
@@ -50,7 +51,8 @@ describe('public API', () => {
 
   it('exports the constants', () => {
     expect(seki.stoneColors).toEqual({BLACK: 'black', WHITE: 'white'})
-    expect(seki.kifuFormats).toEqual({JGF: 'jgf', SGF: 'sgf', GIB: 'gib'})
+    expect(seki.kifuFormats)
+      .toEqual({JGF: 'jgf', SGF: 'sgf', GIB: 'gib', NGF: 'ngf'})
     expect(seki.playerModes).toBeTypeOf('object')
     expect(seki.markupTypes).toBeTypeOf('object')
     expect(seki.appVersion).toBeTypeOf('string')

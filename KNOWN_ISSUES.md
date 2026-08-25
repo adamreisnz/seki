@@ -80,6 +80,47 @@ swap behaviour and would need updating along with it.
 
 ---
 
+## The NGF reader is reverse engineered and incomplete
+
+**Where:** `src/classes/converters/convert-from-ngf.js`
+
+WBaduk has never published the NGF format, so the reader follows what the two
+established open source readers do, being [Sabaki][sabaki-ngf] and
+[gofish][gofish-ngf], both of which say the same in their own comments. It was
+checked against five real records, which it reads and replays legally end to
+end. What it does not do:
+
+- **Passes.** No sample carries one and no reader knows how NGF writes one, so
+  a move whose coordinates fall outside the board is dropped rather than being
+  read as a pass. The GIB reader has the same gap, marked there with a `TODO`.
+- **Korean text.** A record written in Korean spells the result out as, for
+  example, `250수 흑7집승`, and a rank as `7단P`. Neither is matched, so such a
+  record loads with a player name but no rank, and no result. The moves and the
+  rest of the header are unaffected.
+- **The implied half point on komi.** NGF writes komi as a whole number, and
+  both readers above add `0.5` back on for an even game, which is where this
+  reader's `7` becoming `7.5` comes from. Nothing confirms that is right, it is
+  simply what every other reader does.
+- **Handicap placement above three stones.** NGF records no free placement, so
+  handicap stones are placed on the fixed points. WBaduk's third stone sits in
+  the top left rather than the bottom right, which was confirmed against a
+  three stone record that plays its 261st move on the bottom right star point.
+  Counts of four and above place the same set of stones either way, so they are
+  taken from `handicapPlacements` unchanged and are not separately confirmed.
+
+**Effect:** all of the above degrade to missing information rather than to
+wrong information, other than the komi half point, which is a guess that is
+applied to every even game.
+
+**What a fix involves:** records that exercise each case. The gaps are gaps in
+knowledge of the format rather than in the code, so nothing can be settled
+without a record that shows what WBaduk actually writes.
+
+[sabaki-ngf]: https://github.com/SabakiHQ/Sabaki/blob/master/src/modules/fileformats/ngf.js
+[gofish-ngf]: https://github.com/rooklift/gofish/blob/master/gofish/ngf.py
+
+---
+
 ## Canvas drawing is not covered by the test suite
 
 **Where:** `src/classes/layers/*`, `src/classes/objects/markup-*.js`,

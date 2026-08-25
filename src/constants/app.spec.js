@@ -20,6 +20,7 @@ describe('app constants', () => {
   })
 
   it('lists the supported kifu formats', () => {
-    expect(kifuFormats).toEqual({JGF: 'jgf', SGF: 'sgf', GIB: 'gib'})
+    expect(kifuFormats)
+      .toEqual({JGF: 'jgf', SGF: 'sgf', GIB: 'gib', NGF: 'ngf'})
   })
 })
