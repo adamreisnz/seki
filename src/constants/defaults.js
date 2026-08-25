@@ -568,6 +568,48 @@ export const defaultTheme = {
       },
     },
 
+    //Expected sequence markers
+    //
+    //NOTE: these are the follow-up moves of an engine's expected line, drawn
+    //as numbered ghost stones in the colour of the player expected to play
+    //each of them. A ghost stone is deliberately not a stone: smaller,
+    //translucent and outlined, so the expectation never reads as a position.
+    //The stone color the handlers receive is the move's own colour, fixed by
+    //the markup rather than read from the board.
+    sequence: {
+
+      //Slightly smaller than a stone, and see-through as a whole: the alpha
+      //covers disc, outline and number together
+      scale: 0.85,
+      alpha: 0.75,
+
+      //The disc is the move's own colour; the outline is what keeps a white
+      //ghost visible on the pale board, with a matching edge on the black one
+      fillColor(cellSize, stoneColor) {
+        return (stoneColor === stoneColors.BLACK) ? '#181818' : '#f4efe4'
+      },
+      color(cellSize, stoneColor) {
+        return (stoneColor === stoneColors.BLACK) ?
+          'rgba(0,0,0,0.9)' : 'rgba(70,50,25,0.9)'
+      },
+      lineWidth(cellSize) {
+        return Math.max(1, Math.round(cellSize * 0.03))
+      },
+
+      //The number continues the numbering of the variation moves already on
+      //the board, so it can grow past a single digit
+      text(number) {
+        return number
+      },
+      fontSize(text, cellSize) {
+        return Math.round(cellSize * 0.4)
+      },
+      fontWeight: 500,
+      textColor(cellSize, stoneColor) {
+        return (stoneColor === stoneColors.BLACK) ? '#f4efe4' : '#181818'
+      },
+    },
+
     //Last move marker
     lastMove: {
       type: markupTypes.CIRCLE,
