@@ -8,4 +8,5 @@ demo
 coverage
 embed
 vitest.config.js
+test
 eslint.config.js

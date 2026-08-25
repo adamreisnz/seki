@@ -7,3 +7,8 @@
 *.gif binary
 *.woff binary
 *.woff2 binary
+
+# Fixture records are byte for byte copies of what real software wrote, and
+# several of them are EUC-KR or GB2312 rather than UTF-8. Git must not
+# normalise their line endings or otherwise rewrite them.
+test/fixtures/** -text
