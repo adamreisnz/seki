@@ -23,6 +23,10 @@ describe('ConvertFromSgf, invalid input', () => {
     expect(() => parse('<html><body>404</body></html>')).toThrow(/Unable to parse SGF data/)
   })
 
+  it('reports a parse failure when there is no game tree to read', () => {
+    expect(() => parse(')))')).toThrow(/Unable to parse SGF data/)
+  })
+
   it('handles an empty game tree', () => {
     const game = parse('(;FF[4]SZ[19])')
     expect(game.root.hasChildren()).toBe(false)
@@ -215,5 +219,107 @@ C[Have a good game]
     vi.spyOn(console, 'warn').mockImplementation(vi.fn())
     const game = parse('(;FF[4]SZ[19]nonsense[x]KM[7.5])')
     expect(game.getKomi()).toBe(7.5)
+  })
+})
+
+describe('ConvertFromSgf, game collections', () => {
+
+  //Two games in one file, each with its own info and its own moves. These
+  //used to be merged into a single game, with the second game's moves showing
+  //up as a variation on the first move of the first game, and the second
+  //game's info overwriting the first game's players
+  const collection = `(;GM[1]FF[4]SZ[19]PB[Alice]PW[Bob]RE[B+R];B[dd];W[pp])
+(;GM[1]FF[4]SZ[13]PB[Carol]PW[Dave]RE[W+2.5];B[qq];W[cc])`
+
+  it('reads every game in a collection', () => {
+    const games = new ConvertFromSgf().convertAll(collection)
+    expect(games).toHaveLength(2)
+  })
+
+  it('keeps each game in a collection to its own info', () => {
+    const [first, second] = new ConvertFromSgf().convertAll(collection)
+    expect(first.getPlayer(stoneColors.BLACK)).toMatchObject({name: 'Alice'})
+    expect(first.getPlayer(stoneColors.WHITE)).toMatchObject({name: 'Bob'})
+    expect(first.gameResult).toBe('B+R')
+    expect(first.getBoardSize()).toEqual({width: 19, height: 19})
+    expect(second.getPlayer(stoneColors.BLACK)).toMatchObject({name: 'Carol'})
+    expect(second.getPlayer(stoneColors.WHITE)).toMatchObject({name: 'Dave'})
+    expect(second.gameResult).toBe('W+2.5')
+    expect(second.getBoardSize()).toEqual({width: 13, height: 13})
+  })
+
+  it('keeps each game in a collection to its own moves', () => {
+    const [first, second] = new ConvertFromSgf().convertAll(collection)
+    expect(first.root.getChildren()).toHaveLength(1)
+    expect(first.root.getChild(0).move).toMatchObject({x: 3, y: 3})
+    expect(first.root.getChild(0).getChild(0).move).toMatchObject({x: 15, y: 15})
+    expect(second.root.getChildren()).toHaveLength(1)
+    expect(second.root.getChild(0).move).toMatchObject({x: 16, y: 16})
+    expect(second.root.getChild(0).getChild(0).move).toMatchObject({x: 2, y: 2})
+  })
+
+  it('gives the games separate root nodes', () => {
+    const [first, second] = new ConvertFromSgf().convertAll(collection)
+    expect(second.root).not.toBe(first.root)
+  })
+
+  it('reads variations within a game of a collection as variations', () => {
+    const games = new ConvertFromSgf()
+      .convertAll('(;FF[4]SZ[19];B[dd](;W[pp])(;W[cc]))(;FF[4]SZ[19];B[qq])')
+    expect(games).toHaveLength(2)
+    expect(games[0].root.getChild(0).getChildren()).toHaveLength(2)
+    expect(games[1].root.getChildren()).toHaveLength(1)
+  })
+
+  it('returns an array of one for a single game file', () => {
+    const games = new ConvertFromSgf().convertAll('(;GM[1]FF[4]SZ[19]PB[Alice];B[dd])')
+    expect(games).toHaveLength(1)
+    expect(games[0].getPlayer(stoneColors.BLACK)).toMatchObject({name: 'Alice'})
+    expect(games[0].root.getChild(0).move).toMatchObject({x: 3, y: 3})
+  })
+
+  it('reads a collection preceded by a byte order mark and whitespace', () => {
+    const games = new ConvertFromSgf()
+      .convertAll(`\ufeff\n  ${collection}`)
+    expect(games).toHaveLength(2)
+    expect(games[0].getPlayer(stoneColors.BLACK)).toMatchObject({name: 'Alice'})
+    expect(games[1].getPlayer(stoneColors.BLACK)).toMatchObject({name: 'Carol'})
+  })
+
+  it('reads only the first game of a collection when converting one game', () => {
+    vi.spyOn(console, 'warn').mockImplementation(vi.fn())
+    const game = parse(collection)
+    expect(game.getPlayer(stoneColors.BLACK)).toMatchObject({name: 'Alice'})
+    expect(game.getPlayer(stoneColors.WHITE)).toMatchObject({name: 'Bob'})
+    expect(game.getBoardSize()).toEqual({width: 19, height: 19})
+    expect(game.root.getChildren()).toHaveLength(1)
+    expect(game.root.getChild(0).getChild(0).move).toMatchObject({x: 15, y: 15})
+  })
+
+  it('warns about the games it drops when converting one game', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(vi.fn())
+    parse(collection)
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('2 games'))
+  })
+
+  it('does not warn about a single game file', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(vi.fn())
+    parse('(;GM[1]FF[4]SZ[19];B[dd])')
+    expect(warn).not.toHaveBeenCalled()
+  })
+
+  it('reads a single game file the same way as it always did', () => {
+    //Pins the regression: a file with one game has to come out of convert()
+    //exactly as before, root node, moves, setup and all
+    const game = parse('(;GM[1]FF[4]SZ[19]KM[6.5]PB[Alice]BR[1d]AB[dd][pp]PL[W];W[cc];B[qq])')
+    expect(game.getKomi()).toBe(6.5)
+    expect(game.getPlayer(stoneColors.BLACK)).toMatchObject({name: 'Alice', rank: '1d'})
+    expect(game.root.setup).toEqual([
+      {type: stoneColors.BLACK, coords: [{x: 3, y: 3}, {x: 15, y: 15}]},
+    ])
+    expect(game.root.turn).toBe(stoneColors.WHITE)
+    expect(game.root.getChildren()).toHaveLength(1)
+    expect(game.root.getChild(0).move).toMatchObject({color: stoneColors.WHITE, x: 2, y: 2})
+    expect(game.root.getChild(0).getChild(0).move).toMatchObject({color: stoneColors.BLACK, x: 16, y: 16})
   })
 })
