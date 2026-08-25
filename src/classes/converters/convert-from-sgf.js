@@ -118,8 +118,35 @@ export default class ConvertFromSgf extends Converter {
 
   /**
    * Convert SGF string into a seki game object
+   *
+   * An SGF file can hold a collection of game trees. This only reads the
+   * first one, for backwards compatibility with what a caller expecting a
+   * single game does with the result. Use convertAll() to read them all.
    */
   convert(sgf, verbose = false) {
+
+    //Convert all games in the collection
+    const games = this.convertAll(sgf, verbose)
+
+    //Warn about the games being dropped. NOTE: this is not gated on the
+    //verbose flag, as losing entire games without a word is exactly what
+    //this used to do, silently merging them into one another
+    if (games.length > 1) {
+      console.warn(
+        `SGF contains ${games.length} games, only the first one was read. ` +
+        `Use convertAll() to read the entire collection`
+      )
+    }
+
+    //Return the first game
+    return games[0]
+  }
+
+  /**
+   * Convert SGF string into an array of seki game objects, one for each game
+   * tree in the collection
+   */
+  convertAll(sgf, verbose = false) {
 
     //No data
     if (!sgf) {
@@ -129,23 +156,32 @@ export default class ConvertFromSgf extends Converter {
     //Set verbose flag
     this.verbose = verbose
 
-    //Initialize
-    const game = new Game()
-    const info = {}
-    const root = this.parseSgf(sgf, info)
+    //Parse the collection into a root node and game info per game tree
+    const trees = this.parseSgf(sgf)
 
-    //Set game info and root node
-    game.setInfo(info)
-    game.setRootNode(root)
+    //Create a game for each of them
+    return trees.map(({root, info}) => {
 
-    //Return game
-    return game
+      //Set game info and root node, in that order
+      const game = new Game()
+      game.setInfo(info)
+      game.setRootNode(root)
+
+      //Return game
+      return game
+    })
   }
 
   /**
    * Parse SGF
+   *
+   * Returns an array of {root, info} pairs, one for each game tree in the
+   * collection. NOTE: these have to stay separate, as a shared root node
+   * makes the second game a variation of the first, and shared game info
+   * lets the last game in the file overwrite the players, result and board
+   * size of every game before it.
    */
-  parseSgf(sgf, info) {
+  parseSgf(sgf) {
 
     //Get sequence. Anything that isn't recognisable as an SGF game tree
     //produces no match at all, which has to be reported as a parsing failure
@@ -155,18 +191,31 @@ export default class ConvertFromSgf extends Converter {
       throw new Error(`Unable to parse SGF data: no game tree found`)
     }
 
-    //Initialise stack
+    //Initialise stack and collection of game trees
     const stack = []
-    const root = new GameNode()
+    const trees = []
 
-    //Initialise parent node to root node
-    let parentNode = root
+    //No game tree open yet
+    let root = null
+    let info = null
+    let parentNode = null
+
+    //Helper to start a new game tree in the collection
+    const startTree = () => {
+      root = new GameNode()
+      info = {}
+      parentNode = root
+      trees.push({root, info})
+    }
 
     //Loop sequence
     for (const str of sequence) {
 
-      //New variation
+      //New variation, or the start of a game tree if none is open
       if (str === '(') {
+        if (root === null) {
+          startTree()
+        }
         stack.push(parentNode)
         continue
       }
@@ -175,8 +224,22 @@ export default class ConvertFromSgf extends Converter {
       else if (str === ')') {
         if (stack.length > 0) {
           parentNode = stack.pop()
+
+          //Back at the top level, so this game tree is complete and the next
+          //( in the file opens a new game rather than a variation of this one
+          if (stack.length === 0) {
+            root = null
+            info = null
+            parentNode = null
+          }
         }
         continue
+      }
+
+      //Properties before the first ( of the file. Not valid SGF, but it used
+      //to be read onto the root node all the same, so give it one to land on
+      if (root === null) {
+        startTree()
       }
 
       //Create a new node if the parent node already has instructions, or if
@@ -196,8 +259,15 @@ export default class ConvertFromSgf extends Converter {
       }
     }
 
-    //Return the root node
-    return root
+    //Nothing but stray closing brackets, so there was no game tree in there
+    //after all. NOTE: this used to hand back an empty game instead, leaving
+    //the caller to work out that nothing had been read
+    if (trees.length === 0) {
+      throw new Error(`Unable to parse SGF data: no game tree found`)
+    }
+
+    //Return the game trees
+    return trees
   }
 
   /**
