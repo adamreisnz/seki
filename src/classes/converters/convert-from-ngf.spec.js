@@ -1,6 +1,8 @@
 import {describe, it, expect} from 'vitest'
 import ConvertFromNgf from './convert-from-ngf.js'
 import {stoneColors} from '../../constants/stone.js'
+import {dateString} from '../../helpers/util.js'
+import {loadFixture, replayMainLine} from '../../../test/fixtures.js'
 
 const {BLACK, WHITE} = stoneColors
 
@@ -175,5 +177,145 @@ describe('ConvertFromNgf', () => {
 
   it('sets the event location', () => {
     expect(parse(record()).getEventLocation()).toBe('WBaduk Go Server')
+  })
+})
+
+describe('ConvertFromNgf, real WBaduk records', () => {
+
+  //The inline header above was transcribed from even.ngf, so these tests
+  //also check that the transcription still matches the record it came from.
+  //See test/fixtures/README.md for where these came from.
+
+  it('reads every record without throwing', () => {
+    for (const name of ['even.ngf', 'gb2312.ngf', 'handicap2.ngf']) {
+      expect(() => parse(loadFixture(`ngf/${name}`))).not.toThrow()
+    }
+  })
+
+  describe('even.ngf', () => {
+
+    const game = () => parse(loadFixture('ngf/even.ngf'))
+
+    it('reads the whole header', () => {
+      const g = game()
+      expect(g.getBoardSize()).toEqual({width: 19, height: 19})
+      expect(g.getPlayer(BLACK)).toMatchObject({name: 'CYY', rank: '9p'})
+      expect(g.getPlayer(WHITE)).toMatchObject({name: 'LQC', rank: '9p'})
+      expect(g.getHandicap()).toBe(0)
+      expect(g.getGameDate()).toBe('2017-03-16')
+      expect(g.getGameResult()).toBe('B+0.5')
+      expect(g.getEventLocation()).toBe('WBaduk Go Server')
+    })
+
+    it('replays all 333 moves legally end to end', () => {
+
+      //The record declares its own move count on line 11, as "333"
+      const g = game()
+      expect(g.getTotalNumberOfMoves()).toBe(333)
+      expect(replayMainLine(g)).toEqual({played: 333, failure: null})
+    })
+
+    it('supports the half point this reader adds to komi', () => {
+
+      //The record stores komi as a whole "7" and reports the result as
+      //"Black wins by 0.5!". Both territory and area scoring give whole
+      //number margins against a whole number komi, so a half point margin
+      //can only have come from a komi that carries one. This is the first
+      //record in the corpus to corroborate the reader's floor + 0.5.
+      const g = game()
+      expect(g.getKomi()).toBe(7.5)
+      expect(g.getGameResult()).toBe('B+0.5')
+    })
+  })
+
+  describe('handicap2.ngf', () => {
+
+    const game = () => parse(loadFixture('ngf/handicap2.ngf'))
+
+    it('reads the whole header', () => {
+      const g = game()
+      expect(g.getBoardSize()).toEqual({width: 19, height: 19})
+      expect(g.getPlayer(BLACK)).toMatchObject({name: 'p81587', rank: '5d'})
+      expect(g.getPlayer(WHITE)).toMatchObject({name: 'ace550', rank: '7d'})
+      expect(g.getHandicap()).toBe(2)
+      expect(g.getGameDate()).toBe('2017-03-16')
+      expect(g.getGameResult()).toBe('W+R')
+    })
+
+    it('leaves a handicap game without komi', () => {
+      expect(game().getKomi()).toBe(0)
+    })
+
+    it('places the two handicap stones on the star points', () => {
+      expect(game().getRootNode().setup).toEqual([{
+        type: BLACK,
+        coords: [{x: 3, y: 15}, {x: 15, y: 3}],
+      }])
+    })
+
+    it('opens with a white move, as a handicap game does', () => {
+
+      //The record's first move line reads "PMABWQRRQ", where Q is 15 and
+      //R is 16, being the 4-3 point in the bottom right
+      expect(game().getRootNode().getChild(0).move)
+        .toMatchObject({x: 15, y: 16, color: WHITE})
+    })
+
+    it('replays all 189 moves legally, handicap stones and all', () => {
+      const g = game()
+      expect(g.getTotalNumberOfMoves()).toBe(189)
+      expect(replayMainLine(g)).toEqual({played: 189, failure: null})
+    })
+  })
+
+  describe('gb2312.ngf', () => {
+
+    const game = () => parse(loadFixture('ngf/gb2312.ngf'))
+
+    it('replays all 211 moves legally end to end', () => {
+
+      //The moves are found by scanning every line for a PM prefix rather
+      //than from a fixed offset, which is why they survive a header this
+      //reader makes nothing of. The record declares 211 on its "GI211" line.
+      const g = game()
+      expect(g.getTotalNumberOfMoves()).toBe(211)
+      expect(replayMainLine(g)).toEqual({played: 211, failure: null})
+    })
+
+    it('reads none of the header, which uses the GI dialect', () => {
+
+      //NOTE: this record prefixes every header line with "GI" and carries
+      //eleven of them where a current record carries twelve, so every
+      //positional index the reader uses lands on the wrong line. The board
+      //size, handicap, komi, date and result are all read off lines that
+      //are not what they are taken for. See KNOWN_ISSUES.md.
+      const g = game()
+      expect(g.getKomi()).toBe(0)
+      expect(g.getGameResult()).toBe('')
+      expect(g.getHandicap()).toBe(0)
+    })
+
+    it('falls back to a regular board, which happens to be right', () => {
+
+      //Line 1 holds a player name here rather than the size, so the size is
+      //unreadable and defaults to 19. The record's own "GI19" line agrees,
+      //by luck rather than by being read.
+      expect(game().getBoardSize()).toEqual({width: 19, height: 19})
+    })
+
+    it('dates the record today, having found no date to read', () => {
+
+      //NOTE: as with gb2312.gib, an unparsed date leaves the default a new
+      //Game is born with, so the record reads as played today.
+      expect(game().getGameDate()).toBe(dateString())
+    })
+
+    it('takes the GI prefix for a player name', () => {
+
+      //NOTE: line 3 is "GI李载雄 五段", whose bytes are not UTF-8, so the
+      //name pattern matches the ASCII "GI" and stops at the first space
+      expect(game().getPlayer(BLACK).name).toBe('GI')
+      expect(game().getPlayer(BLACK).rank).toBeUndefined()
+    })
   })
 })
