@@ -26,15 +26,23 @@ import {
 //and with it the whole property, fail to match and be dropped silently.
 const valuePattern = String.raw`\[(?:\\[\s\S]|[^\\\]])*\]`
 
+//Property identifiers are uppercase letters, but FF[3] allowed lowercase ones
+//to be mixed in for compatibility with older applications, to be ignored when
+//reading. They have to be matched all the same, or a property like the
+//CoPyright IGS writes ends the node early and silently drops everything after
+//it, so this is deliberately wider than the identifiers we act on.
+const identifierPattern = String.raw`[A-Za-z]+`
+
 //Regexes
 const regexSequence = new RegExp(
-  String.raw`\(|\)|(;(\s*[A-Z]+\s*(?:${valuePattern})+)*)`, 'g'
+  String.raw`\(|\)|(;(\s*${identifierPattern}\s*(?:${valuePattern})+)*)`, 'g'
 )
 const regexNode = new RegExp(
-  String.raw`[A-Z]+\s*(?:${valuePattern})+`, 'g'
+  String.raw`${identifierPattern}\s*(?:${valuePattern})+`, 'g'
 )
 const regexValues = new RegExp(valuePattern, 'g')
-const regexProperty = /[A-Z]+/
+const regexProperty = new RegExp(identifierPattern)
+const regexLowerCase = /[a-z]/g
 const regexMove = /(;|\])[B|W]\[/i
 const regexCutOff = /^\d+$/
 const regexBlackPlayer = /PB|BT|BR|BL|OB/i
@@ -200,8 +208,17 @@ export default class ConvertFromSgf extends Converter {
     //Make array of properties within this sequence
     for (const prop of properties) {
 
-      //Get key
-      const key = regexProperty.exec(prop)[0].toUpperCase()
+      //Get key, dropping the lowercase letters FF[3] allowed to be mixed in,
+      //so that a property written as CoPyright is read as CP
+      const key = regexProperty.exec(prop)[0].replace(regexLowerCase, '')
+
+      //Nothing but lowercase letters, so there is no identifier to act on
+      if (key === '') {
+        if (this.verbose) {
+          console.warn(`Property without identifier encountered while parsing SGF:`, prop)
+        }
+        continue
+      }
 
       //Get values, stripping the enclosing brackets and unescaping
       const matches = prop.match(regexValues)
