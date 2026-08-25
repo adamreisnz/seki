@@ -3,6 +3,7 @@ import Player from '../player.js'
 import {boardLayerTypes} from '../../constants/board.js'
 import {markupTypes} from '../../constants/markup.js'
 import {playerModes} from '../../constants/player.js'
+import {stoneColors} from '../../constants/stone.js'
 
 describe('Replay mode config listener', () => {
 
@@ -487,6 +488,69 @@ describe('Analysis overlay across the modes that inherit it', () => {
     expect(listeners.analysisChange).toBe('onAnalysisChange')
     expect(listeners.mousemove).toBe('onMouseMove')
     expect(listeners.keydown).toBe('onKeyDown')
+  })
+})
+
+describe('Replay mode ko marker', () => {
+
+  //A 9x9 game that walks into a simple ko: black's last move on (3,3) takes
+  //white's stone off (4,3), which white may not take straight back
+  const sgf = '(;GM[1]FF[4]SZ[9];B[fd];W[ed];B[ec];W[cd];B[ee];W[dc];B[hh];W[de];B[dd])'
+
+  let player
+  let board
+
+  const load = data => {
+    player = new Player()
+    board = player.board
+    board.createLayers()
+    player.loadData(data)
+    player.goToLastPosition()
+  }
+
+  beforeEach(() => load(sgf))
+
+  const markupAt = (x, y) => board.get(boardLayerTypes.MARKUP, x, y)
+
+  it('marks the ko point with a square', () => {
+    expect(player.game.getKoPoint()).toEqual({x: 4, y: 3, color: stoneColors.WHITE})
+    expect(markupAt(4, 3).type).toBe(markupTypes.SQUARE)
+  })
+
+  it('shows nothing when it is turned off', () => {
+    player.setConfig('showKo', false)
+    expect(markupAt(4, 3)).toBeUndefined()
+  })
+
+  it('follows the ko back and forward through the game', () => {
+    player.goToPreviousPosition()
+    expect(markupAt(4, 3)).toBeUndefined()
+
+    player.goToNextPosition()
+    expect(markupAt(4, 3).type).toBe(markupTypes.SQUARE)
+  })
+
+  it('marks nothing at a position without a ko in it', () => {
+    load('(;GM[1]FF[4]SZ[9];B[cc];W[gg];B[cg])')
+    expect(player.game.hasKoPoint()).toBe(false)
+    expect(markupAt(4, 3)).toBeUndefined()
+  })
+
+  it('stays out of the way of markup the record itself carries', () => {
+
+    //The record marks the ko point with a triangle of its own
+    load('(;GM[1]FF[4]SZ[9];B[fd];W[ed];B[ec];W[cd];B[ee];W[dc];B[hh];W[de];B[dd]TR[ed])')
+
+    expect(player.game.hasKoPoint()).toBe(true)
+    expect(markupAt(4, 3).type).toBe(markupTypes.TRIANGLE)
+  })
+
+  it('leaves the game record alone', () => {
+
+    //The marker is a board overlay, the same as the last move marker. Writing
+    //it into the node would put it in the saved record.
+    expect(player.game.getCurrentNode().markup).toBeUndefined()
+    expect(player.game.toSgf()).not.toContain('SQ')
   })
 })
 

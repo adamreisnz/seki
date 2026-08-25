@@ -190,6 +190,7 @@ export default class PlayerModeReplay extends PlayerMode {
       'rememberVariationPaths',
       'showAnalysis',
       'showAnalysisOwnership',
+      'showKo',
     ]
 
     //Clear keys
@@ -390,6 +391,7 @@ export default class PlayerModeReplay extends PlayerMode {
     const showLastMoveNumber = player.getConfig('showLastMoveNumber')
     const showVariationMoveNumbers = player.getConfig('showVariationMoveNumbers')
     const showAnalysis = player.getConfig('showAnalysis')
+    const showKo = player.getConfig('showKo')
 
     //Clear hover layer
     board.clearHoverLayer()
@@ -443,6 +445,13 @@ export default class PlayerModeReplay extends PlayerMode {
     //Last move
     else if (showLastMove) {
       this.addLastMoveMarker(node)
+    }
+
+    //Ko point. Not part of the chain above, as it is a fact about the position
+    //rather than one of the several ways of pointing at the move just played,
+    //and it never lands on the same point as any of them anyway.
+    if (showKo) {
+      this.addKoMarker()
     }
   }
 
@@ -671,6 +680,54 @@ export default class PlayerModeReplay extends PlayerMode {
 
     //Add to board, recording what we put there
     const markup = MarkupFactory.create(markupTypes.LAST_MOVE, board)
+    markers.push({x, y, markup})
+    board.add(boardLayerTypes.MARKUP, x, y, markup)
+  }
+
+  /**
+   * Add ko marker
+   *
+   * The point a stone was just taken off in a simple ko, where the player to
+   * move may not take straight back, drawn as the square convention gives it.
+   *
+   * It is an ordinary square markup on the markup layer rather than a markup
+   * type or a layer of its own. It is flat, it sits inside one cell, and it
+   * comes off one cleanly, which is all the markup layer asks of what it
+   * draws; the AI layer next door is separate because its markers carry a
+   * shadow that reaches outside their cell, and nothing here does. Being
+   * derived from the position rather than carried by the record puts it in
+   * exactly the same company as the last move marker and the variation
+   * letters above.
+   */
+  addKoMarker() {
+
+    //Get data
+    const {game, board, markers} = this
+    const koPoint = game.getKoPoint()
+
+    //No ko in this position
+    if (!koPoint) {
+      return
+    }
+
+    //Get coordinates
+    const {x, y} = koPoint
+
+    //Whatever is on the markup layer here already stays. That is the record's
+    //own markup, as everywhere else, and also the markers put down above: a
+    //move number on this point belongs to the stone that was just taken off
+    //it, and which move that was is worth more than saying it is barred.
+    if (board.has(boardLayerTypes.MARKUP, x, y)) {
+      return
+    }
+
+    //The AI overlay has this point, leave it to it
+    if (this.hasAiMarker(x, y)) {
+      return
+    }
+
+    //Add to board, recording what we put there
+    const markup = MarkupFactory.create(markupTypes.SQUARE, board)
     markers.push({x, y, markup})
     board.add(boardLayerTypes.MARKUP, x, y, markup)
   }

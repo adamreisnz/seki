@@ -98,6 +98,10 @@ export const defaultPlayerConfig = {
   rememberVariationPaths: true,
   allowPlayerConfig: true,
 
+  //The square on the point a stone was just taken off in a simple ko, marking
+  //where the player to move may not take it straight back
+  showKo: true,
+
   //AI analysis overlay. The ownership heat map is an addition to the candidate
   //markers rather than a display of its own, so it needs both flags: wanting
   //the markers without the heat map is the common case.
