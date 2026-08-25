@@ -160,3 +160,60 @@ describe('ConvertFromSgf, escaping', () => {
     expect(game.root.comments).toEqual(['one\ntwo'])
   })
 })
+
+describe('ConvertFromSgf, property identifiers', () => {
+
+  //IGS/Pandanet writes CoPyright in the header of every game it serves.
+  //A CoPyright the parser can't match ends the root node early, taking the
+  //rest of the header with it, so a game imports with no komi, no players
+  //and no result
+  const igs = `(;GM[1]FF[3]
+EV[Internet Go Server game]
+US[Brought to you by IGS PANDANET]
+CoPyright[
+  Copyright (c) PANDANET Inc. 2024
+  Permission to reproduce this game is given.]
+GN[black-white(B) IGS]
+RE[B+Resign]
+PW[white]
+WR[2d]
+PB[black]
+BR[1d]
+PC[IGS: igs.joyjoy.net 6969]
+DT[2024-05-01]
+SZ[19]
+TM[600]
+KM[6.500000]
+C[Have a good game]
+;B[pd];W[dp])`
+
+  it('keeps parsing the properties following a mixed case identifier', () => {
+    const game = parse(igs)
+    expect(game.getKomi()).toBe(6.5)
+    expect(game.getPlayer(stoneColors.BLACK)).toMatchObject({name: 'black', rank: '1d'})
+    expect(game.getPlayer(stoneColors.WHITE)).toMatchObject({name: 'white', rank: '2d'})
+    expect(game.gameResult).toBe('B+R')
+    expect(game.gameName).toBe('black-white(B) IGS')
+    expect(game.getBoardSize()).toEqual({width: 19, height: 19})
+    expect(game.root.comments).toEqual(['Have a good game'])
+  })
+
+  it('reads a mixed case identifier as its uppercase letters only', () => {
+    //FF[3] allowed lowercase letters to be mixed in for compatibility, and
+    //they are to be ignored, so CoPyright is the CP property
+    const game = parse(igs)
+    expect(game.sourceCopyright).toContain('PANDANET Inc. 2024')
+  })
+
+  it('still records the moves following a mixed case identifier', () => {
+    const game = parse(igs)
+    expect(game.root.getChild(0).move).toMatchObject({x: 15, y: 3})
+    expect(game.root.getChild(0).getChild(0).move).toMatchObject({x: 3, y: 15})
+  })
+
+  it('ignores a property with no uppercase letters at all', () => {
+    vi.spyOn(console, 'warn').mockImplementation(vi.fn())
+    const game = parse('(;FF[4]SZ[19]nonsense[x]KM[7.5])')
+    expect(game.getKomi()).toBe(7.5)
+  })
+})
