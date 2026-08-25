@@ -6,6 +6,7 @@ import PlayerModeFactory from './player-mode-factory.js'
 import {playerModes} from '../constants/player.js'
 import {defaultPlayerConfig} from '../constants/defaults.js'
 import {lowercase} from '../helpers/coordinates.js'
+import {swapColor} from '../helpers/color.js'
 import {
   addClass,
   randomInt,
@@ -695,6 +696,11 @@ export default class Player extends Base {
     //Copy new path
     this.path = path.clone()
 
+    //Derive analysis for a node that has none of its own, before anything
+    //renders or reads it, so the expected line of play keeps showing while
+    //the user explores it
+    this.deriveNodeAnalysis(node)
+
     //Trigger path change event if this was not a game load
     if (!isGameLoad) {
       this.triggerEvent('pathChange', {node, path: this.path})
@@ -732,25 +738,56 @@ export default class Player extends Base {
     //Get data
     const {game} = this
 
-    //Walk the main line
-    let node = game.getRootNode()
-    let i = 0
+    //Take existing analysis off the entire tree first — variation branches
+    //and derived entries included — so a new review never sits on top of
+    //remnants of the one before it
+    this.removeAnalysisFromTree(game.getRootNode())
 
-    //Assign each entry to the node at that move number
-    while (node) {
-      const analysis = moves ? moves[i] : null
-      if (analysis) {
-        node.analysis = analysis
+    //Walk the main line, assigning each entry to the node at that move number
+    if (moves) {
+      let node = game.getRootNode()
+      let i = 0
+      while (node) {
+        if (moves[i]) {
+          node.analysis = moves[i]
+        }
+        node = node.getChild(0)
+        i++
       }
-      else {
-        delete node.analysis
-      }
-      node = node.getChild(0)
-      i++
     }
+
+    //Derive analysis for the current node, in case we are sitting on a
+    //variation the new data has an expected line for
+    this.deriveNodeAnalysis(game.getCurrentNode())
 
     //Trigger event, so the active mode can render it
     this.triggerEvent('analysisChange', {hasAnalysis: Boolean(moves)})
+  }
+
+  /**
+   * Set or clear AI analysis data on a single node, main line or variation
+   *
+   * This is how an analysis obtained for a variation position is attached,
+   * as the array form above can only address the main line. Passing no
+   * analysis takes it off the node again, derived or not.
+   */
+  setNodeAnalysis(node, analysis = null) {
+
+    //Nothing to work with
+    if (!node) {
+      return
+    }
+
+    //Set or clear
+    if (analysis) {
+      node.analysis = analysis
+    }
+    else {
+      delete node.analysis
+    }
+
+    //Trigger event, so the active mode can render it
+    this.triggerEvent('analysisChange', {hasAnalysis: Boolean(analysis), node})
   }
 
   /**
@@ -758,6 +795,148 @@ export default class Player extends Base {
    */
   clearAnalysis() {
     this.setAnalysis(null)
+  }
+
+  /**
+   * Remove analysis data from a node and everything below it
+   */
+  removeAnalysisFromTree(node) {
+    delete node.analysis
+    for (const child of node.getChildren()) {
+      this.removeAnalysisFromTree(child)
+    }
+  }
+
+  /**
+   * Derive analysis for a node that has none of its own, from the nearest
+   * ancestor that was actually analysed
+   *
+   * When the moves entered since that ancestor are a prefix of one of its
+   * candidates' expected lines, the node takes on that line's value for the
+   * whole position — the candidate's win rate, score lead and visits, all
+   * from Black's point of view — and the remainder of the line becomes a
+   * sequence of expected follow-up moves to draw on the board. The entry is
+   * flagged as derived, so consumers can tell it from an analysis an engine
+   * produced for this very position, and carries no candidates: nothing
+   * searched this position itself.
+   */
+  deriveNodeAnalysis(node) {
+
+    //No node, or it has an analysis already
+    if (!node || node.analysis) {
+      return
+    }
+
+    //Walk up to the nearest node carrying a real analysis, collecting the
+    //moves that were entered on the way. Derived entries are walked through,
+    //as they carry no candidates of their own: the moves that produced them
+    //become part of the prefix instead. Anything that is not a plain move
+    //cannot be part of an engine line, so it ends the search.
+    const entered = []
+    let ancestor = node
+    while (ancestor) {
+      const {analysis} = ancestor
+      if (analysis && !analysis.derived) {
+        break
+      }
+      if (!ancestor.isMove() || ancestor.hasSetupInstructions()) {
+        return
+      }
+      entered.unshift(ancestor.move)
+      ancestor = ancestor.parent
+    }
+
+    //No analysed ancestor reached
+    if (!ancestor) {
+      return
+    }
+
+    //Find the candidate whose expected line the entered moves follow, and
+    //derive the node's analysis from it
+    const candidate = this.findMatchingCandidate(ancestor, entered)
+    if (candidate) {
+      node.analysis = this.createDerivedAnalysis(node, candidate, entered)
+    }
+  }
+
+  /**
+   * Find the candidate at an analysed node whose expected line starts with
+   * the given entered moves
+   */
+  findMatchingCandidate(node, entered) {
+
+    //Get candidates
+    const candidates = node.analysis.candidates || []
+
+    //Determine the player to move at the analysed position, which the
+    //entered colors must alternate from. Turn instructions say it outright
+    //and the move that reached the position implies it; a bare root node
+    //determines nothing, and the first entered color is taken as read.
+    const toMove = node.turn ??
+      (node.isMove() ? swapColor(node.getMoveColor()) : entered[0].color)
+
+    //Find the first candidate whose line the entered moves are a prefix of.
+    //Candidates without a line are skipped: the move actually played gets
+    //appended to a stored analysis as one of those. A line shorter than what
+    //was entered cannot match either, which is also what bounds how far back
+    //the derivation reaches.
+    return candidates.find(candidate => {
+      const {pv} = candidate
+      if (!Array.isArray(pv) || pv.length < entered.length) {
+        return false
+      }
+      return entered.every((move, i) => {
+        const color = (i % 2 === 0) ? toMove : swapColor(toMove)
+        if (move.color !== color) {
+          return false
+        }
+        if (move.pass) {
+          return Boolean(pv[i].pass)
+        }
+        return !pv[i].pass && pv[i].x === move.x && pv[i].y === move.y
+      })
+    })
+  }
+
+  /**
+   * Create a derived analysis entry for a node from a matched candidate and
+   * the moves that were entered
+   */
+  createDerivedAnalysis(node, candidate, entered) {
+
+    //Get data
+    const {winrate, scoreLead, visits, pv} = candidate
+
+    //The sequence numbering continues the numbering already on the board:
+    //the variation move numbering when we are on a branch, and the number of
+    //moves entered past the analysed position otherwise
+    const offset = node.isVariationBranch() ?
+      node.getVariationMoveNodes().length :
+      entered.length
+
+    //The remainder of the line becomes the expected follow-up sequence, with
+    //the colors alternating onward from the last entered move
+    let color = entered[entered.length - 1].color
+    const sequence = pv.slice(entered.length).map((move, i) => {
+      color = swapColor(color)
+      const number = offset + i + 1
+      if (move.pass) {
+        return {pass: true, color, number}
+      }
+      return {x: move.x, y: move.y, color, number}
+    })
+
+    //The win rate, score lead and visits are the matched candidate's own,
+    //being the value of the whole line from Black's point of view
+    return {
+      derived: true,
+      isVariation: true,
+      winrate,
+      scoreLead,
+      visits,
+      candidates: [],
+      sequence,
+    }
   }
 
   /*****************************************************************************

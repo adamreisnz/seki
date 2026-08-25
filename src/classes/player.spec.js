@@ -2,6 +2,7 @@ import {describe, it, expect, beforeEach, afterEach, vi} from 'vitest'
 import Player from './player.js'
 import {defaultPlayerConfig} from '../constants/defaults.js'
 import {playerModes} from '../constants/player.js'
+import {stoneColors} from '../constants/stone.js'
 
 describe('player config', () => {
 
@@ -305,5 +306,362 @@ describe('setting analysis on a game', () => {
 
     player.clearAnalysis()
     expect(listener).toHaveBeenCalledTimes(2)
+  })
+})
+
+describe('setting analysis on a single node', () => {
+
+  //Two moves, with a variation hanging off the first one
+  const sgf = '(;GM[1]FF[4]SZ[19];B[dd](;W[pp];B[qf])(;W[cq]))'
+  const analysis = {winrate: 0.42, scoreLead: -1.2, visits: 350, candidates: []}
+
+  let player
+
+  beforeEach(() => {
+    player = new Player()
+    player.loadData(sgf)
+  })
+
+  //The variation node the main line array cannot address
+  const variationNode = () => player.game.getRootNode().getChild(0).getChild(1)
+
+  it('attaches analysis to a variation node', () => {
+    player.setNodeAnalysis(variationNode(), analysis)
+    expect(variationNode().analysis).toBe(analysis)
+  })
+
+  it('takes it off again when handed nothing', () => {
+    player.setNodeAnalysis(variationNode(), analysis)
+    player.setNodeAnalysis(variationNode())
+
+    expect('analysis' in variationNode()).toBe(false)
+  })
+
+  it('announces the change with the node it landed on', () => {
+    const listener = vi.fn()
+    player.on('analysisChange', listener)
+
+    player.setNodeAnalysis(variationNode(), analysis)
+
+    expect(listener).toHaveBeenCalledTimes(1)
+    const {detail} = listener.mock.calls[0][0]
+    expect(detail.hasAnalysis).toBe(true)
+    expect(detail.node).toBe(variationNode())
+  })
+
+  it('announces a removal as having no analysis', () => {
+    const listener = vi.fn()
+    player.setNodeAnalysis(variationNode(), analysis)
+    player.on('analysisChange', listener)
+
+    player.setNodeAnalysis(variationNode(), null)
+
+    expect(listener.mock.calls[0][0].detail.hasAnalysis).toBe(false)
+  })
+
+  it('survives being handed no node at all', () => {
+    const listener = vi.fn()
+    player.on('analysisChange', listener)
+
+    expect(() => player.setNodeAnalysis(null, analysis)).not.toThrow()
+    expect(listener).not.toHaveBeenCalled()
+  })
+
+  it('keeps it out of the saved record', () => {
+    const before = player.game.toSgf()
+    player.setNodeAnalysis(variationNode(), analysis)
+
+    expect(player.game.toSgf()).toBe(before)
+  })
+})
+
+describe('clearing analysis across the whole tree', () => {
+
+  const sgf = '(;GM[1]FF[4]SZ[19];B[dd](;W[pp];B[qf])(;W[cq]))'
+  const moves = [
+    {winrate: 0.5, visits: 500, candidates: []},
+    {winrate: 0.48, visits: 500, candidates: []},
+  ]
+  const variationAnalysis = {winrate: 0.4, visits: 200, candidates: []}
+
+  let player
+
+  beforeEach(() => {
+    player = new Player()
+    player.loadData(sgf)
+  })
+
+  const variationNode = () => player.game.getRootNode().getChild(0).getChild(1)
+
+  it('takes node-attached variation analysis off with the rest', () => {
+
+    //NOTE: clearing used to walk the main line only, so anything attached to
+    //a variation node survived a clear and resurfaced when revisited
+    player.setAnalysis(moves)
+    player.setNodeAnalysis(variationNode(), variationAnalysis)
+
+    player.clearAnalysis()
+    expect('analysis' in variationNode()).toBe(false)
+  })
+
+  it('clears stale variation analysis when a new review loads', () => {
+    player.setNodeAnalysis(variationNode(), variationAnalysis)
+
+    player.setAnalysis(moves)
+    expect('analysis' in variationNode()).toBe(false)
+  })
+
+  it('takes derived entries off with the rest', () => {
+
+    //Derive an entry by playing along an expected line off the root
+    player.setAnalysis([{
+      winrate: 0.5, visits: 500,
+      candidates: [{
+        x: 4, y: 4, winrate: 0.52, scoreLead: 0.5, visits: 300,
+        pv: [{x: 4, y: 4}, {x: 5, y: 5}],
+      }],
+    }])
+    player.playMove(4, 4)
+
+    const node = player.game.getCurrentNode()
+    expect(node.analysis?.derived).toBe(true)
+
+    player.clearAnalysis()
+    expect('analysis' in node).toBe(false)
+  })
+})
+
+describe('deriving analysis for explored variations', () => {
+
+  //A two move game with analysis on the root node. The first candidate's
+  //line follows the game; the second explores elsewhere and includes a pass;
+  //the third is the actually played move, appended without a line.
+  const sgf = '(;GM[1]FF[4]SZ[9];B[cc];W[gg])'
+  const rootAnalysis = {
+    winrate: 0.5, scoreLead: 0, visits: 500,
+    candidates: [
+      {
+        x: 2, y: 2, winrate: 0.52, scoreLead: 0.8, visits: 300,
+        pv: [{x: 2, y: 2}, {x: 6, y: 6}, {x: 2, y: 6}, {x: 6, y: 2}],
+      },
+      {
+        x: 4, y: 4, winrate: 0.48, scoreLead: -0.5, visits: 150,
+        pv: [{x: 4, y: 4}, {x: 4, y: 2}, {pass: true}, {x: 5, y: 5}],
+      },
+      {x: 3, y: 3, winrate: 0.5, scoreLead: 0, visits: 1},
+    ],
+  }
+
+  let player
+
+  beforeEach(() => {
+    player = new Player()
+    player.loadData(sgf)
+  })
+
+  const currentAnalysis = () => player.game.getCurrentNode().analysis
+
+  it('derives an analysis when the entered move follows a candidate line', () => {
+    player.setAnalysis([rootAnalysis])
+    player.playMove(4, 4)
+
+    const analysis = currentAnalysis()
+    expect(analysis.derived).toBe(true)
+    expect(analysis.isVariation).toBe(true)
+    expect(analysis.winrate).toBe(0.48)
+    expect(analysis.scoreLead).toBe(-0.5)
+    expect(analysis.visits).toBe(150)
+    expect(analysis.candidates).toEqual([])
+  })
+
+  it('hands the node the remainder of the line, colours alternating onward', () => {
+    player.setAnalysis([rootAnalysis])
+    player.playMove(4, 4)
+
+    expect(currentAnalysis().sequence).toEqual([
+      {x: 4, y: 2, color: stoneColors.WHITE, number: 2},
+      {pass: true, color: stoneColors.BLACK, number: 3},
+      {x: 5, y: 5, color: stoneColors.WHITE, number: 4},
+    ])
+  })
+
+  it('keeps deriving as the user follows the line', () => {
+
+    //The first entered move left a derived entry on its node, which carries
+    //no candidates of its own; the walk has to reach through it to the real
+    //analysis on the root, or the line goes dark after one move
+    player.setAnalysis([rootAnalysis])
+    player.playMove(4, 4)
+    player.playMove(4, 2)
+
+    const analysis = currentAnalysis()
+    expect(analysis.derived).toBe(true)
+    expect(analysis.winrate).toBe(0.48)
+    expect(analysis.sequence).toEqual([
+      {pass: true, color: stoneColors.BLACK, number: 3},
+      {x: 5, y: 5, color: stoneColors.WHITE, number: 4},
+    ])
+  })
+
+  it('matches a pass in the line with a pass', () => {
+    player.setAnalysis([rootAnalysis])
+    player.playMove(4, 4)
+    player.playMove(4, 2)
+    player.passMove()
+
+    const analysis = currentAnalysis()
+    expect(analysis.derived).toBe(true)
+    expect(analysis.sequence).toEqual([
+      {x: 5, y: 5, color: stoneColors.WHITE, number: 4},
+    ])
+  })
+
+  it('still values the position when the line is fully entered', () => {
+    player.setAnalysis([rootAnalysis])
+    player.playMove(4, 4)
+    player.playMove(4, 2)
+    player.passMove()
+    player.playMove(5, 5)
+
+    const analysis = currentAnalysis()
+    expect(analysis.derived).toBe(true)
+    expect(analysis.sequence).toEqual([])
+  })
+
+  it('derives nothing past the end of the line', () => {
+    player.setAnalysis([rootAnalysis])
+    player.playMove(4, 4)
+    player.playMove(4, 2)
+    player.passMove()
+    player.playMove(5, 5)
+    player.playMove(0, 0)
+
+    expect(currentAnalysis()).toBeUndefined()
+  })
+
+  it('derives nothing for a move the lines do not expect', () => {
+    player.setAnalysis([rootAnalysis])
+    player.playMove(0, 0)
+
+    expect(currentAnalysis()).toBeUndefined()
+  })
+
+  it('skips candidates that carry no line', () => {
+
+    //The move actually played gets appended to a stored analysis as a
+    //candidate without a line, and there is nothing to derive from it
+    player.setAnalysis([rootAnalysis])
+    player.playMove(3, 3)
+
+    expect(currentAnalysis()).toBeUndefined()
+  })
+
+  it('derives nothing without an analysed ancestor', () => {
+    player.playMove(4, 4)
+    expect(currentAnalysis()).toBeUndefined()
+  })
+
+  it('rejects a line the entered colours do not alternate onto', () => {
+
+    //Two records with the same variation point: one enters it with the
+    //colour whose turn it is, the other with the same colour again. Only
+    //the alternating one is an exploration of the analysed line.
+    const analysis = {
+      winrate: 0.5, scoreLead: 0, visits: 500,
+      candidates: [{
+        x: 4, y: 4, winrate: 0.53, scoreLead: 1.1, visits: 200,
+        pv: [{x: 4, y: 4}, {x: 2, y: 6}],
+      }],
+    }
+
+    const derive = sgf => {
+      const other = new Player()
+      other.loadData(sgf)
+      other.setAnalysis([null, analysis])
+      other.goToNextPosition()
+      other.game.goToNextPosition(1)
+      other.processPathChange()
+      return other.game.getCurrentNode().analysis
+    }
+
+    const alternating = derive('(;GM[1]FF[4]SZ[9];B[cc](;W[gg];B[cg])(;W[ee]))')
+    const repeating = derive('(;GM[1]FF[4]SZ[9];B[cc](;W[gg];B[cg])(;B[ee]))')
+
+    expect(alternating?.derived).toBe(true)
+    expect(repeating).toBeUndefined()
+  })
+
+  it('gives up at a node that is not a plain move', () => {
+
+    //A setup node cannot be part of an engine line, so nothing beyond it
+    //can be an exploration of one
+    const other = new Player()
+    other.loadData('(;GM[1]FF[4]SZ[9];B[cc];AE[cc];B[ee])')
+    other.setAnalysis([rootAnalysis])
+    other.goToLastPosition()
+
+    expect(other.game.getCurrentNode().analysis).toBeUndefined()
+  })
+
+  it('derives on an analysis change while sitting on the variation', () => {
+
+    //The review can arrive after the variation was entered, and the node
+    //picks its derived entry up without being revisited
+    player.playMove(4, 4)
+    expect(currentAnalysis()).toBeUndefined()
+
+    player.setAnalysis([rootAnalysis])
+    expect(currentAnalysis()?.derived).toBe(true)
+  })
+
+  it('continues the numbering from the variation moves on the board', () => {
+
+    //An analysis attached to a node mid-variation derives onward from that
+    //node, but the marks keep counting the whole variation as numbered on
+    //the board, not just the moves entered past the attached analysis
+    player.setAnalysis([rootAnalysis])
+    player.playMove(4, 4)
+    player.playMove(4, 2)
+
+    player.setNodeAnalysis(player.game.getCurrentNode(), {
+      winrate: 0.5, scoreLead: 0, visits: 100,
+      candidates: [{
+        x: 0, y: 0, winrate: 0.5, scoreLead: 0, visits: 50,
+        pv: [{x: 0, y: 0}, {x: 1, y: 1}],
+      }],
+    })
+    player.playMove(0, 0)
+
+    expect(currentAnalysis().sequence).toEqual([
+      {x: 1, y: 1, color: stoneColors.WHITE, number: 4},
+    ])
+  })
+
+  it('leaves a node with its own analysis alone', () => {
+    const own = {winrate: 0.6, scoreLead: 2, visits: 400, candidates: []}
+
+    player.setAnalysis([rootAnalysis])
+    player.playMove(4, 4)
+    player.setNodeAnalysis(player.game.getCurrentNode(), own)
+
+    //Moving away and back must not replace it with a derived entry
+    player.goToPreviousPosition()
+    player.goToNextPosition()
+
+    expect(currentAnalysis()).toBe(own)
+  })
+
+  it('keeps derived entries out of the saved record', () => {
+    const before = player.game.toSgf()
+
+    player.setAnalysis([rootAnalysis])
+    player.playMove(4, 4)
+    player.goToFirstPosition()
+
+    expect(player.game.toSgf()).not.toBe(before)
+
+    //The variation itself belongs in the record; the analysis does not
+    expect(player.game.toSgf()).not.toContain('undefined')
+    expect(player.game.toSgf()).not.toContain('derived')
   })
 })
