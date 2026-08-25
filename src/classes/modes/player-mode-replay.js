@@ -447,21 +447,27 @@ export default class PlayerModeReplay extends PlayerMode {
   }
 
   /**
-   * Add analysis candidate markers
+   * Add analysis candidate and sequence markers
    *
    * NOTE: the candidates belong to the position at this node, so they are the
    * suggestions for the move to play from here. The node's own loss and
    * quality describe the move that reached it, which is a different turn's
    * analysis and has no place on the board.
+   *
+   * A derived analysis carries a sequence instead of candidates, being the
+   * remainder of the expected line the user is following, drawn as numbered
+   * ghost stones. In practice an analysis carries one or the other, but
+   * nothing here needs them not to combine.
    */
   addAnalysisMarkers(node) {
 
     //Get data
     const {board} = this
-    const candidates = node.analysis?.candidates
+    const candidates = node.analysis?.candidates || []
+    const sequence = node.analysis?.sequence || []
 
     //Nothing to show
-    if (!candidates || candidates.length === 0) {
+    if (candidates.length === 0 && sequence.length === 0) {
       return
     }
 
@@ -488,35 +494,72 @@ export default class PlayerModeReplay extends PlayerMode {
       //out, not here and not in the theme that colours by it.
       const {x, y, loss, qualityScale} = candidate
 
-      //A pass has no home on the board
-      if (typeof x !== 'number' || typeof y !== 'number') {
-        return
-      }
-
-      //Not on top of stones
-      if (board.has(boardLayerTypes.STONES, x, y)) {
-        return
-      }
-
-      //Already has markup on this coordinate, preserve it
-      if (node.hasMarkup(x, y)) {
-        return
-      }
-
       //Construct data for factory
       const index = i
       const isBest = (i === 0)
       const isPlayed = Boolean(played && played.x === x && played.y === y)
       const data = {index, loss, qualityScale, isBest, isPlayed, showText}
 
-      //Add to the grid, remembering the point so that the markers we generate
-      //ourselves know to leave it to us
-      grid.set(x, y, MarkupFactory.create(markupTypes.CANDIDATE, board, data))
-      this.aiPoints.add(`${x},${y}`)
+      //Place it, if the point is ours to mark
+      this.placeAiMarker(
+        grid, node, x, y,
+        () => MarkupFactory.create(markupTypes.CANDIDATE, board, data)
+      )
     })
+
+    //Loop sequence moves, passes aside: a pass has no home on the board, and
+    //its number is spent regardless, so the marks that follow keep counting
+    //the moves of the line rather than the ones that made it onto the board.
+    sequence
+      .filter(({pass}) => !pass)
+      .forEach(({x, y, color, number}) => {
+        this.placeAiMarker(
+          grid, node, x, y,
+          () => MarkupFactory.create(markupTypes.SEQUENCE, board, {color, number})
+        )
+      })
 
     //Hand the lot to the layer
     board.setAll(boardLayerTypes.AI, grid)
+  }
+
+  /**
+   * Put a marker on the AI overlay's grid, if the point is ours to mark
+   *
+   * The markup is created by the given handler rather than passed in, so a
+   * point we end up leaving alone never builds one. Where two markers want
+   * the same point the first one keeps it, which is what a line revisiting a
+   * point in a ko relies on.
+   */
+  placeAiMarker(grid, node, x, y, createMarkup) {
+
+    //Get data
+    const {board} = this
+
+    //A pass, or anything else without a home on the board
+    if (typeof x !== 'number' || typeof y !== 'number') {
+      return
+    }
+
+    //Not on top of stones
+    if (board.has(boardLayerTypes.STONES, x, y)) {
+      return
+    }
+
+    //Already has markup on this coordinate, preserve it
+    if (node.hasMarkup(x, y)) {
+      return
+    }
+
+    //Already spoken for on the overlay itself
+    if (grid.has(x, y)) {
+      return
+    }
+
+    //Add to the grid, remembering the point so that the markers we generate
+    //ourselves know to leave it to us
+    grid.set(x, y, createMarkup())
+    this.aiPoints.add(`${x},${y}`)
   }
 
   /**

@@ -298,6 +298,133 @@ describe('Replay mode analysis overlay', () => {
   })
 })
 
+describe('Replay mode expected sequence overlay', () => {
+
+  const sgf = '(;GM[1]FF[4]SZ[9];B[cc];W[gg])'
+
+  /**
+   * A derived analysis as the player synthesizes it, carrying the remainder
+   * of an expected line instead of candidates
+   */
+  const derivedAnalysis = sequence => ({
+    derived: true,
+    isVariation: true,
+    winrate: 0.5,
+    scoreLead: 0,
+    visits: 100,
+    candidates: [],
+    sequence,
+  })
+
+  let player
+  let board
+
+  beforeEach(() => {
+    player = new Player()
+    board = player.board
+    board.createLayers()
+    player.loadData(sgf)
+    player.setConfig('showAnalysis', true)
+  })
+
+  const aiAt = (x, y) => board.get(boardLayerTypes.AI, x, y)
+  const aiMarkers = () => board.getLayer(boardLayerTypes.AI).grid.getAll()
+
+  it('draws each sequence move as a numbered mark in its colour', () => {
+    player.setNodeAnalysis(player.game.getCurrentNode(), derivedAnalysis([
+      {x: 4, y: 4, color: 'black', number: 2},
+      {x: 5, y: 5, color: 'white', number: 3},
+    ]))
+
+    expect(aiAt(4, 4).type).toBe(markupTypes.SEQUENCE)
+    expect(aiAt(4, 4).number).toBe(2)
+    expect(aiAt(4, 4).displayColor).toBe('black')
+    expect(aiAt(5, 5).number).toBe(3)
+    expect(aiAt(5, 5).displayColor).toBe('white')
+  })
+
+  it('skips passes while their numbering stands', () => {
+    player.setNodeAnalysis(player.game.getCurrentNode(), derivedAnalysis([
+      {pass: true, color: 'black', number: 2},
+      {x: 4, y: 4, color: 'white', number: 3},
+    ]))
+
+    expect(aiMarkers()).toHaveLength(1)
+    expect(aiAt(4, 4).number).toBe(3)
+  })
+
+  it('stays off the stones', () => {
+    player.goToNextPosition()
+    player.setNodeAnalysis(player.game.getCurrentNode(), derivedAnalysis([
+      {x: 2, y: 2, color: 'white', number: 2},
+      {x: 4, y: 4, color: 'black', number: 3},
+    ]))
+
+    expect(aiAt(2, 2)).toBeUndefined()
+    expect(aiAt(4, 4).number).toBe(3)
+  })
+
+  it('gives a point the line revisits to the first mark', () => {
+
+    //A ko fight in the line comes back to the same point; the first visit is
+    //the one whose number keeps the sequence readable
+    player.setNodeAnalysis(player.game.getCurrentNode(), derivedAnalysis([
+      {x: 4, y: 4, color: 'black', number: 2},
+      {x: 5, y: 5, color: 'white', number: 3},
+      {x: 4, y: 4, color: 'black', number: 4},
+    ]))
+
+    expect(aiAt(4, 4).number).toBe(2)
+    expect(aiMarkers()).toHaveLength(2)
+  })
+
+  it('tolerates candidates and sequence side by side', () => {
+
+    //A derived analysis carries no candidates in practice, but an analysis
+    //that has both draws both, with candidates keeping any shared point
+    player.setNodeAnalysis(player.game.getCurrentNode(), {
+      ...derivedAnalysis([
+        {x: 4, y: 4, color: 'black', number: 2},
+        {x: 6, y: 2, color: 'white', number: 3},
+      ]),
+      candidates: [{x: 6, y: 2, loss: {winrate: 0, score: 0}}],
+    })
+
+    expect(aiAt(4, 4).type).toBe(markupTypes.SEQUENCE)
+    expect(aiAt(6, 2).type).toBe(markupTypes.CANDIDATE)
+  })
+
+  it('shows the line the user is following when they play a candidate', () => {
+
+    //The full journey: a review is loaded, the user plays a considered move,
+    //and the remainder of its expected line appears on the board
+    player.setAnalysis([{
+      winrate: 0.5, scoreLead: 0, visits: 500,
+      candidates: [{
+        x: 4, y: 4, winrate: 0.52, scoreLead: 0.5, visits: 300,
+        loss: {winrate: 0, score: 0},
+        pv: [{x: 4, y: 4}, {x: 2, y: 6}, {x: 6, y: 2}],
+      }],
+    }])
+    player.playMove(4, 4)
+
+    expect(aiAt(2, 6).type).toBe(markupTypes.SEQUENCE)
+    expect(aiAt(2, 6).number).toBe(2)
+    expect(aiAt(2, 6).displayColor).toBe('white')
+    expect(aiAt(6, 2).number).toBe(3)
+    expect(aiAt(4, 4)).toBeUndefined()
+  })
+
+  it('comes off the board with the rest of the overlay', () => {
+    player.setNodeAnalysis(player.game.getCurrentNode(), derivedAnalysis([
+      {x: 4, y: 4, color: 'black', number: 2},
+    ]))
+    player.clearAnalysis()
+
+    expect(aiAt(4, 4)).toBeUndefined()
+  })
+})
+
 describe('Analysis overlay across the modes that inherit it', () => {
 
   const sgf = '(;GM[1]FF[4]SZ[9];B[cc];W[gg])'

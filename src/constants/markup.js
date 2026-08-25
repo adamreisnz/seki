@@ -20,6 +20,7 @@ export const markupTypes = {
   SELECT: 'select',
   VARIATION: 'variation',
   CANDIDATE: 'candidate',
+  SEQUENCE: 'sequence',
   LAST_MOVE: 'lastMove',
   MOVE_NUMBER: 'moveNumber',
 }
