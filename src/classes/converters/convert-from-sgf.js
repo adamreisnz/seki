@@ -347,15 +347,29 @@ export default class ConvertFromSgf extends Converter {
 
     //Add values
     for (const value of values) {
-      const coord = this.createCoordinate(value.substring(0, 2))
-      if (!coord) {
+
+      //Labels are written as point:text, so the colon separates a label from
+      //its point rather than marking out a rectangle, and the value has to be
+      //read as a single point however it is punctuated
+      if (type === markupTypes.LABEL) {
+        const coord = this.createCoordinate(value.substring(0, 2))
+        if (!coord) {
+          console.warn(`Invalid coordinate encountered while parsing SGF: ${key} =>`, value)
+          continue
+        }
+        coord.text = value.substring(3)
+        coords.push(coord)
+        continue
+      }
+
+      //Every other markup property takes a point list, so a value may cover a
+      //whole rectangle of points
+      const points = this.createCoordinates(value)
+      if (points.length === 0) {
         console.warn(`Invalid coordinate encountered while parsing SGF: ${key} =>`, value)
         continue
       }
-      if (type === markupTypes.LABEL) {
-        coord.text = value.substring(3)
-      }
-      coords.push(coord)
+      coords.push(...points)
     }
 
     //Nothing usable, don't leave an empty entry behind
@@ -379,14 +393,14 @@ export default class ConvertFromSgf extends Converter {
     const type = color || setupTypes.CLEAR
     const coords = []
 
-    //Add values
+    //Add values, which may each cover a whole rectangle of points
     for (const value of values) {
-      const coord = this.createCoordinate(value)
-      if (!coord) {
+      const points = this.createCoordinates(value)
+      if (points.length === 0) {
         console.warn(`Invalid coordinate encountered while parsing SGF: ${key} =>`, value)
         continue
       }
-      coords.push(coord)
+      coords.push(...points)
     }
 
     //Nothing usable, don't leave an empty entry behind
@@ -409,14 +423,14 @@ export default class ConvertFromSgf extends Converter {
     const color = this.convertColor(key.charAt(1))
     const coords = []
 
-    //Add values
+    //Add values, which may each cover a whole rectangle of points
     for (const value of values) {
-      const coord = this.createCoordinate(value)
-      if (!coord) {
+      const points = this.createCoordinates(value)
+      if (points.length === 0) {
         console.warn(`Invalid coordinate encountered while parsing SGF: ${key} =>`, value)
         continue
       }
-      coords.push(coord)
+      coords.push(...points)
     }
 
     //Nothing usable, don't leave an empty entry behind
@@ -594,6 +608,45 @@ export default class ConvertFromSgf extends Converter {
   /*****************************************************************************
    * Parsing helpers
    ***/
+
+  /**
+   * Helper to create the list of coordinates a point list value covers
+   *
+   * A value of the point list type may be written in compressed form as
+   * `corner1:corner2`, which stands for every point in the rectangle between
+   * the two corners, given in either orientation. Anything else is a single
+   * point. Returns an empty array for a value that isn't usable, so that
+   * callers can report it the same way they report a bad single coordinate.
+   */
+  createCoordinates(str) {
+
+    //Not a compressed point list, so a single point at most
+    if (typeof str !== 'string' || !str.includes(':')) {
+      const coord = this.createCoordinate(str)
+      return coord ? [coord] : []
+    }
+
+    //Decode both corners of the rectangle
+    const [first, second] = str.split(':')
+    const from = this.createCoordinate(first)
+    const to = this.createCoordinate(second)
+    if (!from || !to) {
+      return []
+    }
+
+    //Expand it, taking the corners in whichever order they were given
+    const coords = []
+    const [xLow, xHigh] = (from.x <= to.x) ? [from.x, to.x] : [to.x, from.x]
+    const [yLow, yHigh] = (from.y <= to.y) ? [from.y, to.y] : [to.y, from.y]
+    for (let x = xLow; x <= xHigh; x++) {
+      for (let y = yLow; y <= yHigh; y++) {
+        coords.push({x, y})
+      }
+    }
+
+    //Return coordinates
+    return coords
+  }
 
   /**
    * Helper to create a coordinate

@@ -1,6 +1,7 @@
 import {describe, it, expect, vi, afterEach} from 'vitest'
 import ConvertFromSgf from './convert-from-sgf.js'
 import {stoneColors} from '../../constants/stone.js'
+import {markupTypes} from '../../constants/markup.js'
 
 const parse = sgf => new ConvertFromSgf().convert(sgf)
 
@@ -92,6 +93,119 @@ describe('ConvertFromSgf, coordinates', () => {
     const game = parse('(;FF[4]SZ[38];B[tt])')
     expect(game.root.getChild(0).isPassMove()).toBe(false)
     expect(game.root.getChild(0).move).toMatchObject({x: 19, y: 19})
+  })
+})
+
+describe('ConvertFromSgf, compressed point lists', () => {
+
+  it('expands a rectangle of setup stones', () => {
+    const game = parse('(;FF[4]SZ[9]AB[aa:cc])')
+    expect(game.root.setup).toEqual([
+      {
+        type: stoneColors.BLACK,
+        coords: [
+          {x: 0, y: 0}, {x: 0, y: 1}, {x: 0, y: 2},
+          {x: 1, y: 0}, {x: 1, y: 1}, {x: 1, y: 2},
+          {x: 2, y: 0}, {x: 2, y: 1}, {x: 2, y: 2},
+        ],
+      },
+    ])
+  })
+
+  it('expands a rectangle of markup', () => {
+    const game = parse('(;FF[4]SZ[9]TR[gg:hh])')
+    expect(game.root.markup).toEqual([
+      {
+        type: markupTypes.TRIANGLE,
+        coords: [
+          {x: 6, y: 6}, {x: 6, y: 7},
+          {x: 7, y: 6}, {x: 7, y: 7},
+        ],
+      },
+    ])
+  })
+
+  it('expands a rectangle of territory', () => {
+    const game = parse('(;FF[4]SZ[9]TW[aa:ab])')
+    expect(game.root.score).toEqual([
+      {
+        color: stoneColors.WHITE,
+        coords: [{x: 0, y: 0}, {x: 0, y: 1}],
+      },
+    ])
+  })
+
+  it('expands a rectangle given with its corners reversed', () => {
+    const reversed = parse('(;FF[4]SZ[9]AB[cc:aa])')
+    const forwards = parse('(;FF[4]SZ[9]AB[aa:cc])')
+    expect(reversed.root.setup).toEqual(forwards.root.setup)
+  })
+
+  it('expands a one point rectangle to a single point', () => {
+    const game = parse('(;FF[4]SZ[9]AB[aa:aa])')
+    expect(game.root.setup).toEqual([
+      {type: stoneColors.BLACK, coords: [{x: 0, y: 0}]},
+    ])
+  })
+
+  it('expands a single row', () => {
+    const game = parse('(;FF[4]SZ[9]AB[aa:ca])')
+    expect(game.root.setup).toEqual([
+      {
+        type: stoneColors.BLACK,
+        coords: [{x: 0, y: 0}, {x: 1, y: 0}, {x: 2, y: 0}],
+      },
+    ])
+  })
+
+  it('expands a single column', () => {
+    const game = parse('(;FF[4]SZ[9]AB[aa:ac])')
+    expect(game.root.setup).toEqual([
+      {
+        type: stoneColors.BLACK,
+        coords: [{x: 0, y: 0}, {x: 0, y: 1}, {x: 0, y: 2}],
+      },
+    ])
+  })
+
+  it('expands a rectangle with uppercase corners on a board larger than 26', () => {
+    const game = parse('(;FF[4]SZ[38]AB[aA:bB])')
+    expect(game.root.setup).toEqual([
+      {
+        type: stoneColors.BLACK,
+        coords: [
+          {x: 0, y: 26}, {x: 0, y: 27},
+          {x: 1, y: 26}, {x: 1, y: 27},
+        ],
+      },
+    ])
+  })
+
+  it('places every stone of a rectangle on the game position', () => {
+    const game = parse('(;FF[4]SZ[9]AB[aa:cc])')
+    game.goToFirstPosition()
+    expect(game.getPosition().stones.getAll()).toHaveLength(9)
+  })
+
+  it('skips a rectangle with an invalid corner', () => {
+    vi.spyOn(console, 'warn').mockImplementation(vi.fn())
+    const game = parse('(;FF[4]SZ[9]AB[aa:!!])')
+    expect(game.root.setup).toBeUndefined()
+  })
+
+  it('still reads a label as a point and its text', () => {
+    //LB values are point:text, so this colon is a label separator and must
+    //not be read as marking out a rectangle
+    const game = parse('(;FF[4]SZ[9]LB[aa:A][bb:hello])')
+    expect(game.root.markup).toEqual([
+      {
+        type: markupTypes.LABEL,
+        coords: [
+          {x: 0, y: 0, text: 'A'},
+          {x: 1, y: 1, text: 'hello'},
+        ],
+      },
+    ])
   })
 })
 
