@@ -33,12 +33,18 @@ const valuePattern = String.raw`\[(?:\\[\s\S]|[^\\\]])*\]`
 //it, so this is deliberately wider than the identifiers we act on.
 const identifierPattern = String.raw`[A-Za-z]+`
 
+//The SGF spec allows whitespace between the values of a property, and writers
+//use it to wrap a long list over several lines. Without the \s* in front of
+//each value, the list would end at the line break and every later property of
+//that node would be dropped along with it.
+const valueListPattern = String.raw`(?:\s*${valuePattern})+`
+
 //Regexes
 const regexSequence = new RegExp(
-  String.raw`\(|\)|(;(\s*${identifierPattern}\s*(?:${valuePattern})+)*)`, 'g'
+  String.raw`\(|\)|(;(\s*${identifierPattern}${valueListPattern})*)`, 'g'
 )
 const regexNode = new RegExp(
-  String.raw`${identifierPattern}\s*(?:${valuePattern})+`, 'g'
+  String.raw`${identifierPattern}${valueListPattern}`, 'g'
 )
 const regexValues = new RegExp(valuePattern, 'g')
 const regexProperty = new RegExp(identifierPattern)
