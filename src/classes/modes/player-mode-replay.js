@@ -447,21 +447,27 @@ export default class PlayerModeReplay extends PlayerMode {
   }
 
   /**
-   * Add analysis candidate markers
+   * Add analysis candidate and sequence markers
    *
    * NOTE: the candidates belong to the position at this node, so they are the
    * suggestions for the move to play from here. The node's own loss and
    * quality describe the move that reached it, which is a different turn's
    * analysis and has no place on the board.
+   *
+   * A derived analysis carries a sequence instead of candidates, being the
+   * remainder of the expected line the user is following, drawn as numbered
+   * ghost stones. In practice an analysis carries one or the other, but
+   * nothing here needs them not to combine.
    */
   addAnalysisMarkers(node) {
 
     //Get data
     const {board} = this
-    const candidates = node.analysis?.candidates
+    const candidates = node.analysis?.candidates || []
+    const sequence = node.analysis?.sequence || []
 
     //Nothing to show
-    if (!candidates || candidates.length === 0) {
+    if (candidates.length === 0 && sequence.length === 0) {
       return
     }
 
@@ -512,6 +518,40 @@ export default class PlayerModeReplay extends PlayerMode {
       //Add to the grid, remembering the point so that the markers we generate
       //ourselves know to leave it to us
       grid.set(x, y, MarkupFactory.create(markupTypes.CANDIDATE, board, data))
+      this.aiPoints.add(`${x},${y}`)
+    })
+
+    //Loop sequence moves
+    sequence.forEach(entry => {
+
+      //Get data
+      const {x, y, pass, color, number} = entry
+
+      //A pass has no home on the board; its number is spent regardless, so
+      //the marks that follow keep counting the line's moves
+      if (pass || typeof x !== 'number' || typeof y !== 'number') {
+        return
+      }
+
+      //Not on top of stones
+      if (board.has(boardLayerTypes.STONES, x, y)) {
+        return
+      }
+
+      //Already has markup on this coordinate, preserve it
+      if (node.hasMarkup(x, y)) {
+        return
+      }
+
+      //Where the line revisits a point, as it does in a ko, the first mark
+      //wins. That also leaves candidates standing should the two ever combine.
+      if (grid.has(x, y)) {
+        return
+      }
+
+      //Add to the grid, remembering the point so that the markers we generate
+      //ourselves know to leave it to us
+      grid.set(x, y, MarkupFactory.create(markupTypes.SEQUENCE, board, {color, number}))
       this.aiPoints.add(`${x},${y}`)
     })
 
