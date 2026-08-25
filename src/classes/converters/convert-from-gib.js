@@ -55,7 +55,7 @@ export default class ConvertFromGib extends Converter {
     }
 
     //Initialize
-    const game = new Game()
+    const game = Game.forRecord()
 
     //Reset the global regexes, so a previously converted file can't leave
     //them pointing part way into the string

@@ -441,6 +441,18 @@ describe('ConvertFromSgf, game collections', () => {
   })
 })
 
+describe('ConvertFromSgf, game information', () => {
+
+  it('reads a record with no DT as having no date', () => {
+
+    //NOTE: a new Game is stamped with today's date, for the sake of one being
+    //started in an editor. A record read from a file has no business keeping
+    //that: one which doesn't say when it was played reads as not saying, the
+    //same as every other field it leaves out.
+    expect(parse('(;FF[4]SZ[19];B[dd])').getGameDate()).toBe('')
+  })
+})
+
 describe('ConvertFromSgf, real records', () => {
 
   //Records written by other software, rather than by this spec. See
@@ -533,11 +545,7 @@ describe('ConvertFromSgf, real records', () => {
       expect(g.getTotalNumberOfMoves()).toBe(0)
     })
 
-    it('reads an empty DT as no date rather than as today', () => {
-
-      //NOTE: worth contrasting with the two GB2312 records, where a date
-      //the reader cannot parse leaves the default of today in place. Here
-      //DT[] is matched and sets an empty date, which is the honest answer.
+    it('reads an empty DT as no date', () => {
       expect(game().getGameDate()).toBe('')
     })
   })

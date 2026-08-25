@@ -1133,6 +1133,15 @@ describe('Default game date', () => {
     expect(first).toBe(second)
     expect(first).toBe(dateString())
   })
+
+  it('is left off a game made to read a record into', () => {
+
+    //NOTE: today's date is what someone starting a game in an editor means.
+    //A record read from a file means whatever the record says, so a reader
+    //that finds no date it can parse leaves the field empty rather than
+    //handing back a confident today. See Game.forRecord.
+    expect(Game.forRecord().getGameDate()).toBe('')
+  })
 })
 
 describe('Game loaded from a converter', () => {

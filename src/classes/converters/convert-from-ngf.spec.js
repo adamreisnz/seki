@@ -1,7 +1,6 @@
 import {describe, it, expect} from 'vitest'
 import ConvertFromNgf from './convert-from-ngf.js'
 import {stoneColors} from '../../constants/stone.js'
-import {dateString} from '../../helpers/util.js'
 import {loadFixture, replayMainLine} from '../../../test/fixtures.js'
 
 const {BLACK, WHITE} = stoneColors
@@ -303,11 +302,12 @@ describe('ConvertFromNgf, real WBaduk records', () => {
       expect(game().getBoardSize()).toEqual({width: 19, height: 19})
     })
 
-    it('dates the record today, having found no date to read', () => {
+    it('leaves the date empty, having found no date to read', () => {
 
-      //NOTE: as with gb2312.gib, an unparsed date leaves the default a new
-      //Game is born with, so the record reads as played today.
-      expect(game().getGameDate()).toBe(dateString())
+      //NOTE: as with gb2312.gib, the record now reads as having no date at
+      //all. It used to read as played today, being the date a new Game is
+      //stamped with and which nothing here overwrote.
+      expect(game().getGameDate()).toBe('')
     })
 
     it('takes the GI prefix for a player name', () => {

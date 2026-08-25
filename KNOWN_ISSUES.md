@@ -178,29 +178,6 @@ spec that currently pins the truncated behaviour is the test for the fix.
 
 ---
 
-## A date the reader cannot parse reads as today
-
-**Where:** `src/constants/defaults.js`, and the date handling in the GIB and
-NGF readers
-
-A new `Game` defaults its date to `dateString()`, being today. Both the GIB
-and NGF readers call `setGameDate` only when their date pattern matches, so a
-date they cannot read leaves that default in place.
-
-**Effect:** a record whose date is written in a form the reader does not know
-loads as having been played today, rather than as having no date. That is a
-confident wrong answer where every other unread field degrades to a missing
-one. `test/fixtures/gib/gb2312.gib` writes its date as
-`2012年11月22日 下午 6:3` and `test/fixtures/ngf/gb2312.ngf` has no date on the
-line the reader looks at; both load as today.
-
-**What a fix involves:** deciding whether the default belongs on `Game` at all
-for a record that was read from a file, as opposed to one being created fresh
-in the editor. If it does, the readers should clear it when they find a date
-field they could not parse, so that the failure is visible.
-
----
-
 ## The NGF reader does not recognise the GI header dialect
 
 **Where:** `src/classes/converters/convert-from-ngf.js`
