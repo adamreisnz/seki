@@ -42,6 +42,7 @@ import {default as SekiStoneFactory} from './classes/stone-factory.js'
 import {default as SekiConvertFromJgf} from './classes/converters/convert-from-jgf.js'
 import {default as SekiConvertFromSgf} from './classes/converters/convert-from-sgf.js'
 import {default as SekiConvertFromGib} from './classes/converters/convert-from-gib.js'
+import {default as SekiConvertFromNgf} from './classes/converters/convert-from-ngf.js'
 import {default as SekiConvertToJgf} from './classes/converters/convert-to-jgf.js'
 import {default as SekiConvertToSgf} from './classes/converters/convert-to-sgf.js'
 
@@ -168,6 +169,7 @@ export {
   SekiConvertFromJgf,
   SekiConvertFromSgf,
   SekiConvertFromGib,
+  SekiConvertFromNgf,
   SekiConvertToJgf,
   SekiConvertToSgf,
 

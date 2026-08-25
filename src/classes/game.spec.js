@@ -598,11 +598,21 @@ describe('Game handicap', () => {
 
 describe('Game format detection', () => {
 
-  it('recognises SGF, JGF and GIB', () => {
+  it('recognises SGF, JGF, GIB and NGF', () => {
     expect(Game.detectFormat('(;FF[4])')).toBe(kifuFormats.SGF)
     expect(Game.detectFormat('{"tree":[]}')).toBe(kifuFormats.JGF)
     expect(Game.detectFormat({tree: []})).toBe(kifuFormats.JGF)
     expect(Game.detectFormat('\\HS')).toBe(kifuFormats.GIB)
+    expect(Game.detectFormat('Rated game\n19\nPMABBREER')).toBe(kifuFormats.NGF)
+  })
+
+  it('recognises NGF by its move lines, whatever it opens with', () => {
+
+    //NOTE: NGF has no marker of its own, and opens with a free text title
+    //that is written in Korean as readily as in English
+    expect(Game.detectFormat('\uc81c5\uae30\r\n19\r\nPMABWODDO\r\n'))
+      .toBe(kifuFormats.NGF)
+    expect(() => Game.detectFormat('Rated game\n19\n')).toThrow()
   })
 
   it('rejects nothing and nonsense', () => {
@@ -634,6 +644,28 @@ describe('Game format detection', () => {
     //record was recognised and still failed to load
     const game = Game.fromData('﻿{"tree":[{"root":true},{"move":{"B":"dd"}}]}')
     expect(game.getRootNode().hasChildren()).toBe(true)
+  })
+
+  it('loads an NGF record end to end', () => {
+    const game = Game.fromData([
+      'Rated game',
+      '19',
+      'ace550      7D*',
+      'p81587      5D*',
+      'www.cyberoro.com',
+      '0',
+      '0',
+      '7',
+      '20170316 [09:51]',
+      '5',
+      'White wins by  resign!',
+      '2',
+      'PMABBREER',
+      'PMACWEEEE',
+    ].join('\r\n'))
+    expect(game.getGameResult()).toBe('W+R')
+    expect(game.getRootNode().getChild(0).move)
+      .toMatchObject({x: 16, y: 3, color: stoneColors.BLACK})
   })
 
   it('rejects an unsupported output format', () => {

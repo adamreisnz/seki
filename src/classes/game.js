@@ -6,6 +6,7 @@ import GamePosition from './game-position.js'
 import ConvertFromJgf from './converters/convert-from-jgf.js'
 import ConvertFromSgf from './converters/convert-from-sgf.js'
 import ConvertFromGib from './converters/convert-from-gib.js'
+import ConvertFromNgf from './converters/convert-from-ngf.js'
 import ConvertToJgf from './converters/convert-to-jgf.js'
 import ConvertToSgf from './converters/convert-to-sgf.js'
 import {copy, get, set, merge, isObject} from '../helpers/object.js'
@@ -16,6 +17,11 @@ import {handicapPlacements} from '../constants/game.js'
 import {kifuFormats} from '../constants/app.js'
 import {setupTypes} from '../constants/setup.js'
 import {defaultGameInfo} from '../constants/defaults.js'
+
+//An NGF move line, e.g. PMABBREER, used to recognise the format. NGF has no
+//header marker of its own, so a move line is the only thing about it that
+//can't plausibly turn up in a file of another format.
+const regexNgfMove = /^PM[A-Z]{2}[BW][A-Z]{4}\s*$/im
 
 /**
  * This class represents a game record or a game that is being played/edited.
@@ -2544,6 +2550,22 @@ export default class Game extends Base {
   }
 
   /**
+   * Load from NGF data
+   */
+  static fromNgf(ngf) {
+
+    //Create converter
+    const converter = new ConvertFromNgf()
+    const game = converter.convert(ngf)
+    if (!game) {
+      throw new Error(`Unable to parse NGF data`)
+    }
+
+    //Return game
+    return game
+  }
+
+  /**
    * Detect format
    */
   static detectFormat(data) {
@@ -2558,9 +2580,9 @@ export default class Game extends Base {
       return kifuFormats.JGF
     }
 
-    //String given, could be stringified JGF, an SGF or GIB file. NOTE: files
-    //routinely start with a byte order mark or a blank line, and looking at
-    //the very first character of the raw string rejected every one of them.
+    //String given, could be stringified JGF, an SGF, GIB or NGF file. NOTE:
+    //files routinely start with a byte order mark or a blank line, and looking
+    //at the very first character of the raw string rejected every one of them.
     if (typeof data === 'string') {
       const c = data.trim().charAt(0)
       if (c === '(') {
@@ -2571,6 +2593,12 @@ export default class Game extends Base {
       }
       else if (c === '\\') {
         return kifuFormats.GIB
+      }
+
+      //NGF opens with a free text title rather than any marker of its own, so
+      //it is recognised by its move lines instead
+      else if (regexNgfMove.test(data)) {
+        return kifuFormats.NGF
       }
     }
 
@@ -2595,6 +2623,8 @@ export default class Game extends Base {
         return this.fromJgf(data)
       case kifuFormats.GIB:
         return this.fromGib(data)
+      case kifuFormats.NGF:
+        return this.fromNgf(data)
       default:
         throw new Error(`Unsupported data format`)
     }

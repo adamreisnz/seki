@@ -42,6 +42,7 @@
     "jgf",
     "sgf",
     "gib",
+    "ngf",
     "kifu"
   ],
   "packageManager": "pnpm@11.20.0",
