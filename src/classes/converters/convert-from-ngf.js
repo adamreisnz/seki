@@ -1,8 +1,7 @@
 import Converter from './converter.js'
 import Game from '../game.js'
 import GameNode from '../game-node.js'
-import {handicapPlacements} from '../../constants/game.js'
-import {setupTypes} from '../../constants/setup.js'
+import {koreanHandicapPlacements} from '../../constants/game.js'
 import {charCodeAUpper, sgfStoneColors} from '../../constants/sgf.js'
 import {stoneColors} from '../../constants/stone.js'
 
@@ -51,35 +50,6 @@ const regexResigned = /resign/i
 const regexTimeout = /time/i
 const regexMargin = /\bby\s+(\d+(?:\.\d+)?)/i
 
-//WBaduk puts its third handicap stone in the top left corner, where the
-//standard placement puts it in the bottom right. This was verified against a
-//three stone record whose 261st move is played on the bottom right star
-//point, which would be occupied under the standard placement. Every other
-//handicap count places the same set of stones, so only this one is listed.
-const ngfHandicapPlacements = {
-  9: {
-    3: [
-      {x: 2, y: 2},
-      {x: 2, y: 6},
-      {x: 6, y: 2},
-    ],
-  },
-  13: {
-    3: [
-      {x: 3, y: 3},
-      {x: 3, y: 9},
-      {x: 9, y: 3},
-    ],
-  },
-  19: {
-    3: [
-      {x: 3, y: 3},
-      {x: 3, y: 15},
-      {x: 15, y: 3},
-    ],
-  },
-}
-
 //Rank suffixes, as written by WBaduk, mapped onto conventional notation
 const ngfRanks = {
   DP: 'p',
@@ -124,8 +94,9 @@ export default class ConvertFromNgf extends Converter {
     this.findDate(lines, game)
     this.findGameResult(lines, game)
 
-    //Place handicap stones and find moves
-    this.placeHandicapStones(game, handicap, boardSize)
+    //Place handicap stones and find moves. NGF records no free placement, so
+    //a handicap game always uses the fixed points for the board size.
+    this.placeHandicapStones(game, handicap, boardSize, koreanHandicapPlacements)
     this.findMoves(lines, game, boardSize)
 
     //Set event location
@@ -248,42 +219,6 @@ export default class ConvertFromNgf extends Converter {
       parentNode.appendChild(node)
       parentNode = node
     }
-  }
-
-  /**
-   * Place the handicap stones for a handicap game
-   */
-  placeHandicapStones(game, handicap, boardSize) {
-
-    //Nothing to place. NGF records no free placement, so a handicap game
-    //always uses the fixed points for the board size.
-    if (handicap < 2) {
-      return
-    }
-
-    //Find the placement to use
-    const placement = this.findHandicapPlacement(handicap, boardSize)
-    if (!placement) {
-      return
-    }
-
-    //Add the stones to the root node as setup instructions
-    for (const {x, y} of placement) {
-      game.root.addSetup(x, y, {type: setupTypes.BLACK})
-    }
-  }
-
-  /**
-   * Find the handicap placement to use, which is the standard one for this
-   * board size unless WBaduk is known to differ from it
-   */
-  findHandicapPlacement(handicap, boardSize) {
-    const ngf = ngfHandicapPlacements[boardSize]
-    if (ngf && ngf[handicap]) {
-      return ngf[handicap]
-    }
-    const standard = handicapPlacements[boardSize]
-    return (standard && standard[handicap]) || null
   }
 
   /**************************************************************************

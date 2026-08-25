@@ -1,4 +1,6 @@
 import {appName, appVersion} from '../../constants/app.js'
+import {handicapPlacements} from '../../constants/game.js'
+import {setupTypes} from '../../constants/setup.js'
 import {flip} from '../../helpers/object.js'
 
 //Cache of inverted maps, keyed on the map itself. The maps being inverted are
@@ -28,6 +30,46 @@ export default class Converter {
 
     //Return mapped value
     return map[value]
+  }
+
+  /**
+   * Place the handicap stones for a handicap game on the root node
+   *
+   * This is for the formats that record a handicap as a count alone, leaving
+   * the reader to place the stones the server would have placed. An override
+   * table can be passed for a server that is known to differ from the
+   * standard placement, and is consulted before it.
+   */
+  placeHandicapStones(game, handicap, boardSize, overrides = null) {
+
+    //Nothing to place
+    if (handicap < 2) {
+      return
+    }
+
+    //Find the placement to use
+    const placement = this.findHandicapPlacement(handicap, boardSize, overrides)
+    if (!placement) {
+      return
+    }
+
+    //Add the stones to the root node as setup instructions
+    for (const {x, y} of placement) {
+      game.root.addSetup(x, y, {type: setupTypes.BLACK})
+    }
+  }
+
+  /**
+   * Find the handicap placement to use, which is the standard one for this
+   * board size unless the given overrides differ from it
+   */
+  findHandicapPlacement(handicap, boardSize, overrides = null) {
+    const override = overrides && overrides[boardSize]
+    if (override && override[handicap]) {
+      return override[handicap]
+    }
+    const standard = handicapPlacements[boardSize]
+    return (standard && standard[handicap]) || null
   }
 
   /**
