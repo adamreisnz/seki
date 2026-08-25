@@ -3,7 +3,7 @@ import Board from './board.js'
 import Game from './game.js'
 import EventHandler from './event-handler.js'
 import PlayerModeFactory from './player-mode-factory.js'
-import {playerModes} from '../constants/player.js'
+import {playerModes, maxAnalysisSequenceLength} from '../constants/player.js'
 import {defaultPlayerConfig} from '../constants/defaults.js'
 import {lowercase} from '../helpers/coordinates.js'
 import {swapColor} from '../helpers/color.js'
@@ -778,13 +778,20 @@ export default class Player extends Base {
       return
     }
 
-    //Set or clear
+    //Anything derived below this node came from what was here before, so it
+    //goes with it. Without this, a node whose analysis is replaced or taken
+    //away leaves its expected line cached on every node the user had already
+    //explored, and those keep showing the superseded values.
+    this.removeAnalysisFromTree(node)
+
+    //Set it
     if (analysis) {
       node.analysis = analysis
     }
-    else {
-      delete node.analysis
-    }
+
+    //Derive analysis for the current node, in case we are sitting further
+    //along a line this node now has an expectation for
+    this.deriveNodeAnalysis(this.game.getCurrentNode())
 
     //Trigger event, so the active mode can render it
     this.triggerEvent('analysisChange', {hasAnalysis: Boolean(analysis), node})
@@ -799,11 +806,17 @@ export default class Player extends Base {
 
   /**
    * Remove analysis data from a node and everything below it
+   *
+   * NOTE: walked with a stack rather than by recursion, as a game record's
+   * main line is one long chain of single children: recursing puts a frame on
+   * the stack per move played, which a long enough record overflows.
    */
   removeAnalysisFromTree(node) {
-    delete node.analysis
-    for (const child of node.getChildren()) {
-      this.removeAnalysisFromTree(child)
+    const stack = [node]
+    while (stack.length > 0) {
+      const next = stack.pop()
+      delete next.analysis
+      stack.push(...next.getChildren())
     }
   }
 
@@ -832,9 +845,14 @@ export default class Player extends Base {
     //as they carry no candidates of their own: the moves that produced them
     //become part of the prefix instead. Anything that is not a plain move
     //cannot be part of an engine line, so it ends the search.
+    //
+    //The walk is bounded by the longest line an engine reports, as more moves
+    //than that cannot be the start of any of them. That is what keeps this
+    //off the whole game tree on every step taken through a record that has no
+    //analysis on it at all.
     const entered = []
     let ancestor = node
-    while (ancestor) {
+    while (ancestor && entered.length <= maxAnalysisSequenceLength) {
       const {analysis} = ancestor
       if (analysis && !analysis.derived) {
         break
@@ -846,8 +864,8 @@ export default class Player extends Base {
       ancestor = ancestor.parent
     }
 
-    //No analysed ancestor reached
-    if (!ancestor) {
+    //No analysed ancestor within reach
+    if (!ancestor || !ancestor.analysis) {
       return
     }
 
@@ -907,12 +925,11 @@ export default class Player extends Base {
     //Get data
     const {winrate, scoreLead, visits, pv} = candidate
 
-    //The sequence numbering continues the numbering already on the board:
-    //the variation move numbering when we are on a branch, and the number of
-    //moves entered past the analysed position otherwise
-    const offset = node.isVariationBranch() ?
-      node.getVariationMoveNodes().length :
-      entered.length
+    //The sequence numbering continues the variation move numbering already on
+    //the board, which is the same set of nodes the board numbers 1 upwards.
+    //Off a variation branch there are none of those, so the expected line
+    //numbers itself from 1.
+    const offset = node.getVariationMoveNodes().length
 
     //The remainder of the line becomes the expected follow-up sequence, with
     //the colors alternating onward from the last entered move

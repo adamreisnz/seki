@@ -102,3 +102,13 @@ export const playerActions = {
   REMOVE_ALL_MARKUP: 'removeAllMarkup',
   REMOVE_ALL_LINES: 'removeAllLines',
 }
+
+/**
+ * The longest expected line an analysis is taken to carry
+ *
+ * Engines report a handful of moves ahead — a dozen or so in practice — and
+ * this is the ceiling on that, used to bound how far back the player looks
+ * for the analysis a position is being explored from. Moves entered beyond it
+ * cannot be the start of any line an engine gave us.
+ */
+export const maxAnalysisSequenceLength = 100
