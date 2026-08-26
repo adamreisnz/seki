@@ -253,12 +253,17 @@ describe('game transformer', () => {
     })
 
     it('leaves a result that names no colour alone', () => {
-      for (const result of ['0', 'D', '?', 'VOID']) {
+      for (const result of ['0', '?', 'Void']) {
         const game = Game.fromSgf('(;FF[4]SZ[5])')
-        game.gameResult = result
+        game.setGameResult(result)
         expect(game.transform('i').getGameResult()).toBe(result)
         expect(game.transform('rfi').getGameResult()).toBe(result)
       }
+    })
+
+    it('leaves a record with no result without one', () => {
+      const game = Game.fromSgf('(;FF[4]SZ[5])')
+      expect(game.transform('i').getGameResult()).toBe('')
     })
 
     it('hands the komi to the other player', () => {

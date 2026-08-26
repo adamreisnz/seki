@@ -25,7 +25,32 @@ describe('parsing helpers', () => {
       expect(parseResult('W+Resign')).toBe('W+R')
       expect(parseResult('B+Time')).toBe('B+T')
       expect(parseResult('W+Forfeit')).toBe('W+F')
-      expect(parseResult('Draw')).toBe('D')
+    })
+
+    it('spells every drawn result the way the spec spells it', () => {
+
+      //NOTE: '0' is the spec's form for a draw (jigo), and the only one other
+      //programs read as one. 'D' is what Seki itself wrote for a long time,
+      //so records it made have to keep reading back as a draw.
+      expect(parseResult('0')).toBe('0')
+      expect(parseResult('Draw')).toBe('0')
+      expect(parseResult('draw')).toBe('0')
+      expect(parseResult('D')).toBe('0')
+      expect(parseResult('d')).toBe('0')
+    })
+
+    it('leaves a void result in the casing the spec gives it', () => {
+      expect(parseResult('Void')).toBe('Void')
+      expect(parseResult('void')).toBe('Void')
+      expect(parseResult('VOID')).toBe('Void')
+    })
+
+    it('leaves the Fox win conditions alone', () => {
+
+      //NOTE: these read as a forfeit and a timeout respectively, and share
+      //their leading zero with a drawn result without being one
+      expect(parseResult('W+0.03')).toBe('W+F')
+      expect(parseResult('B+0.02')).toBe('B+T')
     })
 
     it('keeps a points margin', () => {

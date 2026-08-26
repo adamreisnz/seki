@@ -51,6 +51,7 @@
 		//  W+T (white wins by time)
 		//  B+F (black wins by forfeit)
 		//  0 (draw / jigo)
+		//  Void (game was void)
 		//  ? (unknown result)
 		//  <empty string> (no result or suspended play)
 		//

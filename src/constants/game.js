@@ -11,6 +11,15 @@ export const gameTypes = {
   UNKNOWN: 'unknown',
 }
 
+//Game results that name no winner. These are spelled the way the SGF spec
+//spells them — a draw (jigo) as '0' (zero) and a void game as 'Void', in that
+//casing — because those are the only forms other programs read back as such
+export const gameResults = {
+  DRAW: '0',
+  VOID: 'Void',
+  UNKNOWN: '?',
+}
+
 //Default handicap placements for standard board sizes
 export const handicapPlacements = {
   9: {

@@ -1,5 +1,6 @@
 import {describe, it, expect} from 'vitest'
 import GameScore, {GameColorScore} from './game-score.js'
+import Game from './game.js'
 import {stoneColors} from '../constants/stone.js'
 import {scoringMethods} from '../constants/score.js'
 
@@ -77,6 +78,21 @@ describe('GameScore', () => {
     score.setCaptures(BLACK, 10)
     score.setCaptures(WHITE, 10)
     expect(score.getResult(TERRITORY)).toBe('0')
+  })
+
+  it('reports a draw a game will take as it stands', () => {
+
+    //The result a score reports goes onto the game it was taken from, and
+    //setting it runs it through the result parser. That parser used to rewrite
+    //a drawn '0' into a 'D' no other program reads, which made this the one
+    //result a game could not be handed straight back.
+    const score = new GameScore()
+    score.setCaptures(BLACK, 10)
+    score.setCaptures(WHITE, 10)
+
+    const game = new Game()
+    game.setGameResult(score.getResult(TERRITORY))
+    expect(game.getGameResult()).toBe('0')
   })
 
   it('formats the result with the margin', () => {
