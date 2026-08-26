@@ -111,3 +111,29 @@ export const sgfScoreTypes = {
   [scoreTypes.TERRITORY_WHITE]: 'TW',
   [scoreTypes.TERRITORY_NEUTRAL]: 'TN',
 }
+
+//Token types produced by the SGF tokenizer, being the four things an SGF is
+//made of plus a catch all for anything that isn't one of them. The names are
+//the specification's own, so that a token can be read against the grammar.
+export const sgfTokenTypes = {
+  PARENTHESIS: 'parenthesis',
+  SEMICOLON: 'semicolon',
+  PROP_IDENT: 'prop_ident',
+  C_VALUE_TYPE: 'c_value_type',
+  INVALID: 'invalid',
+}
+
+//Diagnostic codes reported when reading a record that isn't well formed.
+//None of these stop a record being read: each one names something that was
+//skipped, so a caller can tell the difference between a record that read
+//cleanly and one that read at all.
+export const sgfDiagnosticCodes = {
+  INVALID_INPUT: 'invalid_input',
+  UNTERMINATED_VALUE: 'unterminated_value',
+  VALUE_WITHOUT_IDENTIFIER: 'value_without_identifier',
+  PROPERTY_WITHOUT_IDENTIFIER: 'property_without_identifier',
+  PROPERTY_WITHOUT_VALUE: 'property_without_value',
+  PROPERTY_OUTSIDE_NODE: 'property_outside_node',
+  UNMATCHED_CLOSING_PARENTHESIS: 'unmatched_closing_parenthesis',
+  UNCLOSED_PARENTHESIS: 'unclosed_parenthesis',
+}

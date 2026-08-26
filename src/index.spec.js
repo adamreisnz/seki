@@ -47,7 +47,7 @@ describe('public API', () => {
   it('exports the helper namespaces', () => {
     expect(Object.keys(seki.helpers).sort()).toEqual([
       'color', 'coordinates', 'encoding', 'grid', 'object', 'parsing',
-      'transformation', 'util',
+      'sgfTokenizer', 'transformation', 'util',
     ])
   })
 
@@ -62,6 +62,14 @@ describe('public API', () => {
       .toEqual({ROTATE: 'r', FLIP: 'f', INVERT: 'i'})
     expect(seki.boardTransformations).toBeTypeOf('object')
     expect(seki.boardSymmetries).toHaveLength(8)
+  })
+
+  it('exports what a caller needs to act on an SGF diagnostic', () => {
+
+    //A diagnostic's code is only useful if the codes themselves are reachable
+    expect(seki.sgfDiagnosticCodes).toBeTypeOf('object')
+    expect(seki.sgfTokenTypes).toBeTypeOf('object')
+    expect(seki.helpers.sgfTokenizer.tokenizeSgf).toBeTypeOf('function')
   })
 })
 
