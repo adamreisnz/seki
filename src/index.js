@@ -13,6 +13,7 @@ import {GameColorScore as SekiGameColorScore} from './classes/game-score.js'
 import {default as SekiGameScore} from './classes/game-score.js'
 import {default as SekiGameScoreState} from './classes/game-score-state.js'
 import {default as SekiGameScoreEstimator} from './classes/game-score-estimator.js'
+import {default as SekiGameTransformer} from './classes/game-transformer.js'
 
 //Base classes for layers, modes and objects
 import {default as SekiBoardLayer} from './classes/layers/board-layer.js'
@@ -53,6 +54,7 @@ import * as encoding from './helpers/encoding.js'
 import * as grid from './helpers/grid.js'
 import * as object from './helpers/object.js'
 import * as parsing from './helpers/parsing.js'
+import * as transformation from './helpers/transformation.js'
 import * as util from './helpers/util.js'
 
 //Create convenience helpers object
@@ -63,6 +65,7 @@ const helpers = {
   grid,
   object,
   parsing,
+  transformation,
   util,
 }
 
@@ -76,6 +79,7 @@ import * as player from './constants/player.js'
 import * as score from './constants/score.js'
 import * as setup from './constants/setup.js'
 import * as stone from './constants/stone.js'
+import * as transformationConstants from './constants/transformation.js'
 import * as utilConstants from './constants/util.js'
 
 //Extract constants
@@ -119,6 +123,11 @@ const {
   stoneModifierStyles,
 } = stone
 const {
+  boardSymmetries,
+  boardTransformations,
+  transformationOperations,
+} = transformationConstants
+const {
   kanjiNumbers,
   hangulNumbers,
   keyValues,
@@ -144,6 +153,7 @@ export {
   SekiGameScore,
   SekiGameScoreState,
   SekiGameScoreEstimator,
+  SekiGameTransformer,
 
   //Base classes for layers, modes and objects
   SekiBoardLayer,
@@ -182,6 +192,8 @@ export {
   appVersion,
   boardLayerTypes,
   boardSides,
+  boardSymmetries,
+  boardTransformations,
   editTools,
   gameTypes,
   hangulNumbers,
@@ -200,6 +212,7 @@ export {
   stoneColors,
   stoneModifierStyles,
   stoneStyles,
+  transformationOperations,
 
   //Defaults
   defaultBoardConfig,
