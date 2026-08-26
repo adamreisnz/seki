@@ -141,3 +141,154 @@ export const createStubBoard = ({
 export const stubWindow = (devicePixelRatio = 1) => {
   vi.stubGlobal('window', {devicePixelRatio})
 }
+
+/**
+ * A DOM stand-in, enough of one for bootstrapping
+ *
+ * The library is DOM free at its core and the suite runs under plain node, so
+ * bootstrapping — which builds elements, canvases and audio, and attaches
+ * listeners — had no way to run at all. This is the smallest set of the DOM it
+ * actually touches: elements with a class list and children, canvases that
+ * hand out a recording context, audio elements that record what was asked of
+ * them, and listener registration that can be fired by hand.
+ */
+
+/**
+ * One element
+ */
+export const createStubElement = (tag = 'div') => {
+
+  const classes = new Set()
+  const listeners = new Map()
+
+  const element = {
+    tagName: tag.toUpperCase(),
+    className: '',
+    children: [],
+    style: {},
+    listeners,
+
+    //Class handling, as the class helpers use it
+    classList: {
+      add: (...names) => names.forEach(name => classes.add(name)),
+      remove: (...names) => names.forEach(name => classes.delete(name)),
+      contains: name => classes.has(name),
+      toggle: (name, value) => {
+        const on = (value === undefined) ? !classes.has(name) : value
+        classes[on ? 'add' : 'delete'](name)
+        return on
+      },
+      get size() {
+        return classes.size
+      },
+    },
+
+    //Tree
+    appendChild: child => {
+      element.children.push(child)
+      child.parentNode = element
+      return child
+    },
+    removeChild: child => {
+      element.children = element.children.filter(c => c !== child)
+      return child
+    },
+    remove: () => element.parentNode?.removeChild(element),
+    getElementsByTagName: name => element.children
+      .filter(child => child.tagName === name.toUpperCase()),
+
+    //Listeners, recorded so a spec can fire them
+    addEventListener: (type, fn) => {
+      if (!listeners.has(type)) {
+        listeners.set(type, new Set())
+      }
+      listeners.get(type).add(fn)
+    },
+    removeEventListener: (type, fn) => listeners.get(type)?.delete(fn),
+    dispatch: (type, event = {}) => {
+      for (const fn of listeners.get(type) ?? []) {
+        fn(event)
+      }
+    },
+    focus: () => {
+      element.hasFocus = true
+    },
+  }
+
+  //A canvas hands out a context of its own
+  if (element.tagName === 'CANVAS') {
+    element.width = 0
+    element.height = 0
+    element.context = createStubContext()
+    element.getContext = () => element.context
+  }
+
+  //An audio element records what it was asked to do
+  if (element.tagName === 'AUDIO') {
+    element.src = ''
+    element.volume = 1
+    element.currentTime = 0
+    element.paused = true
+    element.playCount = 0
+    element.play = () => {
+      element.paused = false
+      element.playCount++
+      return Promise.resolve()
+    }
+    element.pause = () => {
+      element.paused = true
+    }
+  }
+
+  return element
+}
+
+/**
+ * A document, and the globals that come with it
+ *
+ * Returns the container to bootstrap into. Call inside a test that unstubs its
+ * globals afterwards.
+ */
+export const stubDom = ({devicePixelRatio = 1} = {}) => {
+
+  const created = []
+
+  vi.stubGlobal('document', {
+    createElement: tag => {
+      const element = createStubElement(tag)
+      created.push(element)
+      return element
+    },
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
+  })
+
+  vi.stubGlobal('window', {devicePixelRatio})
+  vi.stubGlobal('HTMLCollection', class {})
+  vi.stubGlobal('Image', class {
+    constructor() {
+      this.width = 1
+      this.height = 1
+    }
+    addEventListener() {} // eslint-disable-line no-empty-function
+  })
+
+  //The board observes its container for size changes
+  const observers = []
+  vi.stubGlobal('ResizeObserver', class {
+    constructor(callback) {
+      this.callback = callback
+      this.observed = []
+      this.disconnected = false
+      observers.push(this)
+    }
+    observe(element) {
+      this.observed.push(element)
+    }
+    disconnect() {
+      this.disconnected = true
+    }
+  })
+
+  return {container: createStubElement(), created, observers}
+}
