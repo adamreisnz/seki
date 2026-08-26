@@ -640,18 +640,30 @@ describe('Edit mode markup editing', () => {
     expect(player.game.toSgf()).toContain('TR[ee]')
   })
 
-  it('throws on the arrow tool, having already written the markup', () => {
+  it('never lets the arrow tool write markup it cannot draw', () => {
 
-    //NOTE: pinning current behaviour, and it is a bug. Arrow counts as a
-    //markup tool and maps onto a markup type, but there is no arrow markup
-    //object to draw, so the board sync at the end of the edit throws — after
-    //the arrow has gone into the record. Nothing in the player selects this
-    //tool, so it is only reachable by setting it directly.
+    //Arrow maps onto a markup type with no markup object behind it, so the
+    //board sync at the end of an edit would throw with the arrow already in
+    //the record. The tool is refused instead, leaving the move tool in place
     const {player, mode} = createPlayer()
     player.setEditTool(editTools.ARROW)
 
-    expect(() => mode.edit(at(4, 4))).toThrow(/arrow/)
-    expect(player.game.hasMarkup(4, 4, markupTypes.ARROW)).toBe(true)
+    expect(() => mode.edit(at(4, 4))).not.toThrow()
+    expect(player.game.hasMarkup(4, 4, markupTypes.ARROW)).toBe(false)
+  })
+
+  it('turns away markup of a type there is nothing to draw', () => {
+
+    //The same guard on the record itself, as processEdit() reaches this
+    //directly with whatever type it is handed
+    const {player, mode} = createPlayer()
+    const listener = vi.fn()
+    player.on('edit', listener)
+
+    mode.addMarkup(4, 4, markupTypes.ARROW)
+
+    expect(player.game.hasMarkup(4, 4)).toBe(false)
+    expect(listener).not.toHaveBeenCalled()
   })
 })
 

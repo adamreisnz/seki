@@ -35,4 +35,31 @@ describe('MarkupFactory', () => {
     expect(() => MarkupFactory.create(markupTypes.ARROW, board)).toThrow()
     expect(() => MarkupFactory.create(markupTypes.LINE, board)).toThrow()
   })
+
+  it('says up front which types it can build', () => {
+    const buildable = Object
+      .values(markupTypes)
+      .filter(type => type !== markupTypes.ARROW && type !== markupTypes.LINE)
+
+    for (const type of buildable) {
+      expect(MarkupFactory.isSupported(type)).toBe(true)
+    }
+  })
+
+  it('says up front which types it cannot build', () => {
+    expect(MarkupFactory.isSupported(markupTypes.ARROW)).toBe(false)
+    expect(MarkupFactory.isSupported(markupTypes.LINE)).toBe(false)
+    expect(MarkupFactory.isSupported('nonsense')).toBe(false)
+    expect(MarkupFactory.isSupported(undefined)).toBe(false)
+  })
+
+  it('claims nothing for a name off the object prototype', () => {
+
+    //A plain property read answers for anything the prototype carries, so
+    //'constructor' would come back as a class and be built with
+    for (const type of ['constructor', 'toString', '__proto__']) {
+      expect(MarkupFactory.isSupported(type)).toBe(false)
+      expect(() => MarkupFactory.create(type, board)).toThrow('Unknown markup type')
+    }
+  })
 })

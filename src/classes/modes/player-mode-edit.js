@@ -1,4 +1,5 @@
 import PlayerModeReplay from './player-mode-replay.js'
+import MarkupFactory from '../markup-factory.js'
 import {getPixelRatio} from '../../helpers/util.js'
 import {aCharUc, aCharLc} from '../../constants/util.js'
 import {markupTypes} from '../../constants/markup.js'
@@ -551,6 +552,14 @@ export default class PlayerModeEdit extends PlayerModeReplay {
     //Get data
     const {game} = this
 
+    //Markup the board has no way of drawing. NOTE: this is checked before the
+    //record is written rather than after, as the board throws on such markup
+    //the moment it syncs the position
+    if (!MarkupFactory.isSupported(type)) {
+      this.warn(`markup type ${type} is not supported`)
+      return
+    }
+
     //Add new markup
     game.addMarkup(x, y, {type, text})
 
@@ -702,6 +711,12 @@ export default class PlayerModeEdit extends PlayerModeReplay {
 
     //Get data
     const {board, currentGridDetail} = this
+
+    //Tool we can't actually use
+    if (!this.isSupportedTool(tool)) {
+      this.warn(`edit tool ${tool} is not supported`)
+      return
+    }
 
     //Special stone tool case
     if (tool === editTools.STONE) {
@@ -1000,10 +1015,16 @@ export default class PlayerModeEdit extends PlayerModeReplay {
   }
 
   /**
-   * Get markup type for a given editing tool
+   * Get markup type for the current editing tool
    */
   getEditingMarkupType() {
-    const {tool} = this
+    return this.getMarkupTypeForTool(this.tool)
+  }
+
+  /**
+   * Get the markup type a given editing tool writes, if it writes markup
+   */
+  getMarkupTypeForTool(tool) {
     const label = [
       editTools.LETTER,
       editTools.NUMBER,
@@ -1014,6 +1035,19 @@ export default class PlayerModeEdit extends PlayerModeReplay {
     else if (Object.values(markupTypes).includes(tool)) {
       return tool
     }
+  }
+
+  /**
+   * Check if a given editing tool can be used
+   *
+   * NOTE: editTools carries the arrow, whose markup type is recognised but
+   * has no implementation. Letting it become the active tool means the next
+   * edit writes the arrow into the record and then throws when the board
+   * syncs the position, leaving markup behind that nothing can draw.
+   */
+  isSupportedTool(tool) {
+    const type = this.getMarkupTypeForTool(tool)
+    return (!type || MarkupFactory.isSupported(type))
   }
 
   /**
