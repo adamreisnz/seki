@@ -1,13 +1,13 @@
 ---
 name: seki-update
-description: Cut a Seki release and pull it through to Let's Play Go. Use this skill ONLY when the user explicitly asks for it by name or in so many words — "/seki-update", "release Seki and update Let's Play Go", "cut a patch and pull it through". It bumps the version in the Seki main checkout, which publishes to npm, then runs `pnpm seki:update` in the Let's Play Go main checkout to move its lockfile pin and push it. Takes an optional argument of `patch`, `minor` or `major`; asks when it isn't given. Never invoke this off your own bat as part of finishing a ticket, and never as a follow-on to merging a PR.
+description: Cut a Seki release and, if the user wants it, pull it through to Let's Play Go. Use this skill ONLY when the user explicitly asks for it by name or in so many words — "/seki-update", "release Seki and update Let's Play Go", "cut a patch and pull it through". It bumps the version in the Seki main checkout, which publishes to npm, then asks whether to run `pnpm seki:update` in the Let's Play Go main checkout to move its lockfile pin and push it, or to leave Let's Play Go alone. Takes an optional argument of `patch`, `minor` or `major`; asks when it isn't given. Never invoke this off your own bat as part of finishing a ticket, and never as a follow-on to merging a PR.
 ---
 
 # Releasing Seki and pulling it through
 
 This is the one workflow that reaches outside a branch and outside this repo.
-It publishes to npm and pushes commits to `main` in two repositories, so it
-runs only when the user asks for it, in that moment and in so many words.
+It publishes to npm and pushes commits to `main` in up to two repositories, so
+it runs only when the user asks for it, in that moment and in so many words.
 
 ## This skill is the exception, and only while it is invoked
 
@@ -22,12 +22,15 @@ outside that:
 - Nothing else in the session inherits it. Merging a PR, finishing a ticket or
   updating a dependency does not become a reason to release, and a request to
   release is not a request to merge anything first.
+- The reach into Let's Play Go is the user's to grant per run, and step 1 asks
+  for it. A "yes" there covers this release only, and a "skip" means this
+  session does not touch `../lets-play-go` at all.
 - If the change meant to go out isn't merged into `main` yet, stop and say so.
   Releasing publishes whatever `main` holds, not what is sitting in a PR.
 
 ## Where this runs
 
-Both **main checkouts**, never a worktree. A release describes `main`, and the
+The **main checkouts**, never a worktree. A release describes `main`, and the
 tag has to sit on the commit `main` actually points at. Resolve the paths
 rather than assuming the current directory is either of them:
 
@@ -39,9 +42,37 @@ The first entry is the Seki main checkout. Let's Play Go is its sibling,
 `../lets-play-go` from there — sibling of the main checkout, not of whatever
 worktree you are in.
 
-## 1. Check both checkouts are ready
+## 1. Ask what this release is
 
-In each of the two main checkouts, in turn:
+Two things have to be settled before anything is checked or bumped, and both
+are the user's call. Ask them together in a single `AskUserQuestion`, unless
+the invocation already answered one:
+
+**Which kind of bump.** If the invocation named one — `/seki-update patch` —
+take it and don't ask again. Otherwise offer `patch`, `minor` and `major`.
+Never guess from the size of the diff: whether a change is breaking is a
+judgement about the public surface, and it is the user's to make.
+
+**Whether to pull it through to Let's Play Go.** Offer updating Let's Play Go
+and skipping it. Default the recommendation to updating — pulling through is
+the usual reason this skill exists — but take a skip at face value and don't
+argue it. If the invocation already said which way ("release Seki only",
+"don't touch Let's Play Go", "cut a patch and pull it through"), take that and
+don't ask again.
+
+Seki is consumed by Let's Play Go as `github:adamreisnz/seki` in both
+`apps/web` and `apps/api`, so a `major` reaches a real app on the next
+update — which is this run, if the user asked to pull it through. Worth saying
+plainly when the bump is `major` and they're deciding.
+
+Skipping leaves Let's Play Go pinned to the older Seki commit until someone
+updates it later. That is a fine thing to want; just say it back so the user
+knows that is what they chose.
+
+## 2. Check the checkouts are ready
+
+In the Seki main checkout, and in the Let's Play Go main checkout too if step 1
+said to pull through:
 
 ```bash
 rtk git branch --show-current && rtk git status --short && rtk git pull --ff-only
@@ -63,16 +94,8 @@ Let's Play Go's tree does not have to be clean — `pnpm seki:update` stashes
 what is open and gives it back afterwards. Say what you found if it wasn't
 clean, so the user knows their work was moved and restored.
 
-## 2. Ask which kind of bump
-
-If the invocation named one — `/seki-update patch` — take it and don't ask
-again. Otherwise ask, with `AskUserQuestion`, offering `patch`, `minor` and
-`major`. Never guess from the size of the diff: whether a change is breaking
-is a judgement about the public surface, and it is the user's to make.
-
-Seki is consumed by Let's Play Go as `github:adamreisnz/seki` in both
-`apps/web` and `apps/api`, so a `major` reaches a real app on the next update
-— which is the one this skill is about to run.
+If the user chose to skip Let's Play Go, don't run anything in
+`../lets-play-go` — not even a status check. Skipping means leaving it alone.
 
 ## 3. Bump the version in Seki
 
@@ -105,6 +128,9 @@ rtk git log --oneline -1 && rtk grep -n appVersion src/constants/app.js
 
 ## 4. Pull it through to Let's Play Go
 
+Only if step 1 said to. If the user chose to skip, go straight to step 5 and
+report the release on its own.
+
 From the Let's Play Go main checkout:
 
 ```bash
@@ -132,18 +158,20 @@ verbatim rather than glossing:
 
 ## 5. Verify and report
 
-Check what actually got installed, in the workspace package rather than the
-repo root:
+If you pulled through, check what actually got installed, in the workspace
+package rather than the repo root:
 
 ```bash
 node -p "require('./apps/web/node_modules/@reis/seki/package.json').version"
 ```
 
-Then confirm both repos are level with `origin` (`rtk git status --short
---branch` in each), and tell the user in one place:
+Then confirm each repo you touched is level with `origin` (`rtk git status
+--short --branch` in each), and tell the user in one place:
 
 - the new Seki version and its tag,
-- the Seki commit Let's Play Go now pins, and the commit that recorded it,
+- the Seki commit Let's Play Go now pins, and the commit that recorded it — or,
+  if they skipped it, that Let's Play Go was left alone and still pins the
+  older commit,
 - that the Release workflow is publishing to npm, with a word on whether it
   has gone green yet (`rtk gh run list --workflow=release.yml --limit 1`),
 - anything from step 4 that needs them, stashes included.
@@ -151,13 +179,18 @@ Then confirm both repos are level with `origin` (`rtk git status --short
 ## Definition of done
 
 - [ ] The user asked for this release explicitly, in this session.
-- [ ] Both main checkouts were on `main`, up to date, and Seki's was clean.
+- [ ] The user said which bump, and whether Let's Play Go was to be updated or
+      skipped.
+- [ ] Seki's main checkout was on `main`, up to date and clean — and Let's Play
+      Go's too, if it was being updated.
 - [ ] The bump ran in the Seki main checkout, and `pnpm check` passed as part
       of it.
 - [ ] The version commit and `vX.Y.Z` tag are on `origin`.
-- [ ] `pnpm seki:update` ran in the Let's Play Go main checkout, and its
-      outcome — committed, already current, or something needing the user —
-      has been passed on as it stands.
-- [ ] Both repos are level with `origin`, and any stash the script took has
-      been given back.
-- [ ] The user has been told the version, the tag and the pinned commit.
+- [ ] If pulling through: `pnpm seki:update` ran in the Let's Play Go main
+      checkout, and its outcome — committed, already current, or something
+      needing the user — has been passed on as it stands. If skipping: nothing
+      was run in `../lets-play-go`.
+- [ ] Every repo touched is level with `origin`, and any stash the script took
+      has been given back.
+- [ ] The user has been told the version, the tag, and either the pinned commit
+      or that Let's Play Go was skipped.
