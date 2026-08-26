@@ -123,4 +123,13 @@ describe('DrawLayer', () => {
       ])
     })
   })
+
+  it('falls back to the theme colour for a line drawn without one', () => {
+    const board = createBoard()
+    const layer = board.getLayer(boardLayerTypes.DRAW)
+
+    layer.addLine(1, 1, 2, 2)
+
+    expect(layer.context.strokeStyle).toBe(board.theme.get('draw.color'))
+  })
 })

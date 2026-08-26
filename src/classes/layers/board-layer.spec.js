@@ -220,3 +220,76 @@ describe('BoardLayer theme', () => {
     expect(layer.theme).toBeNull()
   })
 })
+
+describe('BoardLayer cells holding more than one object', () => {
+
+  it('draws every object stacked on a cell', () => {
+
+    //A hover stone is a shadow and the stone itself, so a cell can hold an
+    //array rather than a single object
+    const layer = createLayer()
+    const shadow = createObject()
+    const stone = createObject()
+
+    layer.add(3, 3, [shadow, stone])
+
+    expect(shadow.draw).toHaveBeenCalledWith(layer.context, 3, 3)
+    expect(stone.draw).toHaveBeenCalledWith(layer.context, 3, 3)
+  })
+
+  it('erases every object stacked on a cell', () => {
+    const layer = createLayer()
+    const shadow = createObject()
+    const stone = createObject()
+
+    layer.add(3, 3, [shadow, stone])
+    layer.remove(3, 3)
+
+    expect(shadow.erase).toHaveBeenCalledWith(layer.context, 3, 3)
+    expect(stone.erase).toHaveBeenCalledWith(layer.context, 3, 3)
+  })
+
+  it('draws them all again on a full redraw', () => {
+    const layer = createLayer()
+    const shadow = createObject()
+    const stone = createObject()
+
+    layer.grid.set(3, 3, [shadow, stone])
+    layer.draw()
+
+    expect(shadow.draw).toHaveBeenCalledTimes(1)
+    expect(stone.draw).toHaveBeenCalledTimes(1)
+  })
+})
+
+describe('BoardLayer cells off the board', () => {
+
+  it('paints nothing for a cell outside the board', () => {
+
+    //The grid can be larger than the visible board when a section of a game
+    //is being shown, so an object can sit on a cell that is not drawn
+    const layer = createLayer()
+    const object = createObject()
+
+    layer.grid.set(25, 25, object)
+    layer.drawCell(25, 25)
+
+    expect(object.draw).not.toHaveBeenCalled()
+  })
+
+  it('erases nothing for a cell outside the board', () => {
+    const layer = createLayer()
+    const object = createObject()
+
+    layer.grid.set(25, 25, object)
+    layer.eraseCell(25, 25)
+
+    expect(object.erase).not.toHaveBeenCalled()
+  })
+
+  it('paints nothing for an empty cell', () => {
+    const layer = createLayer()
+    expect(() => layer.drawCell(3, 3)).not.toThrow()
+    expect(() => layer.eraseCell(3, 3)).not.toThrow()
+  })
+})
