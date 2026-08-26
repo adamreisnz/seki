@@ -1,6 +1,7 @@
 import {describe, it, expect} from 'vitest'
 import {
-  parseEvent, parseResult, parseKomi, parseHandicap, parseTime
+  parseEvent, parseResult, parseKomi, parseHandicap, parseTime,
+  parseDates, stringifyDates
 } from './parsing.js'
 
 describe('parsing helpers', () => {
@@ -75,6 +76,70 @@ describe('parsing helpers', () => {
       expect(parseTime('1800')).toBe(1800)
       expect(parseTime('abc')).toBe(0)
       expect(parseTime(undefined)).toBeUndefined()
+    })
+  })
+
+  describe('parseDates()', () => {
+
+    it('reads a single date at any precision', () => {
+      expect(parseDates('2024-03-01')).toEqual(['2024-03-01'])
+      expect(parseDates('2024-03')).toEqual(['2024-03'])
+      expect(parseDates('2024')).toEqual(['2024'])
+    })
+
+    it('reads a list of full dates', () => {
+      expect(parseDates('2024-03-01,2024-04-05'))
+        .toEqual(['2024-03-01', '2024-04-05'])
+    })
+
+    it('expands a date that gives only its day', () => {
+      expect(parseDates('1996-10-18,19'))
+        .toEqual(['1996-10-18', '1996-10-19'])
+      expect(parseDates('2024-03-01,02,03'))
+        .toEqual(['2024-03-01', '2024-03-02', '2024-03-03'])
+    })
+
+    it('expands a date that gives only its month and day', () => {
+      expect(parseDates('2024-03-01,04-05'))
+        .toEqual(['2024-03-01', '2024-04-05'])
+    })
+
+    it('pads a month or day written with one digit', () => {
+      expect(parseDates('2024-3-1,2')).toEqual(['2024-03-01', '2024-03-02'])
+    })
+
+    it('has nothing for an empty or unreadable value', () => {
+      expect(parseDates('')).toEqual([])
+      expect(parseDates('   ')).toEqual([])
+      expect(parseDates('not a date')).toEqual([])
+      expect(parseDates(undefined)).toEqual([])
+    })
+  })
+
+  describe('stringifyDates()', () => {
+
+    it('writes a single date as it is', () => {
+      expect(stringifyDates(['2024-03-01'])).toBe('2024-03-01')
+    })
+
+    it('leaves off what a date shares with the one before it', () => {
+      expect(stringifyDates(['1996-10-18', '1996-10-19'])).toBe('1996-10-18,19')
+      expect(stringifyDates(['2024-03-01', '2024-04-05']))
+        .toBe('2024-03-01,04-05')
+    })
+
+    it('still writes something for a repeated date', () => {
+      expect(stringifyDates(['2024-03-01', '2024-03-01'])).toBe('2024-03-01,01')
+    })
+
+    it('has nothing to write for an empty list', () => {
+      expect(stringifyDates([])).toBe('')
+      expect(stringifyDates(undefined)).toBe('')
+    })
+
+    it('round trips back through parseDates', () => {
+      const dates = ['2024-03-01', '2024-03-02', '2024-04-05', '2025']
+      expect(parseDates(stringifyDates(dates))).toEqual(dates)
     })
   })
 })

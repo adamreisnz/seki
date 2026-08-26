@@ -1131,6 +1131,71 @@ describe('Game date', () => {
     game.setCurrentDate()
     expect(game.getGameDate()).toBe(dateString())
   })
+
+  it('keeps every date of a game played over several days', () => {
+
+    //NOTE: setInfo used to take the first date and drop the rest, so a game
+    //played over several days, or an adjourned one, lost all but its first
+    const game = new Game({game: {dates: ['2024-03-01', '2024-03-02']}})
+    expect(game.getGameDates()).toEqual(['2024-03-01', '2024-03-02'])
+    expect(game.getGameDate()).toBe('2024-03-01')
+  })
+
+  it('has a single date as the only entry in its list', () => {
+    const game = new Game({game: {date: '2020-01-02'}})
+    expect(game.getGameDates()).toEqual(['2020-01-02'])
+  })
+
+  it('has no dates at all on a new game', () => {
+    expect(new Game().getGameDates()).toEqual([])
+  })
+
+  it('expands the shorthand SGF allows within a date list', () => {
+
+    //NOTE: SGF lets a date in a list leave off whatever it shares with the
+    //one before it, so 2024-03-01,02 is the first and second of March
+    const game = new Game()
+    game.setGameDates('2024-03-01,02')
+    expect(game.getGameDates()).toEqual(['2024-03-01', '2024-03-02'])
+  })
+
+  it('reads a list handed over with its shorthand unexpanded', () => {
+    const game = new Game()
+    game.setGameDates(['1996-10-18', '19'])
+    expect(game.getGameDates()).toEqual(['1996-10-18', '1996-10-19'])
+  })
+
+  it('takes a list given to the single date setter', () => {
+    const game = new Game()
+    game.setGameDate('2024-03-01,02')
+    expect(game.getGameDate()).toBe('2024-03-01')
+    expect(game.getGameDates()).toEqual(['2024-03-01', '2024-03-02'])
+  })
+
+  it('replaces the whole list when a single date is set', () => {
+    const game = new Game({game: {dates: ['2024-03-01', '2024-03-02']}})
+    game.setGameDate('2025-05-05')
+    expect(game.getGameDates()).toEqual(['2025-05-05'])
+  })
+
+  it('takes the list in preference to the single date', () => {
+    const game = new Game({game: {
+      date: '2024-03-01',
+      dates: ['2024-03-01', '2024-03-02'],
+    }})
+    expect(game.getGameDates()).toEqual(['2024-03-01', '2024-03-02'])
+  })
+
+  it('writes the list out again, and only when there is one', () => {
+    const game = new Game({game: {dates: ['2024-03-01', '2024-03-02']}})
+    expect(game.getInfo().game).toMatchObject({
+      date: '2024-03-01',
+      dates: ['2024-03-01', '2024-03-02'],
+    })
+
+    game.setGameDate('2024-03-01')
+    expect(game.getInfo().game.dates).toBeUndefined()
+  })
 })
 
 describe('Game loaded from a converter', () => {

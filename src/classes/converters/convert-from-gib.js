@@ -232,8 +232,7 @@ export default class ConvertFromGib extends Converter {
    */
   parseDate(game, match) {
     //GIB writes the month and day unpadded, and sometimes with a leading
-    //space, so they have to be padded back out. Game#setGameDate only accepts
-    //two digit month and day parts, and would otherwise keep the year alone.
+    //space, so they are padded back out here to hand over a plain ISO date.
     const year = match[1]
     const month = String(match[2]).padStart(2, '0')
     const day = String(match[3]).padStart(2, '0')

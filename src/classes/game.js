@@ -10,7 +10,9 @@ import ConvertFromNgf from './converters/convert-from-ngf.js'
 import ConvertToJgf from './converters/convert-to-jgf.js'
 import ConvertToSgf from './converters/convert-to-sgf.js'
 import {copy, get, set, merge, isObject} from '../helpers/object.js'
-import {parseTime, parseKomi, parseHandicap, parseEvent, parseResult} from '../helpers/parsing.js'
+import {
+  parseTime, parseKomi, parseHandicap, parseEvent, parseResult, parseDates
+} from '../helpers/parsing.js'
 import {dateString} from '../helpers/util.js'
 import {isValidColor, colorToNumeric} from '../helpers/color.js'
 import {decodeData} from '../helpers/encoding.js'
@@ -88,6 +90,7 @@ export default class Game extends Base {
     this.gameName = ''
     this.gameResult = ''
     this.gameDate = ''
+    this.gameDates = []
     this.gameOpening = ''
     this.gameAnnotator = ''
     this.gameDescription = ''
@@ -278,12 +281,16 @@ export default class Game extends Base {
       this.setTimePerPeriod(timePerPeriod)
     }
 
-    //Set date
-    if (typeof gameDate !== 'undefined') {
-      this.setGameDate(gameDate)
+    //Set dates. A record can carry more than one, for a game played over
+    //several days or an adjourned one, so the list is taken in preference to
+    //the single date, which is only ever its first entry. NOTE: this used to
+    //be the other way around, taking game.dates[0] and dropping the rest,
+    //which lost every date after the first on a round trip.
+    if (Array.isArray(gameDates) && gameDates.length > 0) {
+      this.setGameDates(gameDates)
     }
-    else if (Array.isArray(gameDates) && gameDates.length > 0) {
-      this.setGameDate(gameDates[0])
+    else if (typeof gameDate !== 'undefined') {
+      this.setGameDate(gameDate)
     }
 
     //Set board size
@@ -395,7 +402,9 @@ export default class Game extends Base {
     set(info, 'game.name', gameName)
     set(info, 'game.result', gameResult)
     set(info, 'game.date', gameDate)
-    set(info, 'game.dates', gameDates)
+    //Only write the list out when it says more than the single date does,
+    //which keeps a single date record looking exactly as it always has
+    set(info, 'game.dates', gameDates.length > 1 ? gameDates : undefined)
     set(info, 'game.opening', gameOpening)
     set(info, 'game.annotator', gameAnnotator)
     set(info, 'game.description', gameDescription)
@@ -629,15 +638,58 @@ export default class Game extends Base {
 
   /**
    * Set/get game date
+   *
+   * A single date, which is stored as the only entry in the list of dates. An
+   * SGF style list is accepted here too, so that a caller with a raw DT value
+   * in hand doesn't have to know which of the two setters to reach for.
    */
   setGameDate(gameDate = '') {
-    const match = gameDate
-      .match(/^(([0-9]{4})(-[0-9]{2})?(-[0-9]{2})?)/)
-    this.gameDate = match ? match[1] : ''
-    this.triggerEvent('info', {gameDate: this.gameDate})
+    this.setGameDates(gameDate)
   }
   getGameDate() {
     return this.gameDate
+  }
+
+  /**
+   * Set/get game dates
+   *
+   * Takes either an array of dates or an SGF style comma separated list, and
+   * keeps gameDate pointing at the first of them. A game played over several
+   * days, or an adjourned one, is recorded with all of its dates.
+   */
+  setGameDates(gameDates = []) {
+
+    //Bring both accepted shapes down to one SGF style list. Joining an array
+    //back up rather than reading its entries one by one is what lets an entry
+    //written in the shorthand, e.g. ['1996-10-18', '19'], mean the 19th of
+    //October, instead of being thrown out as a stray number.
+    const list = Array.isArray(gameDates)
+      ? gameDates.join(',')
+      : String(gameDates || '')
+
+    //Parse it, and if none of it reads as a date list, fall back to taking
+    //the leading date out of it. NOTE: parseDates only accepts a whole list,
+    //where this setter has always taken whatever date it found at the front
+    //of what it was handed, so a value like an ISO timestamp still reads the
+    //way it always did.
+    let dates = parseDates(list)
+    if (dates.length === 0 && list !== '') {
+      const match = list.match(/^(([0-9]{4})(-[0-9]{2})?(-[0-9]{2})?)/)
+      dates = match ? [match[1]] : []
+    }
+
+    //Store, keeping the single date pointing at the first of them
+    this.gameDates = dates
+    this.gameDate = dates[0] || ''
+
+    //Trigger event
+    this.triggerEvent('info', {
+      gameDate: this.gameDate,
+      gameDates: this.gameDates,
+    })
+  }
+  getGameDates() {
+    return this.gameDates
   }
 
   /**

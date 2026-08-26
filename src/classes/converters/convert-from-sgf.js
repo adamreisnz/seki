@@ -3,6 +3,7 @@ import Game from '../game.js'
 import GameNode from '../game-node.js'
 import {set, get} from '../../helpers/object.js'
 import {decodeData} from '../../helpers/encoding.js'
+import {parseDates as parseDateList} from '../../helpers/parsing.js'
 import {defaultGameInfo} from '../../constants/defaults.js'
 import {gameTypes} from '../../constants/game.js'
 import {stoneColors} from '../../constants/stone.js'
@@ -738,9 +739,16 @@ export default class ConvertFromSgf extends Converter {
 
   /**
    * Dates parser
+   *
+   * DT can list more than one date, for a game played over several days or an
+   * adjourned one, and a date in that list may leave off whatever it shares
+   * with the one before it. NOTE: this used to split on commas and stop there,
+   * so 1996-10-18,19 came through as the second date being the number 19.
    */
   parseDates(info, node, key, values) {
-    set(info, 'game.dates', values[0].split(','))
+    const dates = parseDateList(values[0])
+    set(info, 'game.dates', dates)
+    set(info, 'game.date', dates[0])
   }
 
   /**

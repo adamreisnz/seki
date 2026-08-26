@@ -134,6 +134,46 @@ describe('ConvertToSgf, label text', () => {
   })
 })
 
+describe('ConvertToSgf, the dates it writes', () => {
+
+  it('writes a single date as one DT', () => {
+    const game = new Game({game: {date: '2024-05-01'}})
+    expect(write(game)).toContain('DT[2024-05-01]')
+  })
+
+  it('writes every date of a game played over several days', () => {
+
+    //NOTE: DT used to be written from the single date alone, so a record with
+    //more than one date came back out with only its first
+    const game = new Game({game: {dates: ['2024-03-01', '2024-04-05']}})
+    expect(write(game)).toContain('DT[2024-03-01,04-05]')
+  })
+
+  it('writes a run of consecutive days in the SGF shorthand', () => {
+    const game = new Game({game: {
+      dates: ['1996-10-18', '1996-10-19'],
+    }})
+    expect(write(game)).toContain('DT[1996-10-18,19]')
+  })
+
+  it('writes no DT at all for a game with no date', () => {
+    expect(write(new Game())).not.toContain('DT[')
+  })
+
+  it('survives a round trip through its own output', () => {
+    const game = parse(write(new Game({game: {
+      dates: ['2024-03-01', '2024-03-02', '2024-04-05'],
+    }})))
+    expect(game.getGameDates())
+      .toEqual(['2024-03-01', '2024-03-02', '2024-04-05'])
+  })
+
+  it('brings a multi-date record back unchanged', () => {
+    const sgf = '(;FF[4]GM[1]SZ[19]DT[1996-10-18,19])'
+    expect(write(parse(sgf))).toContain('DT[1996-10-18,19]')
+  })
+})
+
 describe('ConvertToSgf, the charset it declares', () => {
 
   it('declares UTF-8, which is what a JavaScript string is', () => {

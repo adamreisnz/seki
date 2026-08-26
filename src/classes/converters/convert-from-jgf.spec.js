@@ -140,6 +140,34 @@ describe('ConvertFromJgf, game information', () => {
     const jgf = {tree: [{root: true}, {move: {B: 'dd'}}]}
     expect(new ConvertFromJgf().convert(jgf).getGameDate()).toBe('')
   })
+
+  it('reads every date of a game played over several days', () => {
+    const jgf = {
+      game: {dates: ['2011-04-22', '2011-04-23']},
+      tree: [{root: true}, {move: {B: 'dd'}}],
+    }
+    const game = new ConvertFromJgf().convert(jgf)
+    expect(game.getGameDates()).toEqual(['2011-04-22', '2011-04-23'])
+    expect(game.getGameDate()).toBe('2011-04-22')
+  })
+
+  it('keeps a multi-date record through a round trip', () => {
+
+    //NOTE: game.dates was written from a field that was never assigned, so it
+    //came out undefined and every date but the first was lost on the way
+    const game = new Game({game: {dates: ['2011-04-22', '2011-04-23']}})
+    const reloaded = new ConvertFromJgf().convert(toJgf(game))
+
+    expect(reloaded.getGameDates()).toEqual(['2011-04-22', '2011-04-23'])
+  })
+
+  it('keeps a single date record through a round trip', () => {
+    const game = new Game({game: {date: '2023-06-12'}})
+    const reloaded = new ConvertFromJgf().convert(toJgf(game))
+
+    expect(reloaded.getGameDate()).toBe('2023-06-12')
+    expect(reloaded.getGameDates()).toEqual(['2023-06-12'])
+  })
 })
 
 describe('ConvertFromJgf, invalid input', () => {
