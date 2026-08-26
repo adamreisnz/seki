@@ -77,7 +77,7 @@ export function composeTransformations(...transformations) {
  * order. A flip and a colour inversion each undo themselves, and a quarter
  * turn clockwise is undone by three more of them.
  */
-export function reverseTransformation(transformation) {
+export function reverseTransformation(transformation = '') {
   const reversed = Array
     .from(String(transformation))
     .reverse()

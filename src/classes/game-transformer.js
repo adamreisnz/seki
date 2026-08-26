@@ -73,6 +73,12 @@ export default class GameTransformer {
     //it isn't swapping over exactly as it stands.
     transformed.gameResult = this.transformResult(game, transformation)
 
+    //Pick up where the game being transformed had got to, rather than at the
+    //start of the record. Setting the root node rewinds, and the tree is the
+    //same shape as the one it was built from, so the same path leads to the
+    //node that answers to the one the game is on.
+    transformed.goToPath(game.getPath().clone())
+
     //Return
     return transformed
   }

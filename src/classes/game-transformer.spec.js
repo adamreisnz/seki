@@ -380,6 +380,18 @@ describe('game transformer', () => {
         .toEqual({color: stoneColors.BLACK, x: 3, y: 3})
     })
 
+    it('carries on from where the game it transformed had got to', () => {
+      const game = Game.fromSgf('(;FF[4]SZ[5];B[aa];W[ba](;B[ab])(;B[bb]))')
+      game.goToLastPosition()
+      game.goToNextVariation()
+
+      const transformed = game.transform('r')
+      expect(transformed.getCurrentMoveNumber()).toBe(game.getCurrentMoveNumber())
+      expect(transformed.getPath().isSameAs(game.getPath())).toBe(true)
+      expect(transformed.getCurrentNode().move)
+        .toEqual({color: stoneColors.BLACK, x: 3, y: 1})
+    })
+
     it('rebuilds the tree rather than sharing it', () => {
       const game = Game.fromSgf('(;FF[4]SZ[5];B[aa])')
       const transformed = game.transform('')
