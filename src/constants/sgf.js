@@ -32,12 +32,11 @@ export const sgfGameInfoMap = {
   AN: 'game.annotator',
   GC: 'game.description',
 
-  //Board information
+  //Board information. NOTE: a partial board is not in here, as it doesn't
+  //map onto a single info property either way. It is read from VW, with the
+  //private XL/XR/XT/XB properties as a fallback for older seki records, and
+  //written as VW alone
   SZ: 'board.size',
-  XL: 'board.cutOffLeft',
-  XR: 'board.cutOffRight',
-  XT: 'board.cutOffTop',
-  XB: 'board.cutOffBottom',
 
   //Event information
   EV: 'event.name',

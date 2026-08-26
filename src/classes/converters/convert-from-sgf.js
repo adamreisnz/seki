@@ -3,6 +3,7 @@ import Game from '../game.js'
 import GameNode from '../game-node.js'
 import {set, get} from '../../helpers/object.js'
 import {decodeData} from '../../helpers/encoding.js'
+import {defaultGameInfo} from '../../constants/defaults.js'
 import {gameTypes} from '../../constants/game.js'
 import {stoneColors} from '../../constants/stone.js'
 import {markupTypes} from '../../constants/markup.js'
@@ -67,8 +68,11 @@ const parsingMap = {
   DT: 'parseDates',
   KM: 'parseKomi',
 
-  //Board information
+  //Board information. VW is the standard property for a partial board; the
+  //XL/XR/XT/XB set is the private one seki inherited from ngGo, kept here so
+  //that records seki wrote before it moved to VW still read
   SZ: 'parseSize',
+  VW: 'parseView',
   XL: 'parseCutOff',
   XR: 'parseCutOff',
   XT: 'parseCutOff',
@@ -122,6 +126,12 @@ const parsingMap = {
  * Convert SGF file data into a seki game object
  */
 export default class ConvertFromSgf extends Converter {
+
+  //Board views read from VW properties, one per game tree, keyed by the game
+  //info they belong to. They can't be turned into cut off amounts as they are
+  //read, because that needs the board size and SZ is free to come after VW in
+  //the root node
+  views = new Map()
 
   /**
    * Convert SGF string into a seki game object
@@ -207,6 +217,10 @@ export default class ConvertFromSgf extends Converter {
     const stack = []
     const trees = []
 
+    //Start with no views, so that a second call on the same converter can't
+    //crop its games with a view read out of the first one
+    this.views = new Map()
+
     //No game tree open yet
     let root = null
     let info = null
@@ -276,6 +290,11 @@ export default class ConvertFromSgf extends Converter {
     //the caller to work out that nothing had been read
     if (trees.length === 0) {
       throw new Error(`Unable to parse SGF data: no game tree found`)
+    }
+
+    //Every board size is known now, so any views read can become cut offs
+    for (const {info} of trees) {
+      this.applyView(info)
     }
 
     //Return the game trees
@@ -578,7 +597,108 @@ export default class ConvertFromSgf extends Converter {
   }
 
   /**
+   * View parser
+   *
+   * VW is the FF[4] property for a partial board, naming the region that
+   * stays visible as a point list. Seki's own model is four cut off amounts,
+   * one per side, so the view is read as the bounding box of the points
+   * listed. A view that isn't rectangular therefore comes back as the
+   * smallest rectangle containing it, with whatever it left out restored.
+   *
+   * NOTE: in SGF a view is inheritable and applies from its node down until
+   * an empty VW[] clears it again. Seki holds the cut off as board wide
+   * configuration with no per node equivalent, so only the root node's view
+   * is read and a view set part way through a game is ignored.
+   */
+  parseView(info, node, key, values) {
+
+    //Not the root node, so this is a view seki has nowhere to put
+    if (!node.isRoot()) {
+      if (this.verbose) {
+        console.warn(`Ignoring ${key} property on a non root node, as seki has no per node board view:`, values)
+      }
+      return
+    }
+
+    //Collect every point the values cover. NOTE: a value may be a compressed
+    //point list naming a whole rectangle, which this expands
+    const points = []
+    for (const value of values) {
+      if (value === '') {
+        continue
+      }
+      const coords = this.createCoordinates(value)
+      if (coords.length === 0) {
+        console.warn(`Invalid coordinate encountered while parsing SGF: ${key} =>`, value)
+        continue
+      }
+      points.push(...coords)
+    }
+
+    //Points to work with, so store their bounding box
+    if (points.length > 0) {
+      const x = points.map(point => point.x)
+      const y = points.map(point => point.y)
+      this.views.set(info, {
+        minX: Math.min(...x),
+        maxX: Math.max(...x),
+        minY: Math.min(...y),
+        maxY: Math.max(...y),
+      })
+      return
+    }
+
+    //An empty VW[] resets the view, putting the whole board back on show.
+    //Anything else here is a value list we couldn't read at all, which is no
+    //instruction to go on, so leave any earlier view in place
+    if (values.every(value => value === '')) {
+      this.views.set(info, null)
+    }
+  }
+
+  /**
+   * Turn a board view into cut off amounts
+   *
+   * Called once a game tree has been read in full, as the cut off on the
+   * right and at the bottom is measured from the far edge of the board and
+   * so can't be worked out until the board size is known.
+   */
+  applyView(info) {
+
+    //No view read for this game, so leave whatever the legacy XL/XR/XT/XB
+    //properties set alone. Reading a view is what overrides them
+    if (!this.views.has(info)) {
+      return
+    }
+
+    //Get the board dimensions the view is measured against, falling back to
+    //the size assumed for a game whose record doesn't state one
+    const fallback = defaultGameInfo.board.size
+    const size = parseInt(get(info, 'board.size'))
+    const width = parseInt(get(info, 'board.width')) || size || fallback
+    const height = parseInt(get(info, 'board.height')) || size || fallback
+
+    //A cleared view means the whole board is visible again
+    const view = this.views.get(info) ||
+      {minX: 0, maxX: width - 1, minY: 0, maxY: height - 1}
+
+    //Store against each side. NOTE: the amounts are clamped, so that a view
+    //naming points past the edge of the board can't cut off a negative
+    //number of lines and grow the board instead of cropping it
+    const {minX, maxX, minY, maxY} = view
+    set(info, 'board.cutOffLeft', Math.max(minX, 0))
+    set(info, 'board.cutOffRight', Math.max(width - 1 - maxX, 0))
+    set(info, 'board.cutOffTop', Math.max(minY, 0))
+    set(info, 'board.cutOffBottom', Math.max(height - 1 - maxY, 0))
+  }
+
+  /**
    * Cut off parser
+   *
+   * XL/XR/XT/XB are the private properties seki inherited from ngGo and used
+   * to write for a partial board. They are still read so that records seki
+   * wrote before it moved to the standard VW property keep their cropping,
+   * but a VW on the root node overrides them.
    *
    * NOTE: XL/XR/XT/XB are private properties, so the same keys are in use by
    * other applications for entirely unrelated data. BadukPop writes its

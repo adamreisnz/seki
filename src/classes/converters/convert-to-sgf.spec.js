@@ -270,3 +270,83 @@ describe('ConvertToSgf, the clock in a real record', () => {
     expect(sgf).toContain('WL[13.2]')
   })
 })
+
+describe('ConvertToSgf, the board view', () => {
+
+  it('writes a partial board as a compressed VW point list', () => {
+    const game = new Game()
+    game.setBoardSize(19)
+    game.setBoardCutOff(1, 2, 3, 4)
+    expect(write(game)).toContain('VW[bd:qo]')
+  })
+
+  it('writes a view of a single point as that point', () => {
+    const game = new Game()
+    game.setBoardSize(9)
+    game.setBoardCutOff(4, 4, 4, 4)
+    expect(write(game)).toContain('VW[ee]')
+  })
+
+  it('writes no view for a board with nothing cut off', () => {
+    const game = new Game()
+    game.setBoardSize(19)
+    game.setBoardCutOff(0, 0, 0, 0)
+    expect(write(game)).not.toContain('VW[')
+  })
+
+  it('writes no view when the sides are cut past each other', () => {
+    const game = new Game()
+    game.setBoardSize(9)
+    game.setBoardCutOff(6, 6, 0, 0)
+    expect(write(game)).not.toContain('VW[')
+  })
+
+  it('leaves out a view it cannot name, rather than failing the export', () => {
+    //A board past 52 lines has no SGF coordinate for its far corner. The cut
+    //off used to go out as a plain number of lines, so throwing here would
+    //take a record that exported before down with it
+    const warn = vi.spyOn(console, 'warn').mockImplementation(vi.fn())
+    const game = new Game()
+    game.setBoardSize(60)
+    game.setBoardCutOff(1, 0, 0, 0)
+
+    expect(write(game)).not.toContain('VW[')
+    expect(warn).toHaveBeenCalled()
+  })
+
+  it('no longer writes the private XL/XR/XT/XB properties', () => {
+    //These were seki's own and nothing else reads them, so a partial board
+    //now travels as VW alone
+    const game = new Game()
+    game.setBoardSize(19)
+    game.setBoardCutOff(1, 2, 3, 4)
+
+    const sgf = write(game)
+    expect(sgf).not.toMatch(/X[LRTB]\[/)
+    expect(sgf).toContain('VW[bd:qo]')
+  })
+
+  it('takes a partial board in as X properties and writes it out as VW', () => {
+    const sgf = write(parse('(;FF[4]SZ[19]XL[1]XR[2]XT[3]XB[4])'))
+    expect(sgf).toContain('VW[bd:qo]')
+    expect(sgf).not.toMatch(/X[LRTB]\[/)
+
+    expect(parse(sgf).getBoardCutOff()).toEqual({
+      cutOffLeft: 1,
+      cutOffRight: 2,
+      cutOffTop: 3,
+      cutOffBottom: 4,
+    })
+  })
+
+  it('round trips a partial board on a rectangular board', () => {
+    const sgf = write(parse('(;FF[4]SZ[19:13]VW[bd:qk])'))
+    expect(sgf).toContain('VW[bd:qk]')
+    expect(parse(sgf).getBoardCutOff()).toEqual({
+      cutOffLeft: 1,
+      cutOffRight: 2,
+      cutOffTop: 3,
+      cutOffBottom: 2,
+    })
+  })
+})

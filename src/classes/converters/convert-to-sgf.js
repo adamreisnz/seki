@@ -69,8 +69,6 @@ export default class ConvertToSgf extends Converter {
 
     //Keys whose zero values get ignored
     const ignoreZeroValues = !includeZeroValues ? [
-      'XL', 'XR',
-      'XT', 'XB',
       'KM', 'HA',
       'TM', 'OT',
       'TC', 'TT',
@@ -120,6 +118,7 @@ export default class ConvertToSgf extends Converter {
     this.appendGenerator(root)
     this.appendSource(root, game)
     this.appendBoardSize(root, game)
+    this.appendBoardView(root, game)
     this.appendPlayers(root, game)
 
     //Initialize
@@ -196,6 +195,67 @@ export default class ConvertToSgf extends Converter {
     else {
       root[key] = 0
     }
+  }
+
+  /**
+   * Append the board view
+   *
+   * A partial board is written as VW, the FF[4] property naming the region
+   * that stays visible. NOTE: seki used to write this as the private
+   * XL/XR/XT/XB properties it inherited from ngGo, which nothing else reads.
+   * Those are still read back, but no longer written.
+   */
+  appendBoardView(root, game) {
+
+    //Nothing cut off, so the whole board is on show and there is no view to
+    //name. NOTE: VW[] would say the same thing, but only where a view was
+    //already in force, which on a root node it never is
+    const {cutOffLeft, cutOffRight, cutOffTop, cutOffBottom} =
+      game.getBoardCutOff()
+    if (!cutOffLeft && !cutOffRight && !cutOffTop && !cutOffBottom) {
+      return
+    }
+
+    //Work out the corners of what's left of the board
+    const {width, height} = game.getBoardSize()
+    const from = {x: cutOffLeft, y: cutOffTop}
+    const to = {x: width - 1 - cutOffRight, y: height - 1 - cutOffBottom}
+
+    //Opposite sides cut past each other, so there is no region left to name
+    //and a view would be nonsense
+    if (to.x < from.x || to.y < from.y) {
+      return
+    }
+
+    //Past what an SGF coordinate can say, on a board too large to name a
+    //point on at all. NOTE: this is left out rather than thrown on, so that
+    //a record which used to write its cut off as a plain number of lines
+    //still exports, minus a crop that SGF has no way to express here
+    if (to.x > maxCoordinate || to.y > maxCoordinate) {
+      console.warn(
+        `Board is too large to write a view for, ` +
+        `so the cut off has been left out of the SGF`
+      )
+      return
+    }
+
+    //Set as a point list
+    root.VW = this.makePointList(from, to)
+  }
+
+  /**
+   * Helper to write a rectangle of points as a single point list value
+   *
+   * A point list value may name a whole rectangle as `corner1:corner2`,
+   * which is what other software writes for a view and is a great deal
+   * shorter than listing every point of a large board one by one. A
+   * rectangle of a single point is written as just that point, the
+   * compressed form of it being valid but pointlessly long.
+   */
+  makePointList(from, to) {
+    const first = this.extractCoordinates(from)
+    const second = this.extractCoordinates(to)
+    return (first === second) ? first : `${first}:${second}`
   }
 
   /**
