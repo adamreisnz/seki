@@ -4,7 +4,9 @@ import ConvertToSgf from './convert-to-sgf.js'
 import Game from '../game.js'
 import GameNode from '../game-node.js'
 import {stoneColors} from '../../constants/stone.js'
-import {loadFixture} from '../../../test/fixtures.js'
+import {sgfGameInfoAccessors} from '../../constants/sgf.js'
+import {get} from '../../helpers/object.js'
+import {loadFixture, loadFixtureBytes} from '../../../test/fixtures.js'
 
 const parse = sgf => new ConvertFromSgf().convert(sgf)
 const write = game => new ConvertToSgf().convert(game)
@@ -615,5 +617,50 @@ describe('ConvertToSgf, a board it cannot size', () => {
     game.boardHeight = 0
 
     expect(game.toSgf()).toContain('SZ[0]')
+  })
+})
+
+describe('SGF round trips every fixture record', () => {
+
+  //Every record in the corpus, with the reader that knows how to read it
+  const fixtures = [
+    ['sgf/beginner_game.sgf', Game.fromSgf],
+    ['sgf/blank_game.sgf', Game.fromSgf],
+    ['sgf/ff4_ex.sgf', Game.fromSgf],
+    ['sgf/large-board.sgf', Game.fromSgf],
+    ['sgf/print1.sgf', Game.fromSgf],
+    ['sgf/print2.sgf', Game.fromSgf],
+    ['sgf/pro_game.sgf', Game.fromSgf],
+    ['sgf/shift-jis.sgf', Game.fromSgf],
+    ['sgf/shodan_game.sgf', Game.fromSgf],
+    ['gib/euc-kr.gib', Game.fromGib],
+    ['gib/gb2312.gib', Game.fromGib],
+    ['gib/utf8.gib', Game.fromGib],
+    ['ngf/even.ngf', Game.fromNgf],
+    ['ngf/gb2312.ngf', Game.fromNgf],
+    ['ngf/handicap2.ngf', Game.fromNgf],
+  ]
+
+  it.each(fixtures)('writes %s back out the same after reading it in', (name, read) => {
+
+    //NOTE: this is what the info accessors are for. A property written on the
+    //way out but not read on the way back in, or the other way around, shows
+    //up here as a record that doesn't survive its own format
+    const sgf = read(loadFixtureBytes(name)).toSgf()
+    expect(Game.fromSgf(sgf).toSgf()).toBe(sgf)
+  })
+
+  it.each(fixtures)('carries the game info of %s across the round trip', (name, read) => {
+    //NOTE: taken from the first SGF pass rather than straight from the source
+    //record, as writing SGF normalises a few fields on the way out: FF and CA
+    //are the output's own, and AP names seki rather than whatever wrote the
+    //original. From there the record has settled
+    const game = Game.fromSgf(read(loadFixtureBytes(name)).toSgf())
+    const copy = Game.fromSgf(game.toSgf())
+
+    //Only what SGF has somewhere to put, which is what the accessors name
+    for (const {path} of Object.values(sgfGameInfoAccessors)) {
+      expect(get(copy.getInfo(), path), path).toEqual(get(game.getInfo(), path))
+    }
   })
 })
