@@ -118,50 +118,65 @@ describe('Player teardown', () => {
   })
 })
 
-describe('Player method extension', () => {
+describe('reaching the active mode', () => {
 
-  it('dispatches to the active mode that provides the method', () => {
+  it('hands back the handler for the active mode', () => {
+    const player = new Player()
+
+    player.setMode(playerModes.REPLAY)
+
+    expect(player.getMode()).toBe(player.getModeHandler(playerModes.REPLAY))
+  })
+
+  it('hands back a mode that was asked for by name when it is active', () => {
     const player = new Player()
     const replay = player.getModeHandler(playerModes.REPLAY)
 
     player.setMode(playerModes.REPLAY)
     replay.toggleAutoPlay = vi.fn()
-    player.toggleAutoPlay()
+    player.getMode(playerModes.REPLAY)?.toggleAutoPlay()
 
     expect(replay.toggleAutoPlay).toHaveBeenCalled()
   })
 
-  it('does nothing when no mode providing the method is active', () => {
+  it('hands back nothing for a mode that is not the active one', () => {
     const player = new Player()
     const replay = player.getModeHandler(playerModes.REPLAY)
     replay.toggleAutoPlay = vi.fn()
 
     player.setMode(playerModes.SCORE)
-    player.toggleAutoPlay()
+    player.getMode(playerModes.REPLAY)?.toggleAutoPlay()
 
+    expect(player.getMode(playerModes.REPLAY)).toBe(null)
     expect(replay.toggleAutoPlay).not.toHaveBeenCalled()
   })
 
-  it('lets a second mode provide the same method', () => {
+  it('hands back nothing when no mode is active at all', () => {
+    const player = new Player()
 
-    //NOTE: extend used to bail out on the second registration, leaving the
-    //method bound to whichever mode asked for it first, so calling it while
-    //the other mode was active did nothing
+    player.activeMode = null
+
+    expect(player.getMode()).toBe(null)
+    expect(player.getMode(playerModes.EDIT)).toBe(null)
+  })
+
+  it('reaches whichever of two modes providing a method is active', () => {
+
+    //NOTE: this dispatch used to be the player's own, and it used to get it
+    //wrong: the method stayed bound to whichever mode registered it first, so
+    //calling it while the other one was active did nothing but warn
     const player = new Player()
     const replay = player.getModeHandler(playerModes.REPLAY)
     const edit = player.getModeHandler(playerModes.EDIT)
-
-    player.extend('sharedThing', playerModes.REPLAY)
-    player.extend('sharedThing', playerModes.EDIT)
 
     replay.sharedThing = vi.fn(() => 'from replay')
     edit.sharedThing = vi.fn(() => 'from edit')
 
     player.setMode(playerModes.REPLAY)
-    expect(player.sharedThing()).toBe('from replay')
+    expect(player.getMode().sharedThing()).toBe('from replay')
 
     player.setMode(playerModes.EDIT)
-    expect(player.sharedThing()).toBe('from edit')
+    expect(player.getMode().sharedThing()).toBe('from edit')
   })
 
   it('passes arguments and returns the result through', () => {
@@ -169,17 +184,24 @@ describe('Player method extension', () => {
     const edit = player.getModeHandler(playerModes.EDIT)
 
     player.setMode(playerModes.EDIT)
-    edit.getEditTool = vi.fn(() => 'tool')
+    edit.setEditTool = vi.fn(tool => tool)
 
-    expect(player.getEditTool()).toBe('tool')
+    expect(player.getMode(playerModes.EDIT)?.setEditTool('tool')).toBe('tool')
+    expect(edit.setEditTool).toHaveBeenCalledWith('tool')
   })
 
-  it('refuses to shadow a method the player already has', () => {
-    const player = new Player()
-    const original = player.playMove
+  it('leaves the player its own methods', () => {
 
-    player.extend('playMove', playerModes.EDIT)
-    expect(player.playMove).toBe(original)
+    //NOTE: modes used to inject their methods onto the player, which meant a
+    //mode could quietly shadow one of the player's own
+    const player = new Player()
+
+    player.setMode(playerModes.EDIT)
+
+    expect(typeof player.playMove).toBe('function')
+    expect(player.setEditTool).toBeUndefined()
+    expect(player.processEdit).toBeUndefined()
+    expect(player.toggleAutoPlay).toBeUndefined()
   })
 })
 

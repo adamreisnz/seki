@@ -10,16 +10,6 @@ export default class PlayerModePlay extends PlayerModeReplay {
   mode = playerModes.PLAY
 
   /**
-   * Initialise
-   *
-   * NOTE: deliberately does not extend the player the way replay mode does,
-   * as auto play has no place in a game being played.
-   */
-  init() {
-    this.createBoundListeners(this.getEventListeners())
-  }
-
-  /**
    * Get the event listeners this mode needs
    *
    * This mode needs the replay listeners that keep the board display fresh, so

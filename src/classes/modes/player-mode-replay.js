@@ -29,9 +29,6 @@ export default class PlayerModeReplay extends PlayerMode {
    */
   init() {
 
-    //Extend player
-    this.extendPlayer()
-
     //Create bound event listeners
     this.createBoundListeners(this.getEventListeners())
   }
@@ -62,20 +59,6 @@ export default class PlayerModeReplay extends PlayerMode {
   teardown() {
     super.teardown()
     this.stopAutoPlay()
-  }
-
-  /**
-   * Extend the player with new methods
-   */
-  extendPlayer() {
-
-    //Get data
-    const {player, mode} = this
-
-    //Extend player
-    player.extend('startAutoPlay', mode)
-    player.extend('stopAutoPlay', mode)
-    player.extend('toggleAutoPlay', mode)
   }
 
   /**
@@ -278,17 +261,22 @@ export default class PlayerModeReplay extends PlayerMode {
     const {player} = this
 
     //Determine action
+    //
+    //NOTE: auto play belongs to replay mode proper, but the modes deriving
+    //from it inherit this switch along with the key bindings that reach it.
+    //Asking the player for the replay mode keeps auto play out of a position
+    //being edited, the way the player's own dispatch used to.
     switch (action) {
 
       //Auto play
       case playerActions.START_AUTO_PLAY:
-        player.startAutoPlay()
+        player.getMode(playerModes.REPLAY)?.startAutoPlay()
         return true
       case playerActions.STOP_AUTO_PLAY:
-        player.stopAutoPlay()
+        player.getMode(playerModes.REPLAY)?.stopAutoPlay()
         return true
       case playerActions.TOGGLE_AUTO_PLAY:
-        player.toggleAutoPlay()
+        player.getMode(playerModes.REPLAY)?.toggleAutoPlay()
         return true
     }
 

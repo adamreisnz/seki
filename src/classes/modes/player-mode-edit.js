@@ -80,22 +80,6 @@ export default class PlayerModeEdit extends PlayerModeReplay {
     }
   }
 
-  /**
-   * Extend the player with new methods
-   */
-  extendPlayer() {
-
-    //Get data
-    const {player, mode} = this
-
-    //Extend player
-    player.extend('getEditTool', mode)
-    player.extend('setEditTool', mode)
-    player.extend('removeAllMarkup', mode)
-    player.extend('removeAllLines', mode)
-    player.extend('processEdit', mode)
-  }
-
   /**************************************************************************
    * Event listeners
    ***/
@@ -287,66 +271,66 @@ export default class PlayerModeEdit extends PlayerModeReplay {
       return true
     }
 
-    //Get data
-    const {player} = this
-
     //Determine action
+    //
+    //NOTE: these are this mode's own methods, and an action only reaches the
+    //handler for the mode that is active, so they are called directly
     switch (action) {
 
       //Edit tools
       case playerActions.SET_EDIT_TOOL_MOVE:
-        player.setEditTool(editTools.MOVE)
+        this.setEditTool(editTools.MOVE)
         return true
       case playerActions.SET_EDIT_TOOL_STONE:
-        player.setEditTool(editTools.STONE)
+        this.setEditTool(editTools.STONE)
         return true
       case playerActions.SET_EDIT_TOOL_BLACK:
-        player.setEditTool(editTools.BLACK)
+        this.setEditTool(editTools.BLACK)
         return true
       case playerActions.SET_EDIT_TOOL_WHITE:
-        player.setEditTool(editTools.WHITE)
+        this.setEditTool(editTools.WHITE)
         return true
       case playerActions.SET_EDIT_TOOL_CLEAR:
-        player.setEditTool(editTools.CLEAR)
+        this.setEditTool(editTools.CLEAR)
         return true
       case playerActions.SET_EDIT_TOOL_CLEAR_AREA:
-        player.setEditTool(editTools.CLEAR_AREA)
+        this.setEditTool(editTools.CLEAR_AREA)
         return true
       case playerActions.SET_EDIT_TOOL_TRIANGLE:
-        player.setEditTool(editTools.TRIANGLE)
+        this.setEditTool(editTools.TRIANGLE)
         return true
       case playerActions.SET_EDIT_TOOL_CIRCLE:
-        player.setEditTool(editTools.CIRCLE)
+        this.setEditTool(editTools.CIRCLE)
         return true
       case playerActions.SET_EDIT_TOOL_SQUARE:
-        player.setEditTool(editTools.SQUARE)
+        this.setEditTool(editTools.SQUARE)
         return true
       case playerActions.SET_EDIT_TOOL_DIAMOND:
-        player.setEditTool(editTools.DIAMOND)
+        this.setEditTool(editTools.DIAMOND)
         return true
       case playerActions.SET_EDIT_TOOL_MARK:
-        player.setEditTool(editTools.MARK)
+        this.setEditTool(editTools.MARK)
         return true
       case playerActions.SET_EDIT_TOOL_HAPPY:
-        player.setEditTool(editTools.HAPPY)
+        this.setEditTool(editTools.HAPPY)
         return true
       case playerActions.SET_EDIT_TOOL_SAD:
-        player.setEditTool(editTools.SAD)
+        this.setEditTool(editTools.SAD)
         return true
       case playerActions.SET_EDIT_TOOL_LETTER:
-        player.setEditTool(editTools.LETTER)
+        this.setEditTool(editTools.LETTER)
         return true
       case playerActions.SET_EDIT_TOOL_NUMBER:
-        player.setEditTool(editTools.NUMBER)
+        this.setEditTool(editTools.NUMBER)
         return true
       case playerActions.SET_EDIT_TOOL_DRAW:
-        player.setEditTool(editTools.DRAW)
+        this.setEditTool(editTools.DRAW)
         return true
       case playerActions.REMOVE_ALL_MARKUP:
-        player.removeAllMarkup()
+        this.removeAllMarkup()
         return true
       case playerActions.REMOVE_ALL_LINES:
-        player.removeAllLines()
+        this.removeAllLines()
         return true
     }
 
