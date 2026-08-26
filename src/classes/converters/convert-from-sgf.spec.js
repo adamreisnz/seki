@@ -1,6 +1,7 @@
 import {createHash} from 'node:crypto'
 import {describe, it, expect, vi, afterEach} from 'vitest'
 import ConvertFromSgf from './convert-from-sgf.js'
+import ConvertToSgf from './convert-to-sgf.js'
 import {stoneColors} from '../../constants/stone.js'
 import {markupTypes} from '../../constants/markup.js'
 import {sgfDiagnosticCodes} from '../../constants/sgf.js'
@@ -1282,5 +1283,214 @@ describe('ConvertFromSgf, the fixture corpus reads as it always did', () => {
       converter.convertAll(loadFixtureBytes(`sgf/${name}`))
       expect({[name]: converter.getDiagnostics()}).toEqual({[name]: []})
     }
+  })
+})
+
+describe('ConvertFromSgf, the variation settings it reads', () => {
+
+  //ST is a two bit field: bit one is whether siblings are shown, bit two is
+  //whether variations are shown at all, inverted
+  const settingsOf = value =>
+    parse(`(;GM[1]FF[4]SZ[9]ST[${value}];B[cc])`).getSettings()
+
+  it('reads zero as children only', () => {
+    expect(settingsOf(0)).toEqual({
+      showVariations: true, showSiblingVariations: false,
+    })
+  })
+
+  it('reads one as siblings too', () => {
+    expect(settingsOf(1)).toEqual({
+      showVariations: true, showSiblingVariations: true,
+    })
+  })
+
+  it('reads two as no variations', () => {
+    expect(settingsOf(2)).toEqual({
+      showVariations: false, showSiblingVariations: false,
+    })
+  })
+
+  it('reads three as no variations, siblings on', () => {
+    expect(settingsOf(3)).toEqual({
+      showVariations: false, showSiblingVariations: true,
+    })
+  })
+
+  it('reads a value outside the field as showing nothing', () => {
+    expect(settingsOf(9)).toEqual({
+      showVariations: false, showSiblingVariations: false,
+    })
+  })
+
+  it('round trips through the writer', () => {
+    const game = parse('(;GM[1]FF[4]SZ[9]ST[1];B[cc])')
+    const sgf = new ConvertToSgf()
+      .convert(game, {includeVariationSettings: true})
+
+    expect(parse(sgf).getSettings()).toEqual({
+      showVariations: true, showSiblingVariations: true,
+    })
+  })
+})
+
+describe('ConvertFromSgf, the clock it reads', () => {
+
+  it('reads the time and periods a move left', () => {
+    const game = parse('(;GM[1]FF[4]SZ[9];B[cc]BL[580]OB[4])')
+    game.goToLastPosition()
+
+    expect(game.getCurrentNode().move.timeLeft).toBe(580)
+    expect(game.getCurrentNode().move.periodsLeft).toBe(4)
+  })
+
+  it('ignores a clock on a move of the other colour', () => {
+
+    //WL says what white had left, so it belongs to a white move and nowhere
+    //else. On a black move it describes nothing this node can hold.
+    const game = parse('(;GM[1]FF[4]SZ[9];B[cc]WL[580]OW[4])')
+    game.goToLastPosition()
+
+    expect(game.getCurrentNode().move.timeLeft).toBeUndefined()
+    expect(game.getCurrentNode().move.periodsLeft).toBeUndefined()
+  })
+
+  it('ignores a clock on a node that is not a move at all', () => {
+    const game = parse('(;GM[1]FF[4]SZ[9];AB[cc]BL[580]OB[4])')
+    game.goToLastPosition()
+
+    expect(game.getCurrentNode().move).toBeUndefined()
+  })
+})
+
+describe('ConvertFromSgf, coordinates it cannot read', () => {
+
+  //Every one of these warns and skips rather than throwing, so a record with
+  //one bad value still loads
+
+  it('skips a move on a coordinate it cannot parse', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => null)
+    const game = parse('(;GM[1]FF[4]SZ[9];B[!!])')
+
+    expect(game.getCurrentNode().children).toHaveLength(1)
+    expect(warn).toHaveBeenCalled()
+  })
+
+  it('skips a label on a coordinate it cannot parse', () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => null)
+    const game = parse('(;GM[1]FF[4]SZ[9];B[cc]LB[!!:A])')
+    game.goToLastPosition()
+
+    expect(game.getCurrentNode().markup).toBeUndefined()
+  })
+
+  it('skips markup on a coordinate it cannot parse', () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => null)
+    const game = parse('(;GM[1]FF[4]SZ[9];B[cc]TR[!!])')
+    game.goToLastPosition()
+
+    expect(game.getCurrentNode().markup).toBeUndefined()
+  })
+
+  it('skips territory on a coordinate it cannot parse', () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => null)
+    const game = parse('(;GM[1]FF[4]SZ[9];B[cc]TB[!!])')
+    game.goToLastPosition()
+
+    expect(game.getCurrentNode().score).toBeUndefined()
+  })
+
+  it('keeps the good values of a property that has a bad one too', () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => null)
+    const game = parse('(;GM[1]FF[4]SZ[9];B[cc]TR[!!][gg])')
+    game.goToLastPosition()
+
+    expect(game.getCurrentNode().markup[0].coords).toEqual([{x: 6, y: 6}])
+  })
+})
+
+describe('ConvertFromSgf, what it warns about', () => {
+
+  it('says nothing about an unknown property by default', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => null)
+
+    parse('(;GM[1]FF[4]SZ[9]XX[something];B[cc])')
+
+    expect(warn).not.toHaveBeenCalled()
+  })
+
+  it('says so when asked to be verbose', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => null)
+    const converter = new ConvertFromSgf()
+
+    converter.convert('(;GM[1]FF[4]SZ[9]XX[something];B[cc])', true)
+
+    expect(warn).toHaveBeenCalledWith(
+      expect.stringContaining('Unknown property'),
+      ['something']
+    )
+  })
+
+  it('warns about a board view it has nowhere to put', () => {
+
+    //Seki carries one cut off for the whole record, so a view on a node part
+    //way in is something it cannot represent
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => null)
+    const converter = new ConvertFromSgf()
+
+    converter.convert('(;GM[1]FF[4]SZ[19];B[cc]VW[aa:jj])', true)
+
+    expect(warn).toHaveBeenCalledWith(
+      expect.stringContaining('no per node board view'),
+      expect.anything()
+    )
+  })
+
+  it('warns about a cut off value it cannot read', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => null)
+    const converter = new ConvertFromSgf()
+
+    converter.convert('(;GM[1]FF[4]SZ[19]XL[nonsense];B[cc])', true)
+
+    expect(warn).toHaveBeenCalledWith(
+      expect.stringContaining('not a cut off value'),
+      expect.anything()
+    )
+  })
+
+  it('records a diagnostic for each thing it had to work around', () => {
+    const converter = new ConvertFromSgf()
+    converter.convert('GM[1]FF[4]SZ[9](;B[cc])')
+
+    expect(converter.diagnostics.length).toBeGreaterThan(0)
+    expect(converter.diagnostics[0]).toMatchObject({
+      row: expect.any(Number),
+      col: expect.any(Number),
+    })
+  })
+
+  it('prints the diagnostics when asked to be verbose', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => null)
+    const converter = new ConvertFromSgf()
+
+    converter.convert('GM[1]FF[4]SZ[9](;B[cc])', true)
+
+    expect(warn).toHaveBeenCalledWith(
+      expect.stringContaining('SGF diagnostic on line')
+    )
+  })
+})
+
+describe('ConvertFromSgf, single and multiple values', () => {
+
+  it('reads a property with one value as that value', () => {
+    const converter = new ConvertFromSgf()
+    expect(converter.getSimpleValue(['one'])).toBe('one')
+  })
+
+  it('leaves a property with several values as a list', () => {
+    const converter = new ConvertFromSgf()
+    expect(converter.getSimpleValue(['one', 'two'])).toEqual(['one', 'two'])
+    expect(converter.getSimpleValue('one')).toBe('one')
   })
 })
