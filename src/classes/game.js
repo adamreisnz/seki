@@ -10,7 +10,7 @@ import ConvertFromNgf from './converters/convert-from-ngf.js'
 import ConvertToJgf from './converters/convert-to-jgf.js'
 import ConvertToSgf from './converters/convert-to-sgf.js'
 import GameTransformer from './game-transformer.js'
-import {copy, get, set, merge, isObject} from '../helpers/object.js'
+import {copy, merge, isObject} from '../helpers/object.js'
 import {
   parseTime, parseKomi, parseHandicap, parseEvent, parseResult, parseDates
 } from '../helpers/parsing.js'
@@ -146,140 +146,102 @@ export default class Game extends Base {
    */
   setInfo(info) {
 
-    //Extract record info
-    const recordVersion = get(info, 'record.version')
-    const recordCharset = get(info, 'record.charset')
-    const recordGenerator = get(info, 'record.generator')
-    const recordTranscriber = get(info, 'record.transcriber')
-
-    //Extract source info
-    const sourceName = get(info, 'source.name')
-    const sourceUrl = get(info, 'source.url')
-    const sourceCopyright = get(info, 'source.copyright')
-
-    //Extract event info
-    const eventName = get(info, 'event.name')
-    const eventLocation = get(info, 'event.location')
-    const eventRound = get(info, 'event.round')
-
-    //Extract game info
-    const gameType = get(info, 'game.type')
-    const gameName = get(info, 'game.name')
-    const gameResult = get(info, 'game.result')
-    const gameDate = get(info, 'game.date')
-    const gameDates = get(info, 'game.dates')
-    const gameOpening = get(info, 'game.opening')
-    const gameAnnotator = get(info, 'game.annotator')
-    const gameDescription = get(info, 'game.description')
-
-    //Extract board info
-    const boardSize = get(info, 'board.size')
-    const boardWidth = get(info, 'board.width')
-    const boardHeight = get(info, 'board.height')
-    const boardCutOffLeft = get(info, 'board.cutOffLeft')
-    const boardCutOffRight = get(info, 'board.cutOffRight')
-    const boardCutOffTop = get(info, 'board.cutOffTop')
-    const boardCutOffBottom = get(info, 'board.cutOffBottom')
-
-    //Extract rules
-    const ruleset = get(info, 'rules.ruleset')
-    const allowSuicide = get(info, 'rules.allowSuicide')
-    const disallowRepeats = get(info, 'rules.disallowRepeats')
-    const komi = get(info, 'rules.komi')
-    const handicap = get(info, 'rules.handicap')
-    const time = get(info, 'rules.time')
-    const overtime = get(info, 'rules.overtime')
-    const numberOfPeriods = get(info, 'rules.numberOfPeriods')
-    const timePerPeriod = get(info, 'rules.timePerPeriod')
-
-    //Extract players, settings and meta data
-    const players = get(info, 'players')
-    const settings = get(info, 'settings')
-    const meta = get(info, 'meta')
+    //Extract the info groups. Any group that isn't there falls back to an
+    //empty object, so that reading a key off one is always safe. NOTE: this
+    //is what get() gave back when it walked a path through a missing object,
+    //and the || covers an explicit null as well as a missing key, which a
+    //default value in a destructure would not.
+    const {players, settings, meta} = info || {}
+    const record = info?.record || {}
+    const source = info?.source || {}
+    const event = info?.event || {}
+    const game = info?.game || {}
+    const board = info?.board || {}
+    const rules = info?.rules || {}
 
     //Set record info
-    if (typeof recordVersion !== 'undefined') {
-      this.setRecordVersion(recordVersion)
+    if (typeof record.version !== 'undefined') {
+      this.setRecordVersion(record.version)
     }
-    if (typeof recordCharset !== 'undefined') {
-      this.setRecordCharset(recordCharset)
+    if (typeof record.charset !== 'undefined') {
+      this.setRecordCharset(record.charset)
     }
-    if (typeof recordGenerator !== 'undefined') {
-      this.setRecordGenerator(recordGenerator)
+    if (typeof record.generator !== 'undefined') {
+      this.setRecordGenerator(record.generator)
     }
-    if (typeof recordTranscriber !== 'undefined') {
-      this.setRecordTranscriber(recordTranscriber)
+    if (typeof record.transcriber !== 'undefined') {
+      this.setRecordTranscriber(record.transcriber)
     }
 
     //Set source info
-    if (typeof sourceName !== 'undefined') {
-      this.setSourceName(sourceName)
+    if (typeof source.name !== 'undefined') {
+      this.setSourceName(source.name)
     }
-    if (typeof sourceUrl !== 'undefined') {
-      this.setSourceUrl(sourceUrl)
+    if (typeof source.url !== 'undefined') {
+      this.setSourceUrl(source.url)
     }
-    if (typeof sourceCopyright !== 'undefined') {
-      this.setSourceCopyright(sourceCopyright)
+    if (typeof source.copyright !== 'undefined') {
+      this.setSourceCopyright(source.copyright)
     }
 
     //Set event info
-    if (typeof eventName !== 'undefined') {
-      this.setEventName(eventName)
+    if (typeof event.name !== 'undefined') {
+      this.setEventName(event.name)
     }
-    if (typeof eventLocation !== 'undefined') {
-      this.setEventLocation(eventLocation)
+    if (typeof event.location !== 'undefined') {
+      this.setEventLocation(event.location)
     }
-    if (typeof eventRound !== 'undefined') {
-      this.setEventRound(eventRound)
+    if (typeof event.round !== 'undefined') {
+      this.setEventRound(event.round)
     }
 
     //Set game info
-    if (typeof gameType !== 'undefined') {
-      this.setGameType(gameType)
+    if (typeof game.type !== 'undefined') {
+      this.setGameType(game.type)
     }
-    if (typeof gameName !== 'undefined') {
-      this.setGameName(gameName)
+    if (typeof game.name !== 'undefined') {
+      this.setGameName(game.name)
     }
-    if (typeof gameResult !== 'undefined') {
-      this.setGameResult(gameResult)
+    if (typeof game.result !== 'undefined') {
+      this.setGameResult(game.result)
     }
-    if (typeof gameOpening !== 'undefined') {
-      this.setGameOpening(gameOpening)
+    if (typeof game.opening !== 'undefined') {
+      this.setGameOpening(game.opening)
     }
-    if (typeof gameAnnotator !== 'undefined') {
-      this.setGameAnnotator(gameAnnotator)
+    if (typeof game.annotator !== 'undefined') {
+      this.setGameAnnotator(game.annotator)
     }
-    if (typeof gameDescription !== 'undefined') {
-      this.setGameDescription(gameDescription)
+    if (typeof game.description !== 'undefined') {
+      this.setGameDescription(game.description)
     }
 
     //Set rules
-    if (typeof ruleset !== 'undefined') {
-      this.setRuleset(ruleset)
+    if (typeof rules.ruleset !== 'undefined') {
+      this.setRuleset(rules.ruleset)
     }
-    if (typeof allowSuicide !== 'undefined') {
-      this.setAllowSuicide(allowSuicide)
+    if (typeof rules.allowSuicide !== 'undefined') {
+      this.setAllowSuicide(rules.allowSuicide)
     }
-    if (typeof disallowRepeats !== 'undefined') {
-      this.setDisallowRepeats(disallowRepeats)
+    if (typeof rules.disallowRepeats !== 'undefined') {
+      this.setDisallowRepeats(rules.disallowRepeats)
     }
-    if (typeof komi !== 'undefined') {
-      this.setKomi(komi)
+    if (typeof rules.komi !== 'undefined') {
+      this.setKomi(rules.komi)
     }
-    if (typeof handicap !== 'undefined') {
-      this.setHandicap(handicap)
+    if (typeof rules.handicap !== 'undefined') {
+      this.setHandicap(rules.handicap)
     }
-    if (typeof time !== 'undefined') {
-      this.setTime(time)
+    if (typeof rules.time !== 'undefined') {
+      this.setTime(rules.time)
     }
-    if (typeof overtime !== 'undefined') {
-      this.setOvertime(overtime)
+    if (typeof rules.overtime !== 'undefined') {
+      this.setOvertime(rules.overtime)
     }
-    if (typeof numberOfPeriods !== 'undefined') {
-      this.setNumberOfPeriods(numberOfPeriods)
+    if (typeof rules.numberOfPeriods !== 'undefined') {
+      this.setNumberOfPeriods(rules.numberOfPeriods)
     }
-    if (typeof timePerPeriod !== 'undefined') {
-      this.setTimePerPeriod(timePerPeriod)
+    if (typeof rules.timePerPeriod !== 'undefined') {
+      this.setTimePerPeriod(rules.timePerPeriod)
     }
 
     //Set dates. A record can carry more than one, for a game played over
@@ -287,33 +249,33 @@ export default class Game extends Base {
     //the single date, which is only ever its first entry. NOTE: this used to
     //be the other way around, taking game.dates[0] and dropping the rest,
     //which lost every date after the first on a round trip.
-    if (Array.isArray(gameDates) && gameDates.length > 0) {
-      this.setGameDates(gameDates)
+    if (Array.isArray(game.dates) && game.dates.length > 0) {
+      this.setGameDates(game.dates)
     }
-    else if (typeof gameDate !== 'undefined') {
-      this.setGameDate(gameDate)
+    else if (typeof game.date !== 'undefined') {
+      this.setGameDate(game.date)
     }
 
     //Set board size
-    if (boardWidth && boardHeight) {
-      this.setBoardSize(boardWidth, boardHeight)
+    if (board.width && board.height) {
+      this.setBoardSize(board.width, board.height)
     }
-    else if (boardSize) {
-      this.setBoardSize(boardSize)
+    else if (board.size) {
+      this.setBoardSize(board.size)
     }
 
     //Set board cut off
     if (
-      typeof boardCutOffLeft !== 'undefined' ||
-      typeof boardCutOffRight !== 'undefined' ||
-      typeof boardCutOffTop !== 'undefined' ||
-      typeof boardCutOffBottom !== 'undefined'
+      typeof board.cutOffLeft !== 'undefined' ||
+      typeof board.cutOffRight !== 'undefined' ||
+      typeof board.cutOffTop !== 'undefined' ||
+      typeof board.cutOffBottom !== 'undefined'
     ) {
       this.setBoardCutOff(
-        boardCutOffLeft,
-        boardCutOffRight,
-        boardCutOffTop,
-        boardCutOffBottom
+        board.cutOffLeft,
+        board.cutOffRight,
+        board.cutOffTop,
+        board.cutOffBottom
       )
     }
 
@@ -338,109 +300,67 @@ export default class Game extends Base {
    */
   getInfo() {
 
-    //Initialise
-    const info = {}
+    //Every key is written whether or not it has a value, undefined included,
+    //which is what building this up with set() did and what callers such as
+    //the JGF converter filter on
+    return {
+      record: {
+        version: this.recordVersion,
+        charset: this.recordCharset,
+        generator: this.recordGenerator,
+        transcriber: this.recordTranscriber,
+      },
+      source: {
+        name: this.sourceName,
+        url: this.sourceUrl,
+        copyright: this.sourceCopyright,
+      },
+      event: {
+        name: this.eventName,
+        location: this.eventLocation,
+        round: this.eventRound,
+      },
+      game: {
+        type: this.gameType,
+        name: this.gameName,
+        result: this.gameResult,
+        date: this.gameDate,
 
-    //Get info
-    const {
-      recordVersion,
-      recordCharset,
-      recordGenerator,
-      recordTranscriber,
-      sourceName,
-      sourceUrl,
-      sourceCopyright,
-      eventName,
-      eventLocation,
-      eventRound,
-      gameType,
-      gameName,
-      gameResult,
-      gameDate,
-      gameDates,
-      gameOpening,
-      gameAnnotator,
-      gameDescription,
-      boardSize,
-      boardWidth,
-      boardHeight,
-      boardCutOffLeft,
-      boardCutOffRight,
-      boardCutOffTop,
-      boardCutOffBottom,
-      ruleset,
-      allowSuicide,
-      disallowRepeats,
-      komi,
-      handicap,
-      time,
-      overtime,
-      numberOfPeriods,
-      timePerPeriod,
-      players,
-      settings,
-      meta,
-    } = this
+        //Only write the list out when it says more than the single date does,
+        //which keeps a single date record looking exactly as it always has
+        dates: (this.gameDates.length > 1) ? this.gameDates : undefined,
+        opening: this.gameOpening,
+        annotator: this.gameAnnotator,
+        description: this.gameDescription,
+      },
+      board: {
+        size: this.boardSize,
+        width: this.boardWidth,
+        height: this.boardHeight,
+        cutOffLeft: this.boardCutOffLeft,
+        cutOffRight: this.boardCutOffRight,
+        cutOffTop: this.boardCutOffTop,
+        cutOffBottom: this.boardCutOffBottom,
+      },
+      rules: {
+        ruleset: this.ruleset,
+        allowSuicide: this.allowSuicide,
+        disallowRepeats: this.disallowRepeats,
+        komi: this.komi,
+        handicap: this.handicap,
+        time: this.time,
+        overtime: this.overtime,
 
-    //Set on info
-    set(info, 'record.version', recordVersion)
-    set(info, 'record.charset', recordCharset)
-    set(info, 'record.generator', recordGenerator)
-    set(info, 'record.transcriber', recordTranscriber)
-
-    //Extract source info
-    set(info, 'source.name', sourceName)
-    set(info, 'source.url', sourceUrl)
-    set(info, 'source.copyright', sourceCopyright)
-
-    //Extract event info
-    set(info, 'event.name', eventName)
-    set(info, 'event.location', eventLocation)
-    set(info, 'event.round', eventRound)
-
-    //Extract game info
-    set(info, 'game.type', gameType)
-    set(info, 'game.name', gameName)
-    set(info, 'game.result', gameResult)
-    set(info, 'game.date', gameDate)
-    //Only write the list out when it says more than the single date does,
-    //which keeps a single date record looking exactly as it always has
-    set(info, 'game.dates', gameDates.length > 1 ? gameDates : undefined)
-    set(info, 'game.opening', gameOpening)
-    set(info, 'game.annotator', gameAnnotator)
-    set(info, 'game.description', gameDescription)
-
-    //Extract board info
-    set(info, 'board.size', boardSize)
-    set(info, 'board.width', boardWidth)
-    set(info, 'board.height', boardHeight)
-    set(info, 'board.cutOffLeft', boardCutOffLeft)
-    set(info, 'board.cutOffRight', boardCutOffRight)
-    set(info, 'board.cutOffTop', boardCutOffTop)
-    set(info, 'board.cutOffBottom', boardCutOffBottom)
-
-    //Extract rules
-    set(info, 'rules.ruleset', ruleset)
-    set(info, 'rules.allowSuicide', allowSuicide)
-    set(info, 'rules.disallowRepeats', disallowRepeats)
-    set(info, 'rules.komi', komi)
-    set(info, 'rules.handicap', handicap)
-    set(info, 'rules.time', time)
-    set(info, 'rules.overtime', overtime)
-
-    //NOTE: these two are read back in by setInfo and are carried by both the
-    //SGF (TC/TT) and JGF formats, so leaving them out here meant a record with
-    //byo-yomi periods lost them on every save and reload
-    set(info, 'rules.numberOfPeriods', numberOfPeriods)
-    set(info, 'rules.timePerPeriod', timePerPeriod)
-
-    //Extract players, settings and meta data
-    set(info, 'players', players)
-    set(info, 'settings', settings)
-    set(info, 'meta', meta)
-
-    //Return info
-    return info
+        //NOTE: these two are read back in by setInfo and are carried by both
+        //the SGF (TC/TT) and JGF formats, so leaving them out here meant a
+        //record with byo-yomi periods lost them on every save and reload
+        numberOfPeriods: this.numberOfPeriods,
+        timePerPeriod: this.timePerPeriod,
+      },
+      players: this.players,
+      settings: this.settings,
+      meta: this.meta,
+    }
   }
 
   /**
