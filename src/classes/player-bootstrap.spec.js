@@ -307,16 +307,28 @@ describe('Player listeners', () => {
     expect(player.documentEventHandler).toBeUndefined()
   })
 
-  it('does not stack listeners when bootstrapped twice', () => {
+  it('lets go of the element it was listening to when bootstrapped twice', () => {
+
+    //Bootstrapping builds a fresh board element, so the listeners on the old
+    //one have to come off or they outlive the element they were put there
+    //for. Asserting on the new element alone would pass either way.
     const {player, container} = bootstrap()
+    const first = player.board.elements.board
     const listener = vi.fn()
     player.on('click', listener)
 
     player.bootstrap(container)
-    player.board.elements.board.dispatch('click', {
+    const second = player.board.elements.board
+    expect(second).not.toBe(first)
+
+    first.dispatch('click', {
       button: 0, offsetX: 100, offsetY: 100, preventDefault: vi.fn(),
     })
+    expect(listener).not.toHaveBeenCalled()
 
+    second.dispatch('click', {
+      button: 0, offsetX: 100, offsetY: 100, preventDefault: vi.fn(),
+    })
     expect(listener).toHaveBeenCalledTimes(1)
   })
 

@@ -71,6 +71,21 @@ describe('Board bootstrapping', () => {
     expect(observers[0].disconnected).toBe(true)
   })
 
+  it('leaves the board it built last time in the container', () => {
+
+    //NOTE: pinning current behaviour, and it is a bug. setupElements builds a
+    //fresh wrapper and appends it without taking the previous one out, so a
+    //second bootstrap onto the same container leaves two boards stacked in
+    //it. The audio elements and the resize observer both handle this; the
+    //elements themselves do not. See KNOWN_ISSUES.md.
+    const {board, container} = bootstrap()
+    board.bootstrap(container)
+
+    const wrappers = container.children
+      .filter(child => child.className === 'seki-board-wrapper')
+    expect(wrappers).toHaveLength(2)
+  })
+
   it('recalculates when the container changes size', () => {
     const {board, container, observers} = bootstrap()
     const before = board.lastDrawWidth

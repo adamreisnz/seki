@@ -369,3 +369,31 @@ the obvious looking name gets a crash.
 **What a fix involves:** deleting it, or making it an alias for
 `findNamedNode`. Deleting is a breaking change on paper and no change at all in
 practice, since no call to it can currently succeed.
+
+---
+
+## Re-bootstrapping a board leaves the previous one in the container
+
+**Where:** `Board#setupElements`, `src/classes/board.js`
+
+**Pinned by:** `src/classes/board-bootstrap.spec.js`, "leaves the board it
+built last time in the container"
+
+`setupElements` resets `this.elements` and builds a fresh wrapper, board
+element and canvas container, appending the wrapper to the container it was
+given. It never takes out the wrapper a previous bootstrap put there. Bootstrap
+the same player or board onto the same element twice and the container ends up
+holding two complete boards, one of them orphaned: nothing points at it any
+more, and its canvases are never drawn to again.
+
+**Effect:** a component that re-bootstraps on a prop change — or an app that
+calls `bootstrap()` again rather than tearing down first — stacks a dead board
+under the live one, at full size. The listeners on the old element are removed
+correctly, and the audio elements and the resize observer both take care of
+exactly this case already, so this is the one place in the bootstrap path where
+it is not handled.
+
+**What a fix involves:** removing the previous wrapper in `setupElements`
+before building the new one, the way `createAudioElements` calls
+`removeAudioElements` first. The element references are already on
+`this.elements` when it runs, so it is a couple of lines.

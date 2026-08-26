@@ -138,13 +138,6 @@ export const createStubBoard = ({
 }
 
 /**
- * Stub the window object the drawing helpers read the pixel ratio off
- */
-export const stubWindow = (devicePixelRatio = 1) => {
-  vi.stubGlobal('window', {devicePixelRatio})
-}
-
-/**
  * A DOM stand-in, enough of one for bootstrapping
  *
  * The library is DOM free at its core and the suite runs under plain node, so
