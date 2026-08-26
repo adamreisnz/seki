@@ -1385,6 +1385,61 @@ describe('Game.removeNode()', () => {
   })
 })
 
+describe('Setup stone captures', () => {
+
+  //A lone black stone on (1,1) with three of its liberties already filled,
+  //leaving only (1,2) for the setup stone below to close
+  const surrounded = '(;GM[1]FF[4]SZ[9]AB[bb]AW[ab][cb][ba])'
+
+  it('captures what the stone surrounds on a node that takes setup', () => {
+    const game = Game.fromSgf(surrounded)
+    game.addStone(1, 2, WHITE)
+
+    expect(game.hasStone(1, 1)).toBe(false)
+    expect(game.hasStone(1, 2, WHITE)).toBe(true)
+  })
+
+  it('captures the same on a node that has to be created for it', () => {
+
+    //NOTE: both paths worked the capture out, but only this one put the
+    //resulting position on the stack, so the same edit captured or didn't
+    //depending on the node it landed on
+    const game = Game.fromSgf('(;GM[1]FF[4]SZ[9]AB[bb]AW[ab][ba];W[cb])')
+    game.goToLastPosition()
+    game.addStone(1, 2, WHITE)
+
+    expect(game.hasStone(1, 1)).toBe(false)
+    expect(game.hasStone(1, 2, WHITE)).toBe(true)
+  })
+
+  it('keeps the capture on the position the event carries', () => {
+    const game = Game.fromSgf(surrounded)
+    const seen = []
+    game.on('positionChange', event => seen.push(event.detail.position))
+
+    game.addStone(1, 2, WHITE)
+
+    expect(seen).toHaveLength(1)
+    expect(seen[0].stones.has(1, 1)).toBe(false)
+    expect(seen[0]).toBe(game.getPosition())
+  })
+
+  it('does not stack a position for setup the current node takes', () => {
+    const game = Game.fromSgf(surrounded)
+    const depth = game.positions.length
+
+    game.addStone(1, 2, WHITE)
+    expect(game.positions.length).toBe(depth)
+  })
+
+  it('leaves no ko point behind on either path', () => {
+    const game = Game.fromSgf(surrounded)
+    game.addStone(1, 2, WHITE)
+
+    expect(game.hasKoPoint()).toBe(false)
+  })
+})
+
 describe('Position change events for setup edits', () => {
 
   it('reports the position the stone was added to', () => {

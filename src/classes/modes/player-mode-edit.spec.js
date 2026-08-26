@@ -862,17 +862,18 @@ describe('Edit mode setup stones', () => {
     expect(player.game.toSgf()).not.toContain('AB[')
   })
 
-  it('mutates the position in place when no new node is needed', () => {
+  it('replaces the position it is on when no new node is needed', () => {
 
-    //Setting up on a node that already holds setup instructions changes the
-    //position the game is already on, rather than stacking a new one
+    //Setting up on a node that already holds setup instructions replaces the
+    //position the game is on with the one the placement worked out, rather
+    //than stacking a new one on top of it
     const {player, mode} = createPlayer()
-    const position = player.game.getPosition()
+    const depth = player.game.positions.length
 
     mode.addStone(4, 4, BLACK)
 
-    expect(player.game.getPosition()).toBe(position)
-    expect(position.stones.get(4, 4)).toBe(BLACK)
+    expect(player.game.positions.length).toBe(depth)
+    expect(player.game.getPosition().stones.get(4, 4)).toBe(BLACK)
   })
 
   it('creates a node to hold the setup when the current node is a move', () => {
@@ -940,17 +941,14 @@ describe('Edit mode setup stones', () => {
     expect(player.game.hasStone(1, 1)).toBe(false)
   })
 
-  it('captures nothing when the node takes the setup instruction directly', () => {
+  it('captures the same when the node takes the setup instruction directly', () => {
 
-    //NOTE: pinning current behaviour, and it is a bug — in game.js rather
-    //than here. Both paths work the capture out, but only the one that
-    //creates a node puts the resulting position on the stack; the in place
-    //path drops it and sets the bare stone on the position it already has.
-    //So the same edit captures or doesn't depending on the node it lands on.
+    //Both paths work the capture out and both put the resulting position on
+    //the stack, so the same edit captures whichever node it lands on
     const {player, mode} = createPlayer('(;GM[1]FF[4]SZ[9]AB[bb]AW[ab][cb][ba])')
     mode.addStone(1, 2, WHITE)
 
-    expect(player.game.hasStone(1, 1)).toBe(true)
+    expect(player.game.hasStone(1, 1)).toBe(false)
   })
 
   it('leaves no ko point behind, whatever shape the capture makes', () => {
