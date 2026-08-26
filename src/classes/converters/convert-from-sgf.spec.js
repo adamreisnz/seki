@@ -1,12 +1,21 @@
+import {createHash} from 'node:crypto'
 import {describe, it, expect, vi, afterEach} from 'vitest'
 import ConvertFromSgf from './convert-from-sgf.js'
 import {stoneColors} from '../../constants/stone.js'
 import {markupTypes} from '../../constants/markup.js'
+import {sgfDiagnosticCodes} from '../../constants/sgf.js'
 import {
   loadFixture, loadFixtureBytes, replayMainLine, countNodes, countForks
 } from '../../../test/fixtures.js'
 
 const parse = sgf => new ConvertFromSgf().convert(sgf)
+
+//Read a record and keep hold of what the reader had to say about it
+const read = sgf => {
+  const converter = new ConvertFromSgf()
+  const game = converter.convert(sgf)
+  return {game, diagnostics: converter.getDiagnostics()}
+}
 
 afterEach(() => {
   vi.restoreAllMocks()
@@ -964,5 +973,276 @@ describe('ConvertFromSgf, a record that is not UTF-8', () => {
     const game = parse(declared)
     expect(game.getPlayer(stoneColors.BLACK).name).toBe('이세돌')
     expect(game.getInfo().record.charset).toBe('EUC-KR')
+  })
+})
+
+describe('ConvertFromSgf, malformed records', () => {
+
+  //Records in the wild are written by all sorts of software, and a reader
+  //that rejects a file it could previously open is a worse reader. What the
+  //tokenizer can't understand is skipped and reported, and the record around
+  //it is still read.
+
+  it('keeps reading the properties after a stray character', () => {
+
+    //The SZ used to be dropped along with the stray character, so the board
+    //silently came back as the default 19x19 rather than as the 9x9 it says
+    const {game} = read('(;FF[4]@SZ[9];B[dd])')
+    expect(game.getBoardSize()).toEqual({width: 9, height: 9})
+    expect(game.getRootNode().getChild(0).move).toMatchObject({x: 3, y: 3})
+  })
+
+  it('reports the stray character it skipped', () => {
+    const {diagnostics} = read('(;FF[4]@SZ[9];B[dd])')
+    expect(diagnostics).toEqual([
+      {
+        code: sgfDiagnosticCodes.INVALID_INPUT,
+        message: expect.stringContaining('@'),
+        row: 1,
+        col: 8,
+        pos: 7,
+      },
+    ])
+  })
+
+  it('reads the record around an unterminated property value', () => {
+    const {game} = read('(;FF[4]SZ[9];B[dd]C[unterminated')
+    expect(game.getBoardSize()).toEqual({width: 9, height: 9})
+    expect(game.getRootNode().getChild(0).move).toMatchObject({x: 3, y: 3})
+    expect(game.getRootNode().getChild(0).comments).toBeUndefined()
+  })
+
+  it('reports an unterminated property value', () => {
+    const {diagnostics} = read('(;FF[4]SZ[9];B[dd]C[unterminated')
+    expect(diagnostics).toContainEqual(
+      expect.objectContaining({
+        code: sgfDiagnosticCodes.UNTERMINATED_VALUE,
+        row: 1,
+        col: 20,
+      })
+    )
+  })
+
+  it('reads a record whose parenthesis is never closed', () => {
+    const {game} = read('(;FF[4]SZ[9]PB[Alice];B[dd];W[pp]')
+    expect(game.getPlayer(stoneColors.BLACK)).toMatchObject({name: 'Alice'})
+    expect(game.getTotalNumberOfMoves()).toBe(2)
+  })
+
+  it('reports the parenthesis that is never closed, where it was opened', () => {
+    const {diagnostics} = read('(;FF[4]SZ[9];B[dd]\n(;W[pp]')
+    expect(diagnostics).toEqual([
+      expect.objectContaining({
+        code: sgfDiagnosticCodes.UNCLOSED_PARENTHESIS, row: 1, col: 1, pos: 0,
+      }),
+      expect.objectContaining({
+        code: sgfDiagnosticCodes.UNCLOSED_PARENTHESIS, row: 2, col: 1, pos: 19,
+      }),
+    ])
+  })
+
+  it('reports a closing parenthesis that never opened', () => {
+    const {game, diagnostics} = read('(;FF[4]SZ[9];B[dd]))')
+    expect(game.getTotalNumberOfMoves()).toBe(1)
+    expect(diagnostics).toEqual([
+      expect.objectContaining({
+        code: sgfDiagnosticCodes.UNMATCHED_CLOSING_PARENTHESIS, row: 1, col: 20,
+      }),
+    ])
+  })
+
+  it('reports a property that is outside of any node', () => {
+    const {diagnostics} = read('(FF[4];B[dd])')
+    expect(diagnostics.map(({code}) => code)).toEqual([
+      sgfDiagnosticCodes.PROPERTY_OUTSIDE_NODE,
+      sgfDiagnosticCodes.PROPERTY_OUTSIDE_NODE,
+    ])
+  })
+
+  it('reports a property with no value at all', () => {
+    const {diagnostics} = read('(;FF[4]SZ[9]KM;B[dd])')
+    expect(diagnostics).toContainEqual(
+      expect.objectContaining({
+        code: sgfDiagnosticCodes.PROPERTY_WITHOUT_VALUE,
+        message: expect.stringContaining('KM'),
+      })
+    )
+  })
+
+  it('reports a property whose identifier is all lowercase', () => {
+    const {game, diagnostics} = read('(;FF[4]SZ[9]nonsense[x]KM[7.5])')
+    expect(game.getKomi()).toBe(7.5)
+    expect(diagnostics).toContainEqual(
+      expect.objectContaining({
+        code: sgfDiagnosticCodes.PROPERTY_WITHOUT_IDENTIFIER,
+      })
+    )
+  })
+
+  it('reports a value with no identifier in front of it', () => {
+    const {diagnostics} = read('(;[19]SZ[9])')
+    expect(diagnostics).toContainEqual(
+      expect.objectContaining({
+        code: sgfDiagnosticCodes.VALUE_WITHOUT_IDENTIFIER,
+      })
+    )
+  })
+
+  it('says nothing about a record that reads cleanly', () => {
+    const {diagnostics} = read('(;GM[1]FF[4]SZ[19]PB[Alice];B[dd];W[pp])')
+    expect(diagnostics).toEqual([])
+  })
+
+  it('reports the diagnostics in the order they appear in the record', () => {
+    const {diagnostics} = read('(;FF[4]\nSZ[9]!!\n;B[dd]??;W[pp])')
+    expect(diagnostics.map(({row, col}) => [row, col])).toEqual([[2, 6], [3, 7]])
+  })
+
+  it('starts a fresh set of diagnostics for each record', () => {
+    const converter = new ConvertFromSgf()
+    converter.convert('(;FF[4]SZ[9]@;B[dd])')
+    expect(converter.getDiagnostics()).toHaveLength(1)
+    converter.convert('(;FF[4]SZ[9];B[dd])')
+    expect(converter.getDiagnostics()).toEqual([])
+  })
+
+  it('still refuses a record with no game tree in it at all', () => {
+
+    //Recovering is for a record that has something to recover. One that has
+    //nothing is the case parseSgf has always thrown on, and still does.
+    expect(() => parse('not an sgf file at all')).toThrow(/Unable to parse SGF data/)
+    expect(() => parse(')))')).toThrow(/Unable to parse SGF data/)
+  })
+
+  it('puts a move on its own node even when whitespace follows the semicolon', () => {
+
+    //The node this opens is a move node however it is laid out. Reading the
+    //record as text, this move used to land on the root node instead, since
+    //the check for one was looking for a literal ";B[" in the source.
+    const {game} = read('(;FF[4]SZ[9];\nB[dd])')
+    expect(game.getRootNode().move).toBeUndefined()
+    expect(game.getRootNode().getChild(0).move).toMatchObject({x: 3, y: 3})
+  })
+
+  it('reads a move written with a mixed case identifier onto its own node', () => {
+    const {game} = read('(;FF[4]SZ[9];Bb[dd])')
+    expect(game.getRootNode().move).toBeUndefined()
+    expect(game.getRootNode().getChild(0).move)
+      .toMatchObject({x: 3, y: 3, color: stoneColors.BLACK})
+  })
+})
+
+describe('ConvertFromSgf, the fixture corpus reads as it always did', () => {
+
+  //The gate on the tokenizer rewrite. Every record in test/fixtures/sgf has
+  //to parse to exactly what it parsed to before, read as a string and read as
+  //bytes alike, so the digests below were taken from the parser as it stood
+  //beforehand. A digest that no longer matches is a regression in the reader
+  //until it is shown to be otherwise; the counts beside it are there to say
+  //what kind of regression at a glance.
+  //
+  //Regenerate deliberately, never to make a failure go away — and say why
+  //here when you do. So far:
+  //
+  //- print1.sgf, 2026-08-26. Its DT[1996-10-18,19] now reads as both dates
+  //  rather than only the first, which is #64/#65 rather than anything to do
+  //  with the reader. Confirmed by running the regex parser at that point on
+  //  main against this one: identical output for all nine records.
+
+  const baselines = {
+    'beginner_game.sgf': {
+      games: 1, nodes: 19, forks: 0, moves: 18,
+      digest: '7c838922ef056acbdcadef64606deb4ebc33e5af9e9c88ce987fe105103b9771',
+    },
+    'blank_game.sgf': {
+      games: 1, nodes: 1, forks: 0, moves: 0,
+      digest: 'c1c63c88dd518ac0d87401c5541a302c2b2f7460dba36c85c74591d5a4db0dfa',
+    },
+    'ff4_ex.sgf': {
+      games: 2, nodes: 53, forks: 3, moves: 13,
+      digest: '3d3880697aa276ad6fbfcc716c8c16605a4a62a28d011d0d26635f9f7b91217c',
+    },
+    'large-board.sgf': {
+      games: 1, nodes: 21, forks: 0, moves: 20,
+      digest: '7e4bf0ec24000edd96b20aa7d6d6d4170fda77c77a3f54905b1a7114417552b5',
+    },
+    'print1.sgf': {
+      games: 1, nodes: 142, forks: 6, moves: 101,
+      digest: '3d48e282c6059c6cf50f23941ab460aa24f33969b0ed8976c554a0fa5e10e8be',
+    },
+    'print2.sgf': {
+      games: 1, nodes: 314, forks: 5, moves: 268,
+      digest: 'def76087efc7a85d24b535c21a4507c2f277855af7b1f40d75ebfcb13f16c6e8',
+    },
+    'pro_game.sgf': {
+      games: 1, nodes: 236, forks: 0, moves: 235,
+      digest: '7d34baeb846bc02aff4e6fd3c8a98c62e8261d6b3b0399a354c9c8d24c802c49',
+    },
+    'shift-jis.sgf': {
+      games: 1, nodes: 8, forks: 0, moves: 7,
+      digest: '411ee5e4a413567f6c3834bdb739f62eb4a74de784f8c408ccf2e46a75d5b4a5',
+    },
+    'shodan_game.sgf': {
+      games: 1, nodes: 84, forks: 0, moves: 83,
+      digest: 'c2df1c4e13b0c9f33e3fb4634b113bc5a5c4a20e91bf7c6537e347f0de5ca586',
+    },
+  }
+
+  //Everything a record parses to, spelled out so that a single coordinate,
+  //comment or piece of game info going missing changes the digest
+  const serialiseNode = node => {
+    const out = {}
+    for (const key of ['move', 'setup', 'markup', 'score', 'comments', 'name', 'turn']) {
+      if (typeof node[key] !== 'undefined') {
+        out[key] = node[key]
+      }
+    }
+    out.children = node.children.map(serialiseNode)
+    return out
+  }
+
+  const serialise = games => games.map(game => ({
+    info: game.getInfo(),
+    root: serialiseNode(game.root),
+  }))
+
+  const summarise = name => {
+
+    //The record is a collection in one case, which convert() warns about
+    vi.spyOn(console, 'warn').mockImplementation(vi.fn())
+
+    //Read it both ways a caller can hand it over
+    const fromString = new ConvertFromSgf().convertAll(loadFixture(`sgf/${name}`))
+    const fromBytes = new ConvertFromSgf().convertAll(loadFixtureBytes(`sgf/${name}`))
+
+    //Summarise what came out
+    return {
+      games: fromString.length,
+      nodes: countNodes(fromString[0].root),
+      forks: countForks(fromString[0].root),
+      moves: fromString[0].getTotalNumberOfMoves(),
+      digest: createHash('sha256')
+        .update(JSON.stringify([serialise(fromString), serialise(fromBytes)]))
+        .digest('hex'),
+    }
+  }
+
+  for (const [name, baseline] of Object.entries(baselines)) {
+    it(`reads ${name} to the same result as before`, () => {
+      expect(summarise(name)).toEqual(baseline)
+    })
+  }
+
+  it('reads every record without a single diagnostic', () => {
+
+    //A real record written by real software should read cleanly. Anything
+    //reported here is the reader misunderstanding the record, not the other
+    //way around.
+    vi.spyOn(console, 'warn').mockImplementation(vi.fn())
+    for (const name of Object.keys(baselines)) {
+      const converter = new ConvertFromSgf()
+      converter.convertAll(loadFixtureBytes(`sgf/${name}`))
+      expect({[name]: converter.getDiagnostics()}).toEqual({[name]: []})
+    }
   })
 })

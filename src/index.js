@@ -54,6 +54,7 @@ import * as encoding from './helpers/encoding.js'
 import * as grid from './helpers/grid.js'
 import * as object from './helpers/object.js'
 import * as parsing from './helpers/parsing.js'
+import * as sgfTokenizer from './helpers/sgf-tokenizer.js'
 import * as transformation from './helpers/transformation.js'
 import * as util from './helpers/util.js'
 
@@ -65,6 +66,7 @@ const helpers = {
   grid,
   object,
   parsing,
+  sgfTokenizer,
   transformation,
   util,
 }
@@ -78,6 +80,7 @@ import * as markup from './constants/markup.js'
 import * as player from './constants/player.js'
 import * as score from './constants/score.js'
 import * as setup from './constants/setup.js'
+import * as sgf from './constants/sgf.js'
 import * as stone from './constants/stone.js'
 import * as transformationConstants from './constants/transformation.js'
 import * as utilConstants from './constants/util.js'
@@ -117,6 +120,10 @@ const {
 const {
   setupTypes,
 } = setup
+const {
+  sgfTokenTypes,
+  sgfDiagnosticCodes,
+} = sgf
 const {
   stoneColors,
   stoneStyles,
@@ -209,6 +216,8 @@ export {
   scoreTypes,
   scoringMethods,
   setupTypes,
+  sgfDiagnosticCodes,
+  sgfTokenTypes,
   stoneColors,
   stoneModifierStyles,
   stoneStyles,

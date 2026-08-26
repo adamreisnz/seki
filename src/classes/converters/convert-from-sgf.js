@@ -4,6 +4,7 @@ import GameNode from '../game-node.js'
 import {set, get} from '../../helpers/object.js'
 import {decodeData} from '../../helpers/encoding.js'
 import {parseDates as parseDateList} from '../../helpers/parsing.js'
+import {tokenizeSgf} from '../../helpers/sgf-tokenizer.js'
 import {defaultGameInfo} from '../../constants/defaults.js'
 import {gameTypes} from '../../constants/game.js'
 import {stoneColors} from '../../constants/stone.js'
@@ -16,46 +17,32 @@ import {
   sgfGameInfoMap,
   sgfPlayerInfoMap,
   sgfGameTypes,
-  sgfMarkupTypes
+  sgfMarkupTypes,
+  sgfTokenTypes,
+  sgfDiagnosticCodes
 } from '../../constants/sgf.js'
 
-//A single property value, being everything between [ and ], where a
-//backslash escapes whatever follows it. This is shared by the three regexes
-//below so that they can't drift apart in how they recognise a value.
-//
-//NOTE: the previous pattern instead looked for a ] not directly preceded by
-//a backslash, which cannot tell an escaped bracket (\]) apart from an
-//escaped backslash at the end of a value (\\]). The latter made the value,
-//and with it the whole property, fail to match and be dropped silently.
-const valuePattern = String.raw`\[(?:\\[\s\S]|[^\\\]])*\]`
-
-//Property identifiers are uppercase letters, but FF[3] allowed lowercase ones
-//to be mixed in for compatibility with older applications, to be ignored when
-//reading. They have to be matched all the same, or a property like the
-//CoPyright IGS writes ends the node early and silently drops everything after
-//it, so this is deliberately wider than the identifiers we act on.
-const identifierPattern = String.raw`[A-Za-z]+`
-
-//The SGF spec allows whitespace between the values of a property, and writers
-//use it to wrap a long list over several lines. Without the \s* in front of
-//each value, the list would end at the line break and every later property of
-//that node would be dropped along with it.
-const valueListPattern = String.raw`(?:\s*${valuePattern})+`
+//The lowercase letters FF[3] allowed to be mixed into a property identifier
+//for compatibility with older applications, to be ignored when reading, so
+//that the CoPyright IGS writes is read as the CP property
+const regexLowerCase = /[a-z]/g
 
 //Regexes
-const regexSequence = new RegExp(
-  String.raw`\(|\)|(;(\s*${identifierPattern}${valueListPattern})*)`, 'g'
-)
-const regexNode = new RegExp(
-  String.raw`${identifierPattern}${valueListPattern}`, 'g'
-)
-const regexValues = new RegExp(valuePattern, 'g')
-const regexProperty = new RegExp(identifierPattern)
-const regexLowerCase = /[a-z]/g
-const regexMove = /(;|\])[B|W]\[/i
 const regexCutOff = /^\d+$/
 const regexBlackPlayer = /PB|BT|BR|BL|OB/i
 const regexWhitePlayer = /PW|WT|WR|WL|OW/i
+
+//The properties that record a move. A node carrying one of them is a move
+//node, and always becomes a node of its own rather than being folded into the
+//node before it.
+const moveKeys = ['B', 'W']
+
+/**
+ * Whether a property records a move
+ */
+function isMoveProperty({key}) {
+  return moveKeys.includes(key)
+}
 
 //Property to parser map
 const parsingMap = {
@@ -134,6 +121,14 @@ export default class ConvertFromSgf extends Converter {
   //the root node
   views = new Map()
 
+  //Everything the reader had to say about the record it last read, in the
+  //order it appears in that record. See getDiagnostics() below.
+  diagnostics = []
+
+  //Whether to warn about things that are worth knowing but not worth
+  //reporting, such as a property no reader here acts on
+  verbose = false
+
   /**
    * Convert SGF string into a seki game object
    *
@@ -206,13 +201,15 @@ export default class ConvertFromSgf extends Converter {
    */
   parseSgf(sgf) {
 
-    //Get sequence. Anything that isn't recognisable as an SGF game tree
-    //produces no match at all, which has to be reported as a parsing failure
-    //rather than being allowed to blow up on a null further down.
-    const sequence = sgf.match(regexSequence)
-    if (!sequence) {
-      throw new Error(`Unable to parse SGF data: no game tree found`)
-    }
+    //Start a fresh set of diagnostics, so that what getDiagnostics() reports
+    //is about the record being read now and not the one before it
+    this.diagnostics = []
+
+    //Turn the record into tokens, each of which knows where in the record it
+    //came from. NOTE: this used to match the whole record against a regex
+    //with a g flag, which skips whatever fails to match without saying so, so
+    //a malformed record came out as a smaller game rather than as a problem.
+    const tokens = tokenizeSgf(sgf)
 
     //Initialise stack and collection of game trees
     const stack = []
@@ -235,56 +232,92 @@ export default class ConvertFromSgf extends Converter {
       trees.push({root, info})
     }
 
-    //Loop sequence
-    for (const str of sequence) {
+    //Walk the tokens
+    let i = 0
+    while (i < tokens.length) {
+      const token = tokens[i]
 
       //New variation, or the start of a game tree if none is open
-      if (str === '(') {
+      if (token.type === sgfTokenTypes.PARENTHESIS && token.value === '(') {
         if (root === null) {
           startTree()
         }
-        stack.push(parentNode)
+        stack.push({node: parentNode, token})
+        i++
         continue
       }
 
       //End of variation
-      else if (str === ')') {
-        if (stack.length > 0) {
-          parentNode = stack.pop()
-
-          //Back at the top level, so this game tree is complete and the next
-          //( in the file opens a new game rather than a variation of this one
-          if (stack.length === 0) {
-            root = null
-            info = null
-            parentNode = null
-          }
+      else if (token.type === sgfTokenTypes.PARENTHESIS) {
+        if (stack.length === 0) {
+          this.addDiagnostic(
+            sgfDiagnosticCodes.UNMATCHED_CLOSING_PARENTHESIS, token,
+            `Closing parenthesis without an opening one`
+          )
+          i++
+          continue
         }
+        parentNode = stack.pop().node
+
+        //Back at the top level, so this game tree is complete and the next
+        //( in the file opens a new game rather than a variation of this one
+        if (stack.length === 0) {
+          root = null
+          info = null
+          parentNode = null
+        }
+        i++
         continue
       }
 
-      //Properties before the first ( of the file. Not valid SGF, but it used
-      //to be read onto the root node all the same, so give it one to land on
-      if (root === null) {
-        startTree()
-      }
+      //A node, being a semicolon and every property that follows it
+      else if (token.type === sgfTokenTypes.SEMICOLON) {
 
-      //Create a new node if the parent node already has instructions, or if
-      //the string contains a move node. Otherwise, the instructions are set
-      //on the parent node. This allows for setup instructions to be set on
-      //the root node without creating a new node.
-      if (parentNode.hasInstructions() || str.match(regexMove)) {
-        const node = new GameNode()
-        parentNode.appendChild(node)
-        parentNode = node
-      }
+        //Read the node's properties, carrying on from whatever ended it
+        const {properties, next} = this.readProperties(tokens, i + 1)
+        i = next
 
-      //Get node properties and parse them
-      const properties = str.match(regexNode)
-      if (properties) {
+        //Properties before the first ( of the file. Not valid SGF, but it
+        //used to be read onto the root node all the same, so give it one to
+        //land on
+        if (root === null) {
+          startTree()
+        }
+
+        //Create a new node if the parent node already has instructions, or if
+        //this node records a move. Otherwise, the instructions are set on the
+        //parent node. This allows for setup instructions to be set on the
+        //root node without creating a new node.
+        if (parentNode.hasInstructions() || properties.some(isMoveProperty)) {
+          const node = new GameNode()
+          parentNode.appendChild(node)
+          parentNode = node
+        }
+
+        //Parse the properties onto it
         this.parseProperties(properties, parentNode, info)
+        continue
       }
+
+      //Anything else is outside of a node, so there is nothing to read it
+      //onto. Skipped rather than fatal, as the game trees around it are still
+      //perfectly readable.
+      this.reportStrayToken(token)
+      i++
     }
+
+    //Variations that were opened and never closed. Everything in them was
+    //still read, so this is worth reporting rather than failing over.
+    for (const {token} of stack) {
+      this.addDiagnostic(
+        sgfDiagnosticCodes.UNCLOSED_PARENTHESIS, token,
+        `Opening parenthesis is never closed`
+      )
+    }
+
+    //Hand the diagnostics back in the order they appear in the record, rather
+    //than in the order the reader happened to notice them
+    this.diagnostics.sort((a, b) => a.pos - b.pos)
 
     //Nothing but stray closing brackets, so there was no game tree in there
     //after all. NOTE: this used to hand back an empty game instead, leaving
@@ -303,34 +336,95 @@ export default class ConvertFromSgf extends Converter {
   }
 
   /**
-   * Parse node propties
+   * Read the properties of a node, being everything between its semicolon and
+   * whatever ends it
+   *
+   * Returns the properties read, and the index of the token that ended the
+   * node so the caller can carry on from there. Anything unreadable in
+   * between is reported and skipped rather than ending the node early, since
+   * a reader that stops at the first thing it doesn't understand loses every
+   * property after it as well.
+   */
+  readProperties(tokens, start) {
+
+    //Collect properties, each being an identifier and the values after it
+    const properties = []
+    let property = null
+    let i = start
+
+    //Read until something that isn't part of this node
+    for (; i < tokens.length; i++) {
+      const token = tokens[i]
+
+      //A new property starts here. The lowercase letters FF[3] allowed to be
+      //mixed in are dropped, so that CoPyright is read as CP.
+      if (token.type === sgfTokenTypes.PROP_IDENT) {
+        property = {
+          key: token.value.replace(regexLowerCase, ''),
+          values: [],
+          token,
+        }
+        properties.push(property)
+        continue
+      }
+
+      //A value, belonging to the property before it. NOTE: whitespace is not
+      //a token, so a value list that wraps over several lines reads as one
+      //list rather than ending at the line break.
+      else if (token.type === sgfTokenTypes.C_VALUE_TYPE) {
+        if (property === null) {
+          this.addDiagnostic(
+            sgfDiagnosticCodes.VALUE_WITHOUT_IDENTIFIER, token,
+            `Property value without an identifier: ${token.value}`
+          )
+          continue
+        }
+        property.values.push(this.unescapeValue(
+          token.value.substring(1, token.value.length - 1)
+        ))
+        continue
+      }
+
+      //Something unreadable in the middle of the node, which is skipped so
+      //that the properties after it are still read
+      else if (token.type === sgfTokenTypes.INVALID) {
+        this.reportStrayToken(token)
+        continue
+      }
+
+      //A parenthesis or another semicolon ends this node
+      break
+    }
+
+    //Return the properties, and where the node ended
+    return {properties, next: i}
+  }
+
+  /**
+   * Parse node properties onto a node
    */
   parseProperties(properties, node, info) {
 
-    //Make array of properties within this sequence
-    for (const prop of properties) {
-
-      //Get key, dropping the lowercase letters FF[3] allowed to be mixed in,
-      //so that a property written as CoPyright is read as CP
-      const key = regexProperty.exec(prop)[0].replace(regexLowerCase, '')
+    //Handle each property of this node
+    for (const {key, values, token} of properties) {
 
       //Nothing but lowercase letters, so there is no identifier to act on
       if (key === '') {
-        if (this.verbose) {
-          console.warn(`Property without identifier encountered while parsing SGF:`, prop)
-        }
+        this.addDiagnostic(
+          sgfDiagnosticCodes.PROPERTY_WITHOUT_IDENTIFIER, token,
+          `Property without an identifier: ${token.value}`
+        )
         continue
       }
 
-      //Get values, stripping the enclosing brackets and unescaping
-      const matches = prop.match(regexValues)
-      if (!matches) {
+      //An identifier with no value after it, which says nothing
+      if (values.length === 0) {
+        this.addDiagnostic(
+          sgfDiagnosticCodes.PROPERTY_WITHOUT_VALUE, token,
+          `Property ${key} has no value`
+        )
         continue
       }
-      const values = matches
-        .map(value => this.unescapeValue(
-          value.substring(1, value.length - 1)
-        ))
 
       //SGF parser present for this key?
       if (parsingMap[key]) {
@@ -350,6 +444,77 @@ export default class ConvertFromSgf extends Converter {
         console.warn(`Unknown property encountered while parsing SGF: ${key} =>`, values)
       }
     }
+  }
+
+  /*****************************************************************************
+   * Diagnostics
+   ***/
+
+  /**
+   * Get the diagnostics collected while reading the last record
+   *
+   * Each entry is of the shape {code, message, row, col, pos}, where the code
+   * is one of sgfDiagnosticCodes, row and col count from 1 as an editor shows
+   * them, and pos is an index into the record. They come back in the order
+   * they appear in the record, and an empty array means it read cleanly.
+   */
+  getDiagnostics() {
+    return this.diagnostics
+  }
+
+  /**
+   * Record a diagnostic about something the record got wrong
+   *
+   * These are collected rather than thrown. Records in the wild are written
+   * by all sorts of software, and a reader that starts rejecting files it
+   * used to open is a worse reader; the caller is told what was skipped
+   * instead. Only a record with no game tree in it at all is fatal, which
+   * parseSgf handles itself.
+   */
+  addDiagnostic(code, token, message) {
+    const {row, col, pos} = token
+    this.diagnostics.push({code, message, row, col, pos})
+    if (this.verbose) {
+      console.warn(`SGF diagnostic on line ${row}, column ${col}: ${message}`)
+    }
+  }
+
+  /**
+   * Report a token that couldn't be read where it was found
+   *
+   * A [ that never closes is worth naming separately, as it swallows the rest
+   * of the record and takes its own property with it, rather than being a
+   * stray character that only costs what it is.
+   */
+  reportStrayToken(token) {
+
+    //An unterminated property value
+    if (token.type === sgfTokenTypes.INVALID && token.value.charAt(0) === '[') {
+      this.addDiagnostic(
+        sgfDiagnosticCodes.UNTERMINATED_VALUE, token,
+        `Property value is not closed before the end of the record`
+      )
+      return
+    }
+
+    //Anything else the tokenizer couldn't make sense of
+    if (token.type === sgfTokenTypes.INVALID) {
+      this.addDiagnostic(
+        sgfDiagnosticCodes.INVALID_INPUT, token,
+        `Skipped input that is not valid SGF: ${token.value}`
+      )
+      return
+    }
+
+    //A property, or one of its values, that isn't inside a node, so there is
+    //nothing to read it onto
+    const what = (token.type === sgfTokenTypes.C_VALUE_TYPE) ?
+      `Property value` :
+      `Property`
+    this.addDiagnostic(
+      sgfDiagnosticCodes.PROPERTY_OUTSIDE_NODE, token,
+      `${what} outside of a node: ${token.value}`
+    )
   }
 
   /*****************************************************************************
