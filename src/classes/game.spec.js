@@ -773,6 +773,27 @@ describe('Game info', () => {
 
     expect(game.getPlayer(BLACK)).toMatchObject({name: 'B', rank: '2d'})
   })
+
+  it('reports no result the same way however it came to have none', () => {
+
+    //NOTE: a record that was never given a result and one that was handed an
+    //empty one both say the same thing — nothing about how the game ended —
+    //so they report it the same way, and neither claims the '?' that means a
+    //record knows the result is unknown
+    const never = new Game()
+    const emptied = new Game({game: {result: ''}})
+    const cleared = new Game({game: {result: 'W+R'}})
+    cleared.setGameResult('')
+
+    expect(never.getGameResult()).toBe('')
+    expect(emptied.getGameResult()).toBe('')
+    expect(cleared.getGameResult()).toBe('')
+  })
+
+  it('keeps a stated unknown result as the unknown result', () => {
+    const game = new Game({game: {result: gameResults.UNKNOWN}})
+    expect(game.getGameResult()).toBe('?')
+  })
 })
 
 describe('Game handicap', () => {
@@ -1780,22 +1801,8 @@ describe('Game info round trips through every fixture record', () => {
     ['ngf/handicap2.ngf', Game.fromNgf],
   ]
 
-  //An empty result is the one field that doesn't come back untouched, as
-  //setGameResult reads an empty string as an unknown result and writes it as
-  //'?', while a game that was never given one reports it as ''. It settles
-  //after the first pass, so the info is stable from there on.
-  const normalise = info => ({
-    ...info,
-    game: {...info.game, result: info.game.result || gameResults.UNKNOWN},
-  })
-
   it.each(fixtures)('reads %s back into the same info object', (name, read) => {
     const info = read(loadFixtureBytes(name)).getInfo()
-    expect(new Game(info).getInfo()).toStrictEqual(normalise(info))
-  })
-
-  it.each(fixtures)('settles the info of %s after one pass', (name, read) => {
-    const info = new Game(read(loadFixtureBytes(name)).getInfo()).getInfo()
     expect(new Game(info).getInfo()).toStrictEqual(info)
   })
 
@@ -1807,6 +1814,6 @@ describe('Game info round trips through every fixture record', () => {
     //anything setInfo doesn't read is lost here rather than merely unreported
     game.reset()
 
-    expect(game.getInfo()).toStrictEqual(normalise(info))
+    expect(game.getInfo()).toStrictEqual(info)
   })
 })
