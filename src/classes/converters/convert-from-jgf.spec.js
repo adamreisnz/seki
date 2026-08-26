@@ -168,6 +168,25 @@ describe('ConvertFromJgf, game information', () => {
     expect(reloaded.getGameDate()).toBe('2023-06-12')
     expect(reloaded.getGameDates()).toEqual(['2023-06-12'])
   })
+
+  it('keeps a drawn result through a round trip, spelled as the spec does', () => {
+
+    //NOTE: however the record spelled its draw, what comes back is '0', the
+    //spec's form for jigo, rather than the 'D' Seki used to write
+    for (const result of ['0', 'Draw', 'D']) {
+      const game = new Game({game: {result}})
+      const jgf = toJgf(game)
+      expect(jgf.game.result).toBe('0')
+      expect(new ConvertFromJgf().convert(jgf).getGameResult()).toBe('0')
+    }
+  })
+
+  it('keeps a void result through a round trip', () => {
+    const game = new Game({game: {result: 'Void'}})
+    const jgf = toJgf(game)
+    expect(jgf.game.result).toBe('Void')
+    expect(new ConvertFromJgf().convert(jgf).getGameResult()).toBe('Void')
+  })
 })
 
 describe('ConvertFromJgf, invalid input', () => {

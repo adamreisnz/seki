@@ -103,6 +103,7 @@ const {
 } = defaults
 const {
   gameTypes,
+  gameResults,
 } = game
 const {
   markupTypes,
@@ -202,6 +203,7 @@ export {
   boardSymmetries,
   boardTransformations,
   editTools,
+  gameResults,
   gameTypes,
   hangulNumbers,
   kanjiNumbers,

@@ -84,6 +84,24 @@ describe('SGF round trip', () => {
     expect(write(parse('(;FF[4]SZ[13])'))).toContain('SZ[13]')
     expect(write(parse('(;FF[4]SZ[19:13])'))).toContain('SZ[19:13]')
   })
+
+  it('writes a drawn result the way the spec spells it', () => {
+
+    //NOTE: whichever way the record being read spelled it, what goes back out
+    //is RE[0], the spec's form for jigo. Seki used to write RE[D], which no
+    //other program reads as a draw at all.
+    for (const value of ['0', 'Draw', 'D']) {
+      const sgf = write(parse(`(;FF[4]SZ[19]RE[${value}])`))
+      expect(sgf).toContain('RE[0]')
+      expect(parse(sgf).getGameResult()).toBe('0')
+    }
+  })
+
+  it('writes a void result in the casing the spec gives it', () => {
+    const sgf = write(parse('(;FF[4]SZ[19]RE[Void])'))
+    expect(sgf).toContain('RE[Void]')
+    expect(parse(sgf).getGameResult()).toBe('Void')
+  })
 })
 
 describe('SGF export of territory markup', () => {

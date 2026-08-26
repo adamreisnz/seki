@@ -1,4 +1,6 @@
 
+import {gameResults} from '../constants/game.js'
+
 //Regex to match event urls
 export const regexEventUrl = /(,\s|:\s|\sat\s)?(https?:\/\/(.*?(?=\s|$)))/
 
@@ -6,6 +8,13 @@ export const regexEventUrl = /(,\s|:\s|\sat\s)?(https?:\/\/(.*?(?=\s|$)))/
 //within one, where a date leaves off whatever it shares with the one before it
 export const regexDateList =
   /^(\d{4}(-\d{1,2}(-\d{1,2})?)?(\s*,\s*(\d{4}|(\d{4}-)?\d{1,2}(-\d{1,2})?))*)?$/
+
+//Regex to match the ways a drawn result is written. Seki wrote 'D' for it for
+//a long time, so records it made still have to read back as a draw
+export const regexDrawnResult = /^(0|d|draw)$/i
+
+//Regex to match a void result
+export const regexVoidResult = /^void$/i
 
 /**
  * Parse event string
@@ -27,12 +36,25 @@ export function parseResult(result) {
 
   //No input or invalid
   if (!result || typeof result !== 'string') {
-    return '?'
+    return gameResults.UNKNOWN
+  }
+
+  //A drawn game keeps the spec's spelling of '0' (zero), which is the only
+  //one other programs read as a draw, and every way of writing one normalises
+  //to it. NOTE: this has to come before the replacements below, which end in
+  //toUpperCase() and would leave a draw as an invalid 'D'.
+  if (result.match(regexDrawnResult)) {
+    return gameResults.DRAW
+  }
+
+  //A void game keeps the spec's spelling of 'Void' for the same reason: the
+  //uppercasing below would otherwise write a 'VOID' nothing else reads
+  if (result.match(regexVoidResult)) {
+    return gameResults.VOID
   }
 
   //Make some replacements
   return result
-    .replace(/^0$/i, 'D')
     .replace(/draw/i, 'D')
     .replace(/resign/i, 'R')
     .replace(/time/i, 'T')

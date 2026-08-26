@@ -608,6 +608,22 @@ describe('ConvertFromSgf, game information', () => {
     expect(game.getGameDates())
       .toEqual(['2024-03-01', '2024-03-02', '2024-03-03'])
   })
+
+  it('reads every way of writing a draw as a draw', () => {
+
+    //NOTE: '0' is the spec's form and the one written back out. 'D' is what
+    //Seki itself wrote for years, so records it made still have to read as a
+    //drawn game rather than as something unknown.
+    for (const value of ['0', 'Draw', 'D']) {
+      const game = parse(`(;FF[4]SZ[19]RE[${value}];B[dd])`)
+      expect(game.getGameResult()).toBe('0')
+    }
+  })
+
+  it('reads a void result in the casing the spec gives it', () => {
+    const game = parse('(;FF[4]SZ[19]RE[Void];B[dd])')
+    expect(game.getGameResult()).toBe('Void')
+  })
 })
 
 describe('ConvertFromSgf, real records', () => {

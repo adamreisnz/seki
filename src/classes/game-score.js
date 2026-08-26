@@ -1,5 +1,6 @@
 import {stoneColors} from '../constants/stone.js'
 import {scoringMethods} from '../constants/score.js'
+import {gameResults} from '../constants/game.js'
 
 /**
  * Game color score
@@ -154,7 +155,7 @@ export default class GameScore {
     //used to report the unknown result instead, which is what a record with no
     //result at all parses to. Spelled '0' (zero), the SGF spec's mandatory
     //form for a draw (jigo), so the result can go into a record as it is.
-    return '0'
+    return gameResults.DRAW
   }
 
   /**
