@@ -555,6 +555,40 @@ describe('Game variations', () => {
     expect(fork.getChild(0)).toBe(variation)
   })
 
+  it('moves a promoted variation up rather than swapping it into place', () => {
+
+    //NOTE: promoting used to swap the variation with whichever one was first,
+    //so promoting the third of four left the one that used to be first
+    //sitting in third place, rather than in second
+    const {game, fork} = createForkedGame()
+    const [first, second] = fork.getChildren()
+    const third = new GameNode({move: {x: 3, y: 15, color: WHITE}})
+    const fourth = new GameNode({move: {x: 9, y: 9, color: WHITE}})
+    third.appendToParent(fork)
+    fourth.appendToParent(fork)
+
+    game.makeMainVariation(third)
+
+    expect(fork.getChildren()).toEqual([third, first, second, fourth])
+  })
+
+  it('keeps the current position and its path when promoting', () => {
+
+    //The path records the child index chosen at each move number, so
+    //promoting a variation has to leave it describing the same node
+    const {game, fork} = createForkedGame()
+    const third = new GameNode({move: {x: 3, y: 15, color: WHITE}})
+    third.appendToParent(fork)
+
+    game.goToNextPosition(1)
+    const here = game.getCurrentNode()
+
+    game.makeMainVariation(third)
+
+    expect(game.getCurrentNode()).toBe(here)
+    expect(game.findNodeForPath(game.getPath())).toBe(here)
+  })
+
   it('refuses to promote a node that is already on the main line', () => {
     const {game, fork} = createForkedGame()
     expect(() => game.makeMainVariation(fork.getChild(0)))

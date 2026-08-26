@@ -102,11 +102,39 @@ describe('GameNode', () => {
 
   describe('reordering children', () => {
 
-    it('swaps two children', () => {
+    it('moves a child to a different index', () => {
       const {a, b, c} = createTree()
       a.moveChild(c, 0)
       expect(a.getChild(0)).toBe(c)
       expect(a.getChild(1)).toBe(b)
+    })
+
+    it('moves a child rather than swapping it with the one in its way', () => {
+
+      //NOTE: this used to put the child at the target index and whatever was
+      //there at the child's old index, so promoting the third of four
+      //children left the one that used to be first sitting in third place
+      const {a, b, c} = createTree()
+      const d = move(3, 3, WHITE)
+      const e = move(4, 4, WHITE)
+      d.appendToParent(a)
+      e.appendToParent(a)
+
+      a.moveChild(d, 0)
+
+      expect(a.getChildren()).toEqual([d, b, c, e])
+    })
+
+    it('moves a child backwards without disturbing the others', () => {
+      const {a, b, c} = createTree()
+      const d = move(3, 3, WHITE)
+      const e = move(4, 4, WHITE)
+      d.appendToParent(a)
+      e.appendToParent(a)
+
+      a.moveChild(b, 2)
+
+      expect(a.getChildren()).toEqual([c, d, b, e])
     })
 
     it('moves the path index along with the child it points at', () => {
@@ -114,6 +142,36 @@ describe('GameNode', () => {
       a.setPathIndex(0)
       a.moveChild(c, 0)
       expect(a.getPathNode()).toBe(b)
+    })
+
+    it('keeps the path index on its node when a child moves past it', () => {
+
+      //NOTE: the path index is a position, not an identity, so every child
+      //the move slides along takes the index with it if it was pointing there
+      const {a, c} = createTree()
+      const d = move(3, 3, WHITE)
+      const e = move(4, 4, WHITE)
+      d.appendToParent(a)
+      e.appendToParent(a)
+
+      a.setPathIndex(1)
+      a.moveChild(d, 0)
+
+      expect(a.getPathIndex()).toBe(2)
+      expect(a.getPathNode()).toBe(c)
+    })
+
+    it('keeps the path index on the child that moved', () => {
+      const {a, b, c} = createTree()
+      const d = move(3, 3, WHITE)
+      d.appendToParent(a)
+
+      a.setPathIndex(2)
+      a.moveChild(d, 0)
+
+      expect(a.getPathIndex()).toBe(0)
+      expect(a.getPathNode()).toBe(d)
+      expect(a.getChildren()).toEqual([d, b, c])
     })
 
     it('moves a child up and down', () => {
@@ -131,10 +189,10 @@ describe('GameNode', () => {
       expect(a.getChild(0)).toBe(b)
     })
 
-    it('swaps the variation roots along with the children', () => {
+    it('moves the variation roots along with the children', () => {
 
-      //NOTE: b starts as the main variation and c as a branch, so a swap has
-      //to turn c into the main variation and b into a branch, all the way
+      //NOTE: b starts as the main variation and c as a branch, so promoting c
+      //has to turn c into the main variation and b into a branch, all the way
       //down their subtrees
       const {a, b, c} = createTree()
       const belowB = move(3, 3)
@@ -149,9 +207,9 @@ describe('GameNode', () => {
 
     it('leaves the children that did not move alone', () => {
 
-      //NOTE: a swap used to re-parent every child, walking each child's
-      //whole subtree twice over, when only the two swapped children can
-      //have changed
+      //NOTE: this used to re-parent every child, walking each child's whole
+      //subtree twice over, when only being the main variation or not can
+      //change a child's variation root, and d is a branch either way
       const {a, c} = createTree()
       const d = move(3, 3, WHITE)
       d.appendToParent(a)

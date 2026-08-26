@@ -2434,6 +2434,14 @@ export default class Game extends Base {
       traverse(current.parent)
     }
     traverse(node)
+
+    //Rebuild the current path. It records the child index chosen at each move
+    //number, and promoting a variation changes which child those numbers point
+    //at, so left alone it would go on describing a line we are no longer on.
+    const path = this.getPathToNode(this.node)
+    if (path) {
+      this.path = path
+    }
   }
 
   /**
