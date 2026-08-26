@@ -2,7 +2,9 @@ import {describe, it, expect, beforeEach, afterEach, vi} from 'vitest'
 import Board from './board.js'
 import Game from './game.js'
 import GamePosition from './game-position.js'
+import MarkupFactory from './markup-factory.js'
 import {boardLayerTypes} from '../constants/board.js'
+import {markupTypes} from '../constants/markup.js'
 import {stoneColors} from '../constants/stone.js'
 
 /**
@@ -679,5 +681,198 @@ describe('Board position updates', () => {
     board.updatePosition(position)
 
     expect(board.has(boardLayerTypes.STONES, 5, 5)).toBe(true)
+  })
+})
+
+describe('Board area helpers', () => {
+
+  const createBoardWithLayers = () => {
+    const board = new Board({size: 19, showCoordinates: false})
+    board.createLayers()
+    return board
+  }
+
+  const area = [{x: 2, y: 2}, {x: 2, y: 3}, {x: 3, y: 2}, {x: 3, y: 3}]
+
+  //Anything the layers hold will do; nothing here paints
+  const object = () => ({draw: () => null, erase: () => null})
+
+  //The hover layer only takes stones and markup, so that a displaced object
+  //can be put back on the right layer afterwards
+  const hoverObject = board =>
+    MarkupFactory.create(markupTypes.SQUARE, board)
+
+  it('sets a hover object across a whole area', () => {
+
+    //Which is what a drag with the area clearing tool previews
+    const board = createBoardWithLayers()
+    const hover = hoverObject(board)
+
+    board.setHoverArea(area, hover)
+
+    for (const {x, y} of area) {
+      expect(board.get(boardLayerTypes.HOVER, x, y)).toBe(hover)
+    }
+  })
+
+  it('clears a hover area again', () => {
+    const board = createBoardWithLayers()
+    board.setHoverArea(area, hoverObject(board))
+
+    board.clearHoverArea(area)
+
+    for (const {x, y} of area) {
+      expect(board.has(boardLayerTypes.HOVER, x, y)).toBe(false)
+    }
+  })
+
+  it('removes markup across a whole area', () => {
+    const board = createBoardWithLayers()
+    for (const {x, y} of area) {
+      board.add(boardLayerTypes.MARKUP, x, y, object())
+    }
+
+    board.removeMarkupFromArea(area)
+
+    for (const {x, y} of area) {
+      expect(board.has(boardLayerTypes.MARKUP, x, y)).toBe(false)
+    }
+  })
+
+  it('removes stones across a whole area', () => {
+    const board = createBoardWithLayers()
+    for (const {x, y} of area) {
+      board.add(boardLayerTypes.STONES, x, y, object())
+    }
+
+    board.removeStonesFromArea(area)
+
+    for (const {x, y} of area) {
+      expect(board.has(boardLayerTypes.STONES, x, y)).toBe(false)
+    }
+  })
+
+  it('takes all the markup off in one go', () => {
+    const board = createBoardWithLayers()
+    board.add(boardLayerTypes.MARKUP, 2, 2, object())
+
+    board.removeAllMarkup()
+
+    expect(board.has(boardLayerTypes.MARKUP, 2, 2)).toBe(false)
+  })
+})
+
+describe('Board grid repainting', () => {
+
+  const createBoardWithLayers = () => {
+    const board = new Board({size: 19, showCoordinates: false})
+    board.createLayers()
+    return board
+  }
+
+  const object = () => ({draw: () => null, erase: () => null})
+
+  it('repaints the grid under a cell that has nothing on it', () => {
+    const board = createBoardWithLayers()
+    const spy = vi.spyOn(board.getLayer(boardLayerTypes.GRID), 'redrawCell')
+
+    board.redrawGridCell(3, 3)
+
+    expect(spy).toHaveBeenCalledWith(3, 3)
+  })
+
+  it('leaves it alone under a stone, which already hides it', () => {
+    const board = createBoardWithLayers()
+    board.add(boardLayerTypes.STONES, 3, 3, object())
+    const spy = vi.spyOn(board.getLayer(boardLayerTypes.GRID), 'redrawCell')
+
+    board.redrawGridCell(3, 3)
+
+    expect(spy).not.toHaveBeenCalled()
+  })
+
+  it('leaves it alone under markup, which owns that cell', () => {
+    const board = createBoardWithLayers()
+    board.add(boardLayerTypes.MARKUP, 3, 3, object())
+    const spy = vi.spyOn(board.getLayer(boardLayerTypes.GRID), 'redrawCell')
+
+    board.redrawGridCell(3, 3)
+
+    expect(spy).not.toHaveBeenCalled()
+  })
+
+  it('redraws one cell of one layer', () => {
+    const board = createBoardWithLayers()
+    const spy = vi.spyOn(board.getLayer(boardLayerTypes.MARKUP), 'redrawCell')
+
+    board.redrawCell(boardLayerTypes.MARKUP, 3, 3)
+
+    expect(spy).toHaveBeenCalledWith(3, 3)
+  })
+
+  it('shrugs off being asked about a layer it does not have', () => {
+    const board = createBoardWithLayers()
+
+    expect(() => board.redrawCell('nonsense', 3, 3)).not.toThrow()
+    expect(() => board.redrawLayer('nonsense')).not.toThrow()
+    expect(() => board.eraseLayer('nonsense')).not.toThrow()
+  })
+
+  it('erases every layer at once', () => {
+    const board = createBoardWithLayers()
+    const spies = Array.from(board.layers.values())
+      .map(layer => vi.spyOn(layer, 'erase'))
+
+    board.erase()
+
+    for (const spy of spies) {
+      expect(spy).toHaveBeenCalled()
+    }
+  })
+})
+
+describe('Board reset and sizing', () => {
+
+  it('keeps its config through a reset', () => {
+    const board = new Board({size: 9, showCoordinates: false})
+    board.createLayers()
+
+    board.reset()
+
+    expect(board.getConfig('showCoordinates')).toBe(false)
+    expect(board.width).toBe(9)
+  })
+
+  it('ignores a draw size it already has', () => {
+    const board = new Board({size: 19})
+    board.setDrawSize(400, 400)
+    const spy = vi.spyOn(board, 'computeAndRedraw')
+
+    board.setDrawSize(400, 400)
+
+    expect(spy).not.toHaveBeenCalled()
+  })
+
+  it('takes its size from the first position it is shown', () => {
+
+    //A board built without one has to learn it from what it is given
+    const board = new Board()
+    board.createLayers()
+    board.width = 0
+    board.height = 0
+
+    board.updatePosition(new GamePosition(13, 13))
+
+    expect(board.width).toBe(13)
+    expect(board.height).toBe(13)
+  })
+
+  it('takes its theme out of the board config when given one that way', () => {
+    const board = new Board({
+      size: 19,
+      theme: {board: {backgroundColor: '#123456'}},
+    })
+
+    expect(board.theme.get('board.backgroundColor')).toBe('#123456')
   })
 })

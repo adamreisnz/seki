@@ -1,5 +1,6 @@
-import {describe, it, expect, vi} from 'vitest'
+import {describe, it, expect, vi, beforeEach, afterEach} from 'vitest'
 import Base from './base.js'
+import {setDebug} from '../helpers/util.js'
 
 const createBase = (config, defaults) => {
   const base = new Base()
@@ -124,5 +125,60 @@ describe('Base events', () => {
 
     expect(a).toHaveBeenCalled()
     expect(b).toHaveBeenCalled()
+  })
+})
+
+describe('Base logging', () => {
+
+  //The logging helpers only speak when the debug flag is on, so both sides
+  //of that are what there is to check
+  class Loud extends Base {}
+
+  let logged
+
+  beforeEach(() => {
+    logged = {log: [], warn: [], trace: []}
+    vi.spyOn(console, 'log').mockImplementation((...args) => logged.log.push(args))
+    vi.spyOn(console, 'warn').mockImplementation((...args) => logged.warn.push(args))
+    vi.spyOn(console, 'trace').mockImplementation((...args) => logged.trace.push(args))
+  })
+
+  afterEach(() => {
+    setDebug(false)
+    vi.restoreAllMocks()
+  })
+
+  it('says nothing while debugging is off', () => {
+    const base = new Loud()
+
+    base.debug('a message')
+    base.warn('a warning')
+    base.trace('a trace')
+
+    expect(logged.log).toHaveLength(0)
+    expect(logged.warn).toHaveLength(0)
+    expect(logged.trace).toHaveLength(0)
+  })
+
+  it('names the class it is speaking for once debugging is on', () => {
+    setDebug(true)
+    const base = new Loud()
+
+    base.debug('a message')
+    base.warn('a warning')
+    base.trace('a trace')
+
+    expect(logged.log[0]).toEqual(['Loud:', 'a message'])
+    expect(logged.warn[0]).toEqual(['Loud:', 'a warning'])
+    expect(logged.trace[0]).toEqual(['Loud:', 'a trace'])
+  })
+
+  it('passes everything it was given through', () => {
+    setDebug(true)
+    const base = new Loud()
+
+    base.debug('a message', {some: 'detail'}, 42)
+
+    expect(logged.log[0]).toEqual(['Loud:', 'a message', {some: 'detail'}, 42])
   })
 })

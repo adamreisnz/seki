@@ -131,3 +131,32 @@ describe('Coordinate size handler', () => {
     expect(theme.get('coordinates.vertical.size', 'A', 33)).toBe('33px')
   })
 })
+
+describe('Theme canvas translation', () => {
+
+  //Canvas strokes straddle the coordinate they are drawn on, so an odd line
+  //width lands half in one pixel and half in the next unless the whole canvas
+  //is shifted by half a pixel first
+
+  it('shifts by half a pixel for an odd line width', () => {
+    expect(new Theme().canvasTranslate(1)).toBe(0.5)
+    expect(new Theme().canvasTranslate(3)).toBe(0.5)
+  })
+
+  it('shifts by nothing for an even one', () => {
+    expect(new Theme().canvasTranslate(2)).toBe(0)
+    expect(new Theme().canvasTranslate(4)).toBe(0)
+  })
+
+  it('falls back to the grid line width when given none', () => {
+
+    //Which is what everything on the grid is aligned against
+    const theme = new Theme()
+    theme.set('grid.lineWidth', 3)
+
+    expect(theme.canvasTranslate()).toBe(0.5)
+
+    theme.set('grid.lineWidth', 2)
+    expect(theme.canvasTranslate()).toBe(0)
+  })
+})
