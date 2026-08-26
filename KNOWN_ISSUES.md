@@ -266,3 +266,28 @@ about a stone that was never placed. Harmless in practice, since the peer's own
 
 **What a fix involves:** having `Game#addStone` report whether it placed
 anything, which it currently does not, and raising the event only when it did.
+
+---
+
+## A theme cannot supply a coordinate generator function
+
+**Where:** `CoordinatesLayer#getCharacter`, `Theme#get`
+
+**Pinned by:** `src/classes/layers/coordinates-layer.spec.js`, "cannot take a
+generator function from the theme"
+
+`getCharacter` accepts either the name of one of the built in generators or a
+function to call per coordinate, and `coordinates.horizontal.type` is where a
+theme says which. But `Theme#get` calls any function it finds and returns the
+result, so a generator handed to the theme is invoked once, with no arguments,
+and whatever it returns is then looked up as if it were the name of a
+generator. Nothing matches, and every label falls back to a bare index.
+
+**Effect:** the function branch in `getCharacter` is unreachable through the
+only route a consumer has to it. A board themed with a custom coordinate
+generator silently shows `0 1 2 3` instead.
+
+**What a fix involves:** reading this one property without the theme's
+function calling, which `Theme` has no way to ask for today. Adding one is a
+change to the theme API; special casing the read inside the layer is not, and
+is probably the smaller of the two.
