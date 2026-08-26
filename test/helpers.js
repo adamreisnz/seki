@@ -65,6 +65,8 @@ export const createStubContext = () => {
     save: vi.fn(),
     restore: vi.fn(),
     translate: vi.fn(),
+    setTransform: vi.fn(),
+    resetTransform: vi.fn(),
     rotate: vi.fn(),
     scale: vi.fn(),
     setLineDash: vi.fn(),
@@ -215,11 +217,15 @@ export const createStubElement = (tag = 'div') => {
     },
   }
 
-  //A canvas hands out a context of its own
+  //A canvas hands out a context of its own, which points back at it the way
+  //a real one does
   if (element.tagName === 'CANVAS') {
     element.width = 0
     element.height = 0
+    element.clientWidth = 0
+    element.clientHeight = 0
     element.context = createStubContext()
+    element.context.canvas = element
     element.getContext = () => element.context
   }
 
@@ -273,7 +279,9 @@ export const stubDom = ({devicePixelRatio = 1} = {}) => {
     addEventListener() {} // eslint-disable-line no-empty-function
   })
 
-  //The board observes its container for size changes
+  //The board observes its container for size changes. A real observer fires
+  //once as soon as it starts observing, which is what gives the board its
+  //first size, so this one does too.
   const observers = []
   vi.stubGlobal('ResizeObserver', class {
     constructor(callback) {
@@ -284,6 +292,7 @@ export const stubDom = ({devicePixelRatio = 1} = {}) => {
     }
     observe(element) {
       this.observed.push(element)
+      this.callback()
     }
     disconnect() {
       this.disconnected = true
