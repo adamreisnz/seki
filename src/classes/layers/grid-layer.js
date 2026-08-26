@@ -185,6 +185,7 @@ export default class GridLayer extends BoardLayer {
 
     //Get theme properties
     const lineWidth = theme.get('grid.lineWidth', cellSize)
+    const lineCap = theme.get('grid.lineCap')
     const strokeStyle = theme.get('grid.lineColor')
     const starRadius = theme.get('grid.star.radius', cellSize)
     const starColor = theme.get('grid.star.color')
@@ -204,12 +205,26 @@ export default class GridLayer extends BoardLayer {
     const y1 = (y === board.yTop) ? absY - dty : absY - radius
     const y2 = (y === board.yBottom) ? absY + dby : absY + radius
 
+    //Clear the cell before painting it back, over exactly the area the lines
+    //below cover, cap included.
+    //
+    //NOTE: whatever took the grid out from under itself erased its own
+    //radius, which is smaller than the cell we are about to paint. Without
+    //this the ends of these lines were laid over line that was never erased,
+    //and as the line is not fully opaque, that showed as a darker stub either
+    //side of every point that had been covered.
+    const capExtends = (lineCap === 'butt') ? 0 : (lineWidth / 2)
+    this.eraseCell(x, y, radius + capExtends)
+
     //Prepare context
     this.prepareContext(canvasTranslate)
 
-    //Configure context
+    //Configure context. The line cap is set here as well as in draw(), rather
+    //than left to whatever the context was last given, so that the piece we
+    //paint ends the way the line it rejoins does.
     context.beginPath()
     context.lineWidth = lineWidth
+    context.lineCap = lineCap
     context.strokeStyle = strokeStyle
 
     //Patch up grid lines
