@@ -291,3 +291,51 @@ generator silently shows `0 1 2 3` instead.
 function calling, which `Theme` has no way to ask for today. Adding one is a
 change to the theme API; special casing the read inside the layer is not, and
 is probably the smaller of the two.
+
+---
+
+## Clicking a variation marker follows the wrong variation
+
+**Where:** `PlayerModeReplay#selectMoveVariation`, `Player#goToNextPosition`
+
+**Pinned by:** `src/classes/modes/player-mode-replay.spec.js`, "follows the
+selected path rather than the variation clicked"
+
+`selectMoveVariation` works out the index of the variation that was clicked and
+calls `player.goToNextPosition(i)`. `Player#goToNextPosition` takes no
+arguments: it reads `game.getCurrentPathIndex()` and passes that to the game
+instead. The index worked out from the click is discarded.
+
+**Effect:** on a node that forks, clicking the marker for variation B walks
+down variation A — whichever branch the remembered path is on. The only way to
+reach the other branch is `selectNextVariation`, which is bound to the keyboard
+rather than to the markers. This is the visible half of replay mode's variation
+handling, so it is worth more than its size suggests.
+
+**What a fix involves:** giving `Player#goToNextPosition` the optional index
+its caller already assumes it has, defaulting to the current path index. It has
+several other callers, none of which pass one, so the default keeps them
+working.
+
+---
+
+## Markers do not appear until something has been navigated
+
+**Where:** `Player#processLoadedGame`, `PlayerModeReplay#onGameLoad`
+
+**Pinned by:** `src/classes/modes/player-mode-replay.spec.js`, "shows nothing
+at all until something has been navigated"
+
+Loading a record calls `processPathChange(true)`, and the `true` suppresses the
+`pathChange` event on purpose. Rendering the markers hangs off that event, and
+replay mode's `onGameLoad` handler only stops auto play, so nothing renders
+them. They appear the first time the user navigates.
+
+**Effect:** a record shown at its opening position carries none of the markers
+it should — no variation letters where the first move forks, no last move
+marker where a record opens part way in. A problem collection or joseki
+dictionary lands the user on exactly that position.
+
+**What a fix involves:** rendering the markers from the game load handler as
+well, after the board position has been updated. The ordering matters: the
+position sync rebuilds the markup layer, so markers drawn before it are lost.
