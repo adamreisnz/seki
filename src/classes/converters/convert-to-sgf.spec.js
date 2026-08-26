@@ -4,6 +4,7 @@ import ConvertToSgf from './convert-to-sgf.js'
 import Game from '../game.js'
 import GameNode from '../game-node.js'
 import {stoneColors} from '../../constants/stone.js'
+import {loadFixture} from '../../../test/fixtures.js'
 
 const parse = sgf => new ConvertFromSgf().convert(sgf)
 const write = game => new ConvertToSgf().convert(game)
@@ -159,5 +160,113 @@ describe('ConvertToSgf, the charset it declares', () => {
     expect(game.getInfo().record.charset).toBe('UTF-8')
     expect(game.getPlayer(stoneColors.BLACK).name).toBe('이세돌')
     expect(game.getPlayer(stoneColors.WHITE).name).toBe('柯洁')
+  })
+})
+
+describe('ConvertToSgf, the clock', () => {
+
+  //BL/WL carry the time left and OB/OW the periods left, and every KGS, IGS
+  //and OGS record puts them on most moves. The reader hangs them off the move
+  //itself, so the color that moved is the color they belong to.
+  const moveOf = (game, depth) => {
+    let node = game.root
+    for (let i = 0; i <= depth; i++) {
+      node = node.getChild(0)
+    }
+    return node.move
+  }
+
+  it('round trips all four properties with the same values', () => {
+    const sgf = '(;FF[4]SZ[19];B[dd]BL[120]OB[3];W[pp]WL[90]OW[2])'
+    const reparsed = parse(write(parse(sgf)))
+
+    expect(moveOf(reparsed, 0)).toMatchObject({timeLeft: 120, periodsLeft: 3})
+    expect(moveOf(reparsed, 1)).toMatchObject({timeLeft: 90, periodsLeft: 2})
+  })
+
+  it('writes each property against the color that moved', () => {
+    const sgf = write(parse('(;FF[4]SZ[19];B[dd]BL[120]OB[3];W[pp]WL[90]OW[2])'))
+
+    expect(sgf).toContain('B[dd]BL[120]OB[3]')
+    expect(sgf).toContain('W[pp]WL[90]OW[2]')
+  })
+
+  it('keeps a fractional time intact', () => {
+    const sgf = write(parse('(;FF[4]SZ[19];B[dd]BL[12.5])'))
+
+    expect(sgf).toContain('BL[12.5]')
+    expect(parse(sgf).root.getChild(0).move.timeLeft).toBe(12.5)
+  })
+
+  it('does not give a whole number of seconds a decimal point', () => {
+    expect(write(parse('(;FF[4]SZ[19];B[dd]BL[120])'))).toContain('BL[120]')
+  })
+
+  it('writes a time with no periods on its own', () => {
+    const sgf = write(parse('(;FF[4]SZ[19];B[dd]BL[120])'))
+
+    expect(sgf).toContain('BL[120]')
+    expect(sgf).not.toContain('OB[')
+  })
+
+  it('writes a time of zero, being a player out of main time', () => {
+    expect(write(parse('(;FF[4]SZ[19];B[dd]BL[0]OB[1])'))).toContain('BL[0]OB[1]')
+  })
+
+  it('emits nothing at all for a move with no clock', () => {
+    const sgf = write(parse('(;FF[4]SZ[19];B[dd];W[pp])'))
+
+    expect(sgf).toContain(';B[dd];W[pp]')
+    for (const key of ['BL', 'WL', 'OB', 'OW']) {
+      expect(sgf).not.toContain(`${key}[`)
+    }
+  })
+
+  it('keeps the clock on a pass move, which is where servers write it too', () => {
+    const sgf = write(parse('(;FF[4]SZ[19];B[]BL[10]OB[1])'))
+
+    expect(sgf).toContain('B[]BL[10]OB[1]')
+    expect(parse(sgf).root.getChild(0).isPassMove()).toBe(true)
+  })
+})
+
+describe('ConvertToSgf, the clock in a real record', () => {
+
+  //See test/fixtures/README.md for where this record came from. It is a
+  //collection, and the clocked moves sit in a variation of its first game,
+  //so both are walked for rather than assumed to be on the main line.
+  const loadClocked = () => {
+    const games = new ConvertFromSgf().convertAll(loadFixture('sgf/ff4_ex.sgf'))
+    return games[0]
+  }
+
+  const collectClock = (node) => {
+    const {move} = node
+    const clock = (move && typeof move.timeLeft !== 'undefined') ?
+      [[move.color, move.timeLeft, move.periodsLeft]] :
+      []
+    return node.children.reduce(
+      (all, child) => all.concat(collectClock(child)), clock)
+  }
+
+  it('carries every clock value through a round trip', () => {
+    const game = loadClocked()
+    const before = collectClock(game.root)
+
+    expect(before).toHaveLength(6)
+    expect(collectClock(parse(write(game)).root)).toEqual(before)
+  })
+
+  it('normalises a padded real to the same number', () => {
+
+    //The record writes BL[120.0] and BL[87.00]. SGF reals don't care about
+    //the trailing zeroes, so these go back out as 120 and 87, which reads
+    //back in as the value the file meant.
+    const sgf = write(loadClocked())
+
+    expect(sgf).toContain('BL[120]')
+    expect(sgf).toContain('BL[87]')
+    expect(sgf).toContain('BL[105.6]')
+    expect(sgf).toContain('WL[13.2]')
   })
 })
