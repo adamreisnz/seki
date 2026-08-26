@@ -61,10 +61,15 @@ describe('parsing helpers', () => {
       expect(parseResult('W+6½')).toBe('W+6.5')
     })
 
-    it('falls back to a question mark', () => {
-      expect(parseResult('')).toBe('?')
-      expect(parseResult(null)).toBe('?')
-      expect(parseResult(123)).toBe('?')
+    it('reads a stated unknown result back as itself', () => {
+      expect(parseResult('?')).toBe('?')
+    })
+
+    it('leaves a record given no result without one', () => {
+      expect(parseResult('')).toBe('')
+      expect(parseResult(null)).toBe('')
+      expect(parseResult(undefined)).toBe('')
+      expect(parseResult(123)).toBe('')
     })
   })
 
