@@ -132,21 +132,137 @@ and is not taking one for this, so a fix means porting or writing one.
 
 ---
 
-## Canvas drawing is not covered by the test suite
+## What the canvas actually paints is not covered by the test suite
 
 **Where:** `src/classes/layers/*`, `src/classes/objects/markup-*.js`,
 `src/classes/objects/stone-*.js`
 
 The suite covers everything these classes decide, being which theme properties
-apply, what gets erased and redrawn, and what ends up on which layer. It does
-not cover what they actually paint, because that needs a real canvas and a way
-to compare the result against a reference image.
+apply, what gets erased and redrawn, what ends up on which layer, and — through
+the recording context in [test/helpers.js](test/helpers.js) — the geometry each
+draw method asks the canvas for. What it does not cover is the pixels that come
+out the other end, because that needs a real canvas and a way to compare the
+result against a reference image.
 
-**Effect:** a change to the drawing code itself, as opposed to the bookkeeping
-around it, can pass the whole suite and still be visibly wrong. Statement
-coverage sits at roughly 65% overall, and nearly all of what is missing is
-these draw methods.
+**Effect:** a change that draws the right shapes in the wrong colours, or that
+paints them in an order that hides one behind another, can pass the whole suite
+and still be visibly wrong. Anything that changes *which* shape is drawn, or
+where, is caught.
 
 **What a fix involves:** a browser test environment with a canvas, and image
-comparison against committed reference renders for a handful of positions.
-That is a project in itself rather than a change, hence its being listed here.
+comparison against committed reference renders for a handful of positions. That
+is a project in itself rather than a change, hence its being listed here.
+
+---
+
+## Setup stones capture only when a new node was created for them
+
+**Where:** `Game#addStone`, `src/classes/game.js`
+
+**Pinned by:** `src/classes/modes/player-mode-edit.spec.js`, "captures nothing
+when the node takes the setup instruction directly"
+
+`addStone` asks `validateSetupPlacement` for the position the placement would
+produce, which already has any resulting capture applied to it. When the
+current node is a move node, a child node is created to hold the setup
+instruction and that computed position goes onto the stack, so the capture
+stands. When the current node can take the instruction itself, the computed
+position is dropped and the bare stone is set on the position the game already
+has, so the capture never happens.
+
+**Effect:** the same edit captures or does not depending on which node the game
+happens to be sitting on, which is nothing the caller can see or control.
+Setting up a position by placing stones one at a time can leave dead stones on
+the board.
+
+**What a fix involves:** using the computed position on both paths. The
+in place branch would need to replace the position on the stack rather than
+mutate it, which is what the other branch already does, so the fix is small but
+it changes what a setup edit does to the position stack.
+
+---
+
+## Tearing the player down drops buffered free draw lines
+
+**Where:** `Player#teardown`, `PlayerModeEdit#flushLineAddBuffer`
+
+**Pinned by:** `src/classes/modes/player-mode-edit.spec.js`, "drops the buffer
+when the player is the one being torn down"
+
+`flushLineAddBuffer` exists so that lines drawn in the last few milliseconds
+before teardown are emitted rather than lost with the pending timeout, and it
+does that when the mode handler is torn down on its own. Through
+`Player#teardown` it does not: the player sets `isTornDown` before it reaches
+its mode handlers, and `Player#triggerEvent` returns early once that flag is
+set. The flush runs, the event is raised, and nothing receives it.
+
+**Effect:** an app that tears the player down while the user is mid stroke — a
+route change, a modal closing — loses the last buffered fragment of that
+stroke, which is the case the flush was written for.
+
+**What a fix involves:** flushing before the flag is set, or letting the flush
+raise its event past it. Both change teardown ordering, so it wants doing
+deliberately rather than as a side effect.
+
+---
+
+## The arrow edit tool throws, after writing to the record
+
+**Where:** `PlayerModeEdit#edit`, `MarkupFactory`
+
+**Pinned by:** `src/classes/modes/player-mode-edit.spec.js`, "throws on the
+arrow tool, having already written the markup"
+
+`editTools.ARROW` is listed as a markup tool and `getEditingMarkupType` maps it
+onto `markupTypes.ARROW`, but there is no arrow markup object for the factory
+to build — the type is marked "currently not implemented" in
+`src/constants/markup.js`. The edit writes the arrow into the node and the
+board sync then throws on the way out.
+
+**Effect:** the record is left holding markup that cannot be drawn, and the
+edit throws. Nothing in the player selects this tool, so it is only reachable
+by a consumer calling `setEditTool(editTools.ARROW)` directly.
+
+**What a fix involves:** either a `MarkupArrow` object, which is a drawing
+change, or taking `ARROW` out of `isUsingMarkupTool` so the tool is inert
+rather than fatal. The second is the smaller of the two and loses nothing that
+works today.
+
+---
+
+## `editToolChange` announces the stone tool rather than the colour it selected
+
+**Where:** `PlayerModeEdit#setEditTool`
+
+**Pinned by:** `src/classes/modes/player-mode-edit.spec.js`, "announces the
+stone toggle as the stone tool, not the colour it landed on"
+
+`editTools.STONE` is a toggle rather than a tool of its own: asking for it sets
+the tool to black or white, alternating. The event raised at the end of the
+method carries the tool that was asked for rather than `this.tool`.
+
+**Effect:** a toolbar listening to `editToolChange` to light up the active tool
+is told `stone` when the active tool is now `black`, so it cannot show which
+colour is in hand without asking `getEditTool()` separately.
+
+**What a fix involves:** raising the event with `this.tool`. That is a change
+to what consumers receive, so it needs saying in a release note.
+
+---
+
+## An edit event is emitted for a stone the game refused to place
+
+**Where:** `PlayerModeEdit#addStone`
+
+**Pinned by:** `src/classes/modes/player-mode-edit.spec.js`, "announces a stone
+the game refused to place"
+
+`Game#addStone` validates the colour and returns without touching the position
+if it does not recognise it. The mode raises its `edit` event regardless.
+
+**Effect:** a second player instance synchronising off those events is told
+about a stone that was never placed. Harmless in practice, since the peer's own
+`addStone` refuses it in turn, but the event does not describe what happened.
+
+**What a fix involves:** having `Game#addStone` report whether it placed
+anything, which it currently does not, and raising the event only when it did.
