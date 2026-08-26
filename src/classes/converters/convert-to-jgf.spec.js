@@ -3,6 +3,7 @@ import Game from '../game.js'
 import GameNode from '../game-node.js'
 import ConvertToJgf from './convert-to-jgf.js'
 import {stoneColors} from '../../constants/stone.js'
+import {loadFixtureBytes} from '../../../test/fixtures.js'
 
 /**
  * Build a game whose root leads to a move that then forks into two
@@ -152,5 +153,44 @@ describe('ConvertToJgf, the clock', () => {
 
     expect(node.move).not.toHaveProperty('timeLeft')
     expect(node.move).not.toHaveProperty('periodsLeft')
+  })
+})
+
+describe('JGF round trips every fixture record', () => {
+
+  //Every record in the corpus, with the reader that knows how to read it
+  const fixtures = [
+    ['sgf/beginner_game.sgf', Game.fromSgf],
+    ['sgf/blank_game.sgf', Game.fromSgf],
+    ['sgf/ff4_ex.sgf', Game.fromSgf],
+    ['sgf/large-board.sgf', Game.fromSgf],
+    ['sgf/print1.sgf', Game.fromSgf],
+    ['sgf/print2.sgf', Game.fromSgf],
+    ['sgf/pro_game.sgf', Game.fromSgf],
+    ['sgf/shift-jis.sgf', Game.fromSgf],
+    ['sgf/shodan_game.sgf', Game.fromSgf],
+    ['gib/euc-kr.gib', Game.fromGib],
+    ['gib/gb2312.gib', Game.fromGib],
+    ['gib/utf8.gib', Game.fromGib],
+    ['ngf/even.ngf', Game.fromNgf],
+    ['ngf/gb2312.ngf', Game.fromNgf],
+    ['ngf/handicap2.ngf', Game.fromNgf],
+  ]
+
+  it.each(fixtures)('writes %s back out the same after reading it in', (name, read) => {
+
+    //NOTE: this is what the info accessors are for. A field written on the way
+    //out but not read on the way back in, or the other way around, shows up
+    //here as a record that doesn't survive its own format
+    const jgf = read(loadFixtureBytes(name)).toJgf()
+    const again = Game.fromJgf(jgf).toJgf()
+
+    //Compared as objects rather than as strings, as record.version is only
+    //known once the record has been read back in and so lands in a different
+    //place in the object the second time around
+    expect(JSON.parse(again)).toEqual(JSON.parse(jgf))
+
+    //From there the record has settled, and writes out byte for byte the same
+    expect(Game.fromJgf(again).toJgf()).toBe(again)
   })
 })

@@ -1,9 +1,9 @@
 import Converter from './converter.js'
 import Game from '../game.js'
 import GameNode from '../game-node.js'
-import {copy, get, set} from '../../helpers/object.js'
+import {copy} from '../../helpers/object.js'
 import {decodeData} from '../../helpers/encoding.js'
-import {jgfNodePaths} from '../../constants/jgf.js'
+import {jgfNodeFields} from '../../constants/jgf.js'
 
 /**
  * Convert JGF data into a seki game object
@@ -110,11 +110,11 @@ export default class ConvertFromJgf extends Converter {
     //Create new node
     const node = new GameNode()
 
-    //Copy over relevant node paths
-    for (const path of jgfNodePaths) {
-      const value = get(jgfNode, path)
+    //Copy over relevant node fields
+    for (const field of jgfNodeFields) {
+      const value = jgfNode[field]
       if (value !== undefined && value !== null && value !== '') {
-        set(node, path, copy(value))
+        node[field] = copy(value)
       }
     }
 
