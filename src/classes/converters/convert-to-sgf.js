@@ -282,14 +282,47 @@ export default class ConvertToSgf extends Converter {
     //Determine color
     const color = this.convertColor(move.color)
 
-    //Pass move
-    if (move.pass) {
-      return this.makeSgfGroup(color)
+    //Pass move, or a placed stone with coordinates
+    const sgf = move.pass ?
+      this.makeSgfGroup(color) :
+      this.makeSgfGroup(color, this.extractCoordinates(move))
+
+    //Append the clock, which servers write on passes as well as stones
+    return sgf + this.parseClock(move, color)
+  }
+
+  /**
+   * Clock parser
+   *
+   * BL/WL carry the time left and OB/OW the byo-yomi periods left for the
+   * color that just moved, which is why both keys come off the move's own
+   * color rather than being written for both players.
+   *
+   * NOTE: these are only written when the node actually carries a value.
+   * An empty BL[] is not the same as a missing one, it reads back in as a
+   * time of zero, which is a player who has run out of main time.
+   */
+  parseClock(move, color) {
+
+    //Get clock values and initialise
+    const {timeLeft, periodsLeft} = move
+    let sgf = ''
+
+    //Time left is an SGF real. Writing the number as it stands keeps a
+    //fractional 12.5 intact without giving a whole 120 a spurious decimal.
+    //Zero is a real value here and is written rather than skipped.
+    if (Number.isFinite(timeLeft)) {
+      sgf += this.makeSgfGroup(`${color}L`, timeLeft)
     }
 
-    //Determine coors
-    const coords = this.extractCoordinates(move)
-    return this.makeSgfGroup(color, coords)
+    //Periods left is an SGF number, so it goes out as a whole one even if
+    //the game object picked up a fractional value from somewhere else.
+    if (Number.isFinite(periodsLeft)) {
+      sgf += this.makeSgfGroup(`O${color}`, Math.round(periodsLeft))
+    }
+
+    //Return
+    return sgf
   }
 
   /**

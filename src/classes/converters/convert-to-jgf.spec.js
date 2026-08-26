@@ -102,3 +102,32 @@ describe('ConvertToJgf', () => {
     expect(() => new ConvertToJgf().convert({})).toThrow('Not a game instance')
   })
 })
+
+describe('ConvertToJgf, the clock', () => {
+
+  //Unlike the SGF writer, which has to name BL/WL/OB/OW explicitly, this one
+  //copies the whole move object, so the clock comes along on its own. This
+  //pins that, because a move copied field by field would quietly drop it.
+  it('carries the time and periods left on a move', () => {
+    const game = new Game()
+    new GameNode({
+      move: {x: 3, y: 3, color: stoneColors.BLACK, timeLeft: 12.5, periodsLeft: 3},
+    }).appendToParent(game.root)
+
+    const {tree} = toJgf(game)
+    const [node] = tree.filter(node => node.move)
+
+    expect(node.move).toMatchObject({timeLeft: 12.5, periodsLeft: 3})
+  })
+
+  it('leaves a move with no clock without the keys', () => {
+    const game = new Game()
+    game.playMove(3, 3)
+
+    const {tree} = toJgf(game)
+    const [node] = tree.filter(node => node.move)
+
+    expect(node.move).not.toHaveProperty('timeLeft')
+    expect(node.move).not.toHaveProperty('periodsLeft')
+  })
+})
