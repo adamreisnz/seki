@@ -1141,7 +1141,13 @@ describe('ConvertFromSgf, the fixture corpus reads as it always did', () => {
   //until it is shown to be otherwise; the counts beside it are there to say
   //what kind of regression at a glance.
   //
-  //Regenerate deliberately, never to make a failure go away.
+  //Regenerate deliberately, never to make a failure go away — and say why
+  //here when you do. So far:
+  //
+  //- print1.sgf, 2026-08-26. Its DT[1996-10-18,19] now reads as both dates
+  //  rather than only the first, which is #64/#65 rather than anything to do
+  //  with the reader. Confirmed by running the regex parser at that point on
+  //  main against this one: identical output for all nine records.
 
   const baselines = {
     'beginner_game.sgf': {
@@ -1162,7 +1168,7 @@ describe('ConvertFromSgf, the fixture corpus reads as it always did', () => {
     },
     'print1.sgf': {
       games: 1, nodes: 142, forks: 6, moves: 101,
-      digest: 'fcfdc9e975e3f9be46312074a2556a8c0387b9ead1a4697c8a4943979a0c16c4',
+      digest: '3d48e282c6059c6cf50f23941ab460aa24f33969b0ed8976c554a0fa5e10e8be',
     },
     'print2.sgf': {
       games: 1, nodes: 314, forks: 5, moves: 268,
