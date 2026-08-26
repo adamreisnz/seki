@@ -68,13 +68,8 @@ export default class GameTransformer {
     transformed.setRootNode(root)
 
     //The result is put on after the info rather than with it, as it may have
-    //to change hands, see transformResult(). NOTE: a record with no result is
-    //left with none, rather than picking up the unknown result the parser
-    //hands back for an empty one.
-    const result = this.transformResult(game, transformation)
-    if (result) {
-      transformed.setGameResult(result)
-    }
+    //to change hands, see transformResult()
+    transformed.setGameResult(this.transformResult(game, transformation))
 
     //Pick up where the game being transformed had got to, rather than at the
     //start of the record. Setting the root node rewinds, and the tree is the

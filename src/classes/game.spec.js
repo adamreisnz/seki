@@ -3,6 +3,7 @@ import Game from './game.js'
 import GameNode from './game-node.js'
 import {stoneColors} from '../constants/stone.js'
 import {setupTypes} from '../constants/setup.js'
+import {gameResults} from '../constants/game.js'
 import {kifuFormats} from '../constants/app.js'
 import {defaultGameInfo} from '../constants/defaults.js'
 import {dateString} from '../helpers/util.js'
@@ -771,6 +772,27 @@ describe('Game info', () => {
     game.updatePlayer(BLACK, {rank: '2d'})
 
     expect(game.getPlayer(BLACK)).toMatchObject({name: 'B', rank: '2d'})
+  })
+
+  it('reports no result the same way however it came to have none', () => {
+
+    //NOTE: a record that was never given a result and one that was handed an
+    //empty one both say the same thing — nothing about how the game ended —
+    //so they report it the same way, and neither claims the '?' that means a
+    //record knows the result is unknown
+    const never = new Game()
+    const emptied = new Game({game: {result: ''}})
+    const cleared = new Game({game: {result: 'W+R'}})
+    cleared.setGameResult('')
+
+    expect(never.getGameResult()).toBe('')
+    expect(emptied.getGameResult()).toBe('')
+    expect(cleared.getGameResult()).toBe('')
+  })
+
+  it('keeps a stated unknown result as the unknown result', () => {
+    const game = new Game({game: {result: gameResults.UNKNOWN}})
+    expect(game.getGameResult()).toBe('?')
   })
 })
 
@@ -1753,5 +1775,45 @@ describe('Game loaded from bytes rather than a string', () => {
 
   it('rejects an empty buffer the way it rejects an empty string', () => {
     expect(() => Game.fromData(new Uint8Array(0))).toThrow('No data')
+  })
+})
+
+describe('Game info round trips through every fixture record', () => {
+
+  //Every record in the corpus, with the reader that knows how to read it.
+  //NOTE: these go through Game rather than the converters directly, as it is
+  //Game#getInfo and Game#setInfo that carry the info from one to the other
+  const fixtures = [
+    ['sgf/beginner_game.sgf', Game.fromSgf],
+    ['sgf/blank_game.sgf', Game.fromSgf],
+    ['sgf/ff4_ex.sgf', Game.fromSgf],
+    ['sgf/large-board.sgf', Game.fromSgf],
+    ['sgf/print1.sgf', Game.fromSgf],
+    ['sgf/print2.sgf', Game.fromSgf],
+    ['sgf/pro_game.sgf', Game.fromSgf],
+    ['sgf/shift-jis.sgf', Game.fromSgf],
+    ['sgf/shodan_game.sgf', Game.fromSgf],
+    ['gib/euc-kr.gib', Game.fromGib],
+    ['gib/gb2312.gib', Game.fromGib],
+    ['gib/utf8.gib', Game.fromGib],
+    ['ngf/even.ngf', Game.fromNgf],
+    ['ngf/gb2312.ngf', Game.fromNgf],
+    ['ngf/handicap2.ngf', Game.fromNgf],
+  ]
+
+  it.each(fixtures)('reads %s back into the same info object', (name, read) => {
+    const info = read(loadFixtureBytes(name)).getInfo()
+    expect(new Game(info).getInfo()).toStrictEqual(info)
+  })
+
+  it.each(fixtures)('keeps the info of %s across a reset', (name, read) => {
+    const game = read(loadFixtureBytes(name))
+    const info = game.getInfo()
+
+    //NOTE: reset() puts the info back with setInfo after wiping the game, so
+    //anything setInfo doesn't read is lost here rather than merely unreported
+    game.reset()
+
+    expect(game.getInfo()).toStrictEqual(info)
   })
 })

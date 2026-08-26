@@ -34,9 +34,12 @@ export function parseEvent(str) {
  */
 export function parseResult(result) {
 
-  //No input or invalid
+  //Nothing given, which is not the same as the unknown result: '?' is a
+  //record saying in so many words that it doesn't know how the game ended,
+  //while nothing given is a record that says nothing about it at all, and
+  //reports itself empty the way every other unset info field does
   if (!result || typeof result !== 'string') {
-    return gameResults.UNKNOWN
+    return ''
   }
 
   //A drawn game keeps the spec's spelling of '0' (zero), which is the only

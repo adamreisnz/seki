@@ -102,6 +102,22 @@ describe('SGF round trip', () => {
     expect(sgf).toContain('RE[Void]')
     expect(parse(sgf).getGameResult()).toBe('Void')
   })
+
+  it('writes a stated unknown result as the question mark it was given', () => {
+    const sgf = write(parse('(;FF[4]SZ[19]RE[?])'))
+    expect(sgf).toContain('RE[?]')
+    expect(parse(sgf).getGameResult()).toBe('?')
+  })
+
+  it('leaves RE out of a record that was never given a result', () => {
+
+    //NOTE: a record saying nothing about how the game ended is written with
+    //no RE at all, rather than claiming RE[?] — which is the record saying
+    //in so many words that the result is unknown
+    for (const sgf of ['(;FF[4]SZ[19])', '(;FF[4]SZ[19]RE[])']) {
+      expect(write(parse(sgf))).not.toContain('RE[')
+    }
+  })
 })
 
 describe('SGF export of territory markup', () => {
