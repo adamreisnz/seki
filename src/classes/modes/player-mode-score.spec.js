@@ -114,7 +114,7 @@ describe('Score mode activation', () => {
 describe('Score mode dead stones', () => {
 
   it('marks a stone dead and takes its point for the other player', () => {
-    const {player, score} = createScoringPlayer()
+    const {score} = createScoringPlayer()
 
     score.toggleDeadStone(2, 2)
     const {score: result} = score.calculateScore()

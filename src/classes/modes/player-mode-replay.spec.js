@@ -762,7 +762,7 @@ describe('Replay mode auto play', () => {
   })
 
   it('runs from the keyboard actions as well', () => {
-    const {player, replay} = load()
+    const {replay} = load()
 
     expect(replay.processAction(playerActions.START_AUTO_PLAY)).toBe(true)
     expect(replay.isAutoPlaying).toBe(true)
