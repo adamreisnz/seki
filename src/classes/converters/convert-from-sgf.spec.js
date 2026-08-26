@@ -4,6 +4,7 @@ import ConvertFromSgf from './convert-from-sgf.js'
 import {stoneColors} from '../../constants/stone.js'
 import {markupTypes} from '../../constants/markup.js'
 import {sgfDiagnosticCodes} from '../../constants/sgf.js'
+import {defaultGameInfo} from '../../constants/defaults.js'
 import {
   loadFixture, loadFixtureBytes, replayMainLine, countNodes, countForks
 } from '../../../test/fixtures.js'
@@ -1148,6 +1149,13 @@ describe('ConvertFromSgf, the fixture corpus reads as it always did', () => {
   //  rather than only the first, which is #64/#65 rather than anything to do
   //  with the reader. Confirmed by running the regex parser at that point on
   //  main against this one: identical output for all nine records.
+  //- print1.sgf, print2.sgf, pro_game.sgf and shift-jis.sgf, 2026-08-26. These
+  //  four name no application of their own, so their generator was Seki's own
+  //  version and their digest changed with every release — v5.0.0 turned the
+  //  corpus red on a tagged commit with the reader untouched. The generator
+  //  default is now folded to a constant before digesting, which is what moved
+  //  these four; the other five are byte for byte what they were, which is the
+  //  evidence that only the default moved.
 
   const baselines = {
     'beginner_game.sgf': {
@@ -1168,19 +1176,19 @@ describe('ConvertFromSgf, the fixture corpus reads as it always did', () => {
     },
     'print1.sgf': {
       games: 1, nodes: 142, forks: 6, moves: 101,
-      digest: '3d48e282c6059c6cf50f23941ab460aa24f33969b0ed8976c554a0fa5e10e8be',
+      digest: '8ac56c23f0d9c42859c6865e99235803c4e96d810f473d0df6e120c090014e66',
     },
     'print2.sgf': {
       games: 1, nodes: 314, forks: 5, moves: 268,
-      digest: 'def76087efc7a85d24b535c21a4507c2f277855af7b1f40d75ebfcb13f16c6e8',
+      digest: 'e706bfe72b7c2733a770812b5e05a822e0775b621af2695594d0a01df5737c50',
     },
     'pro_game.sgf': {
       games: 1, nodes: 236, forks: 0, moves: 235,
-      digest: '7d34baeb846bc02aff4e6fd3c8a98c62e8261d6b3b0399a354c9c8d24c802c49',
+      digest: '8240f3b0aaa768cdca98a92051d8e423403a449613ca2661d50c507d52c9c677',
     },
     'shift-jis.sgf': {
       games: 1, nodes: 8, forks: 0, moves: 7,
-      digest: '411ee5e4a413567f6c3834bdb739f62eb4a74de784f8c408ccf2e46a75d5b4a5',
+      digest: '9ca9404f2ecf4bfe2947c9e1b28c917ef6f2e28586089b6d7261a0f167b50a85',
     },
     'shodan_game.sgf': {
       games: 1, nodes: 84, forks: 0, moves: 83,
@@ -1201,8 +1209,22 @@ describe('ConvertFromSgf, the fixture corpus reads as it always did', () => {
     return out
   }
 
+  //A record that names no application of its own is given Seki's own name and
+  //version as its generator, straight out of the defaults. Digesting that as
+  //it stands would make every release change the digest of every record
+  //without an AP property, which says nothing about the reader. Fold the
+  //default down to a constant; a generator the record does carry is left
+  //alone and still counts towards the digest.
+  const stableInfo = game => {
+    const info = game.getInfo()
+    if (info.record?.generator === defaultGameInfo.record.generator) {
+      info.record = {...info.record, generator: '<default>'}
+    }
+    return info
+  }
+
   const serialise = games => games.map(game => ({
-    info: game.getInfo(),
+    info: stableInfo(game),
     root: serialiseNode(game.root),
   }))
 
