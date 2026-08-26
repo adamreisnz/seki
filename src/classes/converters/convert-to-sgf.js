@@ -1,6 +1,7 @@
 import Converter from './converter.js'
 import Game from '../game.js'
 import {get} from '../../helpers/object.js'
+import {stringifyDates} from '../../helpers/parsing.js'
 import {markupTypes} from '../../constants/markup.js'
 import {
   charCodeA,
@@ -77,9 +78,14 @@ export default class ConvertToSgf extends Converter {
     //Loop SGF game info map
     for (const key in sgfGameInfoMap) {
 
-      //Get prop and value
+      //Get prop and value. A record can carry more than one date, for a game
+      //played over several days or an adjourned one, and DT takes all of them
+      //as one comma separated list, written with the shorthand SGF allows in
+      //it. Reading game.date here instead would write only the first of them.
       const prop = sgfGameInfoMap[key]
-      const value = get(info, prop)
+      const value = (prop === 'game.date')
+        ? stringifyDates(game.getGameDates())
+        : get(info, prop)
 
       //No value
       if (typeof value === 'undefined') {

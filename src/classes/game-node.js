@@ -161,31 +161,37 @@ export default class GameNode {
       return
     }
 
-    //Get
-    const existing = children[newIndex]
+    //Note the child the active path index points at, and the one that is
+    //currently first, before anything shifts underneath them
+    const active = children[this.index]
+    const previousFirst = children[0]
 
-    //Swap
-    children[newIndex] = child
-    children[currentIndex] = existing
+    //Splice the child out and back in at the target index, which slides the
+    //children in between along one place. NOTE: this used to put the child at
+    //the target index and whatever was there at the child's old index, which
+    //is a swap, not a move. Over one place the two are the same thing, so
+    //moveChildUp and moveChildDown never showed it, but makeMainVariation
+    //moves a child any distance, and promoting the third variation of a node
+    //left the one that used to be first sitting in third place.
+    children.splice(currentIndex, 1)
+    children.splice(newIndex, 0, child)
 
-    //Swap the active path index along with the children, so that it keeps
-    //pointing at the same child node
-    if (this.index === currentIndex) {
-      this.index = newIndex
+    //Keep the active path index pointing at whichever child it pointed at
+    //before, rather than at whichever child now holds that number
+    if (active) {
+      this.index = children.indexOf(active)
     }
-    else if (this.index === newIndex) {
-      this.index = currentIndex
-    }
 
-    //Update the variation roots of the two children that changed position.
-    //NOTE: this used to re-parent every child, which walks each child's
-    //whole subtree twice over (once for the root, once for the variation
-    //root), even though a swap moves no other child and changes no parents
-    //and no roots. Only being the main variation or not can have changed,
-    //and only for the two swapped children.
-    child.updateVariationRoot()
-    if (existing !== child) {
-      existing.updateVariationRoot()
+    //Update the variation roots of the children that can have changed. Only
+    //being the main variation or not matters here, so however far the child
+    //travelled, that is the child that was first, the one that is now, and
+    //the child itself.
+    //NOTE: this used to re-parent every child, which walks each child's whole
+    //subtree twice over (once for the root, once for the variation root),
+    //even though a move changes no parents and no roots.
+    const affected = new Set([previousFirst, children[0], child])
+    for (const node of affected) {
+      node.updateVariationRoot()
     }
   }
 

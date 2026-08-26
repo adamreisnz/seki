@@ -577,7 +577,26 @@ describe('ConvertFromSgf, game information', () => {
     //NOTE: a record that doesn't say when it was played reads as not saying,
     //the same as every other field it leaves out. This used to read as today,
     //which was also at odds with DT[] below reading as no date at all.
-    expect(parse('(;FF[4]SZ[19];B[dd])').getGameDate()).toBe('')
+    const game = parse('(;FF[4]SZ[19];B[dd])')
+    expect(game.getGameDate()).toBe('')
+    expect(game.getGameDates()).toEqual([])
+  })
+
+  it('reads a single DT as one date', () => {
+    const game = parse('(;FF[4]SZ[19]DT[2024-05-01];B[dd])')
+    expect(game.getGameDate()).toBe('2024-05-01')
+    expect(game.getGameDates()).toEqual(['2024-05-01'])
+  })
+
+  it('reads every date of a multi-date DT', () => {
+    const game = parse('(;FF[4]SZ[19]DT[2024-03-01,2024-04-05];B[dd])')
+    expect(game.getGameDates()).toEqual(['2024-03-01', '2024-04-05'])
+  })
+
+  it('expands the shorthand within a multi-date DT', () => {
+    const game = parse('(;FF[4]SZ[19]DT[2024-03-01,02,03];B[dd])')
+    expect(game.getGameDates())
+      .toEqual(['2024-03-01', '2024-03-02', '2024-03-03'])
   })
 })
 
@@ -754,12 +773,13 @@ describe('ConvertFromSgf, the FF[4] specification examples', () => {
       expect(countForks(g.getRootNode())).toBe(6)
     })
 
-    it('keeps only the first of a multi-date DT', () => {
+    it('keeps both dates of a multi-date DT', () => {
 
-      //NOTE: the record reads DT[1996-10-18,19], being a game played over
-      //the 18th and 19th of October. Game#setInfo takes the first date and
-      //drops the rest, which KNOWN_ISSUES.md documents. This is the first
-      //record in the suite to actually exercise it.
+      //NOTE: the record reads DT[1996-10-18,19], being a game played over the
+      //18th and 19th of October, written with the shorthand SGF allows in a
+      //date list. This used to read as the 18th and the number 19, of which
+      //only the 18th survived.
+      expect(game().getGameDates()).toEqual(['1996-10-18', '1996-10-19'])
       expect(game().getGameDate()).toBe('1996-10-18')
     })
   })

@@ -101,6 +101,29 @@ describe('ConvertToJgf', () => {
   it('rejects anything that is not a game instance', () => {
     expect(() => new ConvertToJgf().convert({})).toThrow('Not a game instance')
   })
+
+  it('writes out every date of a game played over several days', () => {
+
+    //NOTE: game.dates read a field that was never assigned, so it always came
+    //out undefined and was left out of the JGF entirely
+    const game = new Game({game: {dates: ['2024-03-01', '2024-03-02']}})
+    expect(toJgf(game).game).toMatchObject({
+      date: '2024-03-01',
+      dates: ['2024-03-01', '2024-03-02'],
+    })
+  })
+
+  it('leaves the list out for a game with a single date', () => {
+    const game = new Game({game: {date: '2024-05-01'}})
+    expect(toJgf(game).game.date).toBe('2024-05-01')
+    expect(toJgf(game).game.dates).toBeUndefined()
+  })
+
+  it('leaves both out for a game with no date', () => {
+    const {game: info} = toJgf(new Game())
+    expect(info.date).toBeUndefined()
+    expect(info.dates).toBeUndefined()
+  })
 })
 
 describe('ConvertToJgf, the clock', () => {
