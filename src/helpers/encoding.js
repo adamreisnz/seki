@@ -68,8 +68,23 @@ const byteOrderMarks = [
 //tail of a longer identifier such as ABCA[.
 const regexCharsetProperty = /\bCA\s*\[((?:[^\\\]]|\\[\s\S])*)\]/
 
-//Any property value, used to pull the human readable text out of an SGF
-const regexPropertyValue = /[A-Za-z]+\[((?:[^\\\]]|\\[\s\S])*)\]/g
+//A property's whole list of values, used to pull the human readable text out
+//of an SGF. The identifier anchors the start of the list and the list itself
+//is captured, so that every value of a multi value property is reachable and
+//not just its first; regexValue below picks the individual values out of the
+//captured list. Whitespace between values is legal, and is how writers wrap a
+//long list over several lines.
+//
+//NOTE: the identifier is what keeps GIB and NGF out of this path. Those write
+//their headers with escaped brackets, as in \[GAMERESULT=...\], and a pattern
+//without the identifier would read the closing \] as an escape and run on
+//through the rest of the file looking for a bare ]. They carry no properties
+//to speak of anyway, so falling back to whole lines is the right answer for
+//them.
+const regexPropertyValues = /[A-Za-z]+((?:\s*\[(?:[^\\\]]|\\[\s\S])*\])+)/g
+
+//A single value within such a list, being everything between [ and ]
+const regexValue = /\[((?:[^\\\]]|\\[\s\S])*)\]/g
 
 //Chunk size for the latin1 decode. String.fromCharCode is applied to the
 //bytes, and a whole file at once overruns the argument limit.
@@ -274,9 +289,12 @@ function sampleBytes(bytes) {
   //came from
   const contents = decodeLatin1(bytes)
 
-  //Property values first, then whole lines. NOTE: matchAll leaves the regex's
-  //own lastIndex alone, so a global regex is safe to share here.
-  const values = [...contents.matchAll(regexPropertyValue)].map(m => m[1])
+  //Property values first, then whole lines. Every value of a property counts,
+  //so each matched list is picked apart in turn. NOTE: matchAll leaves the
+  //regex's own lastIndex alone, so a global regex is safe to share here.
+  const values = [...contents.matchAll(regexPropertyValues)]
+    .flatMap(match => [...match[1].matchAll(regexValue)])
+    .map(match => match[1])
 
   //Back to bytes
   return encodeLatin1(
