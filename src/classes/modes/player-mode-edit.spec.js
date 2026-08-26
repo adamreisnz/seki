@@ -114,18 +114,27 @@ describe('Edit mode teardown', () => {
     expect(() => edit.teardown()).not.toThrow()
   })
 
-  it('drops the buffer when the player is the one being torn down', () => {
+  it('flushes the buffer when the player is the one being torn down', () => {
 
-    //NOTE: pinning current behaviour, which is not what the flush above is
-    //for. The player flags itself as torn down before it reaches its mode
-    //handlers, and triggerEvent() on a torn down player is a no-op, so the
-    //flush runs but the event it emits goes nowhere. The buffered lines are
-    //lost exactly the way tearing down mid-stroke was meant to stop.
+    //The player flags itself as torn down only once its mode handlers have
+    //been through, so the flush the edit handler does on the way out still
+    //reaches whoever is listening
     const listener = vi.fn()
     player.on('edit', listener)
     edit.triggerAddLineEvent(0, 0, 1, 1, '#fff')
 
     player.teardown()
+    expect(listener).toHaveBeenCalledTimes(1)
+    expect(listener.mock.calls[0][0].detail.action).toBe('addLines')
+  })
+
+  it('still drops events raised after the player is torn down', () => {
+    const listener = vi.fn()
+    player.teardown()
+    player.on('edit', listener)
+
+    edit.triggerAddLineEvent(0, 0, 1, 1, '#fff')
+    edit.teardown()
     expect(listener).not.toHaveBeenCalled()
   })
 })
