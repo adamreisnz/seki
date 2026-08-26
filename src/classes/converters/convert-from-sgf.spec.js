@@ -218,7 +218,7 @@ describe('ConvertFromSgf, compressed point lists', () => {
 
 describe('ConvertFromSgf, cut off', () => {
 
-  it('parses a cut off on each side', () => {
+  it('parses a cut off on each side from the legacy X properties', () => {
     const game = parse('(;FF[4]SZ[19]XL[1]XR[2]XT[3]XB[4])')
     expect(game.getBoardCutOff()).toEqual({
       cutOffLeft: 1,
@@ -250,6 +250,135 @@ describe('ConvertFromSgf, cut off', () => {
   it('ignores a fractional cut off', () => {
     const game = parse('(;FF[4]SZ[19]XB[1.5])')
     expect(game.getBoardCutOff().cutOffBottom).toBe(0)
+  })
+})
+
+describe('ConvertFromSgf, board view', () => {
+
+  it('reads a compressed view into a cut off on each side', () => {
+    const game = parse('(;FF[4]SZ[19]VW[bd:qo])')
+    expect(game.getBoardCutOff()).toEqual({
+      cutOffLeft: 1,
+      cutOffRight: 2,
+      cutOffTop: 3,
+      cutOffBottom: 4,
+    })
+  })
+
+  it('reads a view written out point by point', () => {
+    //A point list may name every point instead of compressing it, so this
+    //is the same 2x2 corner as VW[aa:bb]
+    const game = parse('(;FF[4]SZ[9]VW[aa][ba][ab][bb])')
+    expect(game.getBoardCutOff()).toEqual({
+      cutOffLeft: 0,
+      cutOffRight: 7,
+      cutOffTop: 0,
+      cutOffBottom: 7,
+    })
+  })
+
+  it('reads a view given as several rectangles', () => {
+    const game = parse('(;FF[4]SZ[19]VW[aa:cc][qq:ss])')
+    expect(game.getBoardCutOff()).toEqual({
+      cutOffLeft: 0,
+      cutOffRight: 0,
+      cutOffTop: 0,
+      cutOffBottom: 0,
+    })
+  })
+
+  it('degrades a non rectangular view to its bounding box', () => {
+    //Seki crops with four cut off amounts, so an L shape is the one thing a
+    //view can be that it has no way to hold. The points left out of the box
+    //come back rather than the view being dropped
+    const game = parse('(;FF[4]SZ[9]VW[cc][dc][ec][cd][ce])')
+    expect(game.getBoardCutOff()).toEqual({
+      cutOffLeft: 2,
+      cutOffRight: 4,
+      cutOffTop: 2,
+      cutOffBottom: 4,
+    })
+  })
+
+  it('lets a view override the legacy X properties, whichever comes first', () => {
+    const cutOff = {
+      cutOffLeft: 2,
+      cutOffRight: 2,
+      cutOffTop: 2,
+      cutOffBottom: 2,
+    }
+    expect(parse('(;FF[4]SZ[19]XL[1]XR[2]XT[3]XB[4]VW[cc:qq])')
+      .getBoardCutOff()).toEqual(cutOff)
+    expect(parse('(;FF[4]SZ[19]VW[cc:qq]XL[1]XR[2]XT[3]XB[4])')
+      .getBoardCutOff()).toEqual(cutOff)
+  })
+
+  it('reads an empty view as the whole board, clearing the X properties', () => {
+    const game = parse('(;FF[4]SZ[19]XL[1]XR[2]XT[3]XB[4]VW[])')
+    expect(game.getBoardCutOff()).toEqual({
+      cutOffLeft: 0,
+      cutOffRight: 0,
+      cutOffTop: 0,
+      cutOffBottom: 0,
+    })
+  })
+
+  it('measures a view against the board size however they are ordered', () => {
+    //The cut off on the right and at the bottom is measured from the far
+    //edge, so a view read before SZ still has to come out against SZ
+    const game = parse('(;FF[4]VW[cc:qq]SZ[38])')
+    expect(game.getBoardCutOff()).toEqual({
+      cutOffLeft: 2,
+      cutOffRight: 21,
+      cutOffTop: 2,
+      cutOffBottom: 21,
+    })
+  })
+
+  it('measures a view against 19x19 when the record gives no size', () => {
+    const game = parse('(;FF[4]VW[cc:qq])')
+    expect(game.getBoardCutOff()).toEqual({
+      cutOffLeft: 2,
+      cutOffRight: 2,
+      cutOffTop: 2,
+      cutOffBottom: 2,
+    })
+  })
+
+  it('does not cut off a negative number of lines for a view off the board', () => {
+    const game = parse('(;FF[4]SZ[9]VW[cc:qq])')
+    expect(game.getBoardCutOff()).toEqual({
+      cutOffLeft: 2,
+      cutOffRight: 0,
+      cutOffTop: 2,
+      cutOffBottom: 0,
+    })
+  })
+
+  it('ignores a view set part way through a game', () => {
+    //VW is inheritable in SGF and applies from its node down, but seki holds
+    //the cut off as board wide configuration with nowhere to put a view that
+    //only covers part of the game
+    const game = parse('(;FF[4]SZ[19];B[dd]VW[cc:qq];W[pp])')
+    expect(game.getBoardCutOff()).toEqual({
+      cutOffLeft: 0,
+      cutOffRight: 0,
+      cutOffTop: 0,
+      cutOffBottom: 0,
+    })
+  })
+
+  it('leaves the cut off alone for a view of nothing but rubbish', () => {
+    vi.spyOn(console, 'warn').mockImplementation(vi.fn())
+    const game = parse('(;FF[4]SZ[19]XL[1]VW[!!])')
+    expect(game.getBoardCutOff().cutOffLeft).toBe(1)
+  })
+
+  it('reads a view per game in a collection', () => {
+    const games = new ConvertFromSgf()
+      .convertAll('(;FF[4]SZ[19]VW[cc:qq])(;FF[4]SZ[19])')
+    expect(games[0].getBoardCutOff().cutOffLeft).toBe(2)
+    expect(games[1].getBoardCutOff().cutOffLeft).toBe(0)
   })
 })
 
