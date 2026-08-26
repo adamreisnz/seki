@@ -182,4 +182,29 @@ describe('Hover state across a position update', () => {
 
     expect(layer.hasRestoration(3, 3, boardLayerTypes.STONES)).toBe(false)
   })
+
+  it('tells restorations on the same cell apart by layer', () => {
+
+    //A cell can hold both a stone and markup, and hovering markup over it
+    //must not be taken as having already queued the stone
+    const board = createBoard()
+    const layer = board.getLayer(boardLayerTypes.HOVER)
+    board.add(boardLayerTypes.STONES, 3, 3, stone(board))
+
+    board.setHoverCell(3, 3, stone(board))
+
+    expect(layer.hasRestoration(3, 3, boardLayerTypes.STONES)).toBe(true)
+    expect(layer.hasRestoration(3, 3, boardLayerTypes.MARKUP)).toBe(false)
+  })
+
+  it('tells restorations apart by cell as well', () => {
+    const board = createBoard()
+    const layer = board.getLayer(boardLayerTypes.HOVER)
+    board.add(boardLayerTypes.STONES, 3, 3, stone(board))
+
+    board.setHoverCell(3, 3, stone(board))
+
+    expect(layer.hasRestoration(4, 3, boardLayerTypes.STONES)).toBe(false)
+    expect(layer.hasRestoration(3, 4, boardLayerTypes.STONES)).toBe(false)
+  })
 })

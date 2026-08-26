@@ -2,6 +2,7 @@ import {describe, it, expect} from 'vitest'
 import StoneShadow from './stone-shadow.js'
 import StoneSlateShell from './stone-slate-shell.js'
 import StoneMono from './stone-mono.js'
+import Theme from '../theme.js'
 import {stoneColors, stoneStyles, stoneModifierStyles} from '../../constants/stone.js'
 import {createStubBoard, createStubContext} from '../../../test/helpers.js'
 
@@ -97,5 +98,16 @@ describe('StoneShadow', () => {
     shadow.loadProperties()
 
     expect(shadow.radius).toBe(0)
+  })
+
+  it('falls back to the full radius when the theme gives no scale', () => {
+    const theme = new Theme()
+    theme.set('stone.shadow.scale', 0)
+    const board = createStubBoard({cellSize: 40, theme})
+    const shadow = shadowFor(new StoneSlateShell(board, BLACK))
+
+    shadow.loadProperties()
+
+    expect(shadow.radius).toBe(Math.round(19 - 0.5))
   })
 })

@@ -83,6 +83,17 @@ describe('BackgroundLayer', () => {
   })
 })
 
+describe('BackgroundLayer holds nothing of its own', () => {
+
+  it('has inert grid methods, as it draws from the theme alone', () => {
+    const {layer} = createLayer(new Theme())
+
+    expect(layer.getAll()).toBeUndefined()
+    expect(layer.setAll()).toBeUndefined()
+    expect(layer.removeAll()).toBeUndefined()
+  })
+})
+
 describe('BackgroundLayer image', () => {
 
   //The image is loaded and scaled through the DOM, which is not there under

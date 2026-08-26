@@ -2,6 +2,7 @@ import {describe, it, expect, vi} from 'vitest'
 import GridObject from './grid-object.js'
 import GridLayer from '../layers/grid-layer.js'
 import Theme from '../theme.js'
+import {createStubBoard, createStubContext} from '../../../test/helpers.js'
 
 /**
  * A board stand-in with a fixed cell size, which is all a grid object asks it
@@ -158,5 +159,45 @@ describe('GridObject erasing', () => {
     object.erase(context, 3, 4)
 
     expect(context.clearRect).toHaveBeenCalledWith(50, 70, 20, 20)
+  })
+})
+
+describe('GridObject base behaviour', () => {
+
+  it('checks the property name itself, with nothing in front of it', () => {
+
+    //Subclasses put a type or style in front; the base class has no such
+    //notion, so it asks the theme for exactly what it was given
+    const object = new GridObject(createStubBoard())
+
+    expect(object.getThemePaths('scale')).toEqual(['scale'])
+  })
+
+  it('loads no properties of its own', () => {
+
+    //The stub is here so that erase(), which calls it, does not have a method
+    //that could only ever throw
+    const object = new GridObject(createStubBoard())
+
+    expect(object.loadProperties(3, 3)).toBeUndefined()
+  })
+
+  it('draws nothing of its own', () => {
+    const context = createStubContext()
+    new GridObject(createStubBoard()).draw(context, 3, 3)
+
+    expect(context.beginPath).not.toHaveBeenCalled()
+  })
+
+  it('erases and then draws on a redraw', () => {
+    const context = createStubContext()
+    const object = new GridObject(createStubBoard({cellSize: 40}))
+    const order = []
+    object.erase = () => order.push('erase')
+    object.draw = () => order.push('draw')
+
+    object.redraw(context, 3, 3)
+
+    expect(order).toEqual(['erase', 'draw'])
   })
 })
