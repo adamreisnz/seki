@@ -206,6 +206,38 @@ describe('encoding helpers', () => {
         expect(detectEncoding(source)).toBe('euc-kr')
       })
 
+      it('reads every value of a property and not only its first', () => {
+
+        //The Japanese is the second value of the list, which is where a
+        //sample that stopped at the first value stopped looking. Falling
+        //back to whole lines instead drags the trailing junk in with it and
+        //the record stops being readable at all.
+        const source = bytes(`(;FF[4]AB[aa][bb]C[Black to play][${shiftJis}])${junk}`)
+        expect(detectEncoding(source)).toBe('shift_jis')
+        expect(decodeData(source)).toContain('高尾紳路 九段')
+      })
+
+      it('reads a value list a writer wrapped over several lines', () => {
+
+        //Whitespace between the values of a list is legal, and is how long
+        //lists get wrapped
+        const source = bytes(`(;FF[4]AB[aa][bb]C[Black to play]\n[${shiftJis}])${junk}`)
+        expect(detectEncoding(source)).toBe('shift_jis')
+        expect(decodeData(source)).toContain('高尾紳路 九段')
+      })
+
+      it('falls back to whole lines for a record with escaped brackets', () => {
+
+        //A GIB header escapes the brackets around each of its fields. Those
+        //are not property values, and reading them as such would run past
+        //the escaped closing bracket and swallow the rest of the file.
+        const source = bytes(
+          `\\HS\n\\[GAMEBLACKNAME=${gb2312}\\]\n\\[GAMERESULT=B+R\\]\n`
+        )
+        expect(detectEncoding(source)).toBe('gb18030')
+        expect(decodeData(source)).toContain('柯洁 九段')
+      })
+
       it('falls back to whole lines for a record with no properties', () => {
 
         //GIB and NGF carry no bracketed values at all, and looking only at
