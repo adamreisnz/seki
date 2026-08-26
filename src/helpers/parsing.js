@@ -189,7 +189,18 @@ export function stringifyDates(dates) {
       if (i === 0) {
         return date
       }
+
+      //Only a date written to the same precision as the one before it can be
+      //abbreviated, because that is the precision an abbreviated one is read
+      //at: 2024-03-01,05 is the 5th of March, so a month following a day has
+      //to be spelled out in full. NOTE: Sabaki abbreviates on the shared
+      //prefix alone, which turns ['2024-03-01', '2024-05'] into that very
+      //string and reads it back as the 5th of March.
       const prev = parts[i - 1]
+      if (date.length !== prev.length) {
+        return date
+      }
+
       let shared = 0
       while (shared < date.length - 1 && date[shared] === prev[shared]) {
         shared++

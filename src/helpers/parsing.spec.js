@@ -128,6 +128,20 @@ describe('parsing helpers', () => {
         .toBe('2024-03-01,04-05')
     })
 
+    it('spells out a date written to a different precision', () => {
+
+      //NOTE: an abbreviated date is read at the precision of the one before
+      //it, so 2024-03-01,05 is the 5th of March. Abbreviating on the shared
+      //parts alone would turn May 2024 into exactly that.
+      expect(stringifyDates(['2024-03-01', '2024-05']))
+        .toBe('2024-03-01,2024-05')
+      expect(stringifyDates(['2024', '2024-03'])).toBe('2024,2024-03')
+    })
+
+    it('still abbreviates within one precision', () => {
+      expect(stringifyDates(['2024-03', '2024-05'])).toBe('2024-03,05')
+    })
+
     it('still writes something for a repeated date', () => {
       expect(stringifyDates(['2024-03-01', '2024-03-01'])).toBe('2024-03-01,01')
     })
@@ -139,6 +153,11 @@ describe('parsing helpers', () => {
 
     it('round trips back through parseDates', () => {
       const dates = ['2024-03-01', '2024-03-02', '2024-04-05', '2025']
+      expect(parseDates(stringifyDates(dates))).toEqual(dates)
+    })
+
+    it('round trips a list of mixed precision', () => {
+      const dates = ['2024', '2024-03', '2024-03-01', '2024-05']
       expect(parseDates(stringifyDates(dates))).toEqual(dates)
     })
   })
