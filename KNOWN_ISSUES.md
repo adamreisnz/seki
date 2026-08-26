@@ -339,3 +339,33 @@ dictionary lands the user on exactly that position.
 **What a fix involves:** rendering the markers from the game load handler as
 well, after the board position has been updated. The ordering matters: the
 position sync rebuilds the markup layer, so markers drawn before it are lost.
+
+---
+
+## `Game#findNodeByName` cannot ever have worked
+
+**Where:** `Game#findNodeByName`, `src/classes/game.js`
+
+**Pinned by:** `src/classes/game-info.spec.js`, "throws when asked to find a
+node by name"
+
+```js
+findNodeByName(name) {
+  return this.root.findNodeByName(name)
+}
+```
+
+`GameNode` has no `findNodeByName`. It has `findNode(target, path)`, which
+looks for a node by identity rather than by name, and nothing else of the sort.
+Calling this method throws a `TypeError` on the first line, whatever it is
+given.
+
+**Effect:** a public method on `Game` that always throws. `findNamedNode(name)`
+on the same class does what this one reads as though it should, and is what
+`getPathToNamedNode` and `goToNamedNode` actually use, so nothing inside the
+library is affected — but it is exported surface, and a consumer reaching for
+the obvious looking name gets a crash.
+
+**What a fix involves:** deleting it, or making it an alias for
+`findNamedNode`. Deleting is a breaking change on paper and no change at all in
+practice, since no call to it can currently succeed.
