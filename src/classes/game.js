@@ -9,6 +9,7 @@ import ConvertFromGib from './converters/convert-from-gib.js'
 import ConvertFromNgf from './converters/convert-from-ngf.js'
 import ConvertToJgf from './converters/convert-to-jgf.js'
 import ConvertToSgf from './converters/convert-to-sgf.js'
+import GameTransformer from './game-transformer.js'
 import {copy, get, set, merge, isObject} from '../helpers/object.js'
 import {parseTime, parseKomi, parseHandicap, parseEvent, parseResult} from '../helpers/parsing.js'
 import {dateString} from '../helpers/util.js'
@@ -2616,6 +2617,29 @@ export default class Game extends Base {
       default:
         throw new Error(`Unsupported data format`)
     }
+  }
+
+  /**************************************************************************
+   * Transformations
+   ***/
+
+  /**
+   * Transform this game record
+   *
+   * Returns a new game, rotated, mirrored and/or colour inverted, leaving this
+   * one exactly as it was. That matches how GamePosition#clone() and the
+   * converters behave, and it is what makes generating a set of records out of
+   * one — the eight symmetries of a problem, say — a matter of asking for each
+   * of them in turn.
+   *
+   * The transformation is a string of operations applied left to right: 'r'
+   * for a quarter turn clockwise, 'f' for a mirror left to right, and 'i' to
+   * swap the stone colours. The named ones are in constants/transformation.js,
+   * and boardSymmetries there is the set of eight.
+   */
+  transform(transformation) {
+    const transformer = new GameTransformer()
+    return transformer.transform(this, transformation)
   }
 
   /**************************************************************************

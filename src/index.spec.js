@@ -25,6 +25,7 @@ describe('public API', () => {
     expect(seki.SekiGameColorScore).toBeTypeOf('function')
     expect(seki.SekiGameScoreState).toBeTypeOf('function')
     expect(seki.SekiGameScoreEstimator).toBeTypeOf('function')
+    expect(seki.SekiGameTransformer).toBeTypeOf('function')
   })
 
   it('exports the converters', () => {
@@ -45,7 +46,8 @@ describe('public API', () => {
 
   it('exports the helper namespaces', () => {
     expect(Object.keys(seki.helpers).sort()).toEqual([
-      'color', 'coordinates', 'encoding', 'grid', 'object', 'parsing', 'util',
+      'color', 'coordinates', 'encoding', 'grid', 'object', 'parsing',
+      'transformation', 'util',
     ])
   })
 
@@ -56,6 +58,10 @@ describe('public API', () => {
     expect(seki.playerModes).toBeTypeOf('object')
     expect(seki.markupTypes).toBeTypeOf('object')
     expect(seki.appVersion).toBeTypeOf('string')
+    expect(seki.transformationOperations)
+      .toEqual({ROTATE: 'r', FLIP: 'f', INVERT: 'i'})
+    expect(seki.boardTransformations).toBeTypeOf('object')
+    expect(seki.boardSymmetries).toHaveLength(8)
   })
 })
 
