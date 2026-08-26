@@ -1440,6 +1440,30 @@ describe('Setup stone captures', () => {
   })
 })
 
+describe('Game.addStone() return value', () => {
+
+  it('reports a stone that was added', () => {
+    const game = new Game()
+    expect(game.addStone(3, 3, BLACK)).toBe(true)
+  })
+
+  it('reports a color it does not know', () => {
+    const game = new Game()
+    expect(game.addStone(3, 3, 'green')).toBe(false)
+  })
+
+  it('reports a coordinate off the board', () => {
+    const game = new Game()
+    expect(game.addStone(20, 20, BLACK)).toBe(false)
+  })
+
+  it('reports a stone that was already there', () => {
+    const game = new Game()
+    game.addStone(3, 3, BLACK)
+    expect(game.addStone(3, 3, BLACK)).toBe(false)
+  })
+})
+
 describe('Position change events for setup edits', () => {
 
   it('reports the position the stone was added to', () => {

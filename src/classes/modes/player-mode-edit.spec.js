@@ -188,18 +188,33 @@ describe('Edit mode tool selection', () => {
     expect(listener.mock.calls[0][0].detail).toEqual({tool: editTools.CIRCLE})
   })
 
-  it('announces the stone toggle as the stone tool, not the colour it landed on', () => {
+  it('announces the colour the stone toggle landed on', () => {
 
-    //NOTE: pinning current behaviour. The event carries the tool that was
-    //asked for rather than this.tool, so a toolbar listening to it to light
-    //up the active tool is told 'stone' when the tool is now black.
+    //The event carries the tool that ended up active rather than the one
+    //asked for, so a toolbar listening to it to light up the active tool is
+    //told black rather than the toggle it was asked through
     const {player} = createPlayer()
     const listener = vi.fn()
     player.on('editToolChange', listener)
 
     player.setEditTool(editTools.STONE)
     expect(player.getEditTool()).toBe(editTools.BLACK)
-    expect(listener.mock.calls[0][0].detail).toEqual({tool: editTools.STONE})
+    expect(listener.mock.calls[0][0].detail).toEqual({tool: editTools.BLACK})
+  })
+
+  it('refuses a tool whose markup has no implementation', () => {
+
+    //The arrow is a recognised markup type with nothing to draw it, so it is
+    //turned away rather than becoming the active tool
+    const {player} = createPlayer()
+    const listener = vi.fn()
+    player.on('editToolChange', listener)
+
+    player.setEditTool(editTools.SQUARE)
+    player.setEditTool(editTools.ARROW)
+
+    expect(player.getEditTool()).toBe(editTools.SQUARE)
+    expect(listener).toHaveBeenCalledTimes(1)
   })
 
   it('clears the hover layer on every switch', () => {
@@ -531,18 +546,28 @@ describe('Edit mode stone editing', () => {
     expect(listener).not.toHaveBeenCalled()
   })
 
-  it('announces a stone the game refused to place', () => {
+  it('says nothing about a stone the game refused to place', () => {
 
-    //NOTE: pinning current behaviour. The game rejects a colour it doesn't
-    //know and leaves the position alone, but the mode emits the event
-    //regardless, so a peer instance is told about a stone that isn't there.
+    //The game rejects a colour it doesn't know and leaves the position alone,
+    //so there is nothing for a peer instance to be told about
     const {player, mode} = createPlayer()
     const listener = vi.fn()
     player.on('edit', listener)
 
     mode.addStone(4, 4, 'purple')
     expect(player.game.hasStone(4, 4)).toBe(false)
-    expect(listener).toHaveBeenCalledTimes(1)
+    expect(listener).not.toHaveBeenCalled()
+  })
+
+  it('says nothing about a stone that is already there', () => {
+    const {player, mode} = createPlayer()
+    mode.addStone(4, 4, BLACK)
+
+    const listener = vi.fn()
+    player.on('edit', listener)
+
+    mode.addStone(4, 4, BLACK)
+    expect(listener).not.toHaveBeenCalled()
   })
 })
 
@@ -991,7 +1016,7 @@ describe('Edit mode setup stones', () => {
     mode.addStone(20, 20, BLACK)
 
     expect(player.game.getRootNode().setup).toBeUndefined()
-    expect(listener).toHaveBeenCalledTimes(1)
+    expect(listener).not.toHaveBeenCalled()
   })
 })
 

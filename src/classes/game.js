@@ -1865,19 +1865,22 @@ export default class Game extends Base {
 
   /**
    * Add a stone
+   *
+   * Returns whether the stone was added, so a caller can tell an edit that
+   * landed from one the game refused.
    */
   addStone(x, y, color) {
 
     //Validate color
     if (!isValidColor(color)) {
       this.warn(`invalid color ${color}`)
-      return
+      return false
     }
 
     //Already have stone of this color
     if (this.hasStone(x, y, color)) {
       this.debug(`already has stone of color ${color} on (${x},${y})`)
-      return
+      return false
     }
 
     //Debug
@@ -1890,7 +1893,7 @@ export default class Game extends Base {
     //Invalid placement
     if (!newPosition) {
       this.warn(reason)
-      return
+      return false
     }
 
     //Add to node as a setup instruction. A setup instruction can't live on a
@@ -1914,6 +1917,7 @@ export default class Game extends Base {
     //before the change, which is the position the stone was just added to and
     //no longer on the stack.
     this.triggerEvent('positionChange', {position: this.position})
+    return true
   }
 
   /**

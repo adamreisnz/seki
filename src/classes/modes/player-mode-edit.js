@@ -516,8 +516,11 @@ export default class PlayerModeEdit extends PlayerModeReplay {
     //Get data
     const {game} = this
 
-    //Add stone
-    game.addStone(x, y, color)
+    //Add stone. The game refuses an invalid color or coordinate, and there is
+    //nothing to announce or to synchronise when it does
+    if (!game.addStone(x, y, color)) {
+      return
+    }
 
     //Trigger edited event
     this.triggerEditEvent('addStone', x, y, color)
@@ -750,8 +753,10 @@ export default class PlayerModeEdit extends PlayerModeReplay {
     this.showHoverMarkup()
     this.showHoverStone()
 
-    //Trigger event
-    this.player.triggerEvent('editToolChange', {tool})
+    //Trigger event. NOTE: this carries the tool that ended up active rather
+    //than the one asked for, which are different for the stone tool as it
+    //resolves to a color
+    this.player.triggerEvent('editToolChange', {tool: this.tool})
   }
 
   /**
