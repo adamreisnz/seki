@@ -1,7 +1,6 @@
 import Converter from './converter.js'
 import Game from '../game.js'
 import GameNode from '../game-node.js'
-import {set, get} from '../../helpers/object.js'
 import {decodeData} from '../../helpers/encoding.js'
 import {parseDates as parseDateList} from '../../helpers/parsing.js'
 import {tokenizeSgf} from '../../helpers/sgf-tokenizer.js'
@@ -14,7 +13,7 @@ import {
   charCodeA,
   charCodeAUpper,
   sgfStoneColors,
-  sgfGameInfoMap,
+  sgfGameInfoAccessors,
   sgfPlayerInfoMap,
   sgfGameTypes,
   sgfMarkupTypes,
@@ -433,9 +432,9 @@ export default class ConvertFromSgf extends Converter {
       }
 
       //Plain info value?
-      else if (sgfGameInfoMap[key]) {
+      else if (sgfGameInfoAccessors[key]) {
         const value = this.getSimpleValue(values)
-        set(info, sgfGameInfoMap[key], value)
+        sgfGameInfoAccessors[key].set(info, value)
         continue
       }
 
@@ -723,7 +722,8 @@ export default class ConvertFromSgf extends Converter {
    */
   parseGenerator(info, node, key, values) {
     const [name, version] = values[0].split(':')
-    set(info, 'record.generator', `${name}${version ? ` v${version}` : ''}`)
+    const record = info.record ??= {}
+    record.generator = `${name}${version ? ` v${version}` : ''}`
   }
 
   /**
@@ -731,21 +731,24 @@ export default class ConvertFromSgf extends Converter {
    */
   parseGameType(info, node, key, values) {
     const type = this.getMappedValue(values[0], sgfGameTypes, true)
-    set(info, 'game.type', type || gameTypes.GO)
+    const gameInfo = info.game ??= {}
+    gameInfo.type = type || gameTypes.GO
   }
 
   /**
    * Game result parser
    */
   parseResult(info, node, key, values) {
-    set(info, 'game.result', values[0])
+    const gameInfo = info.game ??= {}
+    gameInfo.result = values[0]
   }
 
   /**
    * Komi parser
    */
   parseKomi(info, node, key, values) {
-    set(info, 'rules.komi', values[0])
+    const rules = info.rules ??= {}
+    rules.komi = values[0]
   }
 
   /**
@@ -754,11 +757,13 @@ export default class ConvertFromSgf extends Converter {
   parseSize(info, node, key, values) {
     const [width, height] = values[0].split(':')
     if (width && height && width !== height) {
-      set(info, 'board.width', width)
-      set(info, 'board.height', height)
+      const board = info.board ??= {}
+      board.width = width
+      board.height = height
     }
     else if (width) {
-      set(info, 'board.size', width)
+      const board = info.board ??= {}
+      board.size = width
     }
   }
 
@@ -840,9 +845,9 @@ export default class ConvertFromSgf extends Converter {
     //Get the board dimensions the view is measured against, falling back to
     //the size assumed for a game whose record doesn't state one
     const fallback = defaultGameInfo.board.size
-    const size = parseInt(get(info, 'board.size'))
-    const width = parseInt(get(info, 'board.width')) || size || fallback
-    const height = parseInt(get(info, 'board.height')) || size || fallback
+    const size = parseInt(info.board?.size)
+    const width = parseInt(info.board?.width) || size || fallback
+    const height = parseInt(info.board?.height) || size || fallback
 
     //A cleared view means the whole board is visible again
     const view = this.views.get(info) ||
@@ -852,10 +857,11 @@ export default class ConvertFromSgf extends Converter {
     //naming points past the edge of the board can't cut off a negative
     //number of lines and grow the board instead of cropping it
     const {minX, maxX, minY, maxY} = view
-    set(info, 'board.cutOffLeft', Math.max(minX, 0))
-    set(info, 'board.cutOffRight', Math.max(width - 1 - maxX, 0))
-    set(info, 'board.cutOffTop', Math.max(minY, 0))
-    set(info, 'board.cutOffBottom', Math.max(height - 1 - maxY, 0))
+    const board = info.board ??= {}
+    board.cutOffLeft = Math.max(minX, 0)
+    board.cutOffRight = Math.max(width - 1 - maxX, 0)
+    board.cutOffTop = Math.max(minY, 0)
+    board.cutOffBottom = Math.max(height - 1 - maxY, 0)
   }
 
   /**
@@ -886,18 +892,19 @@ export default class ConvertFromSgf extends Converter {
     }
 
     //Store against the relevant side
+    const board = info.board ??= {}
     switch (side) {
       case 'L':
-        set(info, 'board.cutOffLeft', cutOff)
+        board.cutOffLeft = cutOff
         break
       case 'R':
-        set(info, 'board.cutOffRight', cutOff)
+        board.cutOffRight = cutOff
         break
       case 'T':
-        set(info, 'board.cutOffTop', cutOff)
+        board.cutOffTop = cutOff
         break
       case 'B':
-        set(info, 'board.cutOffBottom', cutOff)
+        board.cutOffBottom = cutOff
         break
     }
   }
@@ -912,8 +919,9 @@ export default class ConvertFromSgf extends Converter {
    */
   parseDates(info, node, key, values) {
     const dates = parseDateList(values[0])
-    set(info, 'game.dates', dates)
-    set(info, 'game.date', dates[0])
+    const gameInfo = info.game ??= {}
+    gameInfo.dates = dates
+    gameInfo.date = dates[0]
   }
 
   /**
@@ -951,7 +959,7 @@ export default class ConvertFromSgf extends Converter {
     }
 
     //Set in game info
-    set(info, 'settings', settings)
+    info.settings = settings
   }
 
   /**
@@ -964,7 +972,9 @@ export default class ConvertFromSgf extends Converter {
     const infoKey = sgfPlayerInfoMap[key]
 
     //Set on info
-    set(info, `players.${color}.${infoKey}`, values[0])
+    const players = info.players ??= {}
+    const player = players[color] ??= {}
+    player[infoKey] = values[0]
   }
 
   /**
@@ -977,7 +987,9 @@ export default class ConvertFromSgf extends Converter {
     const rank = values[0]
 
     //Set on info
-    set(info, `players.${color}.rank`, rank)
+    const players = info.players ??= {}
+    const player = players[color] ??= {}
+    player.rank = rank
   }
 
   /*****************************************************************************
@@ -1120,9 +1132,9 @@ export default class ConvertFromSgf extends Converter {
    * Check if board is normal size
    */
   isNormalSize(info) {
-    const size = parseInt(get(info, 'board.size'))
-    const width = parseInt(get(info, 'board.width'))
-    const height = parseInt(get(info, 'board.height'))
+    const size = parseInt(info.board?.size)
+    const width = parseInt(info.board?.width)
+    const height = parseInt(info.board?.height)
     return (
       (size > 0 && size <= 19) ||
       (width > 0 && height > 0 && width <= 19 && height <= 19)

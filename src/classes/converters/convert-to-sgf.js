@@ -1,6 +1,5 @@
 import Converter from './converter.js'
 import Game from '../game.js'
-import {get} from '../../helpers/object.js'
 import {stringifyDates} from '../../helpers/parsing.js'
 import {markupTypes} from '../../constants/markup.js'
 import {
@@ -8,17 +7,17 @@ import {
   charCodeAUpper,
   maxCoordinate,
   sgfStoneColors,
-  sgfGameInfoMap,
+  sgfGameInfoAccessors,
   sgfGameTypes,
   sgfSetupTypes,
   sgfMarkupTypes
 } from '../../constants/sgf.js'
 
-//Info properties parsing map
+//Info properties parsing map, keyed by SGF property
 const gameInfoConversionMap = {
-  'record.generator': 'convertGenerator',
-  'game.type': 'convertGameType',
-  settings: 'convertVariationSettings',
+  AP: 'convertGenerator',
+  GM: 'convertGameType',
+  ST: 'convertVariationSettings',
 }
 
 //Node parsing map
@@ -75,17 +74,16 @@ export default class ConvertToSgf extends Converter {
       'TC', 'TT',
     ] : []
 
-    //Loop SGF game info map
-    for (const key in sgfGameInfoMap) {
+    //Loop SGF game info accessors
+    for (const key in sgfGameInfoAccessors) {
 
-      //Get prop and value. A record can carry more than one date, for a game
-      //played over several days or an adjourned one, and DT takes all of them
-      //as one comma separated list, written with the shorthand SGF allows in
-      //it. Reading game.date here instead would write only the first of them.
-      const prop = sgfGameInfoMap[key]
-      const value = (prop === 'game.date')
+      //Get value. A record can carry more than one date, for a game played
+      //over several days or an adjourned one, and DT takes all of them as one
+      //comma separated list, written with the shorthand SGF allows in it.
+      //Reading game.date here instead would write only the first of them.
+      const value = (key === 'DT')
         ? stringifyDates(game.getGameDates())
-        : get(info, prop)
+        : sgfGameInfoAccessors[key].get(info)
 
       //No value
       if (typeof value === 'undefined') {
@@ -110,8 +108,8 @@ export default class ConvertToSgf extends Converter {
       }
 
       //Parser present?
-      if (gameInfoConversionMap[prop]) {
-        root[key] = this[gameInfoConversionMap[prop]](value, game)
+      if (gameInfoConversionMap[key]) {
+        root[key] = this[gameInfoConversionMap[key]](value, game)
       }
 
       //Otherwise, just copy over
