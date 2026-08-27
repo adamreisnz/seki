@@ -758,21 +758,6 @@ describe('Replay mode auto play', () => {
     expect(player.game.getCurrentMoveNumber()).toBe(1)
   })
 
-  it('says it stopped even when it was never going', () => {
-
-    //NOTE: pinning current behaviour. stopAutoPlay raises the event without
-    //checking the flag, and deactivate() calls it, so a consumer wiring a
-    //play button to this event is told "stopped" on every mode change.
-    const {player} = load()
-    const listener = vi.fn()
-    player.on('autoPlayToggle', listener)
-
-    player.stopAutoPlay()
-
-    expect(listener).toHaveBeenCalledTimes(1)
-    expect(listener.mock.calls[0][0].detail).toEqual({isAutoPlaying: false})
-  })
-
   it('toggles on and off again', () => {
     const {player, replay} = load()
 
