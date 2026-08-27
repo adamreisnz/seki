@@ -28,7 +28,6 @@ export default class Player extends Base {
   board
   elements = {}
   modeHandlers = {}
-  extendedMethods = {}
   audioElements = {}
   soundTimeouts = []
   activeMode
@@ -105,66 +104,6 @@ export default class Player extends Base {
     })
   }
 
-  /**
-   * Extend player with methods
-   */
-  extend(method, mode) {
-
-    //Already extended with this method by another mode? Register this one as
-    //providing it too, so the method dispatches to whichever of them is
-    //active. NOTE: this used to bail out here, leaving the method bound to the
-    //first mode that asked for it, so calling it while the other mode was
-    //active did nothing but log a warning.
-    const modes = this.extendedMethods[method]
-    if (modes) {
-      if (!modes.includes(mode)) {
-        modes.push(mode)
-        this.debug(`${mode} mode also provides the ${method} method`)
-      }
-      return
-    }
-
-    //Something else already occupies this name, so leave it alone
-    if (typeof this[method] !== 'undefined') {
-      this.warn(`not extending with ${method} method, as it already exists`)
-      return
-    }
-
-    //Debug
-    this.debug(
-      `extending with ${method} method for ${mode} mode`
-    )
-
-    //Register the mode as providing this method
-    this.extendedMethods[method] = [mode]
-
-    //Extend
-    this[method] = (...args) => {
-
-      //Check if one of the modes providing this method is active
-      const {activeMode} = this
-      if (!this.extendedMethods[method].includes(activeMode)) {
-        this.warn(
-          `not calling ${method} method as no mode providing it is active`
-        )
-        return
-      }
-
-      //Log
-      this.debug(`calling ${method} method for ${activeMode} mode`)
-
-      //Get handler
-      const handler = this.getModeHandler(activeMode)
-      if (!handler) {
-        this.warn(`not calling ${method} method as ${activeMode} has no handler`)
-        return
-      }
-
-      //Call method
-      return handler[method](...args)
-    }
-  }
-
   /*****************************************************************************
    * Configuration
    ***/
@@ -231,7 +170,11 @@ export default class Player extends Base {
   }
 
   /**
-   * Get mode handler for a given mode
+   * Get the mode handler for a given mode, whether or not it is active
+   *
+   * Most callers want getMode() instead, which only hands back a handler for
+   * the mode that is actually active. This one is for reaching a mode before
+   * it has been switched to.
    */
   getModeHandler(mode) {
 
@@ -253,13 +196,32 @@ export default class Player extends Base {
   }
 
   /**
-   * Get current mode handler
+   * Get the active mode handler
+   *
+   * This is the supported way to reach the methods a mode provides, as in
+   * player.getMode(playerModes.EDIT)?.setEditTool(tool). Pass a mode to ask
+   * for that one specifically and get null back unless it is the active one;
+   * call it without an argument for whichever mode is active.
+   *
+   * NOTE: null rather than a warning, because the caller is the one that
+   * knows what to do when the mode it needs isn't active. See getActiveMode()
+   * for the name of the active mode, as opposed to the handler itself.
    */
-  getCurrentModeHandler() {
+  getMode(mode) {
+
+    //No mode active at all
     const {activeMode} = this
-    if (activeMode) {
-      return this.getModeHandler(activeMode)
+    if (!activeMode) {
+      return null
     }
+
+    //Asked for a specific mode that isn't the active one
+    if (mode && mode !== activeMode) {
+      return null
+    }
+
+    //Hand back the active handler
+    return this.getModeHandler(activeMode)
   }
 
   /**
@@ -280,7 +242,7 @@ export default class Player extends Base {
     }
 
     //Get handlers
-    const currentHandler = this.getCurrentModeHandler()
+    const currentHandler = this.getMode()
     const newHandler = this.getModeHandler(mode)
 
     //Deactivate current mode
@@ -1069,7 +1031,7 @@ export default class Player extends Base {
     this.debug('🧨 tearing down')
 
     //Deactivate current mode
-    const currentHandler = this.getCurrentModeHandler()
+    const currentHandler = this.getMode()
     if (currentHandler) {
       currentHandler.deactivate()
     }
@@ -1378,8 +1340,8 @@ export default class Player extends Base {
    */
   processAction(action) {
     this
-      .getCurrentModeHandler()
-      .processAction(action)
+      .getMode()
+      ?.processAction(action)
   }
 
   /**
