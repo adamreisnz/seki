@@ -57,6 +57,18 @@ export default class Theme extends Base {
   }
 
   /**
+   * Get a theme property without calling it
+   *
+   * NOTE: for the handful of properties whose value is allowed to be a
+   * function in its own right rather than a handler to compute the value
+   * with. Reading those through get() invokes them, which is never what the
+   * caller wanted.
+   */
+  getRaw(property) {
+    return get(this.config, property)
+  }
+
+  /**
    * Get a theme property
    */
   get(property, ...args) {

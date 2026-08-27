@@ -986,8 +986,11 @@ export default class Board extends Base {
    */
   setupElements(container) {
 
-    //Reset elements
-    this.elements = {}
+    //Take out the board a previous bootstrap left in the container, the way
+    //createAudioElements() does for its own elements. Without this,
+    //bootstrapping the same board twice stacks a dead board under the live
+    //one: nothing points at it any more and it is never drawn to again.
+    this.removeElements()
 
     //Create elements
     const wrapper = createElement(container, `seki-board-wrapper`)
@@ -1001,6 +1004,23 @@ export default class Board extends Base {
       board,
       canvasses,
     }
+  }
+
+  /**
+   * Remove the board elements from their container
+   */
+  removeElements() {
+
+    //Get data
+    const {wrapper} = this.elements
+
+    //Remove the wrapper, which takes the board and its canvasses with it
+    if (wrapper) {
+      wrapper.remove()
+    }
+
+    //Reset references
+    this.elements = {}
   }
 
   /**
@@ -1105,15 +1125,10 @@ export default class Board extends Base {
     this.lastDrawWidth = 0
     this.lastDrawHeight = 0
 
-    //Take the board out of the container it was put in, before the reference
-    //to it goes. Left standing it is an orphan at full size, which a board
+    //Take the board out of the container it was put in and drop the references
+    //to it. Left standing it is an orphan at full size, which a board
     //bootstrapped again onto the same container would then sit underneath.
-    if (this.elements.wrapper) {
-      this.elements.wrapper.remove()
-    }
-
-    //Drop element references
-    this.elements = {}
+    this.removeElements()
     this.player = null
   }
 

@@ -243,7 +243,16 @@ export default class PlayerModeReplay extends PlayerMode {
    * Game loaded
    */
   onGameLoad() {
+
+    //Stop auto play
     this.stopAutoPlay()
+
+    //Render the markers for the position the record opens on. The path change
+    //event is suppressed on load, so this is the only thing that draws them
+    //before the user navigates. The player raises this event once the board
+    //position has been synced, which rebuilds the markup layer, so drawing
+    //here is drawing on top of a board that is ready for it.
+    this.renderMarkers()
   }
 
   /**
@@ -654,6 +663,11 @@ export default class PlayerModeReplay extends PlayerMode {
     //Get data
     const {player, game} = this
     const i = game.getMoveVariationIndex(x, y)
+
+    //Record the choice before following it, the way selectNextVariation does
+    //for the keyboard route. Without this the sibling variation markers go on
+    //showing the variation we didn't take as the selected one.
+    game.setCurrentPathIndex(i)
 
     //Follow a move variation
     player.goToNextPosition(i)

@@ -338,9 +338,8 @@ export default class Player extends Base {
     //Debug
     this.debug('processing loaded game')
 
-    //Load game config and trigger event
+    //Load game config
     this.loadConfigFromGame(game)
-    this.triggerEvent('gameLoad', {game})
 
     //Go to first position
     game.goToFirstPosition()
@@ -371,6 +370,13 @@ export default class Player extends Base {
       this.processPathChange(true)
       this.updateBoardPosition()
     }
+
+    //Trigger event. NOTE: this comes after the board has been reset and the
+    //position synced, rather than before either. A handler that draws onto
+    //the board — the replay mode's markers, chiefly — had whatever it drew
+    //wiped by the reset that used to follow it, and the path change event
+    //that would otherwise render them is suppressed on load on purpose.
+    this.triggerEvent('gameLoad', {game})
   }
 
   /*****************************************************************************
@@ -386,16 +392,22 @@ export default class Player extends Base {
 
   /**
    * Go to the next position
+   *
+   * An index selects which variation to follow. Omitting it follows the one
+   * the current node has remembered, which is what every caller that isn't
+   * acting on a variation the user picked wants.
    */
-  goToNextPosition() {
+  goToNextPosition(i) {
 
     //No next position
     if (!this.game.hasNextPosition()) {
       return
     }
 
-    //Get path index
-    const i = this.game.getCurrentPathIndex()
+    //No index given, follow the remembered path
+    if (typeof i === 'undefined') {
+      i = this.game.getCurrentPathIndex()
+    }
 
     //Go to next position
     this.game.goToNextPosition(i)

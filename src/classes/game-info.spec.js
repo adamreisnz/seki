@@ -383,15 +383,15 @@ describe('Game path handling', () => {
     expect(game.findNamedNode('the fork').name).toBe('the fork')
   })
 
-  it('throws when asked to find a node by name', () => {
+  it('finds the same node by name under the older method name', () => {
 
-    //NOTE: pinning current behaviour, and it is a bug. Game#findNodeByName
-    //hands the name to GameNode#findNodeByName, which does not exist — the
-    //node class has findNode(target, path) and nothing else. The method
-    //cannot ever have worked. See KNOWN_ISSUES.md.
+    //findNodeByName used to hand the name to a GameNode method of the same
+    //name, which has never existed, so it threw a TypeError on every call
     const game = Game.fromSgf(sgf)
 
-    expect(() => game.findNodeByName('the fork')).toThrow(TypeError)
+    expect(game.findNodeByName('the fork'))
+      .toBe(game.findNamedNode('the fork'))
+    expect(game.findNodeByName('nothing of the sort')).toBeUndefined()
   })
 
   it('finds the node a path leads to', () => {

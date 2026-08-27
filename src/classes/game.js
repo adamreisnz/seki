@@ -1294,9 +1294,13 @@ export default class Game extends Base {
 
   /**
    * Find a node by name
+   *
+   * NOTE: an alias for findNamedNode(), which is what this always read as
+   * though it did. It used to call a GameNode method of the same name, which
+   * has never existed, so every call threw on the first line.
    */
   findNodeByName(name) {
-    return this.root.findNodeByName(name)
+    return this.findNamedNode(name)
   }
 
   /**************************************************************************

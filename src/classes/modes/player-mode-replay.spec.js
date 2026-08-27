@@ -847,13 +847,12 @@ describe('Replay mode navigation', () => {
     expect(player.game.getMoveVariationIndex(6, 2)).toBe(1)
   })
 
-  it('follows the selected path rather than the variation clicked', () => {
+  it('follows the variation that was clicked', () => {
 
-    //NOTE: pinning current behaviour, and it is a bug. selectMoveVariation
-    //works out the index of the variation that was clicked and hands it to
-    //Player#goToNextPosition, which takes no arguments and always follows
-    //the currently selected path. Clicking B walks down A. See
-    //KNOWN_ISSUES.md.
+    //The record forks into B at (2,6) and B at (6,2), with the path on the
+    //first of them. Clicking the second used to walk down the first, because
+    //the index worked out from the click was handed to a method that took no
+    //arguments and read the selected path index instead.
     const {player, replay} = load()
     player.goToNextPosition()
     player.goToNextPosition()
@@ -861,8 +860,35 @@ describe('Replay mode navigation', () => {
     replay.onClick({detail: {x: 6, y: 2}})
 
     expect(player.game.getCurrentNode().move).toEqual({
+      color: stoneColors.BLACK, x: 6, y: 2,
+    })
+  })
+
+  it('still follows the selected path for a click that is not a variation', () => {
+    const {player, replay} = load()
+    player.goToNextPosition()
+    player.goToNextPosition()
+
+    replay.onClick({detail: {x: 0, y: 8}})
+
+    expect(player.game.getCurrentNode().move).toEqual({
       color: stoneColors.BLACK, x: 2, y: 6,
     })
+  })
+
+  it('remembers the variation that was clicked as the selected one', () => {
+
+    //Clicking a marker is a selection, the same as the keyboard route is, so
+    //the sibling variation markers have to agree with the branch we are on
+    const {player, replay} = load()
+    player.goToNextPosition()
+    player.goToNextPosition()
+    const fork = player.game.getCurrentNode()
+
+    replay.onClick({detail: {x: 6, y: 2}})
+
+    expect(fork.getPathIndex()).toBe(1)
+    expect(fork.isSelectedPath(player.game.getCurrentNode())).toBe(true)
   })
 
   it('runs the action a key is bound to', () => {
@@ -1097,21 +1123,31 @@ describe('Replay mode variation markers', () => {
     expect(markupAt(player, 2, 2).showText).toBe(false)
   })
 
-  it('shows nothing at all until something has been navigated', () => {
+  it('shows them on the position the record opens on', () => {
 
-    //NOTE: pinning current behaviour, and it looks like a bug. Loading a
-    //record suppresses the path change event on purpose, and the replay
-    //mode's game load handler only stops auto play, so nothing renders the
-    //markers. A record whose opening position forks shows no letters until
-    //the user moves off it and back. See KNOWN_ISSUES.md.
+    //Loading suppresses the path change event on purpose, so the game load
+    //handler is what has to render these. A problem collection or joseki
+    //dictionary lands the user on exactly this position and used to show no
+    //letters until they moved off it and back.
     const player = load({}, '(;GM[1]FF[4]SZ[9](;B[cc])(;B[gg]))')
 
-    expect(markupAt(player, 2, 2)).toBeUndefined()
-    expect(markupAt(player, 6, 6)).toBeUndefined()
+    expect(markupAt(player, 2, 2).type).toBe(markupTypes.VARIATION)
+    expect(markupAt(player, 2, 2).index).toBe(0)
+    expect(markupAt(player, 6, 6).index).toBe(1)
+  })
 
+  it('shows them again for a record loaded over the top of another', () => {
+
+    //Navigating the first record leaves markers on the board, and loading the
+    //second resets it. What comes back has to describe the new record's
+    //opening position rather than nothing at all.
+    const player = load({}, '(;GM[1]FF[4]SZ[9];B[cc](;W[gg])(;W[gc]))')
     player.goToNextPosition()
-    player.goToPreviousPosition()
+    expect(markupAt(player, 6, 6).type).toBe(markupTypes.VARIATION)
 
+    player.loadData('(;GM[1]FF[4]SZ[9](;B[cc])(;B[gg]))')
+
+    expect(markupAt(player, 6, 2)).toBeUndefined()
     expect(markupAt(player, 2, 2).type).toBe(markupTypes.VARIATION)
   })
 
