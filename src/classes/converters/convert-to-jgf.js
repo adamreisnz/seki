@@ -1,10 +1,10 @@
 import Converter from './converter.js'
 import Game from '../game.js'
-import {copy, get, set} from '../../helpers/object.js'
+import {copy} from '../../helpers/object.js'
 import {
   jgfVersion,
-  jgfPaths,
-  jgfNodePaths
+  jgfInfoAccessors,
+  jgfNodeFields
 } from '../../constants/jgf.js'
 
 //Default options
@@ -37,10 +37,10 @@ export default class ConvertToJgf extends Converter {
     const jgf = {}
 
     //Copy over relevant game info
-    for (const path of jgfPaths) {
-      const value = get(info, path)
+    for (const {get, set} of jgfInfoAccessors) {
+      const value = get(info)
       if (value !== undefined && value !== null && value !== '') {
-        set(jgf, path, copy(value))
+        set(jgf, copy(value))
       }
     }
 
@@ -117,13 +117,13 @@ export default class ConvertToJgf extends Converter {
     //Create JGF node
     const jgfNode = {}
 
-    //Copy over relevant node paths. Empty values are skipped so that nodes
+    //Copy over relevant node fields. Empty values are skipped so that nodes
     //don't end up carrying keys with no content, which mirrors what the
     //reverse converter does when reading them back in.
-    for (const path of jgfNodePaths) {
-      const value = get(node, path)
+    for (const field of jgfNodeFields) {
+      const value = node[field]
       if (value !== undefined && value !== null && value !== '') {
-        set(jgfNode, path, copy(value))
+        jgfNode[field] = copy(value)
       }
     }
 
