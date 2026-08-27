@@ -1,5 +1,6 @@
 import {describe, it, expect} from 'vitest'
 import ConvertFromNgf from './convert-from-ngf.js'
+import Game from '../game.js'
 import {stoneColors} from '../../constants/stone.js'
 import {
   loadFixture, loadFixtureBytes, replayMainLine
@@ -358,5 +359,77 @@ describe('ConvertFromNgf, a record that is not UTF-8', () => {
     expect(fromBytes.getGameResult()).toBe(fromString.getGameResult())
     expect(fromBytes.getTotalNumberOfMoves())
       .toBe(fromString.getTotalNumberOfMoves())
+  })
+})
+
+describe('ConvertFromNgf, lines it cannot use', () => {
+
+  const converter = () => new ConvertFromNgf()
+
+  it('reads no date from a line that carries none', () => {
+    const game = new Game()
+
+    converter().findDate([], game)
+
+    expect(game.getGameDate()).toBe('')
+  })
+
+  it('reads no result without a winner in the line', () => {
+    const game = new Game()
+
+    converter().findGameResult([], game)
+
+    expect(game.getGameResult()).toBe('')
+  })
+
+  it('reads no player from an empty line', () => {
+    const game = new Game()
+
+    converter().parsePlayer(game, stoneColors.BLACK, '')
+
+    expect(game.getPlayer(stoneColors.BLACK).name).toBe('')
+  })
+
+  it('reads a player with no rank as a name alone', () => {
+
+    //Which is all a record written in Korean gives, since the rank is
+    //spelled out in a notation this does not match
+    const game = new Game()
+
+    converter().parsePlayer(game, stoneColors.BLACK, 'APlayer')
+
+    expect(game.getPlayer(stoneColors.BLACK).name).toBe('APlayer')
+    expect(game.getPlayer(stoneColors.BLACK).rank).toBeUndefined()
+  })
+
+  it('reads a player with a rank', () => {
+    const game = new Game()
+
+    converter().parsePlayer(game, stoneColors.BLACK, 'A Player 7D')
+
+    expect(game.getPlayer(stoneColors.BLACK)).toMatchObject({
+      name: 'A Player', rank: '7d',
+    })
+  })
+
+  it('skips a move line it cannot read at all', () => {
+    expect(converter().parseMove('nonsense', 19)).toBeUndefined()
+  })
+
+  it('skips a move under a colour it does not recognise', () => {
+    expect(converter().parseMove('PMABZAA', 19)).toBeUndefined()
+  })
+
+  it('skips a move whose coordinates fall off the board', () => {
+
+    //NGF has no known way of writing a pass, so this only catches a corrupt
+    //line rather than dropping something meaningful
+    expect(converter().parseMove('PMABBZZ', 19)).toBeUndefined()
+  })
+
+  it('reads a move that is on the board', () => {
+    const node = converter().parseMove('PMABBCC', 19)
+
+    expect(node.move).toEqual({color: stoneColors.BLACK, x: 1, y: 1})
   })
 })

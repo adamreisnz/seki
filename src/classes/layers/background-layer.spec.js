@@ -1,4 +1,4 @@
-import {describe, it, expect, vi} from 'vitest'
+import {describe, it, expect, vi, beforeEach, afterEach} from 'vitest'
 import BackgroundLayer from './background-layer.js'
 import Theme from '../theme.js'
 
@@ -8,11 +8,14 @@ import Theme from '../theme.js'
 const createLayer = (theme, width = 100, height = 200) => {
   const board = {theme, drawWidth: width, drawHeight: height}
   const gradient = {addColorStop: vi.fn()}
+  const pattern = {}
   const context = {
     gradient,
+    pattern,
     canvas: {width, height},
     fillRect: vi.fn(),
     createLinearGradient: vi.fn(() => gradient),
+    createPattern: vi.fn(() => pattern),
   }
   const layer = new BackgroundLayer(board)
   layer.setContext(context)
@@ -77,5 +80,99 @@ describe('BackgroundLayer', () => {
     expect(y1).toBeCloseTo(200, 6)
     expect(x2).toBeCloseTo(50, 6)
     expect(y2).toBeCloseTo(0, 6)
+  })
+})
+
+describe('BackgroundLayer holds nothing of its own', () => {
+
+  it('has inert grid methods, as it draws from the theme alone', () => {
+    const {layer} = createLayer(new Theme())
+
+    expect(layer.getAll()).toBeUndefined()
+    expect(layer.setAll()).toBeUndefined()
+    expect(layer.removeAll()).toBeUndefined()
+  })
+})
+
+describe('BackgroundLayer image', () => {
+
+  //The image is loaded and scaled through the DOM, which is not there under
+  //plain node, so both are stood in for
+  let loaded
+
+  beforeEach(() => {
+    loaded = []
+    vi.stubGlobal('Image', class {
+      constructor() {
+        this.width = 20
+        this.height = 10
+      }
+      addEventListener(type, handler) {
+        loaded.push(handler)
+      }
+    })
+    vi.stubGlobal('document', {
+      createElement: () => ({
+        getContext: () => ({drawImage: vi.fn()}),
+      }),
+    })
+  })
+
+  afterEach(() => {
+    vi.unstubAllGlobals()
+  })
+
+  const withImage = (extra = {}) => new Theme({
+    board: {
+      backgroundImage: 'wood.png',
+      backgroundImageScale: 2,
+      ...extra,
+    },
+  })
+
+  it('waits for the image before it paints anything with it', () => {
+    const {layer, context} = createLayer(withImage())
+    layer.draw()
+
+    expect(loaded).toHaveLength(1)
+    expect(context.createPattern).not.toHaveBeenCalled()
+  })
+
+  it('tiles the image across the board once it has loaded', () => {
+    const {layer, context} = createLayer(withImage())
+    layer.draw()
+    loaded[0]()
+
+    expect(context.createPattern).toHaveBeenCalledWith(
+      expect.anything(), 'repeat'
+    )
+    expect(context.fillStyle).toBe(context.pattern)
+    expect(context.fillRect).toHaveBeenLastCalledWith(0, 0, 100, 200)
+  })
+
+  it('draws no image when the theme names none', () => {
+    const {layer, context} = createLayer(new Theme())
+    layer.draw()
+
+    expect(loaded).toHaveLength(0)
+    expect(context.createPattern).not.toHaveBeenCalled()
+  })
+
+  it('skips the flat fill when the theme asks for no colour', () => {
+    const theme = new Theme({board: {backgroundColor: null}})
+    const {layer, context} = createLayer(theme)
+    layer.draw()
+
+    expect(context.fillRect).not.toHaveBeenCalled()
+  })
+
+  it('draws nothing at all before the board has a size', () => {
+    const board = {theme: new Theme(), drawWidth: 0, drawHeight: 0}
+    const layer = new BackgroundLayer(board)
+    layer.setContext({fillRect: vi.fn(), canvas: {width: 0, height: 0}})
+
+    layer.draw()
+
+    expect(layer.context.fillRect).not.toHaveBeenCalled()
   })
 })

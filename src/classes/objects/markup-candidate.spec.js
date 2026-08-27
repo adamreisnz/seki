@@ -9,7 +9,7 @@ import {hexToRgb, colorLuminance} from '../../helpers/color.js'
  * A board stand-in with a grid layer that records what it was asked to erase,
  * the same one the markup spec uses
  */
-const createBoard = ({stones = {}, cellSize = 44} = {}) => {
+const createBoard = ({stones = {}, cellSize = 44, theme = new Theme()} = {}) => {
 
   const gridLayer = {
     eraseCell: vi.fn(),
@@ -18,7 +18,7 @@ const createBoard = ({stones = {}, cellSize = 44} = {}) => {
 
   return {
     gridLayer,
-    theme: new Theme(),
+    theme,
     getCellSize: () => cellSize,
     getDisplayColor: color => color,
     getAbsX: x => x * cellSize,
@@ -442,5 +442,42 @@ describe('MarkupCandidate drawing', () => {
 
     expect(board.gridLayer.eraseCell)
       .toHaveBeenCalledWith(3, 3, markup.radius * 1.1)
+  })
+})
+
+describe('MarkupCandidate, what the theme can leave off', () => {
+
+  it('draws without a shadow when the theme asks for none', () => {
+
+    //The ring is drawn as a larger shape under the fill so that one shadow
+    //falls from both. A theme that wants no shadow gets the same two shapes.
+    const theme = new Theme()
+    theme.set('markup.candidate.shadowColor', null)
+    const context = createContext()
+
+    createCandidate(createBoard({theme})).draw(context, 3, 3)
+
+    //The ring is the fill that carries the shadow, and the marker over it
+    //explicitly carries none
+    expect(context.fills[0].shadowColor).toBeUndefined()
+    expect(context.fills[1].shadowColor).toBe('transparent')
+  })
+
+  it('draws the label without a weight when the theme names none', () => {
+    const theme = new Theme()
+    theme.set('markup.candidate.fontWeight', null)
+    const context = createContext()
+
+    createCandidate(createBoard({theme})).draw(context, 3, 3)
+
+    expect(context.font).toMatch(/^\d+px /)
+  })
+
+  it('draws the label with the weight the theme names', () => {
+    const context = createContext()
+
+    createCandidate(createBoard()).draw(context, 3, 3)
+
+    expect(context.font).toMatch(/^500 \d+px /)
   })
 })

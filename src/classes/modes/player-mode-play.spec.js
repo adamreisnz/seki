@@ -1,5 +1,6 @@
 import {describe, it, expect, vi, beforeEach, afterEach} from 'vitest'
 import Player from '../player.js'
+import {boardLayerTypes} from '../../constants/board.js'
 import {playerModes, playerActions} from '../../constants/player.js'
 import {stoneColors} from '../../constants/stone.js'
 
@@ -21,6 +22,7 @@ afterEach(() => {
  */
 const createPlayer = () => {
   const player = new Player({board: {showCoordinates: false}})
+  player.board.createLayers()
   player.board.setDrawSize(600, 600)
   const mode = player.getModeHandler(playerModes.PLAY)
   player.setMode(playerModes.PLAY)
@@ -173,5 +175,68 @@ describe('Play mode actions', () => {
     const {player, mode} = createPlayer()
     mode.processAction(playerActions.SET_MODE_REPLAY)
     expect(player.getActiveMode()).toBe(playerModes.REPLAY)
+  })
+})
+
+describe('Play mode hover stone', () => {
+
+  const enter = (player, x, y) => player.triggerEvent('gridEnter', {
+    x, y, isDragging: false,
+  })
+
+  it('shows the stone of whoever is to play', () => {
+    const {player} = createPlayer()
+    enter(player, 3, 3)
+
+    const hover = player.board.get(boardLayerTypes.HOVER, 3, 3)
+    expect(hover[1].stoneColor).toBe(BLACK)
+  })
+
+  it('follows the turn as the game goes on', () => {
+    const {player} = createPlayer()
+    clickAt(player, 3, 3)
+    enter(player, 5, 5)
+
+    const hover = player.board.get(boardLayerTypes.HOVER, 5, 5)
+    expect(hover[1].stoneColor).toBe(WHITE)
+  })
+
+  it('shows nothing on a point that already has a stone', () => {
+    const {player} = createPlayer()
+    clickAt(player, 3, 3)
+    enter(player, 3, 3)
+
+    expect(player.board.has(boardLayerTypes.HOVER, 3, 3)).toBe(false)
+  })
+
+  it('takes the stone off again on the way out', () => {
+    const {player} = createPlayer()
+    enter(player, 3, 3)
+    player.triggerEvent('gridLeave', {x: 3, y: 3})
+
+    expect(player.board.has(boardLayerTypes.HOVER, 3, 3)).toBe(false)
+  })
+
+  it('clears the hover once the move it was previewing is played', () => {
+
+    //Otherwise the ghost stone sits on top of the real one until the cursor
+    //moves off the point
+    const {player} = createPlayer()
+    enter(player, 3, 3)
+    clickAt(player, 3, 3)
+
+    expect(player.board.has(boardLayerTypes.HOVER, 3, 3)).toBe(false)
+  })
+
+  it('leaves the hover alone when the move was not legal', () => {
+
+    //Nothing changed on the board, so nothing about the preview is stale
+    const {player, mode} = createPlayer()
+    clickAt(player, 3, 3)
+    enter(player, 5, 5)
+
+    mode.playMove(3, 3)
+
+    expect(player.board.has(boardLayerTypes.HOVER, 5, 5)).toBe(true)
   })
 })

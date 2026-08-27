@@ -395,3 +395,107 @@ describe('ConvertFromGib, a record that is not UTF-8', () => {
     expect(fromBytes.getGameDate()).toBe(fromString.getGameDate())
   })
 })
+
+describe('ConvertFromGib, values it cannot use', () => {
+
+  const parse = gib => new ConvertFromGib().convert(gib)
+
+  //The smallest record that reads at all
+  const record = extra => `\\[GAMEBLACKNAME=A Player\\]
+\\[GAMEWHITENAME=B Player\\]
+${extra}
+INI 0 1 0 &4
+STO 0 1 1 3 3
+`
+
+  it('ignores a handicap outside what the format can hold', () => {
+
+    //The INI line's third field is only a handicap for values 0 through 9;
+    //anything else means the line was something other than a handicap
+    const game = parse(record('').replace('INI 0 1 0 &4', 'INI 0 1 42 &4'))
+
+    expect(game.getHandicap()).toBe(0)
+  })
+
+  it('ignores a handicap it cannot read as a number', () => {
+    const game = parse(record('').replace('INI 0 1 0 &4', 'INI 0 1 &4'))
+
+    expect(game.getHandicap()).toBe(0)
+  })
+
+  it('skips a player line under a colour it does not recognise', () => {
+    const converter = new ConvertFromGib()
+    const game = new Game()
+
+    converter.parsePlayer(game, ['', 'GREEN', 'A Player'])
+
+    expect(game.getPlayer(stoneColors.BLACK).name).toBe('')
+    expect(game.getPlayer(stoneColors.WHITE).name).toBe('')
+  })
+
+  it('skips a player line with no name in it', () => {
+    const converter = new ConvertFromGib()
+    const game = new Game()
+
+    converter.parsePlayer(game, ['', 'BLACK', '   '])
+
+    expect(game.getPlayer(stoneColors.BLACK).name).toBe('')
+  })
+
+  it('reads a name without a rank', () => {
+    const game = parse(record(''))
+
+    expect(game.getPlayer(stoneColors.BLACK)).toEqual({name: 'A Player'})
+  })
+
+  it('reads a name with a rank alongside it', () => {
+    const game = parse(record('').replace('A Player', 'A Player (5D)'))
+
+    expect(game.getPlayer(stoneColors.BLACK))
+      .toEqual({name: 'A Player', rank: '5D'})
+  })
+
+  it('leaves off a rank written in a notation it does not know', () => {
+    const game = parse(record('').replace('A Player', 'A Player (초단)'))
+
+    expect(game.getPlayer(stoneColors.BLACK)).toEqual({name: 'A Player'})
+  })
+
+  it('reads a win by resignation and by time', () => {
+    const byResignation = parse(record('\\[GAMERESULT=black by resignation\\]'))
+    const byTime = parse(record('\\[GAMERESULT=white wins by time\\]'))
+
+    expect(byResignation.getGameResult()).toBe('B+R')
+    expect(byTime.getGameResult()).toBe('W+T')
+  })
+
+  it('reads a win by a margin', () => {
+    const game = parse(record('\\[GAMERESULT=black 7.5\\]'))
+
+    expect(game.getGameResult()).toBe('B+7.5')
+  })
+
+  it('skips a move under a colour it does not recognise', () => {
+    const converter = new ConvertFromGib()
+
+    expect(converter.parseMove(['', '0', '9', '3', '3'])).toBeUndefined()
+  })
+
+  it('reads the two colours a move can be', () => {
+    const converter = new ConvertFromGib()
+
+    expect(converter.convertColor('1')).toBe(stoneColors.BLACK)
+    expect(converter.convertColor('2')).toBe(stoneColors.WHITE)
+    expect(converter.convertColor('9')).toBeUndefined()
+  })
+
+  it('reads the two colours a player line can name', () => {
+    const converter = new ConvertFromGib()
+
+    expect(converter.determinePlayerColor('GAMEBLACKNAME'))
+      .toBe(stoneColors.BLACK)
+    expect(converter.determinePlayerColor('GAMEWHITENAME'))
+      .toBe(stoneColors.WHITE)
+    expect(converter.determinePlayerColor('GAMEGREENNAME')).toBeUndefined()
+  })
+})

@@ -2,7 +2,7 @@ import {describe, it, expect, beforeEach, afterEach, vi} from 'vitest'
 import Player from '../player.js'
 import {boardLayerTypes} from '../../constants/board.js'
 import {markupTypes} from '../../constants/markup.js'
-import {playerModes} from '../../constants/player.js'
+import {playerModes, playerActions} from '../../constants/player.js'
 import {stoneColors} from '../../constants/stone.js'
 
 describe('Replay mode config listener', () => {
@@ -616,5 +616,516 @@ describe('Replay mode ownership heat map', () => {
     player.goToLastPosition()
 
     expect(analysisLayer().ownership).toBeNull()
+  })
+})
+
+describe('Replay mode auto play', () => {
+
+  //A five move game, so there is somewhere to auto play to
+  const sgf = '(;GM[1]FF[4]SZ[9];B[cc];W[gg];B[cg];W[gc];B[ee])'
+
+  const load = (config = {}) => {
+    const player = new Player(config)
+    player.board.createLayers()
+    player.loadData(sgf)
+    return {player, replay: player.getModeHandler(playerModes.REPLAY)}
+  }
+
+  beforeEach(() => vi.useFakeTimers())
+  afterEach(() => vi.useRealTimers())
+
+  it('steps to the next position as soon as it starts', () => {
+    const {player} = load()
+    player.startAutoPlay()
+
+    expect(player.game.getCurrentMoveNumber()).toBe(1)
+  })
+
+  it('waits for the delay when told not to start immediately', () => {
+    const {player} = load({autoPlayStartsImmediately: false})
+    player.startAutoPlay()
+
+    expect(player.game.getCurrentMoveNumber()).toBe(0)
+
+    vi.advanceTimersByTime(1000)
+    expect(player.game.getCurrentMoveNumber()).toBe(1)
+  })
+
+  it('keeps stepping on the configured delay', () => {
+    const {player} = load({autoPlayDelay: 500})
+    player.startAutoPlay()
+
+    vi.advanceTimersByTime(500)
+    expect(player.game.getCurrentMoveNumber()).toBe(2)
+
+    vi.advanceTimersByTime(500)
+    expect(player.game.getCurrentMoveNumber()).toBe(3)
+  })
+
+  it('says when it starts and when it stops', () => {
+    const {player} = load()
+    const listener = vi.fn()
+    player.on('autoPlayToggle', listener)
+
+    player.startAutoPlay()
+    player.stopAutoPlay()
+
+    expect(listener.mock.calls.map(call => call[0].detail)).toEqual([
+      {isAutoPlaying: true},
+      {isAutoPlaying: false},
+    ])
+  })
+
+  it('says so each time it plays a move', () => {
+    const {player} = load({autoPlayDelay: 500})
+    const listener = vi.fn()
+    player.on('autoPlayed', listener)
+
+    player.startAutoPlay()
+    vi.advanceTimersByTime(1000)
+
+    expect(listener).toHaveBeenCalledTimes(2)
+  })
+
+  it('does not start twice over', () => {
+    const {player, replay} = load()
+    player.startAutoPlay()
+    player.startAutoPlay()
+
+    expect(player.game.getCurrentMoveNumber()).toBe(1)
+    expect(replay.isAutoPlaying).toBe(true)
+  })
+
+  it('will not start at the end of the record', () => {
+    const {player, replay} = load()
+    player.goToLastPosition()
+
+    player.startAutoPlay()
+
+    expect(replay.isAutoPlaying).toBe(false)
+    expect(replay.autoPlayTimeout).toBeNull()
+  })
+
+  it('stops of its own accord when it runs out of record', () => {
+    const {player, replay} = load({autoPlayDelay: 100})
+    player.startAutoPlay()
+    vi.advanceTimersByTime(1000)
+
+    expect(player.game.getCurrentMoveNumber()).toBe(5)
+    expect(replay.isAutoPlaying).toBe(false)
+  })
+
+  it('stops when asked, leaving no timer behind', () => {
+    const {player, replay} = load()
+    player.startAutoPlay()
+
+    player.stopAutoPlay()
+
+    expect(replay.isAutoPlaying).toBe(false)
+    expect(replay.autoPlayTimeout).toBeNull()
+
+    vi.advanceTimersByTime(5000)
+    expect(player.game.getCurrentMoveNumber()).toBe(1)
+  })
+
+  it('says it stopped even when it was never going', () => {
+
+    //NOTE: pinning current behaviour. stopAutoPlay raises the event without
+    //checking the flag, and deactivate() calls it, so a consumer wiring a
+    //play button to this event is told "stopped" on every mode change.
+    const {player} = load()
+    const listener = vi.fn()
+    player.on('autoPlayToggle', listener)
+
+    player.stopAutoPlay()
+
+    expect(listener).toHaveBeenCalledTimes(1)
+    expect(listener.mock.calls[0][0].detail).toEqual({isAutoPlaying: false})
+  })
+
+  it('toggles on and off again', () => {
+    const {player, replay} = load()
+
+    player.toggleAutoPlay()
+    expect(replay.isAutoPlaying).toBe(true)
+
+    player.toggleAutoPlay()
+    expect(replay.isAutoPlaying).toBe(false)
+  })
+
+  it('stops when the user navigates away from the end', () => {
+    const {player, replay} = load({autoPlayDelay: 100})
+    player.startAutoPlay()
+    player.goToLastPosition()
+
+    expect(replay.isAutoPlaying).toBe(false)
+  })
+
+  it('runs from the keyboard actions as well', () => {
+    const {replay} = load()
+
+    expect(replay.processAction(playerActions.START_AUTO_PLAY)).toBe(true)
+    expect(replay.isAutoPlaying).toBe(true)
+
+    expect(replay.processAction(playerActions.STOP_AUTO_PLAY)).toBe(true)
+    expect(replay.isAutoPlaying).toBe(false)
+
+    expect(replay.processAction(playerActions.TOGGLE_AUTO_PLAY)).toBe(true)
+    expect(replay.isAutoPlaying).toBe(true)
+  })
+
+  it('stops when the mode is left', () => {
+    const {player, replay} = load()
+    player.startAutoPlay()
+
+    player.setMode(playerModes.EDIT)
+
+    expect(replay.isAutoPlaying).toBe(false)
+    expect(replay.autoPlayTimeout).toBeNull()
+  })
+})
+
+describe('Replay mode navigation', () => {
+
+  //A record that forks at the third move, so a variation can be picked
+  const sgf = '(;GM[1]FF[4]SZ[9];B[cc];W[gg](;B[cg];W[gc])(;B[gc]))'
+
+  const load = (config = {}) => {
+    const player = new Player(config)
+    player.board.createLayers()
+    player.board.setDrawSize(600, 600)
+    player.loadData(sgf)
+    return {player, replay: player.getModeHandler(playerModes.REPLAY)}
+  }
+
+  it('steps forward on a click anywhere empty', () => {
+    const {player, replay} = load()
+    replay.onClick({detail: {x: 0, y: 8}})
+
+    expect(player.game.getCurrentMoveNumber()).toBe(1)
+  })
+
+  it('ignores a click off the board', () => {
+    const {player, replay} = load()
+    replay.onClick({detail: {x: -1, y: -1}})
+
+    expect(player.game.getCurrentMoveNumber()).toBe(0)
+  })
+
+  it('takes a click on a variation as a variation, not as a step forward', () => {
+    const {player, replay} = load()
+    player.goToNextPosition()
+    player.goToNextPosition()
+    const spy = vi.spyOn(replay, 'selectMoveVariation')
+
+    replay.onClick({detail: {x: 6, y: 2}})
+
+    expect(spy).toHaveBeenCalledWith(6, 2)
+  })
+
+  it('works out which variation was clicked', () => {
+    const {player} = load()
+    player.goToNextPosition()
+    player.goToNextPosition()
+
+    expect(player.game.getMoveVariationIndex(2, 6)).toBe(0)
+    expect(player.game.getMoveVariationIndex(6, 2)).toBe(1)
+  })
+
+  it('follows the selected path rather than the variation clicked', () => {
+
+    //NOTE: pinning current behaviour, and it is a bug. selectMoveVariation
+    //works out the index of the variation that was clicked and hands it to
+    //Player#goToNextPosition, which takes no arguments and always follows
+    //the currently selected path. Clicking B walks down A. See
+    //KNOWN_ISSUES.md.
+    const {player, replay} = load()
+    player.goToNextPosition()
+    player.goToNextPosition()
+
+    replay.onClick({detail: {x: 6, y: 2}})
+
+    expect(player.game.getCurrentNode().move).toEqual({
+      color: stoneColors.BLACK, x: 2, y: 6,
+    })
+  })
+
+  it('runs the action a key is bound to', () => {
+    const {player} = load({
+      keyBindings: [
+        {key: 'ArrowRight', action: playerActions.GO_TO_NEXT_POSITION},
+      ],
+    })
+
+    player.triggerEvent('keydown', {
+      nativeEvent: {
+        key: 'ArrowRight',
+        ctrlKey: false, shiftKey: false, altKey: false, metaKey: false,
+        preventDefault: vi.fn(),
+      },
+    })
+
+    expect(player.game.getCurrentMoveNumber()).toBe(1)
+  })
+
+  it('does nothing for a key bound to nothing', () => {
+    const {player} = load({
+      keyBindings: [
+        {key: 'ArrowRight', action: playerActions.GO_TO_NEXT_POSITION},
+      ],
+    })
+
+    player.triggerEvent('keydown', {
+      nativeEvent: {
+        key: 'q',
+        ctrlKey: false, shiftKey: false, altKey: false, metaKey: false,
+        preventDefault: vi.fn(),
+      },
+    })
+
+    expect(player.game.getCurrentMoveNumber()).toBe(0)
+  })
+
+  it('steps forward on a wheel down and back on a wheel up', () => {
+    const {player} = load()
+
+    player.triggerEvent('wheel', {
+      nativeEvent: {deltaY: 1, preventDefault: vi.fn()},
+    })
+    expect(player.game.getCurrentMoveNumber()).toBe(1)
+
+    player.triggerEvent('wheel', {
+      nativeEvent: {deltaY: -1, preventDefault: vi.fn()},
+    })
+    expect(player.game.getCurrentMoveNumber()).toBe(0)
+  })
+
+  it('does nothing for a wheel event bound to nothing', () => {
+    const {player} = load({mouseBindings: []})
+
+    player.triggerEvent('wheel', {
+      nativeEvent: {deltaY: 1, preventDefault: vi.fn()},
+    })
+
+    expect(player.game.getCurrentMoveNumber()).toBe(0)
+  })
+
+  it('clears the hover on the wheel, bound or not', () => {
+
+    //The board moves under the cursor, so whatever was being previewed on
+    //the point the cursor is over is no longer what would happen there
+    const {player, replay} = load()
+    const spy = vi.spyOn(player.board, 'clearHoverLayer')
+
+    replay.onMouseWheel({
+      detail: {nativeEvent: {deltaY: 1, preventDefault: vi.fn()}},
+    })
+
+    expect(spy).toHaveBeenCalled()
+  })
+
+  it('forgets which variation was taken when told not to remember', () => {
+    const {player} = load({rememberVariationPaths: false})
+    player.goToNextPosition()
+    player.goToNextPosition()
+    player.selectNextVariation()
+
+    expect(player.game.getCurrentPathIndex()).toBe(1)
+
+    player.goToPreviousPosition()
+    expect(player.game.getCurrentPathIndex()).toBe(0)
+  })
+})
+
+describe('Replay mode move numbering', () => {
+
+  //Two moves on the main line and a two move variation off the first, so
+  //that both the variation numbering and the whole game numbering have
+  //something to count
+  const sgf = '(;GM[1]FF[4]SZ[9];B[cc](;W[gg];B[cg])(;W[gc]))'
+
+  const load = (config = {}) => {
+    const player = new Player(config)
+    player.board.createLayers()
+    player.loadData(sgf)
+    return player
+  }
+
+  const markupAt = (player, x, y) =>
+    player.board.get(boardLayerTypes.MARKUP, x, y)
+
+  it('numbers every move when asked to', () => {
+    const player = load({showAllMoveNumbers: true})
+    player.goToLastPosition()
+
+    expect(markupAt(player, 2, 2).number).toBe(1)
+    expect(markupAt(player, 6, 6).number).toBe(2)
+    expect(markupAt(player, 2, 6).number).toBe(3)
+  })
+
+  it('numbers the moves of a variation once one is being followed', () => {
+
+    //Numbering starts at the fork, so the main line move before it goes
+    //unnumbered while the two moves of the branch count from one
+    const player = load()
+    player.goToNextPosition()
+    player.selectNextVariation()
+    player.goToNextPosition()
+
+    expect(markupAt(player, 2, 2)).toBeUndefined()
+    expect(markupAt(player, 6, 2).number).toBe(1)
+  })
+
+  it('numbers nothing on the main line, which is not a variation', () => {
+    const player = load()
+    player.goToLastPosition()
+
+    expect(markupAt(player, 6, 6)).toBeUndefined()
+    expect(markupAt(player, 2, 6).type).toBe(markupTypes.LAST_MOVE)
+  })
+
+  it('numbers just the last move when asked to', () => {
+    const player = load({
+      showVariationMoveNumbers: false,
+      showLastMoveNumber: true,
+    })
+    player.goToLastPosition()
+
+    expect(markupAt(player, 2, 6).number).toBe(3)
+    expect(markupAt(player, 6, 6)).toBeUndefined()
+  })
+
+  it('numbers nothing at the root, which is no move', () => {
+    const player = load({
+      showVariationMoveNumbers: false,
+      showLastMoveNumber: true,
+    })
+
+    expect(markupAt(player, 2, 2)).toBeUndefined()
+  })
+
+  it('marks the last move with a circle when numbering is off', () => {
+    const player = load({showVariationMoveNumbers: false})
+    player.goToLastPosition()
+
+    expect(markupAt(player, 2, 6).type).toBe(markupTypes.LAST_MOVE)
+  })
+
+  it('leaves the record own markup standing over a number', () => {
+    const player = load({showAllMoveNumbers: true})
+    player.loadData('(;GM[1]FF[4]SZ[9];B[cc];W[gg]TR[cc])')
+    player.goToLastPosition()
+
+    expect(markupAt(player, 2, 2).type).toBe(markupTypes.TRIANGLE)
+  })
+
+  it('takes the numbers off again when the setting is turned off', () => {
+    const player = load({showAllMoveNumbers: true})
+    player.goToLastPosition()
+
+    player.setConfig('showAllMoveNumbers', false)
+
+    expect(markupAt(player, 2, 2)).toBeUndefined()
+  })
+})
+
+describe('Replay mode variation markers', () => {
+
+  const sgf = '(;GM[1]FF[4]SZ[9];B[cc](;W[gg])(;W[gc]))'
+
+  const load = (config = {}, data = sgf) => {
+    const player = new Player(config)
+    player.board.createLayers()
+    player.loadData(data)
+    return player
+  }
+
+  const markupAt = (player, x, y) =>
+    player.board.get(boardLayerTypes.MARKUP, x, y)
+
+  it('letters each continuation from a fork', () => {
+    const player = load()
+    player.goToNextPosition()
+
+    expect(markupAt(player, 6, 6).type).toBe(markupTypes.VARIATION)
+    expect(markupAt(player, 6, 6).index).toBe(0)
+    expect(markupAt(player, 6, 2).index).toBe(1)
+  })
+
+  it('marks which of them the path is on', () => {
+    const player = load()
+    player.goToNextPosition()
+
+    expect(markupAt(player, 6, 6).isSelected).toBe(true)
+    expect(markupAt(player, 6, 2).isSelected).toBe(false)
+  })
+
+  it('shows none when variations are turned off', () => {
+    const player = load({showVariations: false})
+    player.goToNextPosition()
+
+    expect(markupAt(player, 6, 6)).toBeUndefined()
+  })
+
+  it('marks a single continuation when asked to show the next move', () => {
+
+    //One continuation is not a fork, so it only appears if the next move is
+    //what was asked for, and then without a letter to tell it apart
+    const player = load(
+      {showVariations: false, showNextMove: true},
+      '(;GM[1]FF[4]SZ[9];B[cc];W[gg])'
+    )
+    player.goToNextPosition()
+    player.goToPreviousPosition()
+
+    expect(markupAt(player, 2, 2).type).toBe(markupTypes.VARIATION)
+    expect(markupAt(player, 2, 2).showText).toBe(false)
+  })
+
+  it('shows nothing at all until something has been navigated', () => {
+
+    //NOTE: pinning current behaviour, and it looks like a bug. Loading a
+    //record suppresses the path change event on purpose, and the replay
+    //mode's game load handler only stops auto play, so nothing renders the
+    //markers. A record whose opening position forks shows no letters until
+    //the user moves off it and back. See KNOWN_ISSUES.md.
+    const player = load({}, '(;GM[1]FF[4]SZ[9](;B[cc])(;B[gg]))')
+
+    expect(markupAt(player, 2, 2)).toBeUndefined()
+    expect(markupAt(player, 6, 6)).toBeUndefined()
+
+    player.goToNextPosition()
+    player.goToPreviousPosition()
+
+    expect(markupAt(player, 2, 2).type).toBe(markupTypes.VARIATION)
+  })
+
+  it('marks the sibling variations of the move just played', () => {
+    const player = load({showSiblingVariations: true})
+    player.goToNextPosition()
+    player.goToNextPosition()
+
+    expect(markupAt(player, 6, 2).type).toBe(markupTypes.VARIATION)
+  })
+
+  it('stays off a point that already has a stone', () => {
+
+    //A sibling variation can point at a place the game has since played
+    const player = load(
+      {showSiblingVariations: true},
+      '(;GM[1]FF[4]SZ[9];B[cc](;W[gg];B[gc])(;W[gc]))'
+    )
+    player.goToLastPosition()
+
+    expect(player.game.hasStone(6, 2)).toBe(true)
+    expect(markupAt(player, 6, 2).type).not.toBe(markupTypes.VARIATION)
+  })
+
+  it('leaves the record own markup standing', () => {
+    const player = load({}, '(;GM[1]FF[4]SZ[9];B[cc]TR[gg](;W[gg])(;W[gc]))')
+    player.goToNextPosition()
+
+    expect(markupAt(player, 6, 6).type).toBe(markupTypes.TRIANGLE)
+    expect(markupAt(player, 6, 2).type).toBe(markupTypes.VARIATION)
   })
 })

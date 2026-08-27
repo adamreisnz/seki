@@ -225,3 +225,85 @@ describe('ConvertFromJgf, invalid input', () => {
     expect(game.getRootNode().hasChildren()).toBe(true)
   })
 })
+
+describe('ConvertFromJgf, what it refuses and what it tolerates', () => {
+
+  const convert = jgf => new ConvertFromJgf().convert(jgf)
+
+  it('refuses anything that is not an object or a string', () => {
+    expect(() => convert(42)).toThrow('Invalid JGF data supplied')
+    expect(() => convert(null)).toThrow()
+  })
+
+  it('takes a JGF string as readily as the object', () => {
+    const game = new Game({board: {size: 9}})
+    game.playMove(2, 2)
+    const jgf = new ConvertToJgf().convert(game)
+
+    expect(convert(jgf).getTotalNumberOfMoves()).toBe(1)
+  })
+
+  it('refuses a record with no tree to navigate', () => {
+    expect(() => convert({record: {}})).toThrow('no game tree found')
+  })
+
+  it('reads a record whose tree has a root and nothing else', () => {
+    const game = convert({record: {}, tree: [{}]})
+
+    expect(game.getTotalNumberOfMoves()).toBe(0)
+  })
+})
+
+describe('JGF node contents round trip', () => {
+
+  const roundTrip = build => {
+    const game = new Game({board: {size: 9}})
+    build(game)
+    const jgf = new ConvertToJgf().convert(game)
+    const parsed = new ConvertFromJgf().convert(jgf)
+    parsed.goToLastPosition()
+    return parsed.getCurrentNode()
+  }
+
+  it('carries setup instructions across', () => {
+    const node = roundTrip(game => {
+      game.addStone(2, 2, stoneColors.BLACK)
+      game.addStone(6, 6, stoneColors.WHITE)
+    })
+
+    expect(node.setup).toEqual([
+      {type: stoneColors.BLACK, coords: [{x: 2, y: 2}]},
+      {type: stoneColors.WHITE, coords: [{x: 6, y: 6}]},
+    ])
+  })
+
+  it('carries markup across', () => {
+    const node = roundTrip(game => {
+      game.addMarkup(2, 2, {type: 'triangle'})
+    })
+
+    expect(node.markup).toEqual([
+      {type: 'triangle', coords: [{x: 2, y: 2}]},
+    ])
+  })
+
+  it('carries a turn indicator across', () => {
+    const node = roundTrip(game => {
+      game.getRootNode().turn = stoneColors.WHITE
+    })
+
+    expect(node.turn).toBe(stoneColors.WHITE)
+  })
+
+  it('carries score across', () => {
+    const node = roundTrip(game => {
+      game.getRootNode().score = [
+        {color: stoneColors.BLACK, coords: [{x: 1, y: 1}]},
+      ]
+    })
+
+    expect(node.score).toEqual([
+      {color: stoneColors.BLACK, coords: [{x: 1, y: 1}]},
+    ])
+  })
+})

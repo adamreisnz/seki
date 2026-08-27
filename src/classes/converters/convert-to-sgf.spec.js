@@ -424,3 +424,196 @@ describe('ConvertToSgf, the board view', () => {
     })
   })
 })
+
+describe('ConvertToSgf, what it refuses', () => {
+
+  it('refuses anything that is not a game', () => {
+    const converter = new ConvertToSgf()
+
+    expect(() => converter.convert({})).toThrow('Not a game instance')
+    expect(() => converter.convert(null)).toThrow('Not a game instance')
+  })
+})
+
+describe('ConvertToSgf, the source it credits', () => {
+
+  const sourceOf = sgf => sgf.match(/SO\[(.*?)\]/)?.[1]
+
+  it('writes the name and the URL together when it has both', () => {
+    const game = new Game()
+    game.setSourceName('Go Weekly')
+    game.setSourceUrl('https://example.test/game')
+
+    expect(sourceOf(game.toSgf())).toBe('Go Weekly, https://example.test/game')
+  })
+
+  it('writes the name alone', () => {
+    const game = new Game()
+    game.setSourceName('Go Weekly')
+
+    expect(sourceOf(game.toSgf())).toBe('Go Weekly')
+  })
+
+  it('writes the URL alone', () => {
+    const game = new Game()
+    game.setSourceUrl('https://example.test/game')
+
+    expect(sourceOf(game.toSgf())).toBe('https://example.test/game')
+  })
+
+  it('writes neither when it has neither', () => {
+    expect(sourceOf(new Game().toSgf())).toBeUndefined()
+  })
+
+  it('writes the copyright when there is one', () => {
+    const game = new Game()
+    game.setSourceCopyright('© 2026')
+
+    expect(game.toSgf()).toContain('CP[© 2026]')
+  })
+})
+
+describe('ConvertToSgf, the players it names', () => {
+
+  it('writes the rank and team alongside the name', () => {
+    const game = new Game()
+    game.setPlayer(stoneColors.BLACK, {
+      name: 'Black Player', rank: '5d', team: 'Team A',
+    })
+
+    const sgf = game.toSgf()
+
+    expect(sgf).toContain('PB[Black Player]')
+    expect(sgf).toContain('BR[5d]')
+    expect(sgf).toContain('BT[Team A]')
+  })
+
+  it('writes an empty name for a player it has nothing for', () => {
+    const sgf = new Game().toSgf()
+
+    expect(sgf).toContain('PB[]')
+    expect(sgf).toContain('PW[]')
+    expect(sgf).not.toContain('BR[')
+    expect(sgf).not.toContain('BT[')
+  })
+
+  it('skips an entry under a colour it does not know', () => {
+    const game = new Game()
+    game.players.purple = {name: 'Purple Player'}
+
+    expect(game.toSgf()).not.toContain('Purple Player')
+  })
+})
+
+describe('ConvertToSgf, escaping', () => {
+
+  it('escapes the closing bracket and the backslash', () => {
+
+    //Both end a value as far as an SGF reader is concerned, so both have to
+    //be escaped or the record is cut short at the first one
+    const game = new Game()
+    game.setGameName('A [bracket] and a \\ backslash')
+
+    const sgf = game.toSgf()
+
+    expect(sgf).toContain('A [bracket\\] and a \\\\ backslash')
+  })
+
+  it('leaves anything that is not a string alone', () => {
+    const converter = new ConvertToSgf()
+
+    expect(converter.escapeSgf(42)).toBe(42)
+    expect(converter.escapeSgf(null)).toBeNull()
+  })
+
+  it('round trips an escaped value back out again', () => {
+    const game = new Game()
+    game.setGameName('A [bracket]')
+
+    expect(Game.fromSgf(game.toSgf()).getGameName()).toBe('A [bracket]')
+  })
+})
+
+describe('ConvertToSgf, comments and node names', () => {
+
+  const sgfFor = build => {
+    const game = new Game({board: {size: 9}})
+    game.playMove(2, 2)
+    build(game)
+    return game.toSgf()
+  }
+
+  it('writes a comment', () => {
+    expect(sgfFor(game => game.setComments('a note'))).toContain('C[a note]')
+  })
+
+  it('writes several comments as several values', () => {
+    const sgf = sgfFor(game => game.setComments(['first', 'second']))
+    expect(sgf).toContain('C[first][second]')
+  })
+
+  it('writes nothing for a comment that is empty', () => {
+    expect(sgfFor(game => game.setComments(''))).not.toContain('C[')
+    expect(sgfFor(game => game.setComments([]))).not.toContain('C[')
+    expect(sgfFor(game => game.setComments(['', null]))).not.toContain('C[')
+  })
+
+  it('writes a node name', () => {
+    const sgf = sgfFor(game => {
+      game.getCurrentNode().name = 'the fork'
+    })
+    expect(sgf).toContain('N[the fork]')
+  })
+
+  it('writes nothing for a node with no name', () => {
+    expect(sgfFor(() => null)).not.toContain('N[')
+  })
+})
+
+describe('ConvertToSgf, the variation settings it writes', () => {
+
+  //ST is a two bit field: bit one is whether siblings are shown, bit two is
+  //whether variations are shown at all, inverted
+  const settings = (showVariations, showSiblingVariations) => {
+    const game = new Game()
+    game.setSettings({showVariations, showSiblingVariations})
+    return new ConvertToSgf().convert(game, {includeVariationSettings: true})
+  }
+
+  it('writes children only as zero', () => {
+    expect(settings(true, false)).toContain('ST[0]')
+  })
+
+  it('writes siblings as one', () => {
+    expect(settings(true, true)).toContain('ST[1]')
+  })
+
+  it('writes no variations as two', () => {
+    expect(settings(false, false)).toContain('ST[2]')
+  })
+
+  it('writes no variations with siblings as three', () => {
+    expect(settings(false, true)).toContain('ST[3]')
+  })
+
+  it('writes none of it unless it is asked to', () => {
+    const game = new Game()
+    game.setSettings({showVariations: false})
+
+    expect(game.toSgf()).not.toContain('ST[')
+  })
+})
+
+describe('ConvertToSgf, a board it cannot size', () => {
+
+  it('writes a zero rather than leaving the key out', () => {
+
+    //A record that never said how big its board is has nothing to write, and
+    //a missing SZ is a nineteen by nineteen board to every reader
+    const game = new Game()
+    game.boardWidth = 0
+    game.boardHeight = 0
+
+    expect(game.toSgf()).toContain('SZ[0]')
+  })
+})

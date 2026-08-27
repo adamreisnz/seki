@@ -110,4 +110,101 @@ describe('Hover state across a position update', () => {
 
     expect(board.has(boardLayerTypes.HOVER, 3, 3)).toBe(false)
   })
+
+  it('does nothing when asked to remove a cell it never had', () => {
+    const board = createBoard()
+    board.add(boardLayerTypes.STONES, 3, 3, stone(board))
+
+    board.clearHoverCell(3, 3)
+
+    expect(board.has(boardLayerTypes.STONES, 3, 3)).toBe(true)
+  })
+
+  it('leaves a cell with nothing under it alone when cleared', () => {
+    const board = createBoard()
+
+    board.setHoverCell(3, 3, stone(board))
+    board.clearHoverCell(3, 3)
+
+    expect(board.has(boardLayerTypes.HOVER, 3, 3)).toBe(false)
+    expect(board.has(boardLayerTypes.STONES, 3, 3)).toBe(false)
+  })
+
+  it('restores every displaced object when the whole layer is cleared', () => {
+
+    //Dragging across the board displaces a stone on each cell it passes, and
+    //all of them have to come back, not just the last one
+    const board = createBoard()
+    const first = stone(board)
+    const second = stone(board)
+
+    board.add(boardLayerTypes.STONES, 3, 3, first)
+    board.add(boardLayerTypes.STONES, 4, 4, second)
+    board.setHoverCell(3, 3, stone(board))
+    board.setHoverCell(4, 4, stone(board))
+
+    board.clearHoverLayer()
+
+    expect(board.get(boardLayerTypes.STONES, 3, 3)).toBe(first)
+    expect(board.get(boardLayerTypes.STONES, 4, 4)).toBe(second)
+  })
+
+  it('has nothing left to restore after clearing the layer', () => {
+
+    //A second clear must not put a stale stone back on a point that has
+    //since been played on
+    const board = createBoard()
+    board.add(boardLayerTypes.STONES, 3, 3, stone(board))
+
+    board.setHoverCell(3, 3, stone(board))
+    board.clearHoverLayer()
+    board.remove(boardLayerTypes.STONES, 3, 3)
+    board.clearHoverLayer()
+
+    expect(board.has(boardLayerTypes.STONES, 3, 3)).toBe(false)
+  })
+
+  it('takes an array of objects, keyed off the first of them', () => {
+
+    //A hover stone comes as a shadow and the stone itself, and it is the
+    //shadow the type is worked out from
+    const board = createBoard()
+    const hover = [stone(board), stone(board)]
+
+    board.setHoverCell(3, 3, hover)
+
+    expect(board.get(boardLayerTypes.HOVER, 3, 3)).toBe(hover)
+  })
+
+  it('reports nothing queued for a cell it has not displaced anything on', () => {
+    const board = createBoard()
+    const layer = board.getLayer(boardLayerTypes.HOVER)
+
+    expect(layer.hasRestoration(3, 3, boardLayerTypes.STONES)).toBe(false)
+  })
+
+  it('tells restorations on the same cell apart by layer', () => {
+
+    //A cell can hold both a stone and markup, and hovering markup over it
+    //must not be taken as having already queued the stone
+    const board = createBoard()
+    const layer = board.getLayer(boardLayerTypes.HOVER)
+    board.add(boardLayerTypes.STONES, 3, 3, stone(board))
+
+    board.setHoverCell(3, 3, stone(board))
+
+    expect(layer.hasRestoration(3, 3, boardLayerTypes.STONES)).toBe(true)
+    expect(layer.hasRestoration(3, 3, boardLayerTypes.MARKUP)).toBe(false)
+  })
+
+  it('tells restorations apart by cell as well', () => {
+    const board = createBoard()
+    const layer = board.getLayer(boardLayerTypes.HOVER)
+    board.add(boardLayerTypes.STONES, 3, 3, stone(board))
+
+    board.setHoverCell(3, 3, stone(board))
+
+    expect(layer.hasRestoration(4, 3, boardLayerTypes.STONES)).toBe(false)
+    expect(layer.hasRestoration(3, 4, boardLayerTypes.STONES)).toBe(false)
+  })
 })

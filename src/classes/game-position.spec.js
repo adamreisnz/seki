@@ -360,3 +360,86 @@ describe('GamePosition', () => {
     })
   })
 })
+
+describe('GamePosition captures', () => {
+
+  it('says whether anything was captured', () => {
+    const position = new GamePosition(9, 9)
+    expect(position.hasCaptures()).toBe(false)
+
+    position.stones.set(1, 1, BLACK)
+    position.captureStone(1, 1)
+    expect(position.hasCaptures()).toBe(true)
+  })
+
+  it('takes and reports the captures of a colour', () => {
+    const position = new GamePosition(9, 9)
+
+    position.setCaptures(BLACK, [{x: 1, y: 1}, {x: 2, y: 2}])
+
+    expect(position.getCaptures(BLACK)).toHaveLength(2)
+    expect(position.getCaptures(WHITE)).toEqual([])
+  })
+
+  it('counts a colour captures as the enemy stones it took', () => {
+
+    //Black's count is the number of white stones off the board
+    const position = new GamePosition(9, 9)
+    position.setCaptures(WHITE, [{x: 1, y: 1}, {x: 2, y: 2}])
+
+    expect(position.getCaptureCount(BLACK)).toBe(2)
+    expect(position.getCaptureCount(WHITE)).toBe(0)
+  })
+
+  it('refuses a colour it does not know', () => {
+    const position = new GamePosition(9, 9)
+
+    expect(() => position.setCaptures('purple', [])).toThrow('Invalid color')
+    expect(() => position.getCaptures('purple')).toThrow('Invalid color')
+    expect(() => position.getCaptureCount('purple')).toThrow('Invalid color')
+  })
+
+  it('captures nothing off the grid', () => {
+    const position = new GamePosition(9, 9)
+
+    position.captureStone(20, 20)
+
+    expect(position.hasCaptures()).toBe(false)
+  })
+
+  it('captures nothing from an empty point', () => {
+    const position = new GamePosition(9, 9)
+
+    position.captureStone(1, 1)
+
+    expect(position.hasCaptures()).toBe(false)
+  })
+
+  it('refuses to capture a group of a colour it does not know', () => {
+    const position = new GamePosition(9, 9)
+
+    expect(() => position.captureGroup(1, 1, 'purple')).toThrow('Invalid color')
+  })
+
+  it('captures no group off the grid', () => {
+    const position = new GamePosition(9, 9)
+    expect(position.captureGroup(20, 20)).toBe(false)
+  })
+
+  it('reports no liberties for a point off the grid', () => {
+    const position = new GamePosition(9, 9)
+    expect(position.hasLiberties(20, 20)).toBe(false)
+  })
+})
+
+describe('GamePosition markup', () => {
+
+  it('takes markup off a point', () => {
+    const position = new GamePosition(9, 9)
+    position.markup.set(3, 3, {type: 'triangle'})
+
+    position.removeMarkup(3, 3)
+
+    expect(position.markup.has(3, 3)).toBe(false)
+  })
+})
