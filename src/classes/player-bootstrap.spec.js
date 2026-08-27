@@ -1,6 +1,7 @@
 import {describe, it, expect, vi, beforeEach, afterEach} from 'vitest'
 import Player from './player.js'
 import {boardLayerTypes} from '../constants/board.js'
+import {playerModes, editTools} from '../constants/player.js'
 import {stubDom} from '../../test/helpers.js'
 
 /**
@@ -381,5 +382,132 @@ describe('Player teardown', () => {
     player.triggerEvent('pathChange', {})
 
     expect(listener).not.toHaveBeenCalled()
+  })
+})
+
+describe('Player re-bootstrapping', () => {
+
+  //A record with two moves on it, so that there is something to put back on
+  //the board and somewhere to navigate to
+  const sgf = '(;GM[1]FF[4]SZ[9];B[cc];W[gg])'
+
+  /**
+   * A player torn down and bootstrapped again onto the same container
+   *
+   * The container is given a size, as the position is only drawn onto layers
+   * that have a cell size to draw at.
+   */
+  const rebootstrap = (config = {}, data = sgf) => {
+    const dom = stubDom()
+    Object.assign(dom.container, {clientWidth: 600, clientHeight: 600})
+    const player = new Player(config)
+    player.bootstrap(dom.container)
+    player.loadData(data)
+    player.board.setDrawSize(600, 600)
+    return {player, ...dom}
+  }
+
+  const stoneAt = (player, x, y) => player.board
+    .getLayer(boardLayerTypes.STONES)
+    .grid
+    .get(x, y)
+
+  const clickAt = (player, x, y) => player.board.elements.board.dispatch(
+    'click',
+    {
+      button: 0,
+      offsetX: player.board.getAbsX(x),
+      offsetY: player.board.getAbsY(y),
+      preventDefault: vi.fn(),
+    }
+  )
+
+  it('finds its voice again', () => {
+
+    //Being torn down silences every event the player raises, and nothing
+    //used to lift that again, so a player bootstrapped a second time came up
+    //permanently mute
+    const {player, container} = rebootstrap()
+    player.teardown()
+
+    const listener = vi.fn()
+    player.on('bootstrapped', listener)
+    player.bootstrap(container)
+
+    expect(player.isTornDown).toBe(false)
+    expect(listener).toHaveBeenCalledTimes(1)
+  })
+
+  it('raises path change events again', () => {
+    const {player, container} = rebootstrap()
+    player.teardown()
+    player.bootstrap(container)
+
+    const listener = vi.fn()
+    player.on('pathChange', listener)
+    player.goToNextPosition()
+
+    expect(listener).toHaveBeenCalledTimes(1)
+  })
+
+  it('puts the position back on the board', () => {
+
+    //Tearing down destroys the board, which clears its layers, so the ones
+    //built by the second bootstrap start out empty and have to be filled
+    const {player, container} = rebootstrap()
+    player.goToLastPosition()
+    expect(stoneAt(player, 2, 2)).toBeTruthy()
+
+    player.teardown()
+    player.bootstrap(container)
+
+    expect(stoneAt(player, 2, 2)).toBeTruthy()
+    expect(stoneAt(player, 6, 6)).toBeTruthy()
+  })
+
+  it('lets the active mode hear events again', () => {
+
+    //Teardown deactivates the mode, taking its listeners off the player.
+    //Setting the mode again is no way back, as that is a no-op for the mode
+    //that is already the active one
+    const {player, container} = rebootstrap({
+      initialMode: playerModes.EDIT,
+      board: {showCoordinates: false},
+    }, '(;GM[1]FF[4]SZ[9])')
+    player.setEditTool(editTools.BLACK)
+
+    player.teardown()
+    player.bootstrap(container)
+    player.board.setDrawSize(600, 600)
+
+    clickAt(player, 4, 4)
+    expect(stoneAt(player, 4, 4)).toBeTruthy()
+  })
+
+  it('leaves only the new board in the container', () => {
+
+    //Tearing down takes the board element back out, so the second bootstrap
+    //does not stack a live board on top of a dead one
+    const {player, container} = rebootstrap()
+    player.teardown()
+    player.bootstrap(container)
+
+    expect(container.children.filter(
+      child => child.className === 'seki-board-wrapper'
+    )).toHaveLength(1)
+  })
+
+  it('watches the new container for size changes', () => {
+
+    //The observer the first bootstrap set up was disconnected on teardown, so
+    //without a fresh one the board never resizes again
+    const {player, container, observers} = rebootstrap()
+    player.teardown()
+    player.bootstrap(container)
+
+    expect(observers).toHaveLength(2)
+    expect(observers[0].disconnected).toBe(true)
+    expect(observers[1].disconnected).toBe(false)
+    expect(observers[1].observed).toEqual([player.elements.container])
   })
 })

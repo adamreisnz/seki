@@ -1096,6 +1096,22 @@ export default class Board extends Base {
     this.removeAll()
     this.layers.clear()
 
+    //Forget the draw size, both the value and the baseline it is compared
+    //against. The canvases it describes are about to go, so a board
+    //bootstrapped again onto a container of the same size has to propagate
+    //it afresh rather than see no change and leave the new canvases at zero.
+    this.drawWidth = 0
+    this.drawHeight = 0
+    this.lastDrawWidth = 0
+    this.lastDrawHeight = 0
+
+    //Take the board out of the container it was put in, before the reference
+    //to it goes. Left standing it is an orphan at full size, which a board
+    //bootstrapped again onto the same container would then sit underneath.
+    if (this.elements.wrapper) {
+      this.elements.wrapper.remove()
+    }
+
     //Drop element references
     this.elements = {}
     this.player = null
