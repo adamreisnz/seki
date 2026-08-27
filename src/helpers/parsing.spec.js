@@ -57,6 +57,16 @@ describe('parsing helpers', () => {
       expect(parseResult('W+6.5')).toBe('W+6.5')
     })
 
+    it('keeps a win that came without a score', () => {
+
+      //NOTE: the spec makes the score optional, so a bare 'B+' is a win
+      //recorded without a margin rather than a malformed result, and
+      //GoPanda2 writes one whenever the server reported no score
+      expect(parseResult('B+')).toBe('B+')
+      expect(parseResult('W+')).toBe('W+')
+      expect(parseResult('b+')).toBe('B+')
+    })
+
     it('expands fraction glyphs', () => {
       expect(parseResult('W+6½')).toBe('W+6.5')
     })
