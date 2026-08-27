@@ -3,6 +3,7 @@ import Player from './player.js'
 import GameNode from './game-node.js'
 import {defaultPlayerConfig} from '../constants/defaults.js'
 import {playerModes} from '../constants/player.js'
+import {boardLayerTypes} from '../constants/board.js'
 import {stoneColors} from '../constants/stone.js'
 import {loadFixtureBytes} from '../../test/fixtures.js'
 
@@ -221,6 +222,37 @@ describe('loading a handicap game', () => {
     const game = loadSgf('(;GM[1]FF[4]SZ[19];B[dd])')
     expect(game.getPosition().hasStones()).toBe(false)
     expect(game.getTurn()).toBe('black')
+  })
+})
+
+describe('loading a game', () => {
+
+  it('raises gameLoad once the board has caught up with the record', () => {
+
+    //The event used to be raised before the board was reset and the position
+    //synced, so a handler that drew onto the board had its work wiped by the
+    //reset that followed. Replay mode's markers are the case in point.
+    const player = new Player()
+    player.board.createLayers()
+    player.loadData('(;GM[1]FF[4]SZ[9];B[cc])')
+
+    const seen = []
+    player.on('gameLoad', () => {
+      seen.push(player.board.has(boardLayerTypes.STONES, 2, 2))
+    })
+    player.loadData('(;GM[1]FF[4]SZ[9]AB[cc])')
+
+    expect(seen).toEqual([true])
+  })
+
+  it('hands the loaded game to the event', () => {
+    const player = new Player()
+    const listener = vi.fn()
+    player.on('gameLoad', listener)
+
+    player.loadData('(;GM[1]FF[4]SZ[9];B[cc])')
+
+    expect(listener.mock.calls[0][0].detail.game).toBe(player.game)
   })
 })
 

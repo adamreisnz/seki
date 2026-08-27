@@ -166,25 +166,17 @@ describe('CoordinatesLayer character generators', () => {
     expect(drawn(context)).toContain('一')
   })
 
-  it('cannot take a generator function from the theme', () => {
+  it('names them rather than taking a function from the theme', () => {
 
-    //NOTE: pinning current behaviour, and it is a bug. Theme#get calls any
-    //function it finds and returns the result, so a generator handed to the
-    //theme is invoked once with no arguments and whatever it returns is then
-    //treated as the name of a generator. The labels fall back to bare
-    //indices. See KNOWN_ISSUES.md.
+    //Theme#get calls any function it finds, so a generator handed to the
+    //theme is invoked once with no arguments and what it returns is looked up
+    //as a name. Nothing matches, and the labels fall back to bare indices.
+    //The six named generators are the supported route.
     const {layer, context} = withType('horizontal', i => `#${i}`)
     layer.draw()
 
     expect(drawn(context)).not.toContain('#0')
     expect(drawn(context)).toContain(0)
-  })
-
-  it('does use a generator function it is handed directly', () => {
-
-    //The branch is there and works; nothing can reach it through the theme
-    const {layer} = withType('horizontal', 'letters')
-    expect(layer.getCharacter(3, i => `#${i}`)).toBe('#3')
   })
 
   it('falls back to the bare index for a name it does not know', () => {

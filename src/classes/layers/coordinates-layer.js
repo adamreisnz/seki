@@ -149,12 +149,10 @@ export default class CoordinatesLayer extends BoardLayer {
    */
   getCharacter(i, style) {
 
-    //Generator function
-    if (typeof style === 'function') {
-      return style(i)
-    }
-
-    //Existing generator
+    //Existing generator. NOTE: a theme names one of these rather than handing
+    //over a function of its own. Theme#get calls any function it finds, so a
+    //function could never have reached here through the only route a theme
+    //has to it, and the six generators cover every script the board draws.
     if (typeof style === 'string' && coordinateGenerators[style]) {
       return coordinateGenerators[style](i)
     }

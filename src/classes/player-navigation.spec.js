@@ -168,6 +168,34 @@ describe('Player variations', () => {
     expect(player.game.getCurrentPathIndex()).toBe(0)
   })
 
+  it('follows the variation it is given rather than the selected one', () => {
+    const player = load()
+    player.goToMoveNumber(2)
+
+    player.goToNextPosition(1)
+
+    expect(player.game.getCurrentNode().move.x).toBe(6)
+  })
+
+  it('falls back to the selected variation when given nothing', () => {
+    const player = load()
+    player.goToMoveNumber(2)
+    player.selectNextVariation()
+
+    player.goToNextPosition()
+
+    expect(player.game.getCurrentNode().move.x).toBe(6)
+  })
+
+  it('falls back to the first variation for an index that is not one', () => {
+    const player = load()
+    player.goToMoveNumber(2)
+
+    player.goToNextPosition(7)
+
+    expect(player.game.getCurrentNode().move.x).toBe(2)
+  })
+
   it('says when the selected variation changes', () => {
     const player = load()
     player.goToMoveNumber(2)
