@@ -161,6 +161,35 @@ describe('Board bootstrapping', () => {
   })
 })
 
+describe('Board destruction', () => {
+
+  it('takes its board back out of the container', () => {
+
+    //Left standing it is an orphan at full size, which a board bootstrapped
+    //again onto the same container would sit underneath
+    const {board, container} = bootstrap()
+    board.destroy()
+
+    expect(container.children.filter(
+      child => child.className === 'seki-board-wrapper'
+    )).toHaveLength(0)
+  })
+
+  it('sizes the canvases again when bootstrapped onto the same container', () => {
+
+    //The draw size is only propagated when it differs from the last one
+    //propagated. Destroying throws the canvases that size described away, so
+    //holding on to it left the new ones at nothing to draw on
+    const {board, container} = bootstrap()
+    board.destroy()
+    board.bootstrap(container)
+
+    const {canvasses, board: element} = board.elements
+    expect(canvasses[0].width).toBeGreaterThan(0)
+    expect(element.style.width).toBe(`${board.lastDrawWidth}px`)
+  })
+})
+
 describe('Board classes', () => {
 
   it('adds and removes a class on the board element', () => {

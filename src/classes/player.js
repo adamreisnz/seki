@@ -41,6 +41,7 @@ export default class Player extends Base {
 
   //Bootstrapped state
   isBootstrapped = false
+  isTornDown = false
 
   /**
    * Constructor
@@ -1006,6 +1007,11 @@ export default class Player extends Base {
     //Debug
     this.debug('🏗️ bootstrapping...')
 
+    //Clear the torn down flag before anything else, as it silences every
+    //event we raise. Bootstrapping onto an element after a teardown has to
+    //give the player its voice back, or it comes up mute.
+    this.isTornDown = false
+
     //Setup container element
     this.setupContainerElement(container)
 
@@ -1015,6 +1021,10 @@ export default class Player extends Base {
     //Bootstrap board
     this.bootstrapBoard()
 
+    //Put the position back onto the board. Tearing down destroys the board,
+    //which clears the layers, so the freshly built ones start out empty.
+    this.updateBoardPosition()
+
     //Remove any old listeners
     this.teardownDocumentListeners()
     this.teardownElementListeners()
@@ -1022,6 +1032,15 @@ export default class Player extends Base {
     //Setup listeners
     this.setupDocumentListeners()
     this.setupElementListeners()
+
+    //Re-activate the current mode, whose listeners came off when it was
+    //deactivated during teardown. Setting the mode again is no help, as that
+    //is a no-op for the mode that is already the active one. Done after the
+    //position is back, so that the markers a mode renders survive.
+    const currentHandler = this.getCurrentModeHandler()
+    if (currentHandler) {
+      currentHandler.activate()
+    }
 
     //Emit event
     this.isBootstrapped = true

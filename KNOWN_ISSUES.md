@@ -386,12 +386,13 @@ the same player or board onto the same element twice and the container ends up
 holding two complete boards, one of them orphaned: nothing points at it any
 more, and its canvases are never drawn to again.
 
-**Effect:** a component that re-bootstraps on a prop change — or an app that
-calls `bootstrap()` again rather than tearing down first — stacks a dead board
-under the live one, at full size. The listeners on the old element are removed
+**Effect:** an app that calls `bootstrap()` again rather than tearing down
+first stacks a dead board under the live one, at full size. Tearing down in
+between is fine — `Board#destroy` takes the wrapper out — so this is only the
+bootstrap-onto-bootstrap path. The listeners on the old element are removed
 correctly, and the audio elements and the resize observer both take care of
-exactly this case already, so this is the one place in the bootstrap path where
-it is not handled.
+this case already, so this is the one place in the bootstrap path where it is
+not handled.
 
 **What a fix involves:** removing the previous wrapper in `setupElements`
 before building the new one, the way `createAudioElements` calls
