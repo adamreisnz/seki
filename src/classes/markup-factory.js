@@ -15,52 +15,62 @@ import MarkupMoveNumber from './objects/markup-move-number.js'
 import {markupTypes} from '../constants/markup.js'
 
 /**
+ * The class that draws each markup type
+ *
+ * NOTE: markupTypes carries types that have no class here, being the arrow
+ * and the line, which are recognised but not implemented. This map is what
+ * says so, so that a caller choosing a type can ask rather than find out by
+ * being thrown at.
+ */
+const markupClasses = {
+
+  //Drawable
+  [markupTypes.CIRCLE]: MarkupCircle,
+  [markupTypes.SQUARE]: MarkupSquare,
+  [markupTypes.TRIANGLE]: MarkupTriangle,
+  [markupTypes.DIAMOND]: MarkupDiamond,
+  [markupTypes.MARK]: MarkupMark,
+  [markupTypes.HAPPY]: MarkupHappy,
+  [markupTypes.SAD]: MarkupSad,
+  [markupTypes.LABEL]: MarkupLabel,
+
+  //Special
+  [markupTypes.SELECT]: MarkupSelect,
+  [markupTypes.VARIATION]: MarkupVariation,
+  [markupTypes.CANDIDATE]: MarkupCandidate,
+  [markupTypes.SEQUENCE]: MarkupSequence,
+  [markupTypes.LAST_MOVE]: MarkupLastMove,
+  [markupTypes.MOVE_NUMBER]: MarkupMoveNumber,
+}
+
+/**
  * Markup factory class
  */
 export default class MarkupFactory {
 
   /**
+   * Check if markup of a given type can be created
+   *
+   * NOTE: this asks for the map's own keys rather than reading the property,
+   * as everything inherited from the object prototype answers to a plain read
+   * and 'constructor' would come back as a class to draw with
+   */
+  static isSupported(type) {
+    return Object.hasOwn(markupClasses, type)
+  }
+
+  /**
    * Get markup class to use
    */
   static getClass(type) {
-    switch (type) {
 
-      //Drawable
-      case markupTypes.CIRCLE:
-        return MarkupCircle
-      case markupTypes.SQUARE:
-        return MarkupSquare
-      case markupTypes.TRIANGLE:
-        return MarkupTriangle
-      case markupTypes.DIAMOND:
-        return MarkupDiamond
-      case markupTypes.MARK:
-        return MarkupMark
-      case markupTypes.HAPPY:
-        return MarkupHappy
-      case markupTypes.SAD:
-        return MarkupSad
-      case markupTypes.LABEL:
-        return MarkupLabel
-
-      //Special
-      case markupTypes.SELECT:
-        return MarkupSelect
-      case markupTypes.VARIATION:
-        return MarkupVariation
-      case markupTypes.CANDIDATE:
-        return MarkupCandidate
-      case markupTypes.SEQUENCE:
-        return MarkupSequence
-      case markupTypes.LAST_MOVE:
-        return MarkupLastMove
-      case markupTypes.MOVE_NUMBER:
-        return MarkupMoveNumber
-
-      //Unknown
-      default:
-        throw new Error(`Unknown markup type type: ${type}`)
+    //Unknown or not implemented
+    if (!this.isSupported(type)) {
+      throw new Error(`Unknown markup type: ${type}`)
     }
+
+    //Return the class
+    return markupClasses[type]
   }
 
   /**

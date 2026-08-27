@@ -1037,9 +1037,6 @@ export default class Player extends Base {
     //Debug
     this.debug('🧨 tearing down')
 
-    //Flag as torn down
-    this.isTornDown = true
-
     //Deactivate current mode
     const currentHandler = this.getCurrentModeHandler()
     if (currentHandler) {
@@ -1052,6 +1049,13 @@ export default class Player extends Base {
     for (const mode in this.modeHandlers) {
       this.modeHandlers[mode].teardown()
     }
+
+    //Flag as torn down. NOTE: this comes after the handlers rather than
+    //before them, because tearing a handler down is its last chance to emit
+    //anything it was holding on to, and triggerEvent() drops everything once
+    //the flag is set. Setting it first silently swallowed the free draw lines
+    //the edit handler flushes on the way out.
+    this.isTornDown = true
 
     //Remove listeners
     this.teardownDocumentListeners()

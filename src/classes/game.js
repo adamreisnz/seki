@@ -1785,19 +1785,22 @@ export default class Game extends Base {
 
   /**
    * Add a stone
+   *
+   * Returns whether the stone was added, so a caller can tell an edit that
+   * landed from one the game refused.
    */
   addStone(x, y, color) {
 
     //Validate color
     if (!isValidColor(color)) {
       this.warn(`invalid color ${color}`)
-      return
+      return false
     }
 
     //Already have stone of this color
     if (this.hasStone(x, y, color)) {
       this.debug(`already has stone of color ${color} on (${x},${y})`)
-      return
+      return false
     }
 
     //Debug
@@ -1810,26 +1813,31 @@ export default class Game extends Base {
     //Invalid placement
     if (!newPosition) {
       this.warn(reason)
-      return
+      return false
     }
 
-    //Add to node as a setup instruction
+    //Add to node as a setup instruction. A setup instruction can't live on a
+    //move node, so this creates a child node to hold it and hands back its
+    //index; on a node that already takes setup there is no new node and the
+    //index is undefined.
     const newNodeIndex = node.addSetup(x, y, {type: color})
-
-    //Replace the position if a new node was created. NOTE: the event carries
-    //this.position rather than the one captured before the change, which is
-    //the position the stone was just added to and no longer on the stack.
     if (typeof newNodeIndex !== 'undefined') {
       this.debug(`new node was created with index ${newNodeIndex}`)
-      this.handleNewSetupNodeCreation(newNodeIndex)
-      this.replaceLastPositionInStack(newPosition)
-      this.triggerEvent('positionChange', {position: this.position})
-      return
     }
 
-    //Just set stone on current position
-    this.position.stones.set(x, y, color)
+    //Advance onto the new node if there is one (a no-op otherwise), then put
+    //the validated position on the stack. NOTE: this happens on both paths,
+    //because that position is the one carrying whatever the setup stone
+    //captured. Setting the bare stone on the current position instead meant
+    //the same edit captured or didn't depending on the node it landed on.
+    this.handleNewSetupNodeCreation(newNodeIndex)
+    this.replaceLastPositionInStack(newPosition)
+
+    //NOTE: the event carries this.position rather than the one captured
+    //before the change, which is the position the stone was just added to and
+    //no longer on the stack.
     this.triggerEvent('positionChange', {position: this.position})
+    return true
   }
 
   /**

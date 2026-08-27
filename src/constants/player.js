@@ -19,6 +19,8 @@ export const playerModes = {
 export const editTools = {
 
   //Markup
+  //NOTE: the arrow names a markup type that is recognised but not
+  //implemented, so it is refused as a tool until there is something to draw
   TRIANGLE: markupTypes.TRIANGLE,
   CIRCLE: markupTypes.CIRCLE,
   SQUARE: markupTypes.SQUARE,

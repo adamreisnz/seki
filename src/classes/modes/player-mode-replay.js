@@ -341,7 +341,7 @@ export default class PlayerModeReplay extends PlayerMode {
   stopAutoPlay() {
 
     //Get data
-    const {player, autoPlayTimeout} = this
+    const {player, autoPlayTimeout, isAutoPlaying} = this
 
     //Clear timeout
     clearTimeout(autoPlayTimeout)
@@ -350,8 +350,13 @@ export default class PlayerModeReplay extends PlayerMode {
     this.isAutoPlaying = false
     this.autoPlayTimeout = null
 
-    //Trigger event
-    player.triggerEvent('autoPlayToggle', {isAutoPlaying: false})
+    //Trigger event, but only for a stop that stopped something. NOTE: this is
+    //stopped on deactivation and on teardown as a matter of course, and every
+    //handler that has one goes through both, so announcing it regardless
+    //meant a run of stops for auto play that was never running
+    if (isAutoPlaying) {
+      player.triggerEvent('autoPlayToggle', {isAutoPlaying: false})
+    }
   }
 
   /**

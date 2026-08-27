@@ -58,6 +58,36 @@ describe('Replay mode config listener', () => {
     replay.teardown()
     expect(vi.getTimerCount()).toBe(0)
   })
+
+  it('announces a stop that stopped auto play', () => {
+    const listener = vi.fn()
+    player.on('autoPlayToggle', listener)
+    replay.isAutoPlaying = true
+
+    replay.stopAutoPlay()
+
+    expect(listener).toHaveBeenCalledTimes(1)
+    expect(listener.mock.calls[0][0].detail).toEqual({isAutoPlaying: false})
+  })
+
+  it('says nothing about stopping auto play that was not running', () => {
+
+    //Deactivation and teardown both stop auto play as a matter of course, and
+    //every handler that has one goes through both
+    const listener = vi.fn()
+    player.on('autoPlayToggle', listener)
+
+    replay.stopAutoPlay()
+    expect(listener).not.toHaveBeenCalled()
+  })
+
+  it('stays quiet about auto play through a teardown', () => {
+    const listener = vi.fn()
+    player.on('autoPlayToggle', listener)
+
+    player.teardown()
+    expect(listener).not.toHaveBeenCalled()
+  })
 })
 
 describe('Replay mode analysis overlay', () => {

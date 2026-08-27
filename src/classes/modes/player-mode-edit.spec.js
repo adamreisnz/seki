@@ -114,18 +114,27 @@ describe('Edit mode teardown', () => {
     expect(() => edit.teardown()).not.toThrow()
   })
 
-  it('drops the buffer when the player is the one being torn down', () => {
+  it('flushes the buffer when the player is the one being torn down', () => {
 
-    //NOTE: pinning current behaviour, which is not what the flush above is
-    //for. The player flags itself as torn down before it reaches its mode
-    //handlers, and triggerEvent() on a torn down player is a no-op, so the
-    //flush runs but the event it emits goes nowhere. The buffered lines are
-    //lost exactly the way tearing down mid-stroke was meant to stop.
+    //The player flags itself as torn down only once its mode handlers have
+    //been through, so the flush the edit handler does on the way out still
+    //reaches whoever is listening
     const listener = vi.fn()
     player.on('edit', listener)
     edit.triggerAddLineEvent(0, 0, 1, 1, '#fff')
 
     player.teardown()
+    expect(listener).toHaveBeenCalledTimes(1)
+    expect(listener.mock.calls[0][0].detail.action).toBe('addLines')
+  })
+
+  it('still drops events raised after the player is torn down', () => {
+    const listener = vi.fn()
+    player.teardown()
+    player.on('edit', listener)
+
+    edit.triggerAddLineEvent(0, 0, 1, 1, '#fff')
+    edit.teardown()
     expect(listener).not.toHaveBeenCalled()
   })
 })
@@ -179,18 +188,33 @@ describe('Edit mode tool selection', () => {
     expect(listener.mock.calls[0][0].detail).toEqual({tool: editTools.CIRCLE})
   })
 
-  it('announces the stone toggle as the stone tool, not the colour it landed on', () => {
+  it('announces the colour the stone toggle landed on', () => {
 
-    //NOTE: pinning current behaviour. The event carries the tool that was
-    //asked for rather than this.tool, so a toolbar listening to it to light
-    //up the active tool is told 'stone' when the tool is now black.
+    //The event carries the tool that ended up active rather than the one
+    //asked for, so a toolbar listening to it to light up the active tool is
+    //told black rather than the toggle it was asked through
     const {player} = createPlayer()
     const listener = vi.fn()
     player.on('editToolChange', listener)
 
     player.setEditTool(editTools.STONE)
     expect(player.getEditTool()).toBe(editTools.BLACK)
-    expect(listener.mock.calls[0][0].detail).toEqual({tool: editTools.STONE})
+    expect(listener.mock.calls[0][0].detail).toEqual({tool: editTools.BLACK})
+  })
+
+  it('refuses a tool whose markup has no implementation', () => {
+
+    //The arrow is a recognised markup type with nothing to draw it, so it is
+    //turned away rather than becoming the active tool
+    const {player} = createPlayer()
+    const listener = vi.fn()
+    player.on('editToolChange', listener)
+
+    player.setEditTool(editTools.SQUARE)
+    player.setEditTool(editTools.ARROW)
+
+    expect(player.getEditTool()).toBe(editTools.SQUARE)
+    expect(listener).toHaveBeenCalledTimes(1)
   })
 
   it('clears the hover layer on every switch', () => {
@@ -522,18 +546,28 @@ describe('Edit mode stone editing', () => {
     expect(listener).not.toHaveBeenCalled()
   })
 
-  it('announces a stone the game refused to place', () => {
+  it('says nothing about a stone the game refused to place', () => {
 
-    //NOTE: pinning current behaviour. The game rejects a colour it doesn't
-    //know and leaves the position alone, but the mode emits the event
-    //regardless, so a peer instance is told about a stone that isn't there.
+    //The game rejects a colour it doesn't know and leaves the position alone,
+    //so there is nothing for a peer instance to be told about
     const {player, mode} = createPlayer()
     const listener = vi.fn()
     player.on('edit', listener)
 
     mode.addStone(4, 4, 'purple')
     expect(player.game.hasStone(4, 4)).toBe(false)
-    expect(listener).toHaveBeenCalledTimes(1)
+    expect(listener).not.toHaveBeenCalled()
+  })
+
+  it('says nothing about a stone that is already there', () => {
+    const {player, mode} = createPlayer()
+    mode.addStone(4, 4, BLACK)
+
+    const listener = vi.fn()
+    player.on('edit', listener)
+
+    mode.addStone(4, 4, BLACK)
+    expect(listener).not.toHaveBeenCalled()
   })
 })
 
@@ -631,18 +665,30 @@ describe('Edit mode markup editing', () => {
     expect(player.game.toSgf()).toContain('TR[ee]')
   })
 
-  it('throws on the arrow tool, having already written the markup', () => {
+  it('never lets the arrow tool write markup it cannot draw', () => {
 
-    //NOTE: pinning current behaviour, and it is a bug. Arrow counts as a
-    //markup tool and maps onto a markup type, but there is no arrow markup
-    //object to draw, so the board sync at the end of the edit throws — after
-    //the arrow has gone into the record. Nothing in the player selects this
-    //tool, so it is only reachable by setting it directly.
+    //Arrow maps onto a markup type with no markup object behind it, so the
+    //board sync at the end of an edit would throw with the arrow already in
+    //the record. The tool is refused instead, leaving the move tool in place
     const {player, mode} = createPlayer()
     player.setEditTool(editTools.ARROW)
 
-    expect(() => mode.edit(at(4, 4))).toThrow(/arrow/)
-    expect(player.game.hasMarkup(4, 4, markupTypes.ARROW)).toBe(true)
+    expect(() => mode.edit(at(4, 4))).not.toThrow()
+    expect(player.game.hasMarkup(4, 4, markupTypes.ARROW)).toBe(false)
+  })
+
+  it('turns away markup of a type there is nothing to draw', () => {
+
+    //The same guard on the record itself, as processEdit() reaches this
+    //directly with whatever type it is handed
+    const {player, mode} = createPlayer()
+    const listener = vi.fn()
+    player.on('edit', listener)
+
+    mode.addMarkup(4, 4, markupTypes.ARROW)
+
+    expect(player.game.hasMarkup(4, 4)).toBe(false)
+    expect(listener).not.toHaveBeenCalled()
   })
 })
 
@@ -862,17 +908,18 @@ describe('Edit mode setup stones', () => {
     expect(player.game.toSgf()).not.toContain('AB[')
   })
 
-  it('mutates the position in place when no new node is needed', () => {
+  it('replaces the position it is on when no new node is needed', () => {
 
-    //Setting up on a node that already holds setup instructions changes the
-    //position the game is already on, rather than stacking a new one
+    //Setting up on a node that already holds setup instructions replaces the
+    //position the game is on with the one the placement worked out, rather
+    //than stacking a new one on top of it
     const {player, mode} = createPlayer()
-    const position = player.game.getPosition()
+    const depth = player.game.positions.length
 
     mode.addStone(4, 4, BLACK)
 
-    expect(player.game.getPosition()).toBe(position)
-    expect(position.stones.get(4, 4)).toBe(BLACK)
+    expect(player.game.positions.length).toBe(depth)
+    expect(player.game.getPosition().stones.get(4, 4)).toBe(BLACK)
   })
 
   it('creates a node to hold the setup when the current node is a move', () => {
@@ -940,17 +987,14 @@ describe('Edit mode setup stones', () => {
     expect(player.game.hasStone(1, 1)).toBe(false)
   })
 
-  it('captures nothing when the node takes the setup instruction directly', () => {
+  it('captures the same when the node takes the setup instruction directly', () => {
 
-    //NOTE: pinning current behaviour, and it is a bug — in game.js rather
-    //than here. Both paths work the capture out, but only the one that
-    //creates a node puts the resulting position on the stack; the in place
-    //path drops it and sets the bare stone on the position it already has.
-    //So the same edit captures or doesn't depending on the node it lands on.
+    //Both paths work the capture out and both put the resulting position on
+    //the stack, so the same edit captures whichever node it lands on
     const {player, mode} = createPlayer('(;GM[1]FF[4]SZ[9]AB[bb]AW[ab][cb][ba])')
     mode.addStone(1, 2, WHITE)
 
-    expect(player.game.hasStone(1, 1)).toBe(true)
+    expect(player.game.hasStone(1, 1)).toBe(false)
   })
 
   it('leaves no ko point behind, whatever shape the capture makes', () => {
@@ -972,7 +1016,7 @@ describe('Edit mode setup stones', () => {
     mode.addStone(20, 20, BLACK)
 
     expect(player.game.getRootNode().setup).toBeUndefined()
-    expect(listener).toHaveBeenCalledTimes(1)
+    expect(listener).not.toHaveBeenCalled()
   })
 })
 
