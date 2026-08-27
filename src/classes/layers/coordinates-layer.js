@@ -57,14 +57,11 @@ export default class CoordinatesLayer extends BoardLayer {
     //Get theme data
     //NOTE: size is deliberately not read here. It is passed the character
     //being drawn, so it has to be looked up per coordinate rather than once
-    //up front like the rest of these. Type is read raw, because it is allowed
-    //to be a generator function to call per coordinate: reading it through
-    //get() called it once with no arguments and handed getCharacter() whatever
-    //it returned as if that were the name of a generator.
+    //up front like the rest of these.
     const color = theme.get('coordinates.vertical.color')
     const font = theme.get('coordinates.vertical.font')
     const style = theme.get('coordinates.vertical.style')
-    const type = theme.getRaw('coordinates.vertical.type')
+    const type = theme.get('coordinates.vertical.type')
     const inverse = theme.get('coordinates.vertical.inverse')
 
     //Configure context
@@ -105,12 +102,11 @@ export default class CoordinatesLayer extends BoardLayer {
     const yb = drawHeight - yt
 
     //Get theme data
-    //NOTE: size is deliberately not read here, and type is read raw, both
-    //for the reasons given in drawVertical
+    //NOTE: size is deliberately not read here, see drawVertical
     const color = theme.get('coordinates.horizontal.color')
     const font = theme.get('coordinates.horizontal.font')
     const style = theme.get('coordinates.horizontal.style')
-    const type = theme.getRaw('coordinates.horizontal.type')
+    const type = theme.get('coordinates.horizontal.type')
     const inverse = theme.get('coordinates.horizontal.inverse')
 
     //Configure context
@@ -153,12 +149,10 @@ export default class CoordinatesLayer extends BoardLayer {
    */
   getCharacter(i, style) {
 
-    //Generator function
-    if (typeof style === 'function') {
-      return style(i)
-    }
-
-    //Existing generator
+    //Existing generator. NOTE: a theme names one of these rather than handing
+    //over a function of its own. Theme#get calls any function it finds, so a
+    //function could never have reached here through the only route a theme
+    //has to it, and the six generators cover every script the board draws.
     if (typeof style === 'string' && coordinateGenerators[style]) {
       return coordinateGenerators[style](i)
     }

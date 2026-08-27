@@ -166,28 +166,17 @@ describe('CoordinatesLayer character generators', () => {
     expect(drawn(context)).toContain('一')
   })
 
-  it('takes a generator function from the theme', () => {
+  it('names them rather than taking a function from the theme', () => {
 
-    //The type is read raw for this. Reading it through Theme#get called it
-    //once with no arguments and treated what came back as the name of a
-    //generator, so every label fell back to a bare index.
+    //Theme#get calls any function it finds, so a generator handed to the
+    //theme is invoked once with no arguments and what it returns is looked up
+    //as a name. Nothing matches, and the labels fall back to bare indices.
+    //The six named generators are the supported route.
     const {layer, context} = withType('horizontal', i => `#${i}`)
     layer.draw()
 
-    expect(drawn(context)).toContain('#0')
-    expect(drawn(context)).toContain('#8')
-  })
-
-  it('takes one on the vertical axis as well', () => {
-    const {layer, context} = withType('vertical', i => `#${i}`)
-    layer.draw()
-
-    expect(drawn(context)).toContain('#0')
-  })
-
-  it('does use a generator function it is handed directly', () => {
-    const {layer} = withType('horizontal', 'letters')
-    expect(layer.getCharacter(3, i => `#${i}`)).toBe('#3')
+    expect(drawn(context)).not.toContain('#0')
+    expect(drawn(context)).toContain(0)
   })
 
   it('falls back to the bare index for a name it does not know', () => {

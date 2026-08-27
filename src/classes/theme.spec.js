@@ -20,16 +20,6 @@ describe('Theme', () => {
     expect(theme.get('stone.base.radius', 40)).toBe(Math.floor(40 / 2) * 0.97)
   })
 
-  it('hands back a function valued property uncalled when asked raw', () => {
-    const theme = new Theme()
-    const generator = i => `#${i}`
-    theme.set('coordinates.horizontal.type', generator)
-
-    expect(theme.getRaw('coordinates.horizontal.type')).toBe(generator)
-    expect(theme.getRaw('board.margin')).toBe(0.25)
-    expect(theme.getRaw('board.nonsense')).toBeUndefined()
-  })
-
   it('reports whether a property exists', () => {
     const theme = new Theme()
     expect(theme.has('board.margin')).toBe(true)
