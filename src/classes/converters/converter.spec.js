@@ -13,6 +13,12 @@ describe('Converter', () => {
     expect(converter.getMappedValue('green', map)).toBeUndefined()
   })
 
+  it('has nothing for a value named after an object prototype member', () => {
+    expect(converter.getMappedValue('constructor', map)).toBeUndefined()
+    expect(converter.getMappedValue('toString', map)).toBeUndefined()
+    expect(converter.getMappedValue('constructor', map, true)).toBeUndefined()
+  })
+
   it('maps a value through the inverted map', () => {
     expect(converter.getMappedValue('B', map, true)).toBe('black')
     expect(converter.getMappedValue('Z', map, true)).toBeUndefined()

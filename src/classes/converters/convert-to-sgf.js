@@ -430,9 +430,19 @@ export default class ConvertToSgf extends Converter {
     //Loop over markup instructions
     for (const obj of markup) {
 
-      //Get SGF markup type and extract coordinates
-      const isLabel = (obj.type === markupTypes.LABEL)
+      //Get SGF markup type. NOTE: a type with no property of its own is
+      //skipped rather than written, as an undefined key would otherwise be
+      //grouped under and land in the record as the property identifier
+      //`undefined`. The display markup the player generates is in here, as
+      //are the arrow and the line until SGF can be written for them
       const key = this.getMappedValue(obj.type, sgfMarkupTypes)
+      if (!key) {
+        console.warn(`Unsupported markup type encountered while writing SGF: ${obj.type}`)
+        continue
+      }
+
+      //Extract coordinates
+      const isLabel = (obj.type === markupTypes.LABEL)
       const coords = this.extractCoordinates(obj.coords, isLabel)
 
       //Initialise group

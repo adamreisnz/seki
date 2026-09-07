@@ -4,6 +4,7 @@ import ConvertToSgf from './convert-to-sgf.js'
 import Game from '../game.js'
 import GameNode from '../game-node.js'
 import {stoneColors} from '../../constants/stone.js'
+import {markupTypes} from '../../constants/markup.js'
 import {sgfGameInfoAccessors} from '../../constants/sgf.js'
 import {get} from '../../helpers/object.js'
 import {loadFixture, loadFixtureBytes} from '../../../test/fixtures.js'
@@ -72,6 +73,12 @@ describe('SGF round trip', () => {
 
   it('round trips markup', () => {
     const game = parse('(;FF[4]SZ[19];B[dd]TR[aa]CR[bb]LB[cc:A])')
+    const reparsed = parse(write(game))
+    expect(reparsed.root.getChild(0).markup).toEqual(game.root.getChild(0).markup)
+  })
+
+  it('round trips the private diamond, happy and sad markup', () => {
+    const game = parse('(;FF[4]SZ[19];B[dd]MD[aa]MH[bb]MS[cc])')
     const reparsed = parse(write(game))
     expect(reparsed.root.getChild(0).markup).toEqual(game.root.getChild(0).markup)
   })
@@ -662,5 +669,44 @@ describe('SGF round trips every fixture record', () => {
     for (const {path} of Object.values(sgfGameInfoAccessors)) {
       expect(get(copy.getInfo(), path), path).toEqual(get(game.getInfo(), path))
     }
+  })
+})
+
+describe('SGF export of markup a property cannot be written for', () => {
+
+  const writeMarkup = markup => {
+    const game = new Game()
+    new GameNode({markup}).appendToParent(game.root)
+    return write(game)
+  }
+
+  it('writes the diamond as the private MD property', () => {
+    const sgf = writeMarkup([{type: markupTypes.DIAMOND, coords: [{x: 3, y: 3}]}])
+    expect(sgf).toContain('MD[dd]')
+  })
+
+  it('skips a markup type with no SGF property rather than writing undefined', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => null)
+    const sgf = writeMarkup([
+      {type: markupTypes.VARIATION, coords: [{x: 3, y: 3}]},
+      {type: markupTypes.CIRCLE, coords: [{x: 5, y: 5}]},
+    ])
+
+    expect(sgf).not.toContain('undefined')
+    expect(sgf).toContain('CR[ff]')
+    expect(warn).toHaveBeenCalledWith(
+      'Unsupported markup type encountered while writing SGF: variation'
+    )
+  })
+
+  it('skips the arrow and the line, which SGF has no single point form for', () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => null)
+    const sgf = writeMarkup([
+      {type: markupTypes.ARROW, coords: [{x: 3, y: 3}]},
+      {type: markupTypes.LINE, coords: [{x: 5, y: 5}]},
+    ])
+
+    expect(sgf).not.toContain('AR[')
+    expect(sgf).not.toContain('LN[')
   })
 })

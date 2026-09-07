@@ -143,6 +143,15 @@ describe('ConvertFromSgf, compressed point lists', () => {
     ])
   })
 
+  it('reads the private diamond, happy and sad properties', () => {
+    const game = parse('(;FF[4]SZ[9]MD[aa]MH[bb]MS[cc])')
+    expect(game.root.markup).toEqual([
+      {type: markupTypes.DIAMOND, coords: [{x: 0, y: 0}]},
+      {type: markupTypes.HAPPY, coords: [{x: 1, y: 1}]},
+      {type: markupTypes.SAD, coords: [{x: 2, y: 2}]},
+    ])
+  })
+
   it('expands a rectangle of territory', () => {
     const game = parse('(;FF[4]SZ[9]TW[aa:ab])')
     expect(game.root.score).toEqual([
