@@ -226,4 +226,5 @@ export const jgfNodeFields = [
   'name',
   'comments',
   'solution',
+  'moveNumber',
 ]

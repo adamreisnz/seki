@@ -26,55 +26,55 @@
   "source": {
 
     //The name of the source
-		"name": "Go magazine",
+    "name": "Go magazine",
 
     //The URL of the source, if applicable
     "url": "https://gomagazine.example.org/kifu/123",
 
-		//Any copyright notice
-		"copyright": "Copyright 2014",
+    //Any copyright notice
+    "copyright": "Copyright 2014",
   },
 
-	//Game information
-	"game": {
+  //Game information
+  "game": {
 
-		//The type of game
-		"type": "go",
+    //The type of game
+    "type": "go",
 
-		//The game name
-		"name": "Lee Sedol beats Lee Chang-Ho",
+    //The game name
+    "name": "Lee Sedol beats Lee Chang-Ho",
 
-		//The game result, using the following format:
-		//
-		//  W+4.5 (white wins by 4.5 points)
-		//  B+R (black wins by resignation)
-		//  W+T (white wins by time)
-		//  B+F (black wins by forfeit)
-		//  0 (draw / jigo)
-		//  Void (game was void)
-		//  ? (unknown result)
-		//  <empty string> (no result or suspended play)
-		//
-		"result": "W+4.5",
+    //The game result, using the following format:
+    //
+    //  W+4.5 (white wins by 4.5 points)
+    //  B+R (black wins by resignation)
+    //  W+T (white wins by time)
+    //  B+F (black wins by forfeit)
+    //  0 (draw / jigo)
+    //  Void (game was void)
+    //  ? (unknown result)
+    //  <empty string> (no result or suspended play)
+    //
+    "result": "W+4.5",
 
     //Date this game was played on in ISO format
     "date": "2023-06-12",
 
-		//If played on more than one date, specify an array of date values
-		"dates": [
+    //If played on more than one date, specify an array of date values
+    "dates": [
       "2011-04-22",
       "2011-04-23"
     ],
 
-		//Opening used
-		"opening": "Low chinese",
+    //Opening used
+    "opening": "Low chinese",
 
-		//The annotator/commentator of the game
-		"annotator": "An Younggil",
+    //The annotator/commentator of the game
+    "annotator": "An Younggil",
 
-		//General game description
-		"description": "This is a general description about this game"
-	},
+    //General game description
+    "description": "This is a general description about this game"
+  },
 
   //Players involved
   "players": [
@@ -109,20 +109,20 @@
   "event": {
 
     //The name of the event this game was played fo
-		"name": "3rd Fujitsu cup",
+    "name": "3rd Fujitsu cup",
 
     //Where the event was held
-		"location": "Seoul",
+    "location": "Seoul",
 
-		//The round of the event
-		"round": "Semi finals",
+    //The round of the event
+    "round": "Semi finals",
   },
 
   //Game rules
   "rules": {
 
     //The ruleset used
-		"ruleset": "Japanese",
+    "ruleset": "Japanese",
 
     //Whether suicide moves are allowed
     "allowSuicide": false,
@@ -131,10 +131,10 @@
     "disallowRepeats": false,
 
     //Komi used (can be negative)
-		"komi": 6.5,
+    "komi": 6.5,
 
-		//Handicap used (does not imply any particular way of handicap stone placement)
-		"handicap": 0,
+    //Handicap used (does not imply any particular way of handicap stone placement)
+    "handicap": 0,
 
     //Main time (in seconds)
     "time": 7200,
@@ -143,26 +143,26 @@
     "overtime": "3x20 byo-yomi",
   },
 
-	//Board properties
-	"board": {
+  //Board properties
+  "board": {
 
     //Board size (if square)
     "size": 19,
 
-		//The board size can also specified by width and height separately, to
-		//allow support for non-square boards
-		"width": 19,
-		"height": 19,
+    //The board size can also specified by width and height separately, to
+    //allow support for non-square boards
+    "width": 19,
+    "height": 19,
 
-		//Cut-off part of the grid (for displaying problems)
+    //Cut-off part of the grid (for displaying problems)
     "cutOffTop": 5, //Will cut off 5 rows from the top
     "cutOffBottom": 0,
     "cutOffLeft": 10, //Will cut off 10 columns from the left
     "cutOffRight": 0,
-	},
+  },
 
   //Instructions for the game record player
-	"settings": {
+  "settings": {
 
     //Show the last played move
     "showLastMove": false,
@@ -171,105 +171,117 @@
     "showNextMove": false,
 
     //Show solutions for problems
-		"showSolutions": false,
+    "showSolutions": false,
 
-		//Show child variations of current node
-		"showVariations": true,
+    //Show child variations of current node
+    "showVariations": true,
 
-		//Show sibling variations of current node
-		"showSiblingVariations": false,
+    //Show sibling variations of current node
+    "showSiblingVariations": false,
 
     //Remember variation paths taken
     "rememberVariationPaths": true,
 
     //...extensible with other custom instructions that can be consumed by players
-	},
+  },
 
   //Meta data for any other information to be saved with the record
   "meta": {
     "foo": "Bar",
   },
 
-	//Moves tree
-	"tree": [
+  //Moves tree
+  "tree": [
 
-		//First (root) node may contain comments, board setup or just a blank board.
-		//It cannot contain moves or variations
-		{
+    //First (root) node may contain comments, board setup or just a blank board.
+    //It cannot contain moves or variations
+    {
 
-			//Comments are placed in an array
-			"comments": [
-				"These are comments shown at the start of the game.",
-				"Every separate comment has it's own entry.",
-			]
-		},
+      //Comments are placed in an array
+      "comments": [
+        "These are comments shown at the start of the game.",
+        "Every separate comment has it's own entry.",
+      ]
+    },
 
-		//Second node and onwards contain moves, setup instructions or variations.
-		//Moves are indicated by the color of the player whose turn it was and the
-		//move coordinates. Move coordinates are an array with the X and Y coordinate.
-		{
-			"move": {
+    //Second node and onwards contain moves, setup instructions or variations.
+    //Moves are indicated by the color of the player whose turn it was and the
+    //move coordinates. Move coordinates are an array with the X and Y coordinate.
+    {
+      "move": {
         "color": "black",
         "x": 2,
         "y": 3,
       }
-		},
+    },
 
-		//Pass moves are indicated with a "pass" flag
-		{
+    //Pass moves are indicated with a "pass" flag
+    {
       "move": {
         "color": "white",
         "pass": true,
       }
-		},
+    },
 
     //You can specify remaining time & byo-yomi periods per move
     {
-			"move": {
+      "move": {
         "color": "black",
         "x": 2,
         "y": 3,
         "timeLeft": 345, //seconds
         "periodsLeft": 3,
       }
-		},
+    },
 
-		//A move node may contain other annotation as well, like comments or markup
-		{
-			"move": {
+    //A move node may contain other annotation as well, like comments or markup
+    {
+      "move": {
         "color": "black",
         "x": 2,
         "y": 4,
       },
-			"comments": [
+      "comments": [
         "Move comment",
         "Another comment"
       ]
-		},
+    },
 
-		//A node can be named using the name property
-		{
-			"name": "Node name",
+    //A move can state its own number, for a record that holds only part of
+    //a game, or a diagram that starts its numbering somewhere else. The
+    //moves after it count on from there. This is the SGF MN property.
+    {
+      "moveNumber": 112,
+      "move": {
+        "color": "white",
+        "x": 15,
+        "y": 3,
+      }
+    },
+
+    //A node can be named using the name property
+    {
+      "name": "Node name",
       "move": {
         "color": "white",
         "x": 15,
         "y": 15,
       }
-		},
+    },
 
-		//Markup can be added to any node
-		{
+    //Markup can be added to any node
+    {
       "move": {
         "color": "black",
         "x": 3,
         "y": 15,
       },
 
-			//Markup is contained in its own array container
-			"markup": [
+      //Markup is contained in its own array container
+      "markup": [
 
         //Default types are "circle", "triangle", "square", "mark", "label" and "selected".
-				//However, any other type can be specified in order to store custom markup types.
+        //However, any other type can be specified in order to store custom markup types.
         {
           "type": "triangle",
           "coords": [
@@ -294,12 +306,12 @@
           ],
         },
       ],
-		},
+    },
 
-		//Setup instructions always get their own node and cannot be combined with moves.
-		{
-			//Setup positions are indicated with color as type
-			"setup": [
+    //Setup instructions always get their own node and cannot be combined with moves.
+    {
+      //Setup positions are indicated with color as type
+      "setup": [
         {
           "type": "black",
           "coords": [
@@ -322,20 +334,20 @@
             {"x": 7, "y": 18},
           ],
         }
-			],
+      ],
 
-			//The player turn can be specified in setup nodes as well.
-			"turn": "white"
-		},
+      //The player turn can be specified in setup nodes as well.
+      "turn": "white"
+    },
 
-		//When scoring a position, a scoring node is used
-		{
+    //When scoring a position, a scoring node is used
+    {
 
-			//Scoring instructions indicate black and white territory.
-			//These points must be unique and can overlap existing stones.
-			//For japanese scoring, existing (living) stone positions can be
-			//excluded. For chinese scoring, they can be included.
-			"score": [
+      //Scoring instructions indicate black and white territory.
+      //These points must be unique and can overlap existing stones.
+      //For japanese scoring, existing (living) stone positions can be
+      //excluded. For chinese scoring, they can be included.
+      "score": [
         {
           "color": "black",
           "coords": [
@@ -353,19 +365,19 @@
           ],
         },
       ],
-		},
+    },
 
-		//For problems, a node with the correct solution can be marked as follows
-		{
-			"solution": true,
+    //For problems, a node with the correct solution can be marked as follows
+    {
+      "solution": true,
       "move": {
         "color": "white",
         "x": 15,
         "y": 6,
       },
-		},
+    },
 
-		//Variations are contained in a variations node
+    //Variations are contained in a variations node
     {
       "variations": [
         //Each variation's nodes are contained in a child moves container.
@@ -406,6 +418,6 @@
         ]
       ]
     },
-	]
+  ]
 };
 ````

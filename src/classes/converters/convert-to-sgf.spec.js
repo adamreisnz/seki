@@ -579,6 +579,64 @@ describe('ConvertToSgf, comments and node names', () => {
   })
 })
 
+describe('ConvertToSgf, the move numbers it writes', () => {
+
+  it('writes a move number that was set on a node', () => {
+    const game = new Game({board: {size: 9}})
+    game.playMove(2, 2)
+    game.getCurrentNode().moveNumber = 50
+
+    expect(write(game)).toContain('MN[50]')
+  })
+
+  it('writes no move number on a move that was never given one', () => {
+
+    //Every move node would otherwise carry an MN saying what the tree already
+    //says, on every record seki writes
+    const game = new Game({board: {size: 9}})
+    game.playMove(2, 2)
+    game.playMove(3, 3)
+
+    expect(write(game)).not.toContain('MN[')
+  })
+
+  it('writes nothing for a move number that is not a number', () => {
+    const game = new Game({board: {size: 9}})
+    game.playMove(2, 2)
+    game.getCurrentNode().moveNumber = 'fifty'
+
+    expect(write(game)).not.toContain('MN[')
+  })
+
+  it('round trips a move number and what it renumbers', () => {
+    const game = parse('(;FF[4]SZ[19];B[dd];MN[112]W[pp];B[pd])')
+    const reparsed = parse(write(game))
+    const second = reparsed.root.getChild(0).getChild(0)
+
+    expect(second.moveNumber).toBe(112)
+    expect(second.getMoveNumber()).toBe(112)
+    expect(second.getChild(0).getMoveNumber()).toBe(113)
+  })
+
+  it('round trips a move number on one variation only', () => {
+    const sgf = '(;FF[4]SZ[19];B[dd](;MN[10]W[pp];B[pd])(;W[pd];B[pp]))'
+    const reparsed = parse(write(parse(sgf)))
+    const [numbered, plain] = reparsed.root.getChild(0).children
+
+    expect(numbered.getMoveNumber()).toBe(10)
+    expect(plain.getMoveNumber()).toBe(2)
+  })
+
+  it('round trips the move numbers of the FF[4] example record', () => {
+
+    //The record is a collection, so convert() warns about the game it drops
+    vi.spyOn(console, 'warn').mockImplementation(vi.fn())
+    const sgf = write(parse(loadFixture('sgf/ff4_ex.sgf')))
+
+    expect(sgf.match(/MN\[\d+\]/g)).toEqual(['MN[2]', 'MN[112]'])
+  })
+})
+
 describe('ConvertToSgf, the variation settings it writes', () => {
 
   //ST is a two bit field: bit one is whether siblings are shown, bit two is

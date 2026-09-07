@@ -24,6 +24,7 @@ const gameInfoConversionMap = {
 const nodeParsingMap = {
   name: 'parseNodeName',
   move: 'parseMove',
+  moveNumber: 'parseMoveNumber',
   markup: 'parseMarkup',
   setup: 'parseSetup',
   score: 'parseScore',
@@ -510,6 +511,20 @@ export default class ConvertToSgf extends Converter {
 
     //Make group
     return this.makeSgfGroup('C', comments, true)
+  }
+
+  /**
+   * Move number parser
+   *
+   * NOTE: only a node that was given a number of its own gets an MN. Writing
+   * one on every move would say the same thing the tree already says, at the
+   * cost of a property per move on every record seki writes.
+   */
+  parseMoveNumber(moveNumber) {
+    if (typeof moveNumber !== 'number') {
+      return ''
+    }
+    return this.makeSgfGroup('MN', moveNumber)
   }
 
   /**

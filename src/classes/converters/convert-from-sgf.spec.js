@@ -934,6 +934,86 @@ describe('ConvertFromSgf, the FF[4] specification examples', () => {
   })
 })
 
+describe('ConvertFromSgf, the move numbers it reads', () => {
+
+  it('reads a move number onto the move it belongs to', () => {
+    const game = parse('(;FF[4]SZ[19];MN[50]B[dd];W[pp])')
+    const first = game.root.getChild(0)
+
+    expect(first.moveNumber).toBe(50)
+    expect(first.getMoveNumber()).toBe(50)
+    expect(first.getChild(0).getMoveNumber()).toBe(51)
+  })
+
+  it('reads a move number written after the move in the same node', () => {
+
+    //The FF[4] examples write it both ways round, and SGF gives no meaning to
+    //the order properties appear in within a node
+    const game = parse('(;FF[4]SZ[19];B[dd]MN[50];W[pp])')
+    expect(game.root.getChild(0).getMoveNumber()).toBe(50)
+  })
+
+  it('reads a move number partway down a branch', () => {
+    const game = parse('(;FF[4]SZ[19];B[dd];W[pp];MN[112]B[pd];W[dp])')
+    const third = game.root.getChild(0).getChild(0).getChild(0)
+
+    expect(third.getMoveNumber()).toBe(112)
+    expect(third.getChild(0).getMoveNumber()).toBe(113)
+  })
+
+  it('reads a move number on one variation without touching the other', () => {
+    const game = parse('(;FF[4]SZ[19];B[dd](;MN[10]W[pp];B[pd])(;W[pd];B[pp]))')
+    const first = game.root.getChild(0)
+    const [numbered, plain] = first.children
+
+    expect(numbered.getMoveNumber()).toBe(10)
+    expect(numbered.getChild(0).getMoveNumber()).toBe(11)
+    expect(plain.getMoveNumber()).toBe(2)
+    expect(plain.getChild(0).getMoveNumber()).toBe(3)
+  })
+
+  it('warns about a move number that is not a number, and keeps counting', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(vi.fn())
+    const game = parse('(;FF[4]SZ[19];MN[later]B[dd])')
+    const first = game.root.getChild(0)
+
+    expect(first.moveNumber).toBeUndefined()
+    expect(first.getMoveNumber()).toBe(1)
+    expect(warn).toHaveBeenCalledWith(
+      expect.stringContaining('Invalid move number'), 'later'
+    )
+  })
+
+  it('warns about a negative move number rather than renumbering backwards', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(vi.fn())
+    const game = parse('(;FF[4]SZ[19];MN[-4]B[dd])')
+
+    expect(game.root.getChild(0).moveNumber).toBeUndefined()
+    expect(warn).toHaveBeenCalled()
+  })
+
+  it('reads the move numbers the FF[4] example sets', () => {
+
+    //The record is a collection, so convert() warns about the game it drops
+    vi.spyOn(console, 'warn').mockImplementation(vi.fn())
+    const game = parse(loadFixture('sgf/ff4_ex.sgf'))
+
+    //Its move number branch sets MN[2] on one move and MN[112] on a later
+    //one, both of which say so in their own comments
+    const numbered = []
+    const walk = node => {
+      if (typeof node.moveNumber !== 'undefined') {
+        numbered.push(node)
+      }
+      node.children.forEach(walk)
+    }
+    walk(game.getRootNode())
+
+    expect(numbered.map(node => node.getMoveNumber())).toEqual([2, 112])
+    expect(numbered[1].getChild(0).getMoveNumber()).toBe(113)
+  })
+})
+
 describe('ConvertFromSgf, a record that is not UTF-8', () => {
 
   //See test/fixtures/README.md for where this record came from, and

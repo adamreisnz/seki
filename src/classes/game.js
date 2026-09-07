@@ -1326,16 +1326,16 @@ export default class Game extends Base {
    */
   resetCurrentPathIndex() {
 
-    //The choice to forget is the one recorded at the move we're on, being the
+    //The choice to forget is the one recorded at the node we're on, being the
     //step from here to the next node, which is the same thing the path index
     //below is reset to. The choices that got us here are left alone, as the
     //path still has to describe where we are. NOTE: this used to call
     //forgetPathChoice() with no arguments, which looked up path[undefined].
-    const moveNo = this.path.getMoveNumber()
+    const depth = this.path.getDepth()
 
     //Reset
     this.node.setPathIndex(0)
-    this.path.forgetPathChoice(moveNo)
+    this.path.forgetPathChoice(depth)
   }
 
   /**
@@ -1361,6 +1361,11 @@ export default class Game extends Base {
 
   /**
    * Get the number of moves in the main branch
+   *
+   * NOTE: this counts the moves, and says nothing about what any of them is
+   * numbered. MN renumbers moves without adding or removing any, so a record
+   * can hold more moves than its highest move number, or start numbering well
+   * above its own move count. Use getHighestMoveNumber() for the numbers.
    */
   getTotalNumberOfMoves() {
     let node = this.root
@@ -1375,17 +1380,53 @@ export default class Game extends Base {
   }
 
   /**
+   * Get the highest move number reported in the main branch
+   */
+  getHighestMoveNumber() {
+    let node = this.root
+    let m = 0
+    let highest = 0
+    while (node) {
+      m = node.getMoveNumberAfter(m)
+      if (node.isMove() && m > highest) {
+        highest = m
+      }
+      node = node.getPathNode()
+    }
+    return highest
+  }
+
+  /**
+   * Get the last move node in the main branch
+   */
+  getLastMoveNode() {
+    let node = this.root
+    let last = null
+    while (node) {
+      if (node.isMove()) {
+        last = node
+      }
+      node = node.getPathNode()
+    }
+    return last
+  }
+
+  /**
    * Get node for a certain move number
+   *
+   * The number asked for is the one a move reports, so in a record carrying
+   * MN properties there may be no move with it at all, the record having
+   * renumbered straight past it. That comes back as nothing found, rather
+   * than as the nearest move, because landing somewhere the caller didn't ask
+   * for is worse than not moving.
    */
   findNodeForMoveNumber(number) {
     let node = this.root
     let m = 0
     while (node) {
-      if (node.isMove()) {
-        m++
-        if (m === number) {
-          return node
-        }
+      m = node.getMoveNumberAfter(m)
+      if (node.isMove() && m === number) {
+        return node
       }
       node = node.getPathNode()
     }
@@ -1408,10 +1449,22 @@ export default class Game extends Base {
       return new GamePath()
     }
 
-    //Clamp to what the game actually has, so asking for more moves than there
-    //are still gets you as far as it goes
-    const total = this.getTotalNumberOfMoves()
-    const node = this.findNodeForMoveNumber(Math.min(number, total))
+    //The move that says it is this number
+    let node = this.findNodeForMoveNumber(number)
+
+    //None does, and the number is past every number the record uses, so this
+    //is a caller asking for more than the record holds. That still gets you as
+    //far as it goes, which is what it always did. A number the record merely
+    //renumbered past gets nothing, as no move carries it.
+    //NOTE: this used to clamp the number against getTotalNumberOfMoves() and
+    //look up the result. That only holds while a move's number and its place
+    //in the branch are the same thing. MN is free to number backwards, and
+    //ff4_ex.sgf does exactly that, so a record can hold more moves than its
+    //highest number and the clamp then stopped short of the end, or landed on
+    //an earlier move than the one asked for.
+    if (!node && number > this.getHighestMoveNumber()) {
+      node = this.getLastMoveNode()
+    }
 
     //NOTE: this used to build a path whose length was the move number itself.
     //A path counts nodes, not moves, so any node in the line that isn't a move
@@ -1460,9 +1513,9 @@ export default class Game extends Base {
 
     //Walk the tree, following the child index chosen at each step
     let node = this.root
-    const n = path.getMoveNumber()
-    for (let m = 0; m < n; m++) {
-      node = node.getChild(path.indexAtMove(m))
+    const n = path.getDepth()
+    for (let d = 0; d < n; d++) {
+      node = node.getChild(path.indexAtDepth(d))
       if (!node) {
         return null
       }
@@ -2217,11 +2270,11 @@ export default class Game extends Base {
     this.goToFirstPosition()
 
     //Loop path
-    const n = path.getMoveNumber()
-    for (let m = 0; m < n; m++) {
+    const n = path.getDepth()
+    for (let d = 0; d < n; d++) {
 
       //Try going to the next node
-      const i = path.indexAtMove(m)
+      const i = path.indexAtDepth(d)
       if (!this.goToNextNode(i)) {
         break
       }

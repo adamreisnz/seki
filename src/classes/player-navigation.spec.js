@@ -260,7 +260,7 @@ describe('Player variations', () => {
 
     const {action, args} = listener.mock.calls[0][0].detail
     expect(action).toBe('makeMainVariation')
-    expect(args[0]).toEqual({moveNo: 3, path: {2: 1}, branches: 1})
+    expect(args[0]).toEqual({depth: 3, path: {2: 1}, branches: 1})
   })
 
   it('removes a node', () => {
@@ -284,7 +284,7 @@ describe('Player variations', () => {
 
     const {action, args} = listener.mock.calls[0][0].detail
     expect(action).toBe('removeNode')
-    expect(args[0]).toEqual({moveNo: 3, path: {}, branches: 0})
+    expect(args[0]).toEqual({depth: 3, path: {}, branches: 0})
   })
 })
 
