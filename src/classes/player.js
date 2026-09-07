@@ -1011,7 +1011,7 @@ export default class Player extends Base {
     //deactivated during teardown. Setting the mode again is no help, as that
     //is a no-op for the mode that is already the active one. Done after the
     //position is back, so that the markers a mode renders survive.
-    const currentHandler = this.getCurrentModeHandler()
+    const currentHandler = this.getMode()
     if (currentHandler) {
       currentHandler.activate()
     }
