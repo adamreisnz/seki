@@ -1361,14 +1361,17 @@ export default class Game extends Base {
 
   /**
    * Get the number of moves in the main branch
+   *
+   * NOTE: this is the number the last move on the branch reports, rather than
+   * a count of the move nodes on it. In a record that renumbers itself with
+   * MN the two differ, and it is the reported number that has to be handed
+   * back, so that it and findNodeForMoveNumber() speak the same language.
    */
   getTotalNumberOfMoves() {
     let node = this.root
     let m = 0
     while (node) {
-      if (node.isMove()) {
-        m++
-      }
+      m = node.getMoveNumberAfter(m)
       node = node.getPathNode()
     }
     return m
@@ -1376,16 +1379,20 @@ export default class Game extends Base {
 
   /**
    * Get node for a certain move number
+   *
+   * The number asked for is the one a move reports, so in a record carrying
+   * MN properties there may be no move with it at all, the record having
+   * renumbered straight past it. That comes back as nothing found, rather
+   * than as the nearest move, because landing somewhere the caller didn't ask
+   * for is worse than not moving.
    */
   findNodeForMoveNumber(number) {
     let node = this.root
     let m = 0
     while (node) {
-      if (node.isMove()) {
-        m++
-        if (m === number) {
-          return node
-        }
+      m = node.getMoveNumberAfter(m)
+      if (node.isMove() && m === number) {
+        return node
       }
       node = node.getPathNode()
     }

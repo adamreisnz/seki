@@ -306,4 +306,42 @@ describe('JGF node contents round trip', () => {
       {color: stoneColors.BLACK, coords: [{x: 1, y: 1}]},
     ])
   })
+
+  it('carries a move number across, and what it renumbers', () => {
+    const node = roundTrip(game => {
+      game.playMove(2, 2)
+      game.getCurrentNode().moveNumber = 112
+      game.playMove(3, 3)
+    })
+
+    expect(node.getMoveNumber()).toBe(113)
+    expect(node.getParent().moveNumber).toBe(112)
+  })
+
+  it('leaves the key out for a move that was never given a number', () => {
+    const game = new Game({board: {size: 9}})
+    game.playMove(2, 2)
+    const jgf = JSON.parse(new ConvertToJgf().convert(game))
+
+    expect(jgf.tree.at(-1)).not.toHaveProperty('moveNumber')
+  })
+
+  it('carries a move number on one variation only', () => {
+    const game = new Game({board: {size: 9}})
+    game.playMove(2, 2)
+    const fork = game.getCurrentNode()
+
+    const numbered = new GameNode({move: {x: 3, y: 3, color: stoneColors.WHITE}})
+    numbered.moveNumber = 10
+    numbered.appendToParent(fork)
+    const plain = new GameNode({move: {x: 4, y: 4, color: stoneColors.WHITE}})
+    plain.appendToParent(fork)
+
+    const jgf = new ConvertToJgf().convert(game)
+    const parsed = new ConvertFromJgf().convert(jgf)
+    const [a, b] = parsed.getRootNode().getChild(0).children
+
+    expect(a.getMoveNumber()).toBe(10)
+    expect(b.getMoveNumber()).toBe(2)
+  })
 })

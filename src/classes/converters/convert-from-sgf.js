@@ -27,7 +27,7 @@ import {
 const regexLowerCase = /[a-z]/g
 
 //Regexes
-const regexCutOff = /^\d+$/
+const regexWholeNumber = /^\d+$/
 const regexBlackPlayer = /PB|BT|BR|BL|OB/i
 const regexWhitePlayer = /PW|WT|WR|WL|OW/i
 
@@ -79,6 +79,7 @@ const parsingMap = {
   //Moves
   B: 'parseMove',
   W: 'parseMove',
+  MN: 'parseMoveNumber',
 
   //Node annotation
   C: 'parseComment',
@@ -551,6 +552,29 @@ export default class ConvertFromSgf extends Converter {
   }
 
   /**
+   * Move number parser function
+   *
+   * MN says the move recorded in this node is numbered n, whatever the moves
+   * before it were, and that the moves after it carry on from there. It is
+   * what lets a record hold a fragment of a game and still report the real
+   * numbers, and it changes nothing about the tree itself.
+   */
+  parseMoveNumber(info, node, key, values) {
+
+    //Only a plain whole number says anything. Anything else, a negative one
+    //included, would renumber the record into nonsense, so it is left out
+    //rather than stored
+    const number = String(values[0]).trim()
+    if (!regexWholeNumber.test(number)) {
+      console.warn(`Invalid move number encountered while parsing SGF: ${key} =>`, values[0])
+      return
+    }
+
+    //Set on node
+    node.moveNumber = parseInt(number, 10)
+  }
+
+  /**
    * Time left
    */
   parseTimeLeft(info, node, key, values) {
@@ -884,7 +908,7 @@ export default class ConvertFromSgf extends Converter {
     //Not a cut off value, leave it alone
     const side = key.charAt(1)
     const cutOff = values[0].trim()
-    if (!regexCutOff.test(cutOff)) {
+    if (!regexWholeNumber.test(cutOff)) {
       if (this.verbose) {
         console.warn(`Ignoring ${key} property, which is not a cut off value:`, values[0])
       }

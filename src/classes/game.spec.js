@@ -1746,6 +1746,114 @@ describe('Game.goToMoveNumber()', () => {
   })
 })
 
+describe('Game move numbers with MN in the record', () => {
+
+  //A fragment of a game, numbered from where the fragment starts. MN says the
+  //move it sits on is number 50, and the moves after it carry on from there
+  const createFragment = () => Game.fromSgf(
+    '(;GM[1]FF[4]SZ[19];MN[50]B[dd];W[pp];B[dp])'
+  )
+
+  it('reports the number the record gives a move, not its depth', () => {
+    const game = createFragment()
+
+    game.goToLastPosition()
+    expect(game.getCurrentMoveNumber()).toBe(52)
+  })
+
+  it('counts the total up to the last move the record names', () => {
+
+    //NOTE: this is the number the last move reports rather than a count of
+    //the moves, so that it and findNodeForMoveNumber() speak the same
+    //language. A fragment of three moves numbered from 50 ends at 52
+    expect(createFragment().getTotalNumberOfMoves()).toBe(52)
+  })
+
+  it('finds a node by the number the record gives it', () => {
+    const game = createFragment()
+
+    expect(game.findNodeForMoveNumber(50).move).toMatchObject({x: 3, y: 3})
+    expect(game.findNodeForMoveNumber(52).move).toMatchObject({x: 3, y: 15})
+  })
+
+  it('finds nothing for a number the record renumbered past', () => {
+
+    //The record starts at 50, so there is no move 1 in it at all. Handing
+    //back the nearest move instead would land the caller somewhere they
+    //didn't ask for
+    const game = createFragment()
+
+    expect(game.findNodeForMoveNumber(1)).toBeUndefined()
+    expect(game.findNodeForMoveNumber(49)).toBeUndefined()
+  })
+
+  it('navigates to the number the record gives a move', () => {
+    const game = createFragment()
+
+    game.goToMoveNumber(51)
+    expect(game.getCurrentMoveNumber()).toBe(51)
+    expect(game.getCurrentNode().move).toMatchObject({x: 15, y: 15})
+  })
+
+  it('agrees with findNodeForMoveNumber over the whole record', () => {
+    const game = createFragment()
+    const total = game.getTotalNumberOfMoves()
+
+    for (const n of [50, 51, total]) {
+      game.goToMoveNumber(n)
+      expect(game.getCurrentNode()).toBe(game.findNodeForMoveNumber(n))
+    }
+  })
+
+  it('stays where it is when asked for a number the record does not have', () => {
+    const game = createFragment()
+    game.goToMoveNumber(51)
+
+    game.goToMoveNumber(10)
+
+    expect(game.getCurrentMoveNumber()).toBe(51)
+  })
+
+  it('goes as far as it can for a move past the end', () => {
+    const game = createFragment()
+
+    game.goToMoveNumber(999)
+
+    expect(game.getCurrentMoveNumber()).toBe(52)
+  })
+
+  it('keeps counting nodes, not move numbers, when following a variation', () => {
+
+    //The path index is a depth counter, and renumbering it would read the
+    //wrong child at each fork. MN[10] on the second variation is there to
+    //catch exactly that
+    const game = Game.fromSgf(
+      '(;GM[1]FF[4]SZ[19];B[dd](;W[pp];B[pd])(;MN[10]W[pd];B[pp]))'
+    )
+
+    game.goToPath({moveNo: 3, branches: 1, path: {1: 1}})
+
+    expect(game.getCurrentNode().move).toMatchObject({x: 15, y: 15})
+    expect(game.getCurrentMoveNumber()).toBe(11)
+
+    //The path stays a depth counter and keeps the choice made at the fork
+    expect(game.getPath().getMoveNumber()).toBe(3)
+    expect(game.getPath().indexAtMove(1)).toBe(1)
+    expect(game.findNodeForPath(game.getPath())).toBe(game.getCurrentNode())
+  })
+
+  it('leaves the other variation numbered as it was', () => {
+    const game = Game.fromSgf(
+      '(;GM[1]FF[4]SZ[19];B[dd](;W[pp];B[pd])(;MN[10]W[pd];B[pp]))'
+    )
+
+    game.goToLastPosition()
+
+    expect(game.getCurrentMoveNumber()).toBe(3)
+    expect(game.getTotalNumberOfMoves()).toBe(3)
+  })
+})
+
 describe('The path reported after navigation', () => {
 
   const sgf = '(;GM[1]FF[4]SZ[19];B[dd];W[pp];B[dp])'

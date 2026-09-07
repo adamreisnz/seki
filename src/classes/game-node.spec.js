@@ -372,6 +372,58 @@ describe('GameNode', () => {
       expect(first.getMoveNumber()).toBe(1)
     })
 
+    it('reports an explicit move number instead of counting', () => {
+      const first = move(0, 0)
+      first.moveNumber = 112
+      expect(first.getMoveNumber()).toBe(112)
+    })
+
+    it('counts on from an explicit move number', () => {
+      const {root, a, b} = createTree()
+      a.moveNumber = 50
+
+      expect(root.getMoveNumber()).toBe(0)
+      expect(a.getMoveNumber()).toBe(50)
+      expect(b.getMoveNumber()).toBe(51)
+    })
+
+    it('renumbers only the branch the explicit number is on', () => {
+      const {a, b, c} = createTree()
+      b.moveNumber = 10
+
+      expect(a.getMoveNumber()).toBe(1)
+      expect(b.getMoveNumber()).toBe(10)
+      expect(c.getMoveNumber()).toBe(2)
+    })
+
+    it('lets a later explicit number override an earlier one', () => {
+      const {a, b} = createTree()
+      a.moveNumber = 50
+      b.moveNumber = 2
+
+      expect(b.getMoveNumber()).toBe(2)
+    })
+
+    it('ignores a move number that is not a number', () => {
+      const first = move(0, 0)
+      first.moveNumber = 'twelve'
+      expect(first.getMoveNumber()).toBe(1)
+    })
+
+    it('counts on from a previous number the same way when walking forwards', () => {
+      const {a, b} = createTree()
+      a.moveNumber = 50
+
+      //Same rule as getMoveNumber(), for a walk down from the root
+      expect(a.getMoveNumberAfter(0)).toBe(50)
+      expect(b.getMoveNumberAfter(50)).toBe(51)
+    })
+
+    it('leaves the running number alone on a node that is not a move', () => {
+      const setup = new GameNode()
+      expect(setup.getMoveNumberAfter(7)).toBe(7)
+    })
+
     it('finds the previous move across a setup node', () => {
       const first = move(0, 0)
       const setup = new GameNode()

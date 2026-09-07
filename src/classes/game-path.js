@@ -114,6 +114,13 @@ export default class GamePath {
 
   /**
    * Get the move number
+   *
+   * NOTE: this is how many nodes deep the path is, not what the move at the
+   * end of it calls itself. The two used to be the same number, but a record
+   * carrying SGF MN properties renumbers what GameNode.getMoveNumber()
+   * reports, and this counter indexes the choice made at each fork
+   * (see currentIndex() and forgetPathChoice()). Renumbering it would read
+   * the wrong variation back.
    */
   getMoveNumber() {
     return this.moveNo

@@ -781,12 +781,16 @@ export default class PlayerModeReplay extends PlayerMode {
     const {board, markers} = this
     const nodes = node.getAllMoveNodes()
 
-    //Loop each
-    nodes.forEach((moveNode, i) => {
+    //Loop each. These are every move from the root down, so the number to
+    //show is the one each move reports, which a record carrying MN properties
+    //has renumbered for itself. Counted forwards rather than asked of each
+    //node in turn, which would walk the whole ancestry again every time.
+    let number = 0
+    nodes.forEach(moveNode => {
 
       //Get node data
       const {x, y} = moveNode.move
-      const number = i + 1
+      number = moveNode.getMoveNumberAfter(number)
 
       //Already has markup on this coordinate, preserve it
       if (node.hasMarkup(x, y)) {

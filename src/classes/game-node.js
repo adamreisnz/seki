@@ -382,12 +382,40 @@ export default class GameNode {
 
   /**
    * Get move number
+   *
+   * NOTE: this is the number the move reports, which a record is free to set
+   * for itself with the SGF MN property. It is not the same thing as
+   * GamePath's move number, which is a plain depth counter used to index the
+   * choices made at each fork and must never be renumbered.
    */
   getMoveNumber() {
-    const {parent, move} = this
-    const n = move ? 1 : 0
+    const {parent, moveNumber} = this
+
+    //An explicit move number is the answer in itself, and stops the walk here.
+    //That is what it is for: the record says this move is number n, and the
+    //moves after it count on from there.
+    if (typeof moveNumber === 'number') {
+      return moveNumber
+    }
+
+    //Otherwise, count on from what the node above reports
     const p = parent ? parent.getMoveNumber() : 0
-    return n + p
+    return this.getMoveNumberAfter(p)
+  }
+
+  /**
+   * Get the move number this node reports, given the number reported by the
+   * node before it
+   *
+   * Same rule as getMoveNumber(), in the form a walk down from the root can
+   * use, so that counting forwards doesn't have to walk back up at every node.
+   */
+  getMoveNumberAfter(previous) {
+    const {move, moveNumber} = this
+    if (typeof moveNumber === 'number') {
+      return moveNumber
+    }
+    return move ? previous + 1 : previous
   }
 
   /**
