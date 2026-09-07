@@ -474,7 +474,7 @@ describe('Player re-bootstrapping', () => {
       initialMode: playerModes.EDIT,
       board: {showCoordinates: false},
     }, '(;GM[1]FF[4]SZ[9])')
-    player.setEditTool(editTools.BLACK)
+    player.getMode(playerModes.EDIT).setEditTool(editTools.BLACK)
 
     player.teardown()
     player.bootstrap(container)

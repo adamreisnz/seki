@@ -164,8 +164,10 @@ describe('Score mode dead stones', () => {
   it('reaches the mode through the player', () => {
     const {player} = createScoringPlayer()
 
-    player.toggleDeadStone(2, 2)
-    const {captures} = player.calculateScore()
+    const score = player.getMode(playerModes.SCORE)
+
+    score.toggleDeadStone(2, 2)
+    const {captures} = score.calculateScore()
 
     expect(captures.has(2, 2)).toBe(true)
   })
@@ -295,7 +297,8 @@ describe('Score mode estimating', () => {
 
   it('reaches the mode through the player', () => {
     const {player} = createScoringPlayer()
-    const {territory} = player.estimateScore(probabilityMap([[1, 1, 0.9]]))
+    const score = player.getMode(playerModes.SCORE)
+    const {territory} = score.estimateScore(probabilityMap([[1, 1, 0.9]]))
 
     expect(territory.has(1, 1)).toBe(true)
   })

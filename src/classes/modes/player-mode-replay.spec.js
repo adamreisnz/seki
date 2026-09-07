@@ -665,15 +665,15 @@ describe('Replay mode auto play', () => {
   afterEach(() => vi.useRealTimers())
 
   it('steps to the next position as soon as it starts', () => {
-    const {player} = load()
-    player.startAutoPlay()
+    const {player, replay} = load()
+    replay.startAutoPlay()
 
     expect(player.game.getCurrentMoveNumber()).toBe(1)
   })
 
   it('waits for the delay when told not to start immediately', () => {
-    const {player} = load({autoPlayStartsImmediately: false})
-    player.startAutoPlay()
+    const {player, replay} = load({autoPlayStartsImmediately: false})
+    replay.startAutoPlay()
 
     expect(player.game.getCurrentMoveNumber()).toBe(0)
 
@@ -682,8 +682,8 @@ describe('Replay mode auto play', () => {
   })
 
   it('keeps stepping on the configured delay', () => {
-    const {player} = load({autoPlayDelay: 500})
-    player.startAutoPlay()
+    const {player, replay} = load({autoPlayDelay: 500})
+    replay.startAutoPlay()
 
     vi.advanceTimersByTime(500)
     expect(player.game.getCurrentMoveNumber()).toBe(2)
@@ -693,12 +693,12 @@ describe('Replay mode auto play', () => {
   })
 
   it('says when it starts and when it stops', () => {
-    const {player} = load()
+    const {player, replay} = load()
     const listener = vi.fn()
     player.on('autoPlayToggle', listener)
 
-    player.startAutoPlay()
-    player.stopAutoPlay()
+    replay.startAutoPlay()
+    replay.stopAutoPlay()
 
     expect(listener.mock.calls.map(call => call[0].detail)).toEqual([
       {isAutoPlaying: true},
@@ -707,11 +707,11 @@ describe('Replay mode auto play', () => {
   })
 
   it('says so each time it plays a move', () => {
-    const {player} = load({autoPlayDelay: 500})
+    const {player, replay} = load({autoPlayDelay: 500})
     const listener = vi.fn()
     player.on('autoPlayed', listener)
 
-    player.startAutoPlay()
+    replay.startAutoPlay()
     vi.advanceTimersByTime(1000)
 
     expect(listener).toHaveBeenCalledTimes(2)
@@ -719,8 +719,8 @@ describe('Replay mode auto play', () => {
 
   it('does not start twice over', () => {
     const {player, replay} = load()
-    player.startAutoPlay()
-    player.startAutoPlay()
+    replay.startAutoPlay()
+    replay.startAutoPlay()
 
     expect(player.game.getCurrentMoveNumber()).toBe(1)
     expect(replay.isAutoPlaying).toBe(true)
@@ -730,7 +730,7 @@ describe('Replay mode auto play', () => {
     const {player, replay} = load()
     player.goToLastPosition()
 
-    player.startAutoPlay()
+    replay.startAutoPlay()
 
     expect(replay.isAutoPlaying).toBe(false)
     expect(replay.autoPlayTimeout).toBeNull()
@@ -738,7 +738,7 @@ describe('Replay mode auto play', () => {
 
   it('stops of its own accord when it runs out of record', () => {
     const {player, replay} = load({autoPlayDelay: 100})
-    player.startAutoPlay()
+    replay.startAutoPlay()
     vi.advanceTimersByTime(1000)
 
     expect(player.game.getCurrentMoveNumber()).toBe(5)
@@ -747,9 +747,9 @@ describe('Replay mode auto play', () => {
 
   it('stops when asked, leaving no timer behind', () => {
     const {player, replay} = load()
-    player.startAutoPlay()
+    replay.startAutoPlay()
 
-    player.stopAutoPlay()
+    replay.stopAutoPlay()
 
     expect(replay.isAutoPlaying).toBe(false)
     expect(replay.autoPlayTimeout).toBeNull()
@@ -759,18 +759,18 @@ describe('Replay mode auto play', () => {
   })
 
   it('toggles on and off again', () => {
-    const {player, replay} = load()
+    const {replay} = load()
 
-    player.toggleAutoPlay()
+    replay.toggleAutoPlay()
     expect(replay.isAutoPlaying).toBe(true)
 
-    player.toggleAutoPlay()
+    replay.toggleAutoPlay()
     expect(replay.isAutoPlaying).toBe(false)
   })
 
   it('stops when the user navigates away from the end', () => {
     const {player, replay} = load({autoPlayDelay: 100})
-    player.startAutoPlay()
+    replay.startAutoPlay()
     player.goToLastPosition()
 
     expect(replay.isAutoPlaying).toBe(false)
@@ -791,7 +791,7 @@ describe('Replay mode auto play', () => {
 
   it('stops when the mode is left', () => {
     const {player, replay} = load()
-    player.startAutoPlay()
+    replay.startAutoPlay()
 
     player.setMode(playerModes.EDIT)
 

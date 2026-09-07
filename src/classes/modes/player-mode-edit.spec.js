@@ -142,49 +142,49 @@ describe('Edit mode teardown', () => {
 describe('Edit mode tool selection', () => {
 
   it('starts on the move tool', () => {
-    const {player} = createPlayer()
-    expect(player.getEditTool()).toBe(editTools.MOVE)
+    const {mode} = createPlayer()
+    expect(mode.getEditTool()).toBe(editTools.MOVE)
   })
 
   it('switches to the tool it is given', () => {
-    const {player} = createPlayer()
-    player.setEditTool(editTools.TRIANGLE)
+    const {mode} = createPlayer()
+    mode.setEditTool(editTools.TRIANGLE)
 
-    expect(player.getEditTool()).toBe(editTools.TRIANGLE)
+    expect(mode.getEditTool()).toBe(editTools.TRIANGLE)
   })
 
   it('reads the stone tool as black to start with', () => {
 
     //The stone tool is a toggle rather than a tool of its own, so asking for
     //it from anywhere but black lands on black
-    const {player} = createPlayer()
-    player.setEditTool(editTools.STONE)
+    const {mode} = createPlayer()
+    mode.setEditTool(editTools.STONE)
 
-    expect(player.getEditTool()).toBe(editTools.BLACK)
+    expect(mode.getEditTool()).toBe(editTools.BLACK)
   })
 
   it('flips the stone tool from black to white', () => {
-    const {player} = createPlayer()
-    player.setEditTool(editTools.BLACK)
-    player.setEditTool(editTools.STONE)
+    const {mode} = createPlayer()
+    mode.setEditTool(editTools.BLACK)
+    mode.setEditTool(editTools.STONE)
 
-    expect(player.getEditTool()).toBe(editTools.WHITE)
+    expect(mode.getEditTool()).toBe(editTools.WHITE)
   })
 
   it('flips the stone tool back from white to black', () => {
-    const {player} = createPlayer()
-    player.setEditTool(editTools.WHITE)
-    player.setEditTool(editTools.STONE)
+    const {mode} = createPlayer()
+    mode.setEditTool(editTools.WHITE)
+    mode.setEditTool(editTools.STONE)
 
-    expect(player.getEditTool()).toBe(editTools.BLACK)
+    expect(mode.getEditTool()).toBe(editTools.BLACK)
   })
 
   it('announces the tool change', () => {
-    const {player} = createPlayer()
+    const {player, mode} = createPlayer()
     const listener = vi.fn()
     player.on('editToolChange', listener)
 
-    player.setEditTool(editTools.CIRCLE)
+    mode.setEditTool(editTools.CIRCLE)
     expect(listener.mock.calls[0][0].detail).toEqual({tool: editTools.CIRCLE})
   })
 
@@ -193,12 +193,12 @@ describe('Edit mode tool selection', () => {
     //The event carries the tool that ended up active rather than the one
     //asked for, so a toolbar listening to it to light up the active tool is
     //told black rather than the toggle it was asked through
-    const {player} = createPlayer()
+    const {player, mode} = createPlayer()
     const listener = vi.fn()
     player.on('editToolChange', listener)
 
-    player.setEditTool(editTools.STONE)
-    expect(player.getEditTool()).toBe(editTools.BLACK)
+    mode.setEditTool(editTools.STONE)
+    expect(mode.getEditTool()).toBe(editTools.BLACK)
     expect(listener.mock.calls[0][0].detail).toEqual({tool: editTools.BLACK})
   })
 
@@ -206,30 +206,30 @@ describe('Edit mode tool selection', () => {
 
     //The arrow is a recognised markup type with nothing to draw it, so it is
     //turned away rather than becoming the active tool
-    const {player} = createPlayer()
+    const {player, mode} = createPlayer()
     const listener = vi.fn()
     player.on('editToolChange', listener)
 
-    player.setEditTool(editTools.SQUARE)
-    player.setEditTool(editTools.ARROW)
+    mode.setEditTool(editTools.SQUARE)
+    mode.setEditTool(editTools.ARROW)
 
-    expect(player.getEditTool()).toBe(editTools.SQUARE)
+    expect(mode.getEditTool()).toBe(editTools.SQUARE)
     expect(listener).toHaveBeenCalledTimes(1)
   })
 
   it('clears the hover layer on every switch', () => {
-    const {player} = createPlayer()
+    const {player, mode} = createPlayer()
     const spy = vi.spyOn(player.board, 'clearHoverLayer')
 
-    player.setEditTool(editTools.SQUARE)
+    mode.setEditTool(editTools.SQUARE)
     expect(spy).toHaveBeenCalled()
   })
 
   it('leaves the grid alone when the mouse is off the board', () => {
-    const {player} = createPlayer()
+    const {player, mode} = createPlayer()
     const spy = vi.spyOn(player.board, 'redrawGridCell')
 
-    player.setEditTool(editTools.SQUARE)
+    mode.setEditTool(editTools.SQUARE)
     expect(spy).not.toHaveBeenCalled()
   })
 
@@ -237,11 +237,11 @@ describe('Edit mode tool selection', () => {
 
     //Switching from a markup tool to a stone tool leaves the markup hover
     //behind on that cell, so the grid underneath it has to be repainted
-    const {player} = createPlayer()
+    const {player, mode} = createPlayer()
     player.triggerEvent('gridEnter', {x: 3, y: 3, isDragging: false})
 
     const spy = vi.spyOn(player.board, 'redrawGridCell')
-    player.setEditTool(editTools.BLACK)
+    mode.setEditTool(editTools.BLACK)
 
     expect(spy).toHaveBeenCalledWith(3, 3)
   })
@@ -252,7 +252,7 @@ describe('Edit mode tool selection', () => {
     //hover has to be redrawn rather than waiting for the next grid entry
     const {player, mode} = createPlayer()
     player.triggerEvent('gridEnter', {x: 3, y: 3, isDragging: false})
-    player.setEditTool(editTools.SQUARE)
+    mode.setEditTool(editTools.SQUARE)
 
     expect(mode.board.get(boardLayerTypes.HOVER, 3, 3).type)
       .toBe(markupTypes.SQUARE)
@@ -376,21 +376,21 @@ describe('Edit mode keyboard actions', () => {
 
   for (const [action, tool] of toolActions) {
     it(`selects the ${tool} tool for ${action}`, () => {
-      const {player, mode} = createPlayer()
+      const {mode} = createPlayer()
 
       expect(mode.processAction(action)).toBe(true)
-      expect(player.getEditTool()).toBe(tool)
+      expect(mode.getEditTool()).toBe(tool)
     })
   }
 
   it('toggles the stone colour for the stone tool action', () => {
-    const {player, mode} = createPlayer()
+    const {mode} = createPlayer()
 
     expect(mode.processAction(playerActions.SET_EDIT_TOOL_STONE)).toBe(true)
-    expect(player.getEditTool()).toBe(editTools.BLACK)
+    expect(mode.getEditTool()).toBe(editTools.BLACK)
 
     mode.processAction(playerActions.SET_EDIT_TOOL_STONE)
-    expect(player.getEditTool()).toBe(editTools.WHITE)
+    expect(mode.getEditTool()).toBe(editTools.WHITE)
   })
 
   it('clears all markup', () => {
@@ -469,7 +469,7 @@ describe('Edit mode stone editing', () => {
 
   it('places a stone of the tool colour', () => {
     const {player, mode} = createPlayer()
-    player.setEditTool(editTools.BLACK)
+    mode.setEditTool(editTools.BLACK)
     mode.edit(at(4, 4))
 
     expect(player.game.hasStone(4, 4, BLACK)).toBe(true)
@@ -478,7 +478,7 @@ describe('Edit mode stone editing', () => {
 
   it('places the other colour for the white tool', () => {
     const {player, mode} = createPlayer()
-    player.setEditTool(editTools.WHITE)
+    mode.setEditTool(editTools.WHITE)
     mode.edit(at(4, 4))
 
     expect(player.game.hasStone(4, 4, WHITE)).toBe(true)
@@ -486,7 +486,7 @@ describe('Edit mode stone editing', () => {
 
   it('takes the stone off again when the same colour is clicked twice', () => {
     const {player, mode} = createPlayer()
-    player.setEditTool(editTools.BLACK)
+    mode.setEditTool(editTools.BLACK)
     mode.edit(at(4, 4))
     mode.edit(at(4, 4))
 
@@ -495,10 +495,10 @@ describe('Edit mode stone editing', () => {
 
   it('replaces a stone of the other colour rather than clearing it', () => {
     const {player, mode} = createPlayer()
-    player.setEditTool(editTools.BLACK)
+    mode.setEditTool(editTools.BLACK)
     mode.edit(at(4, 4))
 
-    player.setEditTool(editTools.WHITE)
+    mode.setEditTool(editTools.WHITE)
     mode.edit(at(4, 4))
 
     expect(player.game.hasStone(4, 4, WHITE)).toBe(true)
@@ -509,7 +509,7 @@ describe('Edit mode stone editing', () => {
     //The removal shortcut is deliberately off while dragging, so dragging
     //back over what was just painted doesn't rub it out again
     const {player, mode} = createPlayer()
-    player.setEditTool(editTools.BLACK)
+    mode.setEditTool(editTools.BLACK)
     mode.edit(at(4, 4, {isDragging: true}))
     mode.edit(at(4, 4, {isDragging: true}))
 
@@ -521,7 +521,7 @@ describe('Edit mode stone editing', () => {
     const listener = vi.fn()
     player.on('edit', listener)
 
-    player.setEditTool(editTools.BLACK)
+    mode.setEditTool(editTools.BLACK)
     mode.edit(at(4, 4))
 
     expect(listener.mock.calls[0][0].detail)
@@ -588,7 +588,7 @@ describe('Edit mode markup editing', () => {
   for (const tool of shapes) {
     it(`draws ${tool} markup where it is clicked`, () => {
       const {player, mode} = createPlayer()
-      player.setEditTool(tool)
+      mode.setEditTool(tool)
       mode.edit(at(4, 4))
 
       expect(player.game.hasMarkup(4, 4, tool)).toBe(true)
@@ -598,7 +598,7 @@ describe('Edit mode markup editing', () => {
 
   it('takes markup of the same type off again on a second click', () => {
     const {player, mode} = createPlayer()
-    player.setEditTool(editTools.TRIANGLE)
+    mode.setEditTool(editTools.TRIANGLE)
     mode.edit(at(4, 4))
     mode.edit(at(4, 4))
 
@@ -607,10 +607,10 @@ describe('Edit mode markup editing', () => {
 
   it('replaces markup of a different type', () => {
     const {player, mode} = createPlayer()
-    player.setEditTool(editTools.TRIANGLE)
+    mode.setEditTool(editTools.TRIANGLE)
     mode.edit(at(4, 4))
 
-    player.setEditTool(editTools.SQUARE)
+    mode.setEditTool(editTools.SQUARE)
     mode.edit(at(4, 4))
 
     expect(player.game.hasMarkup(4, 4, markupTypes.SQUARE)).toBe(true)
@@ -618,7 +618,7 @@ describe('Edit mode markup editing', () => {
 
   it('keeps painting the same markup while dragging over it', () => {
     const {player, mode} = createPlayer()
-    player.setEditTool(editTools.TRIANGLE)
+    mode.setEditTool(editTools.TRIANGLE)
     mode.edit(at(4, 4, {isDragging: true}))
     mode.edit(at(4, 4, {isDragging: true}))
 
@@ -627,12 +627,12 @@ describe('Edit mode markup editing', () => {
 
   it('emits the removal and the addition when it replaces markup', () => {
     const {player, mode} = createPlayer()
-    player.setEditTool(editTools.TRIANGLE)
+    mode.setEditTool(editTools.TRIANGLE)
     mode.edit(at(4, 4))
 
     const listener = vi.fn()
     player.on('edit', listener)
-    player.setEditTool(editTools.SQUARE)
+    mode.setEditTool(editTools.SQUARE)
     mode.edit(at(4, 4))
 
     expect(listener.mock.calls.map(call => call[0].detail.action))
@@ -659,7 +659,7 @@ describe('Edit mode markup editing', () => {
 
   it('writes the markup into the record it saves', () => {
     const {player, mode} = createPlayer()
-    player.setEditTool(editTools.TRIANGLE)
+    mode.setEditTool(editTools.TRIANGLE)
     mode.edit(at(4, 4))
 
     expect(player.game.toSgf()).toContain('TR[ee]')
@@ -671,7 +671,7 @@ describe('Edit mode markup editing', () => {
     //board sync at the end of an edit would throw with the arrow already in
     //the record. The tool is refused instead, leaving the move tool in place
     const {player, mode} = createPlayer()
-    player.setEditTool(editTools.ARROW)
+    mode.setEditTool(editTools.ARROW)
 
     expect(() => mode.edit(at(4, 4))).not.toThrow()
     expect(player.game.hasMarkup(4, 4, markupTypes.ARROW)).toBe(false)
@@ -696,7 +696,7 @@ describe('Edit mode markup labels', () => {
 
   it('labels the first point A', () => {
     const {player, mode} = createPlayer()
-    player.setEditTool(editTools.LETTER)
+    mode.setEditTool(editTools.LETTER)
     mode.edit(at(0, 0))
 
     expect(player.game.getMarkup(0, 0))
@@ -705,7 +705,7 @@ describe('Edit mode markup labels', () => {
 
   it('walks the alphabet as more labels go down', () => {
     const {player, mode} = createPlayer()
-    player.setEditTool(editTools.LETTER)
+    mode.setEditTool(editTools.LETTER)
     mode.edit(at(0, 0))
     mode.edit(at(1, 0))
     mode.edit(at(2, 0))
@@ -715,7 +715,7 @@ describe('Edit mode markup labels', () => {
 
   it('fills a gap left by a label that was taken off', () => {
     const {player, mode} = createPlayer()
-    player.setEditTool(editTools.LETTER)
+    mode.setEditTool(editTools.LETTER)
     mode.edit(at(0, 0))
     mode.edit(at(1, 0))
     mode.edit(at(0, 0))
@@ -744,7 +744,7 @@ describe('Edit mode markup labels', () => {
 
   it('numbers points from one when using the number tool', () => {
     const {player, mode} = createPlayer()
-    player.setEditTool(editTools.NUMBER)
+    mode.setEditTool(editTools.NUMBER)
     mode.edit(at(0, 0))
     mode.edit(at(1, 0))
 
@@ -754,7 +754,7 @@ describe('Edit mode markup labels', () => {
 
   it('fills a gap left by a number that was taken off', () => {
     const {player, mode} = createPlayer()
-    player.setEditTool(editTools.NUMBER)
+    mode.setEditTool(editTools.NUMBER)
     mode.edit(at(0, 0))
     mode.edit(at(1, 0))
     mode.edit(at(0, 0))
@@ -768,7 +768,7 @@ describe('Edit mode markup labels', () => {
     //A label collides on the label type rather than on its text, so clicking
     //a labelled point again clears it instead of stacking a second one
     const {player, mode} = createPlayer()
-    player.setEditTool(editTools.LETTER)
+    mode.setEditTool(editTools.LETTER)
     mode.edit(at(0, 0))
     mode.edit(at(0, 0))
 
@@ -797,7 +797,7 @@ describe('Edit mode erasing', () => {
     mode.addStone(4, 4, BLACK)
     mode.addMarkup(4, 4, markupTypes.SQUARE)
 
-    player.setEditTool(editTools.CLEAR)
+    mode.setEditTool(editTools.CLEAR)
     mode.edit(at(4, 4))
 
     expect(player.game.hasMarkup(4, 4)).toBe(false)
@@ -809,7 +809,7 @@ describe('Edit mode erasing', () => {
     mode.addStone(4, 4, BLACK)
     mode.addMarkup(4, 4, markupTypes.SQUARE)
 
-    player.setEditTool(editTools.CLEAR)
+    mode.setEditTool(editTools.CLEAR)
     mode.edit(at(4, 4))
     mode.edit(at(4, 4))
 
@@ -821,7 +821,7 @@ describe('Edit mode erasing', () => {
     const listener = vi.fn()
     player.on('edit', listener)
 
-    player.setEditTool(editTools.CLEAR)
+    mode.setEditTool(editTools.CLEAR)
     mode.edit(at(4, 4))
 
     expect(listener).not.toHaveBeenCalled()
@@ -833,7 +833,7 @@ describe('Edit mode erasing', () => {
     mode.addStone(1, 1, WHITE)
     mode.addMarkup(1, 1, markupTypes.SQUARE)
 
-    player.setEditTool(editTools.CLEAR_AREA)
+    mode.setEditTool(editTools.CLEAR_AREA)
     mode.edit({detail: {x: 1, y: 1, area: [{x: 0, y: 0}, {x: 1, y: 1}]}})
 
     expect(player.game.hasStone(0, 0)).toBe(false)
@@ -846,7 +846,7 @@ describe('Edit mode erasing', () => {
     const listener = vi.fn()
     player.on('edit', listener)
 
-    player.setEditTool(editTools.CLEAR_AREA)
+    mode.setEditTool(editTools.CLEAR_AREA)
     mode.edit({detail: {x: 1, y: 1, area: [{x: 0, y: 0}, {x: 1, y: 1}]}})
 
     expect(listener).not.toHaveBeenCalled()
@@ -858,7 +858,7 @@ describe('Edit mode erasing', () => {
     mode.addMarkup(2, 2, markupTypes.TRIANGLE)
     player.updateBoardPosition()
 
-    player.removeAllMarkup()
+    mode.removeAllMarkup()
 
     expect(player.game.hasMarkup(1, 1)).toBe(false)
     expect(player.game.hasMarkup(2, 2)).toBe(false)
@@ -868,7 +868,7 @@ describe('Edit mode erasing', () => {
   it('takes the cleared markup out of the record it saves', () => {
     const {player, mode} = createPlayer()
     mode.addMarkup(1, 1, markupTypes.SQUARE)
-    player.removeAllMarkup()
+    mode.removeAllMarkup()
 
     expect(player.game.toSgf()).not.toContain('SQ')
   })
@@ -880,7 +880,7 @@ describe('Edit mode erasing', () => {
 
     const listener = vi.fn()
     player.on('edit', listener)
-    player.removeAllMarkup()
+    mode.removeAllMarkup()
 
     expect(listener).toHaveBeenCalledTimes(1)
     expect(listener.mock.calls[0][0].detail)
@@ -1087,7 +1087,7 @@ describe('Edit mode free drawing', () => {
     const {player, mode} = createPlayer()
     mode.addLine(0, 0, 1, 1, '#f00')
 
-    player.removeAllLines()
+    mode.removeAllLines()
 
     expect(player.game.getLines()).toHaveLength(0)
     expect(player.board.getLayer(boardLayerTypes.DRAW).getAll()).toHaveLength(0)
@@ -1099,7 +1099,7 @@ describe('Edit mode free drawing', () => {
 
     const listener = vi.fn()
     player.on('edit', listener)
-    player.removeAllLines()
+    mode.removeAllLines()
 
     expect(listener.mock.calls[0][0].detail)
       .toEqual({action: 'removeAllLines', args: []})
@@ -1163,7 +1163,7 @@ describe('Edit mode free drawing', () => {
 
     //A line needs two points, and the first mouse move only has one
     const {player, mode} = createPlayer()
-    player.setEditTool(editTools.DRAW)
+    mode.setEditTool(editTools.DRAW)
     mode.onMouseMove(moveTo(player.board, 2, 2))
 
     expect(player.game.getLines()).toHaveLength(0)
@@ -1173,7 +1173,7 @@ describe('Edit mode free drawing', () => {
 
   it('draws from the last point to this one as the mouse moves', () => {
     const {player, mode} = createPlayer()
-    player.setEditTool(editTools.DRAW)
+    mode.setEditTool(editTools.DRAW)
     mode.onMouseMove(moveTo(player.board, 2, 2))
     mode.onMouseMove(moveTo(player.board, 4, 4))
 
@@ -1183,7 +1183,7 @@ describe('Edit mode free drawing', () => {
 
   it('ignores the mouse when it is not being dragged', () => {
     const {player, mode} = createPlayer()
-    player.setEditTool(editTools.DRAW)
+    mode.setEditTool(editTools.DRAW)
     mode.onMouseMove(moveTo(player.board, 2, 2, false))
 
     expect(mode.lastFreeDrawX).toBeNull()
@@ -1191,7 +1191,7 @@ describe('Edit mode free drawing', () => {
 
   it('ignores the mouse when another tool is in hand', () => {
     const {player, mode} = createPlayer()
-    player.setEditTool(editTools.BLACK)
+    mode.setEditTool(editTools.BLACK)
     mode.onMouseMove(moveTo(player.board, 2, 2))
 
     expect(mode.lastFreeDrawX).toBeNull()
@@ -1202,7 +1202,7 @@ describe('Edit mode free drawing', () => {
     //The click that ends a drag stops the stroke, so the next one starts
     //fresh rather than joining onto where the last one left off
     const {player, mode} = createPlayer()
-    player.setEditTool(editTools.DRAW)
+    mode.setEditTool(editTools.DRAW)
     mode.onMouseMove(moveTo(player.board, 2, 2))
 
     mode.onClick(at(2, 2))
@@ -1217,7 +1217,7 @@ describe('Edit mode free drawing', () => {
     //None of the tool branches claim a free draw, so the edit falls through
     //to the board sync having changed nothing about the position
     const {player, mode} = createPlayer()
-    player.setEditTool(editTools.DRAW)
+    mode.setEditTool(editTools.DRAW)
     const spy = vi.spyOn(player, 'updateBoardPosition')
 
     mode.edit(at(4, 4))
@@ -1229,7 +1229,7 @@ describe('Edit mode free drawing', () => {
 
   it('edits nothing on a click while the draw tool is in hand', () => {
     const {player, mode} = createPlayer()
-    player.setEditTool(editTools.DRAW)
+    mode.setEditTool(editTools.DRAW)
     mode.onClick(at(4, 4))
 
     expect(player.game.hasStone(4, 4)).toBe(false)
@@ -1248,7 +1248,7 @@ describe('Edit mode click handling', () => {
 
   it('ignores a click that landed off the board', () => {
     const {player, mode} = createPlayer()
-    player.setEditTool(editTools.BLACK)
+    mode.setEditTool(editTools.BLACK)
     mode.onClick({detail: {x: -1, y: 4}})
 
     expect(player.game.getRootNode().setup).toBeUndefined()
@@ -1259,7 +1259,7 @@ describe('Edit mode click handling', () => {
     //A drag that ends on a cell fires the grid entry that edits it and then a
     //click on the same cell, which would toggle the edit straight back off
     const {player, mode} = createPlayer()
-    player.setEditTool(editTools.BLACK)
+    mode.setEditTool(editTools.BLACK)
     player.triggerEvent('gridEnter', {x: 3, y: 3, isDragging: true})
     expect(player.game.hasStone(3, 3, BLACK)).toBe(true)
 
@@ -1269,7 +1269,7 @@ describe('Edit mode click handling', () => {
 
   it('only ignores it once', () => {
     const {player, mode} = createPlayer()
-    player.setEditTool(editTools.BLACK)
+    mode.setEditTool(editTools.BLACK)
     player.triggerEvent('gridEnter', {x: 3, y: 3, isDragging: true})
 
     mode.onClick(at(3, 3))
@@ -1280,7 +1280,7 @@ describe('Edit mode click handling', () => {
 
   it('takes a click on a different cell than the drag ended on', () => {
     const {player, mode} = createPlayer()
-    player.setEditTool(editTools.BLACK)
+    mode.setEditTool(editTools.BLACK)
     player.triggerEvent('gridEnter', {x: 3, y: 3, isDragging: true})
 
     mode.onClick(at(5, 5))
@@ -1343,8 +1343,8 @@ describe('Edit mode hover feedback', () => {
 
     //Black to play, so the tool colour is the one that shows rather than
     //whose turn it is
-    const {player} = createPlayer()
-    player.setEditTool(editTools.WHITE)
+    const {player, mode} = createPlayer()
+    mode.setEditTool(editTools.WHITE)
     player.triggerEvent('gridEnter', {x: 3, y: 3, isDragging: false})
 
     const hover = player.board.get(boardLayerTypes.HOVER, 3, 3)
@@ -1355,15 +1355,15 @@ describe('Edit mode hover feedback', () => {
   it('shows no hover stone on a point that already holds that colour', () => {
     const {player, mode} = createPlayer()
     mode.addStone(3, 3, WHITE)
-    player.setEditTool(editTools.WHITE)
+    mode.setEditTool(editTools.WHITE)
     player.triggerEvent('gridEnter', {x: 3, y: 3, isDragging: false})
 
     expect(player.board.get(boardLayerTypes.HOVER, 3, 3)).toBeUndefined()
   })
 
   it('shows the markup the tool would draw', () => {
-    const {player} = createPlayer()
-    player.setEditTool(editTools.SQUARE)
+    const {player, mode} = createPlayer()
+    mode.setEditTool(editTools.SQUARE)
     player.triggerEvent('gridEnter', {x: 3, y: 3, isDragging: false})
 
     expect(player.board.get(boardLayerTypes.HOVER, 3, 3).type)
@@ -1371,16 +1371,16 @@ describe('Edit mode hover feedback', () => {
   })
 
   it('shows the label the tool would draw next', () => {
-    const {player} = createPlayer()
-    player.setEditTool(editTools.LETTER)
+    const {player, mode} = createPlayer()
+    mode.setEditTool(editTools.LETTER)
     player.triggerEvent('gridEnter', {x: 3, y: 3, isDragging: false})
 
     expect(player.board.get(boardLayerTypes.HOVER, 3, 3).text).toBe('A')
   })
 
   it('shows a mark as the eraser for the clear tool', () => {
-    const {player} = createPlayer()
-    player.setEditTool(editTools.CLEAR)
+    const {player, mode} = createPlayer()
+    mode.setEditTool(editTools.CLEAR)
     player.triggerEvent('gridEnter', {x: 3, y: 3, isDragging: false})
 
     expect(player.board.get(boardLayerTypes.HOVER, 3, 3).type)
@@ -1389,7 +1389,7 @@ describe('Edit mode hover feedback', () => {
 
   it('shows no eraser for a tool that does not erase', () => {
     const {player, mode} = createPlayer()
-    player.setEditTool(editTools.BLACK)
+    mode.setEditTool(editTools.BLACK)
     mode.currentGridDetail = {x: 3, y: 3}
     const spy = vi.spyOn(player.board, 'setHoverCell')
 
@@ -1435,7 +1435,7 @@ describe('Edit mode hover feedback', () => {
     //The mouse move handler owns free drawing, down to the sub-cell precision
     //the grid events don't carry
     const {player, mode} = createPlayer()
-    player.setEditTool(editTools.DRAW)
+    mode.setEditTool(editTools.DRAW)
     player.triggerEvent('gridEnter', {x: 3, y: 3, isDragging: true})
 
     expect(mode.lastEditedGridDetail).toBeUndefined()
@@ -1443,8 +1443,8 @@ describe('Edit mode hover feedback', () => {
   })
 
   it('edits as it is dragged over cells with any other tool', () => {
-    const {player} = createPlayer()
-    player.setEditTool(editTools.TRIANGLE)
+    const {player, mode} = createPlayer()
+    mode.setEditTool(editTools.TRIANGLE)
     player.triggerEvent('gridEnter', {x: 3, y: 3, isDragging: true})
     player.triggerEvent('gridEnter', {x: 4, y: 4, isDragging: true})
 
@@ -1464,8 +1464,8 @@ describe('Edit mode hover feedback', () => {
 
     //Stones carry a shadow onto the neighbouring cells, so clearing the one
     //cell would leave part of the hover behind
-    const {player} = createPlayer()
-    player.setEditTool(editTools.BLACK)
+    const {player, mode} = createPlayer()
+    mode.setEditTool(editTools.BLACK)
     const spy = vi.spyOn(player.board, 'clearHoverLayer')
 
     player.triggerEvent('gridLeave', {x: 3, y: 3})
@@ -1481,8 +1481,8 @@ describe('Edit mode hover feedback', () => {
   })
 
   it('clears just the cell on the way out with a markup tool', () => {
-    const {player} = createPlayer()
-    player.setEditTool(editTools.SQUARE)
+    const {player, mode} = createPlayer()
+    mode.setEditTool(editTools.SQUARE)
     const spyLayer = vi.spyOn(player.board, 'clearHoverLayer')
     const spyCell = vi.spyOn(player.board, 'clearHoverCell')
 
@@ -1493,8 +1493,8 @@ describe('Edit mode hover feedback', () => {
   })
 
   it('clears just the cell on the way out with the clear tool', () => {
-    const {player} = createPlayer()
-    player.setEditTool(editTools.CLEAR)
+    const {player, mode} = createPlayer()
+    mode.setEditTool(editTools.CLEAR)
     const spyCell = vi.spyOn(player.board, 'clearHoverCell')
 
     player.triggerEvent('gridLeave', {x: 3, y: 3})
@@ -1502,8 +1502,8 @@ describe('Edit mode hover feedback', () => {
   })
 
   it('clears nothing on the way out with the draw tool', () => {
-    const {player} = createPlayer()
-    player.setEditTool(editTools.DRAW)
+    const {player, mode} = createPlayer()
+    mode.setEditTool(editTools.DRAW)
     const spyLayer = vi.spyOn(player.board, 'clearHoverLayer')
     const spyCell = vi.spyOn(player.board, 'clearHoverCell')
 
@@ -1536,8 +1536,8 @@ describe('Edit mode processEdit', () => {
 
   for (const [action, args, assert] of actions) {
     it(`applies ${action}`, () => {
-      const {player} = createPlayer()
-      player.processEdit(action, args)
+      const {player, mode} = createPlayer()
+      mode.processEdit(action, args)
       assert(player)
     })
   }
@@ -1546,7 +1546,7 @@ describe('Edit mode processEdit', () => {
     const {player, mode} = createPlayer()
     mode.addStone(4, 4, BLACK)
 
-    player.processEdit('removeStone', [4, 4])
+    mode.processEdit('removeStone', [4, 4])
     expect(player.game.hasStone(4, 4)).toBe(false)
   })
 
@@ -1554,7 +1554,7 @@ describe('Edit mode processEdit', () => {
     const {player, mode} = createPlayer()
     mode.addMarkup(4, 4, markupTypes.TRIANGLE)
 
-    player.processEdit('removeMarkup', [4, 4])
+    mode.processEdit('removeMarkup', [4, 4])
     expect(player.game.hasMarkup(4, 4)).toBe(false)
   })
 
@@ -1563,7 +1563,7 @@ describe('Edit mode processEdit', () => {
     mode.addMarkup(1, 1, markupTypes.SQUARE)
     mode.addMarkup(2, 2, markupTypes.TRIANGLE)
 
-    player.processEdit('removeAllMarkup', [])
+    mode.processEdit('removeAllMarkup', [])
     expect(player.game.hasMarkup(1, 1)).toBe(false)
     expect(player.game.hasMarkup(2, 2)).toBe(false)
   })
@@ -1572,7 +1572,7 @@ describe('Edit mode processEdit', () => {
     const {player, mode} = createPlayer()
     mode.addLine(0, 0, 1, 1, '#f00')
 
-    player.processEdit('removeAllLines', [])
+    mode.processEdit('removeAllLines', [])
     expect(player.game.getLines()).toHaveLength(0)
   })
 
@@ -1580,13 +1580,13 @@ describe('Edit mode processEdit', () => {
     const {player, mode} = createPlayer()
     mode.addMarkup(1, 1, markupTypes.SQUARE)
 
-    expect(() => player.processEdit('removeAllMarkup')).not.toThrow()
+    expect(() => mode.processEdit('removeAllMarkup')).not.toThrow()
     expect(player.game.hasMarkup(1, 1)).toBe(false)
   })
 
   it('refuses an action it does not know', () => {
-    const {player} = createPlayer()
-    expect(() => player.processEdit('somethingElse'))
+    const {mode} = createPlayer()
+    expect(() => mode.processEdit('somethingElse'))
       .toThrow('Invalid edit action: somethingElse')
   })
 
@@ -1594,22 +1594,22 @@ describe('Edit mode processEdit', () => {
 
     //The action names map onto method names, so the list is what stops an
     //incoming event from calling anything else on the handler
-    const {player} = createPlayer()
-    expect(() => player.processEdit('teardown')).toThrow(/Invalid edit action/)
+    const {mode} = createPlayer()
+    expect(() => mode.processEdit('teardown')).toThrow(/Invalid edit action/)
   })
 
   it('stays quiet, so an applied edit does not echo back', () => {
-    const {player} = createPlayer()
+    const {player, mode} = createPlayer()
     const listener = vi.fn()
     player.on('edit', listener)
 
-    player.processEdit('addStone', [4, 4, BLACK])
+    mode.processEdit('addStone', [4, 4, BLACK])
     expect(listener).not.toHaveBeenCalled()
   })
 
   it('starts talking again once it is done', () => {
     const {player, mode} = createPlayer()
-    player.processEdit('addStone', [4, 4, BLACK])
+    mode.processEdit('addStone', [4, 4, BLACK])
 
     const listener = vi.fn()
     player.on('edit', listener)
@@ -1619,8 +1619,8 @@ describe('Edit mode processEdit', () => {
   })
 
   it('syncs the board after an edit to the position', () => {
-    const {player} = createPlayer()
-    player.processEdit('addStone', [4, 4, BLACK])
+    const {player, mode} = createPlayer()
+    mode.processEdit('addStone', [4, 4, BLACK])
 
     expect(player.board.get(boardLayerTypes.STONES, 4, 4)).toBeTruthy()
   })
@@ -1629,11 +1629,11 @@ describe('Edit mode processEdit', () => {
 
     //Lines go straight onto the draw layer, so a position sync would be
     //nothing but wasted work in the middle of a stroke
-    const {player} = createPlayer()
+    const {player, mode} = createPlayer()
     const spy = vi.spyOn(player, 'updateBoardPosition')
 
-    player.processEdit('addLine', [0, 0, 1, 1, '#f00'])
-    player.processEdit('addLines', [[[1, 1, 2, 2, '#f00']]])
+    mode.processEdit('addLine', [0, 0, 1, 1, '#f00'])
+    mode.processEdit('addLines', [[[1, 1, 2, 2, '#f00']]])
 
     expect(spy).not.toHaveBeenCalled()
     expect(player.board.getLayer(boardLayerTypes.DRAW).getAll()).toHaveLength(2)
@@ -1647,10 +1647,10 @@ describe('Edit mode processEdit', () => {
     const b = createPlayer()
     a.player.on('edit', event => {
       const {action, args} = event.detail
-      b.player.processEdit(action, args)
+      b.mode.processEdit(action, args)
     })
 
-    a.player.setEditTool(editTools.BLACK)
+    a.mode.setEditTool(editTools.BLACK)
     a.mode.edit(at(3, 3))
 
     expect(b.player.game.hasStone(3, 3, BLACK)).toBe(true)
@@ -1664,11 +1664,11 @@ describe('Edit mode processEdit', () => {
 
     a.player.on('edit', event => {
       const {action, args} = event.detail
-      b.player.processEdit(action, args)
+      b.mode.processEdit(action, args)
     })
     b.player.on('edit', listener)
 
-    a.player.setEditTool(editTools.BLACK)
+    a.mode.setEditTool(editTools.BLACK)
     a.mode.edit(at(3, 3))
 
     expect(listener).not.toHaveBeenCalled()
