@@ -1362,19 +1362,53 @@ export default class Game extends Base {
   /**
    * Get the number of moves in the main branch
    *
-   * NOTE: this is the number the last move on the branch reports, rather than
-   * a count of the move nodes on it. In a record that renumbers itself with
-   * MN the two differ, and it is the reported number that has to be handed
-   * back, so that it and findNodeForMoveNumber() speak the same language.
+   * NOTE: this counts the moves, and says nothing about what any of them is
+   * numbered. MN renumbers moves without adding or removing any, so a record
+   * can hold more moves than its highest move number, or start numbering well
+   * above its own move count. Use getHighestMoveNumber() for the numbers.
    */
   getTotalNumberOfMoves() {
     let node = this.root
     let m = 0
     while (node) {
-      m = node.getMoveNumberAfter(m)
+      if (node.isMove()) {
+        m++
+      }
       node = node.getPathNode()
     }
     return m
+  }
+
+  /**
+   * Get the highest move number reported in the main branch
+   */
+  getHighestMoveNumber() {
+    let node = this.root
+    let m = 0
+    let highest = 0
+    while (node) {
+      m = node.getMoveNumberAfter(m)
+      if (node.isMove() && m > highest) {
+        highest = m
+      }
+      node = node.getPathNode()
+    }
+    return highest
+  }
+
+  /**
+   * Get the last move node in the main branch
+   */
+  getLastMoveNode() {
+    let node = this.root
+    let last = null
+    while (node) {
+      if (node.isMove()) {
+        last = node
+      }
+      node = node.getPathNode()
+    }
+    return last
   }
 
   /**
@@ -1415,10 +1449,22 @@ export default class Game extends Base {
       return new GamePath()
     }
 
-    //Clamp to what the game actually has, so asking for more moves than there
-    //are still gets you as far as it goes
-    const total = this.getTotalNumberOfMoves()
-    const node = this.findNodeForMoveNumber(Math.min(number, total))
+    //The move that says it is this number
+    let node = this.findNodeForMoveNumber(number)
+
+    //None does, and the number is past every number the record uses, so this
+    //is a caller asking for more than the record holds. That still gets you as
+    //far as it goes, which is what it always did. A number the record merely
+    //renumbered past gets nothing, as no move carries it.
+    //NOTE: this used to clamp the number against getTotalNumberOfMoves() and
+    //look up the result. That only holds while a move's number and its place
+    //in the branch are the same thing. MN is free to number backwards, and
+    //ff4_ex.sgf does exactly that, so a record can hold more moves than its
+    //highest number and the clamp then stopped short of the end, or landed on
+    //an earlier move than the one asked for.
+    if (!node && number > this.getHighestMoveNumber()) {
+      node = this.getLastMoveNode()
+    }
 
     //NOTE: this used to build a path whose length was the move number itself.
     //A path counts nodes, not moves, so any node in the line that isn't a move

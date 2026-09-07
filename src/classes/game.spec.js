@@ -1761,12 +1761,15 @@ describe('Game move numbers with MN in the record', () => {
     expect(game.getCurrentMoveNumber()).toBe(52)
   })
 
-  it('counts the total up to the last move the record names', () => {
+  it('counts the moves it holds, whatever they are numbered', () => {
 
-    //NOTE: this is the number the last move reports rather than a count of
-    //the moves, so that it and findNodeForMoveNumber() speak the same
-    //language. A fragment of three moves numbered from 50 ends at 52
-    expect(createFragment().getTotalNumberOfMoves()).toBe(52)
+    //MN renumbers moves without adding or removing any, so the count is three
+    //however the record numbers them
+    expect(createFragment().getTotalNumberOfMoves()).toBe(3)
+  })
+
+  it('reports the highest number the record uses separately', () => {
+    expect(createFragment().getHighestMoveNumber()).toBe(52)
   })
 
   it('finds a node by the number the record gives it', () => {
@@ -1797,9 +1800,8 @@ describe('Game move numbers with MN in the record', () => {
 
   it('agrees with findNodeForMoveNumber over the whole record', () => {
     const game = createFragment()
-    const total = game.getTotalNumberOfMoves()
 
-    for (const n of [50, 51, total]) {
+    for (let n = 50; n <= game.getHighestMoveNumber(); n++) {
       game.goToMoveNumber(n)
       expect(game.getCurrentNode()).toBe(game.findNodeForMoveNumber(n))
     }
@@ -1820,6 +1822,70 @@ describe('Game move numbers with MN in the record', () => {
     game.goToMoveNumber(999)
 
     expect(game.getCurrentMoveNumber()).toBe(52)
+  })
+
+  //A record that renumbers backwards partway through, which is what
+  //ff4_ex.sgf does. Six moves, numbered 1, 2, 3, 4, then 2 and 3 again, so it
+  //holds more moves than its highest number
+  const createBackwardsRecord = () => Game.fromSgf(
+    '(;GM[1]FF[4]SZ[19];B[aa];W[bb];B[cc];W[dd];MN[2]B[ee];W[ff])'
+  )
+
+  it('counts every move of a record that renumbers backwards', () => {
+    const game = createBackwardsRecord()
+
+    expect(game.getTotalNumberOfMoves()).toBe(6)
+    expect(game.getHighestMoveNumber()).toBe(4)
+  })
+
+  it('navigates to a move past the highest number the record ends on', () => {
+
+    //NOTE: the number asked for used to be clamped against the move count,
+    //which sent move 4 to the third move of the branch instead of the one
+    //that says it is number 4
+    const game = createBackwardsRecord()
+
+    game.goToMoveNumber(4)
+
+    expect(game.getCurrentNode()).toBe(game.findNodeForMoveNumber(4))
+    expect(game.getCurrentNode().move).toMatchObject({x: 3, y: 3})
+    expect(game.getCurrentMoveNumber()).toBe(4)
+  })
+
+  it('runs to the end of a record that renumbers backwards', () => {
+
+    //Asking for more than the record holds goes as far as it goes, which is
+    //the sixth move, not the one carrying the highest number
+    const game = createBackwardsRecord()
+
+    game.goToMoveNumber(999)
+
+    expect(game.getCurrentNode().move).toMatchObject({x: 5, y: 5})
+    expect(game.getCurrentNode()).toBe(game.getLastMoveNode())
+  })
+
+  it('lands on the first move carrying a number the record repeats', () => {
+    const game = createBackwardsRecord()
+
+    game.goToMoveNumber(2)
+
+    expect(game.getCurrentNode().move).toMatchObject({x: 1, y: 1})
+  })
+
+  it('refuses a path serialised by a version that called depth moveNo', () => {
+
+    //Rather than resolving to the root and quietly rewinding the board
+    const game = Game.fromSgf('(;GM[1]FF[4]SZ[19];B[dd];W[pp];B[dp])')
+    game.goToLastPosition()
+    const node = game.getCurrentNode()
+
+    expect(() => game.goToPath({moveNo: 2, branches: 0, path: {}}))
+      .toThrow('Not a valid game path object')
+    expect(() => game.findNodeForPath({moveNo: 2, branches: 0, path: {}}))
+      .toThrow('Not a valid game path object')
+
+    //And the board is left where it was
+    expect(game.getCurrentNode()).toBe(node)
   })
 
   it('keeps counting nodes, not move numbers, when following a variation', () => {
