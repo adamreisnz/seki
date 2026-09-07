@@ -247,17 +247,17 @@
       ]
 		},
 
-		//A move can state its own number, for a record that holds only part of
-		//a game, or a diagram that starts its numbering somewhere else. The
-		//moves after it count on from there. This is the SGF MN property.
-		{
-			"moveNumber": 112,
+    //A move can state its own number, for a record that holds only part of
+    //a game, or a diagram that starts its numbering somewhere else. The
+    //moves after it count on from there. This is the SGF MN property.
+    {
+      "moveNumber": 112,
       "move": {
         "color": "white",
         "x": 15,
         "y": 3,
       }
-		},
+    },
 
 		//A node can be named using the name property
 		{
