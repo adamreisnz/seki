@@ -98,13 +98,17 @@ const parsingMap = {
   TW: 'parseScore',
   TB: 'parseScore',
 
-  //Markup
+  //Markup. NOTE: MD, MH and MS are seki's own private properties rather than
+  //standard SGF ones, being the diamond, happy and sad markup that FF[4] has
+  //no property for. They are read here so that a seki record round trips,
+  //but no other software knows them
   CR: 'parseMarkup',
   SQ: 'parseMarkup',
   TR: 'parseMarkup',
   MA: 'parseMarkup',
   SL: 'parseMarkup',
   LB: 'parseMarkup',
+  MD: 'parseMarkup',
   MH: 'parseMarkup',
   MS: 'parseMarkup',
 }

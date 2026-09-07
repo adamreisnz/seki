@@ -74,13 +74,18 @@ describe('JGF round trip', () => {
     const game = new Game()
     game.addStone(3, 3, stoneColors.BLACK)
     game.addMarkup(4, 4, {type: 'triangle'})
+    game.addMarkup(5, 5, {type: 'diamond'})
 
     const reloaded = new ConvertFromJgf().convert(toJgf(game))
     expect(reloaded.root.setup).toEqual([
       {type: stoneColors.BLACK, coords: [{x: 3, y: 3}]},
     ])
+
+    //JGF carries a markup type by name, so the diamond needs no property of
+    //its own the way it does in SGF
     expect(reloaded.root.markup).toEqual([
       {type: 'triangle', coords: [{x: 4, y: 4, text: undefined}]},
+      {type: 'diamond', coords: [{x: 5, y: 5, text: undefined}]},
     ])
   })
 

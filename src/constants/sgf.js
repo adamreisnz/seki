@@ -200,14 +200,26 @@ export const sgfGameTypes = {
 }
 
 //Markup types
+//
+//NOTE: MD, MH and MS are seki's own private properties, not standard SGF
+//ones. FF[4] has no diamond, happy or sad markup at all, and its one
+//remaining markup property, SL, is the select type's. Seki reads all three
+//back, so they survive a seki round trip, but other software has no idea
+//what they are and will drop that markup.
+//
+//NOTE: the arrow and the line have no entry here on purpose. AR and LN are
+//compose types taking point:point, and seki's markup carries a single point,
+//so AR[dd] is not valid SGF. Neither property is read back either, so
+//writing one only risks a record other software rejects. They stay unmapped,
+//and the writer skips them, until there is a two point markup model to write
+//them properly from.
 export const sgfMarkupTypes = {
   [markupTypes.LABEL]: 'LB',
-  [markupTypes.LINE]: 'LN',
-  [markupTypes.ARROW]: 'AR',
   [markupTypes.SELECT]: 'SL',
   [markupTypes.SQUARE]: 'SQ',
   [markupTypes.CIRCLE]: 'CR',
   [markupTypes.TRIANGLE]: 'TR',
+  [markupTypes.DIAMOND]: 'MD',
   [markupTypes.MARK]: 'MA',
   [markupTypes.HAPPY]: 'MH',
   [markupTypes.SAD]: 'MS',

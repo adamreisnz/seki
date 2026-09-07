@@ -28,8 +28,13 @@ export default class Converter {
       map = inverseMaps.get(map)
     }
 
-    //Return mapped value
-    return map[value]
+    //Return mapped value. NOTE: this asks for the map's own keys rather than
+    //reading the property, as everything inherited from the object prototype
+    //answers to a plain read and a markup type of 'constructor' would come
+    //back as a class to write into the record as a property identifier. A
+    //value the map has nothing for is undefined either way, which is what
+    //every caller here checks for
+    return Object.hasOwn(map, value) ? map[value] : undefined
   }
 
   /**
