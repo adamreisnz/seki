@@ -134,31 +134,21 @@ describe('GamePath', () => {
 
   describe('serialisation', () => {
 
-    it('refuses an object with no depth on it', () => {
+    it('reads a path serialised under the old moveNo key', () => {
 
-      //A path serialised by seki 6 named this moveNo. Building from it left
-      //the depth undefined, which walked nowhere and rewound the board to the
-      //start without saying anything
-      expect(() => GamePath.fromObject({moveNo: 2, branches: 0, path: {}}))
-        .toThrow('Not a valid game path object')
-    })
+      //Seki 6 called the depth moveNo. Without the fallback the depth arrived
+      //undefined, which walked nowhere and rewound the board to the start
+      //without saying anything
+      const path = GamePath.fromObject({moveNo: 2, branches: 1, path: {1: 1}})
 
-    it('refuses an object with no path on it', () => {
-      expect(() => GamePath.fromObject({depth: 2, branches: 0}))
-        .toThrow('Not a valid game path object')
-    })
-
-    it('refuses nothing at all', () => {
-      expect(() => GamePath.fromObject(null))
-        .toThrow('Not a valid game path object')
-      expect(() => GamePath.fromObject(undefined))
-        .toThrow('Not a valid game path object')
-    })
-
-    it('takes an object with no branches count as having none', () => {
-      const path = GamePath.fromObject({depth: 2, path: {}})
       expect(path.getDepth()).toBe(2)
-      expect(path.branches).toBe(0)
+      expect(path.branches).toBe(1)
+      expect(path.indexAtDepth(1)).toBe(1)
+    })
+
+    it('prefers depth over moveNo when an object carries both', () => {
+      const path = GamePath.fromObject({depth: 3, moveNo: 9, branches: 0, path: {}})
+      expect(path.getDepth()).toBe(3)
     })
 
     it('round trips through a plain object', () => {

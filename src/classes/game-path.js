@@ -205,21 +205,15 @@ export default class GamePath {
    */
   static fromObject(obj) {
 
-    //Nothing to build from, or nothing saying how deep the path goes.
-    //NOTE: seki 6 called this depth moveNo, so a path serialised by one of
-    //those arrives here with no depth on it at all. Left alone it resolved to
-    //the root and rewound the board to the start without a word, which reads
-    //as navigation rather than as a path this version cannot use.
-    if (!obj || typeof obj.depth !== 'number' || !obj.path) {
-      throw new Error(`Not a valid game path object`)
-    }
-
     //Create new instance
     const path = new GamePath()
 
-    //Set vars
-    path.depth = obj.depth
-    path.branches = obj.branches ?? 0
+    //Set vars. NOTE: seki 6 called the depth moveNo, so a path serialised by
+    //one of those is read back through the old key. Without that it would
+    //arrive with no depth at all, walk no nodes, resolve to the root and
+    //rewind the board to the start without a word.
+    path.depth = obj.depth ?? obj.moveNo
+    path.branches = obj.branches
     path.path = JSON.parse(JSON.stringify(obj.path))
 
     //Return

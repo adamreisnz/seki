@@ -1872,20 +1872,17 @@ describe('Game move numbers with MN in the record', () => {
     expect(game.getCurrentNode().move).toMatchObject({x: 1, y: 1})
   })
 
-  it('refuses a path serialised by a version that called depth moveNo', () => {
+  it('follows a path serialised by a version that called depth moveNo', () => {
 
     //Rather than resolving to the root and quietly rewinding the board
     const game = Game.fromSgf('(;GM[1]FF[4]SZ[19];B[dd];W[pp];B[dp])')
     game.goToLastPosition()
-    const node = game.getCurrentNode()
 
-    expect(() => game.goToPath({moveNo: 2, branches: 0, path: {}}))
-      .toThrow('Not a valid game path object')
-    expect(() => game.findNodeForPath({moveNo: 2, branches: 0, path: {}}))
-      .toThrow('Not a valid game path object')
+    game.goToPath({moveNo: 2, branches: 0, path: {}})
 
-    //And the board is left where it was
-    expect(game.getCurrentNode()).toBe(node)
+    expect(game.getCurrentNode().move).toMatchObject({x: 15, y: 15})
+    expect(game.findNodeForPath({moveNo: 2, branches: 0, path: {}}))
+      .toBe(game.getCurrentNode())
   })
 
   it('keeps counting nodes, not move numbers, when following a variation', () => {
