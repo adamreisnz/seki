@@ -18,9 +18,6 @@ export default class PlayerModeScore extends PlayerMode {
    */
   init() {
 
-    //Extend player
-    this.extendPlayer()
-
     //Create bound event listeners
     this.createBoundListeners({
       click: 'onClick',
@@ -39,21 +36,6 @@ export default class PlayerModeScore extends PlayerMode {
   onPathChange() {
     this.scoreState = new GameScoreState(this.game)
     this.clearScore()
-  }
-
-  /**
-   * Extend the player with new methods
-   */
-  extendPlayer() {
-
-    //Get data
-    const {player, mode} = this
-
-    //Extend player
-    player.extend('estimateScore', mode)
-    player.extend('calculateScore', mode)
-    player.extend('setDeadStones', mode)
-    player.extend('toggleDeadStone', mode)
   }
 
   /**
