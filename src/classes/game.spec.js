@@ -1040,36 +1040,36 @@ describe('Path reported while navigating a variation', () => {
 
   it('describes the variation while in it', () => {
     const {game} = createForkedGame()
-    game.goToPath({moveNo: 2, branches: 1, path: {1: 1}})
+    game.goToPath({depth: 2, branches: 1, path: {1: 1}})
 
     expect(game.getCurrentNode().move).toMatchObject({x: 15, y: 3})
-    expect(game.getPathObject()).toEqual({moveNo: 2, branches: 1, path: {1: 1}})
+    expect(game.getPathObject()).toEqual({depth: 2, branches: 1, path: {1: 1}})
   })
 
   it('drops the variation choice on stepping back out of it', () => {
     const {game} = createForkedGame()
-    game.goToPath({moveNo: 2, branches: 1, path: {1: 1}})
+    game.goToPath({depth: 2, branches: 1, path: {1: 1}})
     game.goToPreviousPosition()
 
-    expect(game.getPathObject()).toEqual({moveNo: 1, branches: 0, path: {}})
+    expect(game.getPathObject()).toEqual({depth: 1, branches: 0, path: {}})
   })
 
   it('describes the main line after stepping back and taking it', () => {
     const {game} = createForkedGame()
 
     //Into the variation, back one move, then down the main line
-    game.goToPath({moveNo: 2, branches: 1, path: {1: 1}})
+    game.goToPath({depth: 2, branches: 1, path: {1: 1}})
     game.goToPreviousPosition()
     game.goToNextPosition(0)
 
     expect(game.getCurrentNode().move).toMatchObject({x: 15, y: 15})
-    expect(game.getPathObject()).toEqual({moveNo: 2, branches: 0, path: {}})
+    expect(game.getPathObject()).toEqual({depth: 2, branches: 0, path: {}})
   })
 
   it('resolves its own reported path back to the node it is on', () => {
     const {game} = createForkedGame()
 
-    game.goToPath({moveNo: 2, branches: 1, path: {1: 1}})
+    game.goToPath({depth: 2, branches: 1, path: {1: 1}})
     game.goToPreviousPosition()
     game.goToNextPosition(0)
 
@@ -1291,7 +1291,7 @@ describe('Game loaded from a converter', () => {
 
   it('starts with a clean path', () => {
     const game = Game.fromSgf(sgf)
-    expect(game.getPathObject()).toEqual({moveNo: 0, branches: 0, path: {}})
+    expect(game.getPathObject()).toEqual({depth: 0, branches: 0, path: {}})
   })
 })
 
@@ -1824,21 +1824,21 @@ describe('Game move numbers with MN in the record', () => {
 
   it('keeps counting nodes, not move numbers, when following a variation', () => {
 
-    //The path index is a depth counter, and renumbering it would read the
-    //wrong child at each fork. MN[10] on the second variation is there to
-    //catch exactly that
+    //A path is indexed by depth, and numbering it by what the moves call
+    //themselves would read the wrong child at each fork. MN[10] on the second
+    //variation is there to catch exactly that
     const game = Game.fromSgf(
       '(;GM[1]FF[4]SZ[19];B[dd](;W[pp];B[pd])(;MN[10]W[pd];B[pp]))'
     )
 
-    game.goToPath({moveNo: 3, branches: 1, path: {1: 1}})
+    game.goToPath({depth: 3, branches: 1, path: {1: 1}})
 
     expect(game.getCurrentNode().move).toMatchObject({x: 15, y: 15})
     expect(game.getCurrentMoveNumber()).toBe(11)
 
     //The path stays a depth counter and keeps the choice made at the fork
-    expect(game.getPath().getMoveNumber()).toBe(3)
-    expect(game.getPath().indexAtMove(1)).toBe(1)
+    expect(game.getPath().getDepth()).toBe(3)
+    expect(game.getPath().indexAtDepth(1)).toBe(1)
     expect(game.findNodeForPath(game.getPath())).toBe(game.getCurrentNode())
   })
 

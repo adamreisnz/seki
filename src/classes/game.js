@@ -1326,16 +1326,16 @@ export default class Game extends Base {
    */
   resetCurrentPathIndex() {
 
-    //The choice to forget is the one recorded at the move we're on, being the
+    //The choice to forget is the one recorded at the node we're on, being the
     //step from here to the next node, which is the same thing the path index
     //below is reset to. The choices that got us here are left alone, as the
     //path still has to describe where we are. NOTE: this used to call
     //forgetPathChoice() with no arguments, which looked up path[undefined].
-    const moveNo = this.path.getMoveNumber()
+    const depth = this.path.getDepth()
 
     //Reset
     this.node.setPathIndex(0)
-    this.path.forgetPathChoice(moveNo)
+    this.path.forgetPathChoice(depth)
   }
 
   /**
@@ -1467,9 +1467,9 @@ export default class Game extends Base {
 
     //Walk the tree, following the child index chosen at each step
     let node = this.root
-    const n = path.getMoveNumber()
-    for (let m = 0; m < n; m++) {
-      node = node.getChild(path.indexAtMove(m))
+    const n = path.getDepth()
+    for (let d = 0; d < n; d++) {
+      node = node.getChild(path.indexAtDepth(d))
       if (!node) {
         return null
       }
@@ -2224,11 +2224,11 @@ export default class Game extends Base {
     this.goToFirstPosition()
 
     //Loop path
-    const n = path.getMoveNumber()
-    for (let m = 0; m < n; m++) {
+    const n = path.getDepth()
+    for (let d = 0; d < n; d++) {
 
       //Try going to the next node
-      const i = path.indexAtMove(m)
+      const i = path.indexAtDepth(d)
       if (!this.goToNextNode(i)) {
         break
       }

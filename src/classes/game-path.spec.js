@@ -5,30 +5,30 @@ describe('GamePath', () => {
 
   describe('advancing and retreating', () => {
 
-    it('starts at move zero with no branches', () => {
+    it('starts at depth zero with no branches', () => {
       const path = new GamePath()
-      expect(path.getMoveNumber()).toBe(0)
+      expect(path.getDepth()).toBe(0)
       expect(path.branches).toBe(0)
     })
 
-    it('counts moves as it advances', () => {
+    it('counts nodes as it advances', () => {
       const path = new GamePath()
       path.advance(0)
       path.advance(0)
-      expect(path.getMoveNumber()).toBe(2)
+      expect(path.getDepth()).toBe(2)
     })
 
     it('does not retreat past the start', () => {
       const path = new GamePath()
       path.retreat()
-      expect(path.getMoveNumber()).toBe(0)
+      expect(path.getDepth()).toBe(0)
     })
 
     it('comes back to where it started', () => {
       const path = new GamePath()
       path.advance(0)
       path.retreat()
-      expect(path.getMoveNumber()).toBe(0)
+      expect(path.getDepth()).toBe(0)
     })
   })
 
@@ -38,25 +38,25 @@ describe('GamePath', () => {
       const path = new GamePath()
       path.advance(0)
       expect(path.branches).toBe(0)
-      expect(path.indexAtMove(0)).toBe(0)
+      expect(path.indexAtDepth(0)).toBe(0)
     })
 
     it('remembers a choice off the main line', () => {
       const path = new GamePath()
       path.advance(2)
       expect(path.branches).toBe(1)
-      expect(path.indexAtMove(0)).toBe(2)
+      expect(path.indexAtDepth(0)).toBe(2)
     })
 
     //NOTE: forgetting choices on retreat, and the interaction between
     //setMove and stored choices, are covered by the choice bookkeeping block
     //at the bottom of this file
 
-    it('defaults to the main line for moves it knows nothing about', () => {
-      expect(new GamePath().indexAtMove(7)).toBe(0)
+    it('defaults to the main line for depths it knows nothing about', () => {
+      expect(new GamePath().indexAtDepth(7)).toBe(0)
     })
 
-    it('reports the choice at the current move', () => {
+    it('reports the choice at the current depth', () => {
       const path = new GamePath()
       path.advance(0)
       path.advance(3)
@@ -66,20 +66,20 @@ describe('GamePath', () => {
     })
   })
 
-  describe('jumping to a move number', () => {
+  describe('jumping to a depth', () => {
 
-    it('sets the move number directly', () => {
+    it('sets the depth directly', () => {
       const path = new GamePath()
-      path.setMove(10)
-      expect(path.getMoveNumber()).toBe(10)
+      path.setDepth(10)
+      expect(path.getDepth()).toBe(10)
     })
 
     it('leaves choices alone when jumping forward', () => {
       const path = new GamePath()
       path.advance(2)
-      path.setMove(5)
+      path.setDepth(5)
 
-      expect(path.indexAtMove(0)).toBe(2)
+      expect(path.indexAtDepth(0)).toBe(2)
       expect(path.branches).toBe(1)
     })
   })
@@ -91,9 +91,9 @@ describe('GamePath', () => {
       path.advance(2)
       path.reset()
 
-      expect(path.getMoveNumber()).toBe(0)
+      expect(path.getDepth()).toBe(0)
       expect(path.branches).toBe(0)
-      expect(path.indexAtMove(0)).toBe(0)
+      expect(path.indexAtDepth(0)).toBe(0)
     })
   })
 
@@ -107,7 +107,7 @@ describe('GamePath', () => {
       expect(a.isSameAs(b)).toBe(true)
     })
 
-    it('does not match a different move number', () => {
+    it('does not match a different depth', () => {
       const a = new GamePath()
       const b = new GamePath()
       a.advance(0)
@@ -127,7 +127,7 @@ describe('GamePath', () => {
     })
 
     it('rejects something that is not a path', () => {
-      expect(() => new GamePath().isSameAs({moveNo: 0}))
+      expect(() => new GamePath().isSameAs({depth: 0}))
         .toThrow('Not a GamePath object')
     })
   })
@@ -150,7 +150,7 @@ describe('GamePath', () => {
       const object = path.toObject()
       object.path[0] = 99
 
-      expect(path.indexAtMove(0)).toBe(2)
+      expect(path.indexAtDepth(0)).toBe(2)
     })
 
     it('clones without sharing state', () => {
@@ -160,8 +160,8 @@ describe('GamePath', () => {
       const clone = path.clone()
       clone.advance(1)
 
-      expect(path.getMoveNumber()).toBe(1)
-      expect(clone.getMoveNumber()).toBe(2)
+      expect(path.getDepth()).toBe(1)
+      expect(clone.getDepth()).toBe(2)
     })
   })
 })
@@ -174,20 +174,20 @@ describe('GamePath choice bookkeeping', () => {
     path.retreat()
 
     expect(path.branches).toBe(0)
-    expect(path.indexAtMove(0)).toBe(0)
+    expect(path.indexAtDepth(0)).toBe(0)
   })
 
-  it('forgets the right choice when several moves deep', () => {
+  it('forgets the right choice when several nodes deep', () => {
     const path = new GamePath()
     path.advance(0)
     path.advance(3)
     path.advance(0)
 
     path.retreat()
-    expect(path.indexAtMove(1)).toBe(3)
+    expect(path.indexAtDepth(1)).toBe(3)
 
     path.retreat()
-    expect(path.indexAtMove(1)).toBe(0)
+    expect(path.indexAtDepth(1)).toBe(0)
     expect(path.branches).toBe(0)
   })
 
@@ -197,28 +197,28 @@ describe('GamePath choice bookkeeping', () => {
     path.advance(3)
     path.retreat()
 
-    expect(path.indexAtMove(0)).toBe(2)
+    expect(path.indexAtDepth(0)).toBe(2)
     expect(path.branches).toBe(1)
   })
 
-  it('drops the choice at the move jumped back to', () => {
+  it('drops the choice at the depth jumped back to', () => {
     const path = new GamePath()
     path.advance(0)
     path.advance(2)
     path.advance(0)
 
-    path.setMove(1)
-    expect(path.indexAtMove(1)).toBe(0)
+    path.setDepth(1)
+    expect(path.indexAtDepth(1)).toBe(0)
     expect(path.branches).toBe(0)
   })
 
-  it('keeps choices below the move jumped back to', () => {
+  it('keeps choices below the depth jumped back to', () => {
     const path = new GamePath()
     path.advance(2)
     path.advance(3)
 
-    path.setMove(1)
-    expect(path.indexAtMove(0)).toBe(2)
+    path.setDepth(1)
+    expect(path.indexAtDepth(0)).toBe(2)
     expect(path.branches).toBe(1)
   })
 

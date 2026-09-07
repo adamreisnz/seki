@@ -373,7 +373,7 @@ describe('Game path handling', () => {
     game.goToLastPosition()
 
     expect(game.getPathObject()).toEqual({
-      moveNo: 3, path: {}, branches: 0,
+      depth: 3, path: {}, branches: 0,
     })
   })
 
@@ -417,7 +417,7 @@ describe('Game path handling', () => {
   it('finds nothing for a path that runs off the tree', () => {
     const game = Game.fromSgf(sgf)
 
-    expect(game.findNodeForPath({moveNo: 9, path: {}, branches: 0})).toBeNull()
+    expect(game.findNodeForPath({depth: 9, path: {}, branches: 0})).toBeNull()
   })
 
   it('sets and reads the index of the branch it is following', () => {

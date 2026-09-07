@@ -385,8 +385,8 @@ export default class GameNode {
    *
    * NOTE: this is the number the move reports, which a record is free to set
    * for itself with the SGF MN property. It is not the same thing as
-   * GamePath's move number, which is a plain depth counter used to index the
-   * choices made at each fork and must never be renumbered.
+   * GamePath's depth, which counts nodes in order to index the choices made
+   * at each fork, and never renumbers.
    */
   getMoveNumber() {
     const {parent, moveNumber} = this
